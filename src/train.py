@@ -30,6 +30,29 @@ def count_parameters(model):
     return trainable, total
 
 
+def normalize_training_config(config):
+    typed_config = dict(config)
+    int_keys = [
+        "seed",
+        "num_labels",
+        "max_len",
+        "batch_size",
+        "epochs",
+        "num_workers",
+        "debug_num_train_samples",
+        "debug_num_valid_samples",
+    ]
+    float_keys = ["learning_rate", "threshold"]
+
+    for key in int_keys:
+        if typed_config.get(key) is not None:
+            typed_config[key] = int(typed_config[key])
+    for key in float_keys:
+        if typed_config.get(key) is not None:
+            typed_config[key] = float(typed_config[key])
+    return typed_config
+
+
 def move_batch_to_device(batch, device):
     return {key: value.to(device) for key, value in batch.items()}
 
@@ -136,7 +159,7 @@ def write_sanity_report(path, report):
 
 def main():
     args = parse_args()
-    config = load_config(args.config)
+    config = normalize_training_config(load_config(args.config))
     set_seed(config["seed"])
 
     device = get_device()
