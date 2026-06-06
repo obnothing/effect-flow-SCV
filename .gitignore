@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Runtime outputs
+checkpoints/
+logs/
+results/
+*.pt
+*.pth
+
+# Large datasets
+data/raw/BJUT_SC01/BJUT_SC01.zip
+data/raw/BJUT_SC01/extracted/
+data/processed/BJUT_SC01/*.jsonl
+
+# Local model weights and caches
+models/
+.cache/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

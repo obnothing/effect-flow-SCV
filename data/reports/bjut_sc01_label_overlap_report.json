@@ -1,0 +1,274 @@
+{
+  "rows": 148384,
+  "read_errors": [],
+  "warnings": [
+    "Contract contains unknown address: parsed as non-empty positive values because the column uses location-list style labels; NaN/empty values are treated as 0.",
+    "Unchecked call return value: remapped from column 'Unchecked call return value' (actual count 666) to column 'Overpowered role' because it matches paper Table II expected count 7214."
+  ],
+  "raw_detected_vulnerability_label_count": 30,
+  "paper_scope_vulnerability_label_count": 29,
+  "target_10_label_count": 10,
+  "remaining_label_count": 19,
+  "raw_detected_vulnerability_columns": [
+    "Integer overflow or underflow",
+    "Unchecked call return value",
+    "Unprotected ether withdrawal",
+    "Unprotected self-destruct instruction",
+    "Reentrancy",
+    "Assert violation",
+    "Delegatecall to untrusted callee",
+    "DoS with failed call",
+    "Timestamp dependence",
+    "Weak sources of randomness from chain attributes",
+    "Write to arbitrary storage location",
+    "Arbitrary jump with function type variable",
+    "Call stack depth limit exceeding",
+    "Contract contains unknown address",
+    "Use of call function with no data",
+    "Multiplication after division",
+    "Using approve function of the ERC-20 token standard",
+    "Return value is always false",
+    "ERC-20 transfer should throw",
+    "Extra gas consumption",
+    "Locked money",
+    "Overpowered role",
+    "Redundant fallback function",
+    "Unsafe send",
+    "Worse readability with revert",
+    "`ArbitraryTransfer` problem",
+    "GenerateToken problem",
+    "DestroyToken problem",
+    "FrozeAccount problem",
+    "DisableTransfer problem"
+  ],
+  "paper_scope_vulnerability_columns": [
+    "Integer overflow or underflow",
+    "Unprotected ether withdrawal",
+    "Unprotected self-destruct instruction",
+    "Reentrancy",
+    "Assert violation",
+    "Delegatecall to untrusted callee",
+    "DoS with failed call",
+    "Timestamp dependence",
+    "Weak sources of randomness from chain attributes",
+    "Write to arbitrary storage location",
+    "Arbitrary jump with function type variable",
+    "Call stack depth limit exceeding",
+    "Contract contains unknown address",
+    "Use of call function with no data",
+    "Multiplication after division",
+    "Using approve function of the ERC-20 token standard",
+    "Return value is always false",
+    "ERC-20 transfer should throw",
+    "Extra gas consumption",
+    "Locked money",
+    "Overpowered role",
+    "Redundant fallback function",
+    "Unsafe send",
+    "Worse readability with revert",
+    "`ArbitraryTransfer` problem",
+    "GenerateToken problem",
+    "DestroyToken problem",
+    "FrozeAccount problem",
+    "DisableTransfer problem"
+  ],
+  "remaining_vulnerability_columns": [
+    "Unprotected ether withdrawal",
+    "Unprotected self-destruct instruction",
+    "Delegatecall to untrusted callee",
+    "Weak sources of randomness from chain attributes",
+    "Write to arbitrary storage location",
+    "Arbitrary jump with function type variable",
+    "Call stack depth limit exceeding",
+    "Use of call function with no data",
+    "Using approve function of the ERC-20 token standard",
+    "Return value is always false",
+    "ERC-20 transfer should throw",
+    "Locked money",
+    "Redundant fallback function",
+    "Worse readability with revert",
+    "`ArbitraryTransfer` problem",
+    "GenerateToken problem",
+    "DestroyToken problem",
+    "FrozeAccount problem",
+    "DisableTransfer problem"
+  ],
+  "excluded_duplicate_target_columns": [
+    "Unchecked call return value"
+  ],
+  "summary": {
+    "target_10_positive_count": 32096,
+    "remaining_positive_count": 148384,
+    "all_vulnerability_positive_count": 148384,
+    "only_target_10_positive_count": 0,
+    "only_remaining_positive_count": 116288,
+    "both_target_10_and_remaining_positive_count": 32096,
+    "no_vulnerability_positive_count": 0
+  },
+  "binary_label_implication": {
+    "current_binary_label_definition": "binary_label = any(target 10 labels)",
+    "current_binary_positive_count": 32096,
+    "current_binary_negative_count": 116288,
+    "would_be_positive_if_using_all_labels": 148384,
+    "only_remaining_positive_currently_binary_negative": 116288
+  },
+  "target_10_labels": [
+    {
+      "label": "Reentrancy",
+      "source_column": "Reentrancy",
+      "positive_count": 1422,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "label": "Contract contains unknown address",
+      "source_column": "Contract contains unknown address",
+      "positive_count": 18433,
+      "parse_mode": "nonempty_positive"
+    },
+    {
+      "label": "Integer overflow or underflow",
+      "source_column": "Integer overflow or underflow",
+      "positive_count": 18263,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "label": "Timestamp dependence",
+      "source_column": "Timestamp dependence",
+      "positive_count": 777,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "label": "DoS with failed call",
+      "source_column": "DoS with failed call",
+      "positive_count": 521,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "label": "Assert violation",
+      "source_column": "Assert violation",
+      "positive_count": 854,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "label": "Unchecked call return value",
+      "source_column": "Overpowered role",
+      "positive_count": 7214,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "label": "Unsafe send",
+      "source_column": "Unsafe send",
+      "positive_count": 1261,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "label": "Multiplication after division",
+      "source_column": "Multiplication after division",
+      "positive_count": 1937,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "label": "Extra gas consumption",
+      "source_column": "Extra gas consumption",
+      "positive_count": 5597,
+      "parse_mode": "standard_binary"
+    }
+  ],
+  "remaining_labels": [
+    {
+      "column": "Unprotected ether withdrawal",
+      "positive_count": 2,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "Unprotected self-destruct instruction",
+      "positive_count": 16,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "Delegatecall to untrusted callee",
+      "positive_count": 157,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "Weak sources of randomness from chain attributes",
+      "positive_count": 15,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "Write to arbitrary storage location",
+      "positive_count": 148384,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "Arbitrary jump with function type variable",
+      "positive_count": 5,
+      "parse_mode": "nonempty_positive"
+    },
+    {
+      "column": "Call stack depth limit exceeding",
+      "positive_count": 64,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "Use of call function with no data",
+      "positive_count": 512,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "Using approve function of the ERC-20 token standard",
+      "positive_count": 17725,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "Return value is always false",
+      "positive_count": 747,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "ERC-20 transfer should throw",
+      "positive_count": 123,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "Locked money",
+      "positive_count": 6383,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "Redundant fallback function",
+      "positive_count": 5705,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "Worse readability with revert",
+      "positive_count": 5952,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "`ArbitraryTransfer` problem",
+      "positive_count": 3,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "GenerateToken problem",
+      "positive_count": 390,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "DestroyToken problem",
+      "positive_count": 83,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "FrozeAccount problem",
+      "positive_count": 112,
+      "parse_mode": "standard_binary"
+    },
+    {
+      "column": "DisableTransfer problem",
+      "positive_count": 192,
+      "parse_mode": "standard_binary"
+    }
+  ]
+}

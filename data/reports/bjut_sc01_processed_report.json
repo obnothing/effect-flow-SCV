@@ -1,0 +1,265 @@
+{
+  "status": "ok",
+  "raw_data_dir": "data\\raw\\BJUT_SC01\\extracted",
+  "output_dir": "data\\processed\\BJUT_SC01",
+  "input_rows": 148384,
+  "usable_samples": 148384,
+  "skipped_samples": 0,
+  "opcode_field": null,
+  "bytecode_field": "contractCode",
+  "id_field": "address",
+  "opcode_source": {
+    "bytecode_converted": 148384
+  },
+  "label_names": [
+    "Reentrancy",
+    "Contract contains unknown address",
+    "Integer overflow or underflow",
+    "Timestamp dependence",
+    "DoS with failed call",
+    "Assert violation",
+    "Unchecked call return value",
+    "Unsafe send",
+    "Multiplication after division",
+    "Extra gas consumption"
+  ],
+  "label_mapping": {
+    "Reentrancy": "Reentrancy",
+    "Contract contains unknown address": "Contract contains unknown address",
+    "Integer overflow or underflow": "Integer overflow or underflow",
+    "Timestamp dependence": "Timestamp dependence",
+    "DoS with failed call": "DoS with failed call",
+    "Assert violation": "Assert violation",
+    "Unchecked call return value": "Overpowered role",
+    "Unsafe send": "Unsafe send",
+    "Multiplication after division": "Multiplication after division",
+    "Extra gas consumption": "Extra gas consumption"
+  },
+  "missing_labels": [],
+  "warnings": [
+    "Contract contains unknown address: parsed as non-empty positive values because the column uses location-list style labels; NaN/empty values are treated as 0.",
+    "Unchecked call return value: remapped from column 'Unchecked call return value' (actual count 666) to column 'Overpowered role' because it matches paper Table II expected count 7214."
+  ],
+  "splits": {
+    "train": 118707,
+    "valid": 14838,
+    "test": 14839
+  },
+  "label_counts": {
+    "Reentrancy": 1422,
+    "Contract contains unknown address": 18433,
+    "Integer overflow or underflow": 18263,
+    "Timestamp dependence": 777,
+    "DoS with failed call": 521,
+    "Assert violation": 854,
+    "Unchecked call return value": 7214,
+    "Unsafe send": 1261,
+    "Multiplication after division": 1937,
+    "Extra gas consumption": 5597
+  },
+  "label_parse_report": {
+    "Reentrancy": {
+      "column": "Reentrancy",
+      "mode": "standard_binary",
+      "nan_count": 0,
+      "empty_string_count": 0,
+      "parsed_one_count": 1422,
+      "parsed_zero_count": 146962,
+      "unparsed_count": 0,
+      "actual_count": 1422,
+      "expected_count": 1422
+    },
+    "Contract contains unknown address": {
+      "column": "Contract contains unknown address",
+      "mode": "nonempty_positive",
+      "nan_count": 129951,
+      "empty_string_count": 0,
+      "parsed_one_count": 0,
+      "parsed_zero_count": 0,
+      "unparsed_count": 148384,
+      "actual_count": 18433,
+      "expected_count": 18433
+    },
+    "Integer overflow or underflow": {
+      "column": "Integer overflow or underflow",
+      "mode": "standard_binary",
+      "nan_count": 0,
+      "empty_string_count": 0,
+      "parsed_one_count": 18263,
+      "parsed_zero_count": 130121,
+      "unparsed_count": 0,
+      "actual_count": 18263,
+      "expected_count": 18263
+    },
+    "Timestamp dependence": {
+      "column": "Timestamp dependence",
+      "mode": "standard_binary",
+      "nan_count": 0,
+      "empty_string_count": 0,
+      "parsed_one_count": 777,
+      "parsed_zero_count": 147607,
+      "unparsed_count": 0,
+      "actual_count": 777,
+      "expected_count": 777
+    },
+    "DoS with failed call": {
+      "column": "DoS with failed call",
+      "mode": "standard_binary",
+      "nan_count": 0,
+      "empty_string_count": 0,
+      "parsed_one_count": 521,
+      "parsed_zero_count": 147863,
+      "unparsed_count": 0,
+      "actual_count": 521,
+      "expected_count": 521
+    },
+    "Assert violation": {
+      "column": "Assert violation",
+      "mode": "standard_binary",
+      "nan_count": 0,
+      "empty_string_count": 0,
+      "parsed_one_count": 854,
+      "parsed_zero_count": 147530,
+      "unparsed_count": 0,
+      "actual_count": 854,
+      "expected_count": 854
+    },
+    "Unchecked call return value": {
+      "column": "Overpowered role",
+      "mode": "standard_binary",
+      "nan_count": 0,
+      "empty_string_count": 0,
+      "parsed_one_count": 7214,
+      "parsed_zero_count": 141170,
+      "unparsed_count": 0,
+      "actual_count": 7214,
+      "expected_count": 7214
+    },
+    "Unsafe send": {
+      "column": "Unsafe send",
+      "mode": "standard_binary",
+      "nan_count": 0,
+      "empty_string_count": 0,
+      "parsed_one_count": 1261,
+      "parsed_zero_count": 147123,
+      "unparsed_count": 0,
+      "actual_count": 1261,
+      "expected_count": 1261
+    },
+    "Multiplication after division": {
+      "column": "Multiplication after division",
+      "mode": "standard_binary",
+      "nan_count": 0,
+      "empty_string_count": 0,
+      "parsed_one_count": 1937,
+      "parsed_zero_count": 146447,
+      "unparsed_count": 0,
+      "actual_count": 1937,
+      "expected_count": 1937
+    },
+    "Extra gas consumption": {
+      "column": "Extra gas consumption",
+      "mode": "standard_binary",
+      "nan_count": 0,
+      "empty_string_count": 0,
+      "parsed_one_count": 5597,
+      "parsed_zero_count": 142787,
+      "unparsed_count": 0,
+      "actual_count": 5597,
+      "expected_count": 5597
+    }
+  },
+  "paper_table_ii_comparison": [
+    {
+      "label": "Reentrancy",
+      "expected": 1422,
+      "actual": 1422,
+      "diff": 0,
+      "status": "OK"
+    },
+    {
+      "label": "Contract contains unknown address",
+      "expected": 18433,
+      "actual": 18433,
+      "diff": 0,
+      "status": "OK"
+    },
+    {
+      "label": "Integer overflow or underflow",
+      "expected": 18263,
+      "actual": 18263,
+      "diff": 0,
+      "status": "OK"
+    },
+    {
+      "label": "Timestamp dependence",
+      "expected": 777,
+      "actual": 777,
+      "diff": 0,
+      "status": "OK"
+    },
+    {
+      "label": "DoS with failed call",
+      "expected": 521,
+      "actual": 521,
+      "diff": 0,
+      "status": "OK"
+    },
+    {
+      "label": "Assert violation",
+      "expected": 854,
+      "actual": 854,
+      "diff": 0,
+      "status": "OK"
+    },
+    {
+      "label": "Unchecked call return value",
+      "expected": 7214,
+      "actual": 7214,
+      "diff": 0,
+      "status": "OK"
+    },
+    {
+      "label": "Unsafe send",
+      "expected": 1261,
+      "actual": 1261,
+      "diff": 0,
+      "status": "OK"
+    },
+    {
+      "label": "Multiplication after division",
+      "expected": 1937,
+      "actual": 1937,
+      "diff": 0,
+      "status": "OK"
+    },
+    {
+      "label": "Extra gas consumption",
+      "expected": 5597,
+      "actual": 5597,
+      "diff": 0,
+      "status": "OK"
+    }
+  ],
+  "split_method": "iterative-stratification",
+  "label_mapping_assumptions": {
+    "Unchecked call return value": {
+      "paper_label": "Unchecked call return value",
+      "raw_column_used": "Overpowered role",
+      "reason": "positive_count matches paper Table II expected count 7214",
+      "risk": "semantic name mismatch, treated as reproduction compatibility mapping",
+      "warning": "true semantic correctness cannot be guaranteed without author code or dataset documentation",
+      "expected_count": 7214,
+      "exact_count_matches": [
+        {
+          "column_name": "Overpowered role",
+          "positive_count": 7214,
+          "diff": 0,
+          "abs_diff": 0
+        }
+      ],
+      "near_count_matches_within_5_percent_or_10": [],
+      "strong_conflict": false
+    }
+  }
+}
