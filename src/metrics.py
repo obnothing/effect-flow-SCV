@@ -50,14 +50,58 @@ def multilabel_metrics(logits, labels, threshold=0.5):
     }
 
 
+def prediction_distribution(logits, labels, threshold=0.5):
+    probs = sigmoid(logits)
+    preds = (probs >= threshold).astype(int)
+    labels = np.asarray(labels).astype(int)
+    return {
+        "predicted_positive_total": int(preds.sum()),
+        "per_label_predicted_positive_count": [
+            int(value) for value in preds.sum(axis=0)
+        ],
+        "per_label_true_positive_count": [
+            int(value) for value in labels.sum(axis=0)
+        ],
+        "per_label_mean_pred_prob": [
+            float(value) for value in probs.mean(axis=0)
+        ],
+    }
+
+
+def threshold_scan(logits, labels, thresholds):
+    results = {}
+    for threshold in thresholds:
+        multi = multilabel_metrics(logits, labels, threshold=threshold)
+        dist = prediction_distribution(logits, labels, threshold=threshold)
+        results[str(threshold)] = {
+            "micro_f1": multi["micro_f1"],
+            "macro_f1": multi["macro_f1"],
+            "predicted_positive_total": dist["predicted_positive_total"],
+        }
+    return results
+
+
 def compute_metrics(
-    detection_logits, binary_labels, recognition_logits, multi_labels, threshold=0.5
+    detection_logits,
+    binary_labels,
+    recognition_logits,
+    multi_labels,
+    threshold=0.5,
+    scan_thresholds=None,
 ):
     multi = multilabel_metrics(recognition_logits, multi_labels, threshold=threshold)
-    return {
+    metrics = {
         "detection_accuracy": binary_detection_accuracy(
             detection_logits, binary_labels, threshold=threshold
         ),
         "recognition_micro_f1": multi["micro_f1"],
         "recognition_macro_f1": multi["macro_f1"],
     }
+    metrics.update(
+        prediction_distribution(recognition_logits, multi_labels, threshold=threshold)
+    )
+    if scan_thresholds:
+        metrics["threshold_scan"] = threshold_scan(
+            recognition_logits, multi_labels, scan_thresholds
+        )
+    return metrics
