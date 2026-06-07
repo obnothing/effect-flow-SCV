@@ -1,13 +1,17 @@
 import argparse
 import json
+import os
 from pathlib import Path
 
 import numpy as np
 import yaml
 from tqdm import tqdm
 from transformers import AutoTokenizer
+from transformers.utils import logging
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "true")
+logging.set_verbosity_error()
 
 
 def parse_args():
@@ -28,6 +32,12 @@ def parse_args():
         "--report-path",
         default="data/reports/opcode_length_report.txt",
         help="Output text report path.",
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=512,
+        help="Tokenizer batch size for length analysis.",
     )
     return parser.parse_args()
 
@@ -67,6 +77,17 @@ def iter_opcodes(path):
             yield opcode
 
 
+def batched(iterable, batch_size):
+    batch = []
+    for item in iterable:
+        batch.append(item)
+        if len(batch) >= batch_size:
+            yield batch
+            batch = []
+    if batch:
+        yield batch
+
+
 def summarize_lengths(lengths):
     values = np.asarray(lengths, dtype=np.int64)
     if values.size == 0:
@@ -98,11 +119,18 @@ def summarize_lengths(lengths):
     }
 
 
-def analyze_split(path, tokenizer):
+def analyze_split(path, tokenizer, batch_size):
     lengths = []
-    for opcode in tqdm(iter_opcodes(path), desc=f"lengths:{path.name}"):
-        token_count = len(tokenizer.tokenize(opcode))
-        lengths.append(token_count + tokenizer.num_special_tokens_to_add(pair=False))
+    opcode_batches = batched(iter_opcodes(path), batch_size)
+    for opcode_batch in tqdm(opcode_batches, desc=f"lengths:{path.name}"):
+        encoded = tokenizer(
+            opcode_batch,
+            add_special_tokens=True,
+            truncation=False,
+            padding=False,
+            return_attention_mask=False,
+        )
+        lengths.extend(len(input_ids) for input_ids in encoded["input_ids"])
     return summarize_lengths(lengths)
 
 
@@ -140,7 +168,7 @@ def main():
         if not split_path.exists():
             raise FileNotFoundError(f"Dataset split not found: {split_path}")
         print(f"[ANALYZE] {split}: {split_path}")
-        split_reports[split] = analyze_split(split_path, tokenizer)
+        split_reports[split] = analyze_split(split_path, tokenizer, args.batch_size)
 
     write_report(args.report_path, config, split_reports)
     print(f"[OK] wrote {args.report_path}")
