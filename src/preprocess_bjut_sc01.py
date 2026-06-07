@@ -662,62 +662,79 @@ def main():
         print(f"[STOP] wrote report: {text_report.relative_to(PROJECT_ROOT)}")
         sys.exit(1)
 
-    records = []
+    train_idx, valid_idx, test_idx, split_method = split_indices(label_matrix, seed)
+    split_lookup = {}
+    for name, split_indices_for_name in {
+        "train": train_idx,
+        "valid": valid_idx,
+        "test": test_idx,
+    }.items():
+        for idx in split_indices_for_name:
+            split_lookup[int(idx)] = name
+
     skipped = 0
+    usable_samples = 0
     opcode_source_counts = {}
+    split_counts = {"train": 0, "valid": 0, "test": 0}
+    written_label_counts = np.zeros(len(LABEL_NAMES), dtype=int)
     opcode_operand_stats = {
         "push_instruction_count": 0,
         "push_operand_count": 0,
         "samples_with_push": 0,
         "samples_with_push_operands": 0,
     }
-    for row_idx, row in tqdm(df.iterrows(), total=len(df), desc="preprocess"):
-        opcode, source = make_opcode(row, opcode_field, bytecode_field)
-        opcode_source_counts[source] = opcode_source_counts.get(source, 0) + 1
-        if not opcode:
-            skipped += 1
-            continue
-        push_count, push_operand_count = count_push_operand_pairs(opcode)
-        opcode_operand_stats["push_instruction_count"] += push_count
-        opcode_operand_stats["push_operand_count"] += push_operand_count
-        if push_count > 0:
-            opcode_operand_stats["samples_with_push"] += 1
-        if push_operand_count > 0:
-            opcode_operand_stats["samples_with_push_operands"] += 1
 
-        multi_labels = label_matrix[row_idx].astype(int).tolist()
-        binary_label = int(any(multi_labels))
-        sample_id = row.get(id_field) if id_field else None
-        if pd.isna(sample_id) or sample_id is None or str(sample_id).strip() == "":
-            sample_id = f"sample_{row_idx}"
+    writers = {
+        name: (output_dir / f"{name}.jsonl").open("w", encoding="utf-8")
+        for name in ["train", "valid", "test"]
+    }
+    try:
+        for row_idx, row in tqdm(df.iterrows(), total=len(df), desc="preprocess"):
+            opcode, source = make_opcode(row, opcode_field, bytecode_field)
+            opcode_source_counts[source] = opcode_source_counts.get(source, 0) + 1
+            if not opcode:
+                skipped += 1
+                continue
+            split_name = split_lookup.get(int(row_idx))
+            if split_name is None:
+                skipped += 1
+                continue
 
-        records.append(
-            {
+            push_count, push_operand_count = count_push_operand_pairs(opcode)
+            opcode_operand_stats["push_instruction_count"] += push_count
+            opcode_operand_stats["push_operand_count"] += push_operand_count
+            if push_count > 0:
+                opcode_operand_stats["samples_with_push"] += 1
+            if push_operand_count > 0:
+                opcode_operand_stats["samples_with_push_operands"] += 1
+
+            multi_labels = label_matrix[row_idx].astype(int).tolist()
+            binary_label = int(any(multi_labels))
+            sample_id = row.get(id_field) if id_field else None
+            if pd.isna(sample_id) or sample_id is None or str(sample_id).strip() == "":
+                sample_id = f"sample_{row_idx}"
+
+            record = {
                 "id": str(sample_id),
                 "opcode": opcode,
                 "binary_label": binary_label,
                 "multi_labels": multi_labels,
             }
-        )
+            writers[split_name].write(json.dumps(record, ensure_ascii=False) + "\n")
+            split_counts[split_name] += 1
+            written_label_counts += np.asarray(multi_labels, dtype=int)
+            usable_samples += 1
+    finally:
+        for writer in writers.values():
+            writer.close()
 
-    if not records:
+    if usable_samples == 0:
         summary["warnings"].append("No usable samples after opcode extraction.")
         summary["skipped_samples"] = skipped
         summary["opcode_source"] = opcode_source_counts
         build_report(summary, text_report, json_report)
         print(f"[STOP] wrote report: {text_report.relative_to(PROJECT_ROOT)}")
         sys.exit(1)
-
-    labels = np.array([record["multi_labels"] for record in records], dtype=int)
-    train_idx, valid_idx, test_idx, split_method = split_indices(labels, seed)
-    splits = {
-        "train": [records[i] for i in train_idx],
-        "valid": [records[i] for i in valid_idx],
-        "test": [records[i] for i in test_idx],
-    }
-
-    for name, split_records in splits.items():
-        write_jsonl(output_dir / f"{name}.jsonl", split_records)
 
     label_mapping_out = {
         "label_names": LABEL_NAMES,
@@ -734,18 +751,19 @@ def main():
     summary.update(
         {
             "status": "warning" if strong_mapping_conflict else "ok",
-            "usable_samples": len(records),
+            "usable_samples": usable_samples,
             "skipped_samples": skipped,
             "opcode_source": opcode_source_counts,
             "opcode_operand_stats": opcode_operand_stats,
             "split_method": split_method,
-            "splits": {name: len(split_records) for name, split_records in splits.items()},
+            "splits": split_counts,
             "label_counts": {
-                label: int(labels[:, idx].sum()) for idx, label in enumerate(LABEL_NAMES)
+                label: int(written_label_counts[idx])
+                for idx, label in enumerate(LABEL_NAMES)
             },
             "paper_table_ii_comparison": compare_with_paper(
                 {
-                    label: int(labels[:, idx].sum())
+                    label: int(written_label_counts[idx])
                     for idx, label in enumerate(LABEL_NAMES)
                 }
             ),
