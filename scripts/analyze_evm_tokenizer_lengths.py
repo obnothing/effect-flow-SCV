@@ -1,6 +1,5 @@
 import argparse
 import json
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -8,11 +7,6 @@ import yaml
 from tqdm import tqdm
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SRC_DIR = PROJECT_ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from evm_tokenizer import EVMOpcodeTokenizer  # noqa: E402
 
 
 def parse_args():
@@ -84,10 +78,27 @@ def summarize(lengths):
     }
 
 
-def analyze_file(path, tokenizer):
+def count_whitespace_tokens(text):
+    count = 0
+    in_token = False
+    for char in text:
+        if char.isspace():
+            in_token = False
+        elif not in_token:
+            count += 1
+            in_token = True
+    return count
+
+
+def estimate_evm_tokenized_length(opcode):
+    # EVMOpcodeTokenizer emits one token per opcode/operand plus [CLS] and [SEP].
+    return count_whitespace_tokens(opcode) + 2
+
+
+def analyze_file(path):
     lengths = []
     for opcode in tqdm(iter_opcodes(path), desc=f"evm_lengths:{path.name}"):
-        lengths.append(len(tokenizer.tokenize(opcode, add_special_tokens=True)))
+        lengths.append(estimate_evm_tokenized_length(opcode))
     return summarize(lengths)
 
 
@@ -113,7 +124,6 @@ def main():
         raise FileNotFoundError(
             f"EVM vocab not found: {vocab_path}. Run scripts/build_evm_vocab.py first."
         )
-    tokenizer = EVMOpcodeTokenizer.from_vocab_file(vocab_path)
     split_paths = {
         "train": resolve_project_path(config["train_path"]),
         "valid": resolve_project_path(config["valid_path"]),
@@ -122,7 +132,7 @@ def main():
     report = {}
     for split, path in split_paths.items():
         print(f"[ANALYZE] {split}: {path}")
-        report[split] = analyze_file(path, tokenizer)
+        report[split] = analyze_file(path)
     write_reports(report)
     print("[OK] wrote data/reports/evm_opcode_length_report.txt")
     print("[OK] wrote data/reports/evm_opcode_length_report.json")
