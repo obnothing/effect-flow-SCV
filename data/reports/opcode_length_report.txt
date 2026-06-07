@@ -1,0 +1,43 @@
+Opcode tokenized length report
+
+model_name: ./models/CodeBERTa-small-v1
+data_dir: data/processed/BJUT_SC01
+
+[train]
+samples: 121506
+min: 20
+mean: 3978.7325481869207
+median: 2310.0
+p90: 8412.0
+p95: 12090.0
+p99: 21009.0
+max: 37374
+over_128_ratio: 0.9983869109344394
+over_256_ratio: 0.9883874047372146
+over_512_ratio: 0.9601748061824108
+
+[valid]
+samples: 14838
+min: 35
+mean: 3988.4914408949994
+median: 2493.0
+p90: 8437.0
+p95: 11631.349999999997
+p99: 21009.0
+max: 36323
+over_128_ratio: 0.9986521094487127
+over_256_ratio: 0.9888125084243159
+over_512_ratio: 0.9632025879498585
+
+[test]
+samples: 14839
+min: 23
+mean: 3969.860839679224
+median: 2310.0
+p90: 8406.400000000005
+p95: 12044.099999999984
+p99: 21009.0
+max: 35347
+over_128_ratio: 0.9975739605094683
+over_256_ratio: 0.9872632926747086
+over_512_ratio: 0.9594986185052902

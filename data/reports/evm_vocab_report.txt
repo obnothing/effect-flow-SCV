@@ -1,0 +1,30 @@
+EVM opcode-aware vocab report
+
+vocab_size: 177
+mnemonic_count: 146
+operand_count: 0
+preserved_operand_count: 16
+normalized_operand_count: 0
+add_jump_aware_tokens: false
+
+Preserved common operands:
+- 0x00
+- 0x01
+- 0x02
+- 0x03
+- 0x04
+- 0x05
+- 0x08
+- 0x0a
+- 0x10
+- 0x20
+- 0x40
+- 0x60
+- 0x80
+- 0xff
+- 0xffff
+- 0xffffffff
+
+Top 50 operands:
+
+Examples of normalization:
