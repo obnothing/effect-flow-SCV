@@ -88,10 +88,10 @@ def batched(iterable, batch_size):
         yield batch
 
 
-def summarize_lengths(lengths):
+def summarize_lengths(lengths, prefix=None):
     values = np.asarray(lengths, dtype=np.int64)
     if values.size == 0:
-        return {
+        summary = {
             "samples": 0,
             "min": 0,
             "mean": 0.0,
@@ -104,25 +104,87 @@ def summarize_lengths(lengths):
             "over_256_ratio": 0.0,
             "over_512_ratio": 0.0,
         }
+    else:
+        summary = {
+            "samples": int(values.size),
+            "min": int(values.min()),
+            "mean": float(values.mean()),
+            "median": float(np.median(values)),
+            "p90": float(np.percentile(values, 90)),
+            "p95": float(np.percentile(values, 95)),
+            "p99": float(np.percentile(values, 99)),
+            "max": int(values.max()),
+            "over_128_ratio": float((values > 128).mean()),
+            "over_256_ratio": float((values > 256).mean()),
+            "over_512_ratio": float((values > 512).mean()),
+        }
+    if prefix is None:
+        return summary
+    return {f"{prefix}_{key}": value for key, value in summary.items()}
+
+
+def summarize_ratios(ratios, prefix):
+    values = np.asarray(ratios, dtype=np.float64)
+    if values.size == 0:
+        summary = {
+            "mean": 0.0,
+            "median": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "p99": 0.0,
+            "max": 0.0,
+        }
+    else:
+        summary = {
+            "mean": float(values.mean()),
+            "median": float(np.median(values)),
+            "p90": float(np.percentile(values, 90)),
+            "p95": float(np.percentile(values, 95)),
+            "p99": float(np.percentile(values, 99)),
+            "max": float(values.max()),
+        }
+    return {f"{prefix}_{key}": value for key, value in summary.items()}
+
+
+def raw_opcode_length(opcode):
+    return len(opcode.split())
+
+
+def compare_lengths(raw_lengths, tokenized_lengths):
+    raw_values = np.asarray(raw_lengths, dtype=np.float64)
+    tokenized_values = np.asarray(tokenized_lengths, dtype=np.float64)
+    ratios = np.divide(
+        tokenized_values,
+        raw_values,
+        out=np.zeros_like(tokenized_values, dtype=np.float64),
+        where=raw_values > 0,
+    )
+    tokenized_minus_raw = tokenized_values - raw_values
     return {
-        "samples": int(values.size),
-        "min": int(values.min()),
-        "mean": float(values.mean()),
-        "median": float(np.median(values)),
-        "p90": float(np.percentile(values, 90)),
-        "p95": float(np.percentile(values, 95)),
-        "p99": float(np.percentile(values, 99)),
-        "max": int(values.max()),
-        "over_128_ratio": float((values > 128).mean()),
-        "over_256_ratio": float((values > 256).mean()),
-        "over_512_ratio": float((values > 512).mean()),
+        **summarize_ratios(ratios, "tokenized_to_raw_ratio"),
+        "mean_tokenized_minus_raw": float(tokenized_minus_raw.mean())
+        if tokenized_minus_raw.size
+        else 0.0,
+        "median_tokenized_minus_raw": float(np.median(tokenized_minus_raw))
+        if tokenized_minus_raw.size
+        else 0.0,
+    }
+
+
+def flatten_split_report(raw_lengths, tokenized_lengths):
+    return {
+        **summarize_lengths(raw_lengths, "raw_opcode"),
+        **summarize_lengths(tokenized_lengths, "tokenized"),
+        **compare_lengths(raw_lengths, tokenized_lengths),
     }
 
 
 def analyze_split(path, tokenizer, batch_size):
-    lengths = []
+    raw_lengths = []
+    tokenized_lengths = []
     opcode_batches = batched(iter_opcodes(path), batch_size)
     for opcode_batch in tqdm(opcode_batches, desc=f"lengths:{path.name}"):
+        raw_lengths.extend(raw_opcode_length(opcode) for opcode in opcode_batch)
         encoded = tokenizer(
             opcode_batch,
             add_special_tokens=True,
@@ -130,18 +192,20 @@ def analyze_split(path, tokenizer, batch_size):
             padding=False,
             return_attention_mask=False,
         )
-        lengths.extend(len(input_ids) for input_ids in encoded["input_ids"])
-    return summarize_lengths(lengths)
+        tokenized_lengths.extend(len(input_ids) for input_ids in encoded["input_ids"])
+    return flatten_split_report(raw_lengths, tokenized_lengths)
 
 
 def write_report(path, config, split_reports):
     path = resolve_project_path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = [
-        "Opcode tokenized length report",
+        "Opcode raw length vs tokenized length report",
         "",
         f"model_name: {config['model_name']}",
         f"data_dir: {config['data_dir']}",
+        "raw_opcode length = whitespace-split opcode/operand token count",
+        "tokenized length = tokenizer input_ids length with special tokens",
         "",
     ]
     for split, report in split_reports.items():
