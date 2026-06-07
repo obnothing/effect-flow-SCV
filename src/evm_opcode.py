@@ -140,13 +140,56 @@ def bytecode_to_opcode_sequence(bytecode):
 
     if disassemble_all is not None:
         try:
-            instructions = disassemble_all(bytecode_bytes)
-            opcodes = [instruction.name for instruction in instructions]
-            return " ".join(opcodes) if opcodes else None
+            opcodes = pyevmasm_instructions_to_tokens(disassemble_all(bytecode_bytes))
+            if opcodes and push_operands_are_preserved(opcodes):
+                return " ".join(opcodes)
+            warnings.warn(
+                "pyevmasm output did not preserve PUSH operands; falling back."
+            )
         except Exception as exc:
             warnings.warn(f"pyevmasm disassembly failed; falling back. {exc}")
 
     return fallback_bytecode_to_opcode(bytecode_bytes)
+
+
+def push_operands_are_preserved(opcodes):
+    for idx, token in enumerate(opcodes):
+        if re.fullmatch(r"PUSH(?:[1-9]|[12][0-9]|3[0-2])", token):
+            return idx + 1 < len(opcodes) and opcodes[idx + 1].startswith("0x")
+    return True
+
+
+def pyevmasm_instructions_to_tokens(instructions):
+    opcodes = []
+    for instruction in instructions:
+        name = str(getattr(instruction, "name", "")).upper()
+        if not name:
+            continue
+        opcodes.append(name)
+        if re.fullmatch(r"PUSH(?:[1-9]|[12][0-9]|3[0-2])", name):
+            operand = instruction_operand_to_hex(instruction)
+            if operand:
+                opcodes.append(operand)
+    return opcodes
+
+
+def instruction_operand_to_hex(instruction):
+    for attr in ("operand", "argument", "immediate"):
+        value = getattr(instruction, attr, None)
+        if value is None:
+            continue
+        if isinstance(value, bytes):
+            return f"0x{value.hex()}"
+        if isinstance(value, int):
+            size = getattr(instruction, "operand_size", None)
+            width = int(size) * 2 if size else 0
+            return f"0x{value:0{width}x}" if width else f"0x{value:x}"
+        text = str(value).strip().lower()
+        if text.startswith("0x"):
+            return text
+        if re.fullmatch(r"[0-9a-f]+", text):
+            return f"0x{text}"
+    return None
 
 
 def fallback_bytecode_to_opcode(bytecode_bytes):
@@ -158,5 +201,8 @@ def fallback_bytecode_to_opcode(bytecode_bytes):
         opcodes.append(name)
         i += 1
         if 0x60 <= code <= 0x7F:
-            i += code - 0x5F
+            operand_size = code - 0x5F
+            operand = bytecode_bytes[i : i + operand_size]
+            opcodes.append(f"0x{operand.hex()}")
+            i += operand_size
     return " ".join(opcodes) if opcodes else None

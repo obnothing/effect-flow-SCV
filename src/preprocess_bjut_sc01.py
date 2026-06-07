@@ -414,6 +414,18 @@ def make_opcode(row, opcode_field, bytecode_field):
     return None, "missing_or_failed"
 
 
+def count_push_operand_pairs(opcode):
+    tokens = str(opcode).split()
+    push_count = 0
+    push_operand_count = 0
+    for idx, token in enumerate(tokens):
+        if re.fullmatch(r"PUSH(?:[1-9]|[12][0-9]|3[0-2])", token):
+            push_count += 1
+            if idx + 1 < len(tokens) and str(tokens[idx + 1]).lower().startswith("0x"):
+                push_operand_count += 1
+    return push_count, push_operand_count
+
+
 def split_indices(labels, seed):
     indices = np.arange(len(labels))
     try:
@@ -494,6 +506,12 @@ def build_report(summary, text_path, json_path):
         "split_method",
     ]:
         lines.append(f"{key}: {summary.get(key)}")
+
+    if summary.get("opcode_operand_stats"):
+        lines.append("")
+        lines.append("Opcode operand stats:")
+        for key, value in summary["opcode_operand_stats"].items():
+            lines.append(f"- {key}: {value}")
 
     lines.append("")
     lines.append("Label mapping:")
@@ -603,6 +621,7 @@ def main():
         "label_parse_report": {},
         "paper_table_ii_comparison": [],
         "split_method": None,
+        "opcode_operand_stats": {},
     }
 
     if missing_labels:
@@ -646,12 +665,25 @@ def main():
     records = []
     skipped = 0
     opcode_source_counts = {}
+    opcode_operand_stats = {
+        "push_instruction_count": 0,
+        "push_operand_count": 0,
+        "samples_with_push": 0,
+        "samples_with_push_operands": 0,
+    }
     for row_idx, row in tqdm(df.iterrows(), total=len(df), desc="preprocess"):
         opcode, source = make_opcode(row, opcode_field, bytecode_field)
         opcode_source_counts[source] = opcode_source_counts.get(source, 0) + 1
         if not opcode:
             skipped += 1
             continue
+        push_count, push_operand_count = count_push_operand_pairs(opcode)
+        opcode_operand_stats["push_instruction_count"] += push_count
+        opcode_operand_stats["push_operand_count"] += push_operand_count
+        if push_count > 0:
+            opcode_operand_stats["samples_with_push"] += 1
+        if push_operand_count > 0:
+            opcode_operand_stats["samples_with_push_operands"] += 1
 
         multi_labels = label_matrix[row_idx].astype(int).tolist()
         binary_label = int(any(multi_labels))
@@ -705,6 +737,7 @@ def main():
             "usable_samples": len(records),
             "skipped_samples": skipped,
             "opcode_source": opcode_source_counts,
+            "opcode_operand_stats": opcode_operand_stats,
             "split_method": split_method,
             "splits": {name: len(split_records) for name, split_records in splits.items()},
             "label_counts": {
