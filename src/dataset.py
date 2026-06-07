@@ -80,11 +80,19 @@ def build_datasets(
     debug_num_train_samples=None,
     debug_num_valid_samples=None,
     seed=42,
+    use_mlsmote_train=False,
 ):
     data_dir = Path(data_dir)
+    train_file = "train_mlsmote.jsonl" if use_mlsmote_train else "train.jsonl"
+    train_path = data_dir / train_file
+    if use_mlsmote_train and not train_path.exists():
+        raise FileNotFoundError(
+            "train_mlsmote.jsonl not found. "
+            "Please run scripts/apply_mlsmote.py first."
+        )
     return {
         "train": OpcodeJsonlDataset(
-            data_dir / "train.jsonl",
+            train_path,
             tokenizer,
             max_len,
             num_labels,

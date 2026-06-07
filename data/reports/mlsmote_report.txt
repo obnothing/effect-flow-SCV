@@ -1,0 +1,34 @@
+BJUT SC01 MLSMOTE-compatible oversampling report
+
+status: ok
+input_train_path: data/processed/BJUT_SC01/train.jsonl
+output_train_path: data/processed/BJUT_SC01/train_mlsmote.jsonl
+original_train_samples: 118707
+oversampled_train_samples: 121506
+added_samples: 2799
+max_duplicate_per_sample: 5
+random_seed: 42
+warning: This stage uses text-compatible oversampling by duplicating real opcode samples. It does not synthesize opcode sequences by linear interpolation.
+
+Label Counts:
+Label | before | target_after | achieved_after | diff | IRLbl_before | IRLbl_after
+Reentrancy | 1138 | 3907 | 3907 | 0 | 12.957820738137082 | 4.308932684924494
+Contract contains unknown address | 14746 | 14764 | 16835 | 2071 | 1.0 | 1.0
+Integer overflow or underflow | 14610 | 15611 | 15861 | 250 | 1.0093086926762491 | 1.0614084862240716
+Timestamp dependence | 622 | 1366 | 1758 | 392 | 23.707395498392284 | 9.576222980659841
+DoS with failed call | 417 | 1905 | 1905 | 0 | 35.3621103117506 | 8.837270341207349
+Assert violation | 683 | 1784 | 1784 | 0 | 21.5900439238653 | 9.436659192825113
+Unchecked call return value | 5771 | 5771 | 6761 | 990 | 2.555189741812511 | 2.4900162697825765
+Unsafe send | 1009 | 1234 | 1234 | 0 | 14.614469772051535 | 13.642625607779578
+Multiplication after division | 1550 | 1551 | 1605 | 54 | 9.513548387096774 | 10.489096573208723
+Extra gas consumption | 4478 | 4478 | 4538 | 60 | 3.2929879410451095 | 3.70978404583517
+
+MeanIR before: 12.560287500682744
+MeanIR after: 6.455201618244691
+
+Minority labels before:
+- Reentrancy
+- Timestamp dependence
+- DoS with failed call
+- Assert violation
+- Unsafe send

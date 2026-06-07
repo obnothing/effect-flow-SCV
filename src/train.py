@@ -179,6 +179,7 @@ def main():
         debug_num_train_samples=config.get("debug_num_train_samples"),
         debug_num_valid_samples=config.get("debug_num_valid_samples"),
         seed=config.get("seed", 42),
+        use_mlsmote_train=config.get("use_mlsmote_train", False),
     )
 
     num_workers = int(config.get("num_workers", 0))
