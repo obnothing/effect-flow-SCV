@@ -1,0 +1,23 @@
+model_name: ./models/CodeBERTa-small-v1
+data_dir: data/processed/BJUT_SC01
+checkpoint_dir: checkpoints/train_mlsmote_codeberta
+log_dir: logs
+result_dir: results
+report_dir: data/reports
+num_labels: 10
+max_len: 512
+hidden_size: 768
+bigru_hidden_size: 256
+batch_size: 8
+learning_rate: 1e-5
+epochs: 10
+seed: 42
+freeze_encoder: false
+use_mlsmote_train: true
+debug_num_train_samples:
+debug_num_valid_samples:
+num_workers: 8
+threshold: 0.5
+gradient_clip_norm: 1.0
+early_stopping_patience: 3
+local_files_only: true

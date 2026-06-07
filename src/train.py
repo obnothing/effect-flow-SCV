@@ -41,8 +41,9 @@ def normalize_training_config(config):
         "num_workers",
         "debug_num_train_samples",
         "debug_num_valid_samples",
+        "early_stopping_patience",
     ]
-    float_keys = ["learning_rate", "threshold"]
+    float_keys = ["learning_rate", "threshold", "gradient_clip_norm"]
 
     for key in int_keys:
         if typed_config.get(key) is not None:
@@ -57,7 +58,7 @@ def move_batch_to_device(batch, device):
     return {key: value.to(device) for key, value in batch.items()}
 
 
-def train_one_epoch(model, dataloader, optimizer, device):
+def train_one_epoch(model, dataloader, optimizer, device, gradient_clip_norm=None):
     model.train()
     total_loss = 0.0
 
@@ -68,6 +69,8 @@ def train_one_epoch(model, dataloader, optimizer, device):
         outputs = model(**batch)
         loss = outputs["loss"]
         loss.backward()
+        if gradient_clip_norm is not None:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_clip_norm)
         optimizer.step()
 
         total_loss += loss.item()
@@ -110,12 +113,16 @@ def inspect_first_batch(model, dataloader, device):
     device_batch = move_batch_to_device(batch, device)
     outputs = model(**device_batch)
     return {
-        "input_ids_shape": list(batch["input_ids"].shape),
-        "attention_mask_shape": list(batch["attention_mask"].shape),
-        "binary_label_shape": list(batch["binary_label"].shape),
-        "multi_labels_shape": list(batch["multi_labels"].shape),
-        "detection_logits_shape": list(outputs["detection_logits"].shape),
-        "recognition_logits_shape": list(outputs["recognition_logits"].shape),
+        "batch_shapes": {
+            "input_ids": list(batch["input_ids"].shape),
+            "attention_mask": list(batch["attention_mask"].shape),
+            "binary_label": list(batch["binary_label"].shape),
+            "multi_labels": list(batch["multi_labels"].shape),
+        },
+        "logits_shapes": {
+            "detection_logits": list(outputs["detection_logits"].shape),
+            "recognition_logits": list(outputs["recognition_logits"].shape),
+        },
     }
 
 
@@ -151,10 +158,25 @@ def write_sanity_report(path, report):
             lines.append(f"{key}:")
             for sub_key, sub_value in value.items():
                 lines.append(f"- {sub_key}: {sub_value}")
+        elif isinstance(value, list):
+            lines.append(f"{key}:")
+            for item in value:
+                lines.append(f"- {item}")
         else:
             lines.append(f"{key}: {value}")
         lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def get_sanity_report_paths(config, report_dir):
+    checkpoint_name = Path(config["checkpoint_dir"]).name
+    if checkpoint_name == "sanity":
+        report_stem = "sanity_train_report"
+    elif checkpoint_name.startswith("sanity_"):
+        report_stem = f"{checkpoint_name}_report"
+    else:
+        report_stem = f"{checkpoint_name}_report"
+    return report_dir / f"{report_stem}.txt", report_dir / f"{report_stem}.json"
 
 
 def main():
@@ -199,6 +221,7 @@ def main():
     model = CorrelaScan(config).to(device)
     model_loaded = True
     print_run_info(config, device, datasets, model)
+    trainable_parameters, total_parameters = count_parameters(model)
     optimizer = torch.optim.AdamW(
         [param for param in model.parameters() if param.requires_grad],
         lr=config["learning_rate"],
@@ -214,16 +237,25 @@ def main():
     tokenizer_save_dir = checkpoint_dir / "tokenizer"
     tokenizer.save_pretrained(tokenizer_save_dir)
 
-    first_batch_shapes = inspect_first_batch(model, valid_loader, device)
+    first_batch_info = inspect_first_batch(model, valid_loader, device)
     best_valid_loss = float("inf")
     best_metrics = {}
     best_checkpoint_path = checkpoint_dir / "best.pt"
     threshold = float(config.get("threshold", 0.5))
+    gradient_clip_norm = config.get("gradient_clip_norm")
     last_train_loss = None
     last_valid_loss = None
+    patience = config.get("early_stopping_patience")
+    patience_counter = 0
 
     for epoch in range(1, config["epochs"] + 1):
-        train_loss = train_one_epoch(model, train_loader, optimizer, device)
+        train_loss = train_one_epoch(
+            model,
+            train_loader,
+            optimizer,
+            device,
+            gradient_clip_norm=gradient_clip_norm,
+        )
         valid_loss, metrics = evaluate(model, valid_loader, device, threshold)
         last_train_loss = train_loss
         last_valid_loss = valid_loss
@@ -249,6 +281,28 @@ def main():
                 },
                 best_checkpoint_path,
             )
+            patience_counter = 0
+        else:
+            patience_counter += 1
+            if patience is not None and patience_counter >= patience:
+                print(f"[INFO] early stopping at epoch {epoch}")
+                break
+
+    cuda_device_name = (
+        torch.cuda.get_device_name(0)
+        if torch.cuda.is_available()
+        else "CPU"
+    )
+    warnings = []
+    if config.get("use_mlsmote_train", False):
+        warnings.append(
+            "MLSMOTE-compatible text oversampling duplicates real opcode samples; "
+            "it does not synthesize opcode sequences by linear interpolation."
+        )
+    if config.get("freeze_encoder", False):
+        warnings.append("Encoder is frozen; this run checks classifier-head training only.")
+    else:
+        warnings.append("Encoder is unfrozen; monitor GPU memory and loss stability.")
 
     sanity_report = {
         "loaded_local_model": model_loaded,
@@ -256,7 +310,22 @@ def main():
         "model_name": config["model_name"],
         "train_samples": len(datasets["train"]),
         "valid_samples": len(datasets["valid"]),
-        "batch_shapes": first_batch_shapes,
+        "use_mlsmote_train": config.get("use_mlsmote_train", False),
+        "freeze_encoder": config.get("freeze_encoder", False),
+        "max_len": config["max_len"],
+        "batch_size": config["batch_size"],
+        "learning_rate": config["learning_rate"],
+        "device": str(device),
+        "torch_version": torch.__version__,
+        "cuda_available": torch.cuda.is_available(),
+        "cuda_device_name": cuda_device_name,
+        "trainable_parameters": trainable_parameters,
+        "total_parameters": total_parameters,
+        "trainable_ratio": (
+            trainable_parameters / total_parameters if total_parameters else 0.0
+        ),
+        "batch_shapes": first_batch_info["batch_shapes"],
+        "logits_shapes": first_batch_info["logits_shapes"],
         "train_loss": last_train_loss,
         "valid_loss": last_valid_loss,
         "detection_accuracy": best_metrics.get("detection_accuracy"),
@@ -266,11 +335,18 @@ def main():
         "checkpoint_path": str(best_checkpoint_path),
         "tokenizer_saved": tokenizer_save_dir.exists(),
         "tokenizer_path": str(tokenizer_save_dir),
-        "can_enter_next_stage_mlsmote": (
-            "yes, if this sanity run completes successfully on the server"
+        "can_enter_full_training": (
+            best_checkpoint_path.exists()
+            and last_train_loss is not None
+            and last_valid_loss is not None
         ),
+        "warnings": warnings,
     }
-    write_sanity_report(report_dir / "sanity_train_report.txt", sanity_report)
+    report_txt_path, report_json_path = get_sanity_report_paths(config, report_dir)
+    write_sanity_report(report_txt_path, sanity_report)
+    report_json_path.write_text(
+        json.dumps(sanity_report, indent=2), encoding="utf-8"
+    )
     (Path(config.get("result_dir", "results")) / "sanity_metrics.json").write_text(
         json.dumps(sanity_report, indent=2), encoding="utf-8"
     )

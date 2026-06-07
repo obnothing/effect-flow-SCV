@@ -5,7 +5,7 @@ CONFIG_PATH="${1:-configs/sanity_server.yaml}"
 
 echo "[INFO] current dir: $(pwd)"
 echo "[INFO] python: $(which python)"
-echo "[INFO] config: ${CONFIG_PATH}"
+echo "[INFO] using config: ${CONFIG_PATH}"
 echo "[INFO] checking GPU..."
 nvidia-smi || true
 
