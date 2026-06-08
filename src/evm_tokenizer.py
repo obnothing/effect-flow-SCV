@@ -49,6 +49,10 @@ def canonical_hex(value):
     return text
 
 
+def is_hex_literal(value):
+    return str(value).strip().lower().startswith("0x")
+
+
 def hex_byte_length(value):
     text = canonical_hex(value)
     if not re.fullmatch(r"0x[0-9a-f]*", text):
@@ -116,7 +120,7 @@ def tokenize_opcode_sequence(
             output_tokens.append(upper_token)
             if index + 1 < len(raw_tokens):
                 next_token = raw_tokens[index + 1]
-                if canonical_hex(next_token).startswith("0x"):
+                if is_hex_literal(next_token):
                     output_tokens.append(
                         normalize_operand(
                             next_token,
@@ -129,7 +133,7 @@ def tokenize_opcode_sequence(
                     continue
         elif upper_token in MNEMONIC_TOKENS:
             output_tokens.append(upper_token)
-        elif canonical_hex(token).startswith("0x"):
+        elif is_hex_literal(token):
             output_tokens.append(
                 normalize_operand(
                     token,

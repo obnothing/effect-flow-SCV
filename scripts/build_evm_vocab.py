@@ -45,6 +45,38 @@ def load_config(path):
         return yaml.safe_load(f)
 
 
+def project_relative(path):
+    try:
+        return path.relative_to(PROJECT_ROOT).as_posix()
+    except ValueError:
+        return str(path)
+
+
+def get_vocab_build_path(config):
+    default_path = Path(config.get("data_dir", "data/processed/BJUT_SC01")) / "train.jsonl"
+    vocab_build_path = resolve_project_path(config.get("vocab_build_path", default_path))
+    forbidden_paths = {
+        "valid_path": resolve_project_path(config["valid_path"]),
+        "test_path": resolve_project_path(config["test_path"]),
+    }
+    for name, path in forbidden_paths.items():
+        if vocab_build_path.resolve() == path.resolve():
+            raise ValueError(
+                f"Refusing to build vocab from {name}: {project_relative(path)}. "
+                "Use train.jsonl only to avoid test-set-aware preprocessing."
+            )
+    train_mlsmote_path = resolve_project_path(config.get("train_path", ""))
+    if (
+        vocab_build_path.resolve() == train_mlsmote_path.resolve()
+        or vocab_build_path.name == "train_mlsmote.jsonl"
+    ) and not config.get("allow_oversampled_vocab", False):
+        raise ValueError(
+            "Refusing to build vocab from train_mlsmote.jsonl unless "
+            "allow_oversampled_vocab: true is explicitly set."
+        )
+    return vocab_build_path
+
+
 def iter_jsonl(path):
     with path.open("r", encoding="utf-8-sig") as f:
         for line_no, line in enumerate(f, start=1):
@@ -133,6 +165,7 @@ def write_vocab(path, token_to_id, preserved_operands, config):
         "normalize_rare_long_operands": config.get(
             "normalize_rare_long_operands", True
         ),
+        "vocab_build_path": config.get("vocab_build_path"),
         "add_jump_aware_tokens": False,
     }
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -150,6 +183,8 @@ def write_reports(report, txt_path, json_path):
         f"operand_count: {report['operand_count']}",
         f"preserved_operand_count: {report['preserved_operand_count']}",
         f"normalized_operand_count: {report['normalized_operand_count']}",
+        f"vocab_build_path: {report['vocab_build_path']}",
+        f"vocab_source_note: {report['vocab_source_note']}",
         "add_jump_aware_tokens: false",
         "",
         "Preserved common operands:",
@@ -170,18 +205,14 @@ def write_reports(report, txt_path, json_path):
 def main():
     args = parse_args()
     config = load_config(args.config)
-    paths = [
-        resolve_project_path(config["train_path"]),
-        resolve_project_path(config["valid_path"]),
-        resolve_project_path(config["test_path"]),
-    ]
+    vocab_build_path = get_vocab_build_path(config)
+    config["vocab_build_path"] = project_relative(vocab_build_path)
     mnemonic_counter = Counter()
     operand_counter = Counter()
     operand_lengths = Counter()
-    for path in paths:
-        print(f"[SCAN] {path}")
-        for opcode in iter_jsonl(path):
-            update_counts(opcode, mnemonic_counter, operand_counter, operand_lengths)
+    print(f"[SCAN] {vocab_build_path}")
+    for opcode in iter_jsonl(vocab_build_path):
+        update_counts(opcode, mnemonic_counter, operand_counter, operand_lengths)
 
     preserved_operands = select_preserved_operands(operand_counter, config)
     token_to_id = build_vocab(preserved_operands)
@@ -192,6 +223,11 @@ def main():
 
     report = {
         "vocab_size": len(token_to_id),
+        "vocab_build_path": project_relative(vocab_build_path),
+        "vocab_source_note": (
+            "Vocabulary is built from train.jsonl only to avoid "
+            "test-set-aware preprocessing."
+        ),
         "mnemonic_count": len(mnemonic_counter),
         "operand_count": len(operand_counter),
         "preserved_operand_count": len(preserved_operands),

@@ -1,5 +1,6 @@
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -7,6 +8,11 @@ import yaml
 from tqdm import tqdm
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SRC_DIR = PROJECT_ROOT / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+from evm_tokenizer import EVMOpcodeTokenizer  # noqa: E402
 
 
 def parse_args():
@@ -97,9 +103,32 @@ def estimate_evm_tokenized_length(opcode):
 
 def analyze_file(path):
     lengths = []
+    total_tokens = 0
+    unk_token_count = 0
+    samples_with_unk = 0
     for opcode in tqdm(iter_opcodes(path), desc=f"evm_lengths:{path.name}"):
-        lengths.append(estimate_evm_tokenized_length(opcode))
-    return summarize(lengths)
+        tokens = TOKENIZER.tokenize(opcode, add_special_tokens=True)
+        unk_count = sum(1 for token in tokens if token not in TOKENIZER.vocab)
+        lengths.append(len(tokens))
+        total_tokens += len(tokens)
+        unk_token_count += unk_count
+        if unk_count > 0:
+            samples_with_unk += 1
+    summary = summarize(lengths)
+    summary.update(
+        {
+            "unk_token_count": int(unk_token_count),
+            "total_token_count": int(total_tokens),
+            "unk_token_ratio": (
+                float(unk_token_count / total_tokens) if total_tokens else 0.0
+            ),
+            "samples_with_unk": int(samples_with_unk),
+            "samples_with_unk_ratio": (
+                float(samples_with_unk / len(lengths)) if lengths else 0.0
+            ),
+        }
+    )
+    return summary
 
 
 def write_reports(report):
@@ -124,6 +153,8 @@ def main():
         raise FileNotFoundError(
             f"EVM vocab not found: {vocab_path}. Run scripts/build_evm_vocab.py first."
         )
+    global TOKENIZER
+    TOKENIZER = EVMOpcodeTokenizer.from_vocab_file(vocab_path)
     split_paths = {
         "train": resolve_project_path(config["train_path"]),
         "valid": resolve_project_path(config["valid_path"]),

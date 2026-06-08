@@ -1,4 +1,5 @@
 data_dir: data/processed/BJUT_SC01
+vocab_build_path: data/processed/BJUT_SC01/train.jsonl
 train_path: data/processed/BJUT_SC01/train_mlsmote.jsonl
 valid_path: data/processed/BJUT_SC01/valid.jsonl
 test_path: data/processed/BJUT_SC01/test.jsonl
@@ -10,3 +11,4 @@ min_operand_freq: 5
 preserve_common_operands: true
 normalize_rare_long_operands: true
 add_jump_aware_tokens: false
+allow_oversampled_vocab: false
