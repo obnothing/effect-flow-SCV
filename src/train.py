@@ -1,6 +1,8 @@
 import argparse
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import numpy as np
 import torch
@@ -260,6 +262,22 @@ def write_epoch_history_report(path, history):
             "per_label_mean_pred_prob: "
             f"{[round(value, 6) for value in record['per_label_mean_pred_prob']]}"
         )
+        lines.append(
+            "per_label_accuracy: "
+            f"{[round(value, 6) for value in record['per_label_accuracy']]}"
+        )
+        lines.append(
+            "per_label_precision: "
+            f"{[round(value, 6) for value in record['per_label_precision']]}"
+        )
+        lines.append(
+            "per_label_recall: "
+            f"{[round(value, 6) for value in record['per_label_recall']]}"
+        )
+        lines.append(
+            "per_label_f1: "
+            f"{[round(value, 6) for value in record['per_label_f1']]}"
+        )
         for threshold, threshold_metrics in record["threshold_scan"].items():
             lines.append(
                 f"threshold={threshold}: "
@@ -337,9 +355,33 @@ def save_tokenizer_artifact(config, tokenizer, checkpoint_dir):
     return tokenizer_save_dir
 
 
+def maybe_plot_training_history(config, history_json_path):
+    if not history_json_path.exists():
+        return False
+    script_path = Path("scripts/plot_training_results.py")
+    if not script_path.exists():
+        return False
+    command = [
+        sys.executable,
+        str(script_path),
+        "--history",
+        str(history_json_path),
+        "--config",
+        config.get("_config_path", ""),
+    ]
+    try:
+        subprocess.run(command, check=True)
+        return True
+    except Exception as exc:
+        print(f"[WARN] failed to plot training history: {exc}")
+        print("[WARN] install matplotlib or run scripts/plot_training_results.py manually.")
+        return False
+
+
 def main():
     args = parse_args()
     config = normalize_training_config(load_config(args.config))
+    config["_config_path"] = args.config
     set_seed(config["seed"])
 
     device = get_device()
@@ -443,6 +485,18 @@ def main():
             "[INFO] per-label mean_pred_prob: "
             f"{[round(value, 6) for value in metrics['per_label_mean_pred_prob']]}"
         )
+        print(
+            "[INFO] per-label accuracy: "
+            f"{[round(value, 6) for value in metrics['per_label_accuracy']]}"
+        )
+        print(
+            "[INFO] per-label precision: "
+            f"{[round(value, 6) for value in metrics['per_label_precision']]}"
+        )
+        print(
+            "[INFO] per-label recall: "
+            f"{[round(value, 6) for value in metrics['per_label_recall']]}"
+        )
         for scan_threshold, scan_metrics in metrics["threshold_scan"].items():
             print(
                 f"[INFO] threshold={scan_threshold} "
@@ -493,6 +547,10 @@ def main():
                 "per_label_true_positive_count"
             ],
             "per_label_mean_pred_prob": metrics["per_label_mean_pred_prob"],
+            "per_label_accuracy": metrics["per_label_accuracy"],
+            "per_label_precision": metrics["per_label_precision"],
+            "per_label_recall": metrics["per_label_recall"],
+            "per_label_f1": metrics["per_label_f1"],
             "threshold_scan": metrics["threshold_scan"],
             "max_memory_allocated_mb": last_memory_stats[
                 "max_memory_allocated_mb"
@@ -624,6 +682,10 @@ def main():
             "per_label_true_positive_count"
         ),
         "per_label_mean_pred_prob": best_metrics.get("per_label_mean_pred_prob"),
+        "per_label_accuracy": best_metrics.get("per_label_accuracy"),
+        "per_label_precision": best_metrics.get("per_label_precision"),
+        "per_label_recall": best_metrics.get("per_label_recall"),
+        "per_label_f1": best_metrics.get("per_label_f1"),
         "threshold_scan": threshold_scan,
         "max_memory_allocated_mb": last_memory_stats.get("max_memory_allocated_mb"),
         "max_memory_reserved_mb": last_memory_stats.get("max_memory_reserved_mb"),
@@ -634,6 +696,7 @@ def main():
         "epoch_history_saved": history_txt_path.exists() and history_json_path.exists(),
         "epoch_history_txt_path": str(history_txt_path),
         "epoch_history_json_path": str(history_json_path),
+        "plots_generated": maybe_plot_training_history(config, history_json_path),
         "can_enter_full_training": (
             best_checkpoint_path.exists()
             and last_train_loss is not None

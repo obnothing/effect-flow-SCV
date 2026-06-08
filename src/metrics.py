@@ -31,6 +31,9 @@ def multilabel_metrics(logits, labels, threshold=0.5):
         2 * micro_precision * micro_recall, micro_precision + micro_recall
     )
 
+    per_label_accuracy = []
+    per_label_precision = []
+    per_label_recall = []
     per_label_f1 = []
     for label_idx in range(labels.shape[1]):
         label_preds = preds[:, label_idx]
@@ -38,15 +41,25 @@ def multilabel_metrics(logits, labels, threshold=0.5):
         label_tp = int(((label_preds == 1) & (label_targets == 1)).sum())
         label_fp = int(((label_preds == 1) & (label_targets == 0)).sum())
         label_fn = int(((label_preds == 0) & (label_targets == 1)).sum())
+        label_tn = int(((label_preds == 0) & (label_targets == 0)).sum())
+        accuracy = safe_divide(label_tp + label_tn, len(label_targets))
         precision = safe_divide(label_tp, label_tp + label_fp)
         recall = safe_divide(label_tp, label_tp + label_fn)
-        per_label_f1.append(safe_divide(2 * precision * recall, precision + recall))
+        f1 = safe_divide(2 * precision * recall, precision + recall)
+        per_label_accuracy.append(accuracy)
+        per_label_precision.append(precision)
+        per_label_recall.append(recall)
+        per_label_f1.append(f1)
 
     return {
         "micro_precision": micro_precision,
         "micro_recall": micro_recall,
         "micro_f1": micro_f1,
         "macro_f1": float(np.mean(per_label_f1)) if per_label_f1 else 0.0,
+        "per_label_accuracy": [float(value) for value in per_label_accuracy],
+        "per_label_precision": [float(value) for value in per_label_precision],
+        "per_label_recall": [float(value) for value in per_label_recall],
+        "per_label_f1": [float(value) for value in per_label_f1],
     }
 
 
@@ -96,6 +109,10 @@ def compute_metrics(
         ),
         "recognition_micro_f1": multi["micro_f1"],
         "recognition_macro_f1": multi["macro_f1"],
+        "per_label_accuracy": multi["per_label_accuracy"],
+        "per_label_precision": multi["per_label_precision"],
+        "per_label_recall": multi["per_label_recall"],
+        "per_label_f1": multi["per_label_f1"],
     }
     metrics.update(
         prediction_distribution(recognition_logits, multi_labels, threshold=threshold)
