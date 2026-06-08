@@ -223,15 +223,79 @@ def write_sanity_report(path, report):
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def get_sanity_report_paths(config, report_dir):
+def write_epoch_history_report(path, history):
+    ensure_dir(path.parent)
+    lines = ["CorrelaScan epoch history", ""]
+    for record in history:
+        lines.append(
+            "epoch "
+            f"{record['epoch']}/{record['total_epochs']} "
+            f"train_loss={record['train_loss']:.6f} "
+            f"valid_loss={record['valid_loss']:.6f} "
+            f"is_best={record['is_best']} "
+            f"best_epoch={record['best_epoch']} "
+            f"patience_counter={record['patience_counter']}"
+        )
+        lines.append(
+            "metrics: "
+            f"detection_accuracy={record['detection_accuracy']:.6f} "
+            f"recognition_micro_f1={record['recognition_micro_f1']:.6f} "
+            f"recognition_macro_f1={record['recognition_macro_f1']:.6f} "
+            f"predicted_positive_total={record['predicted_positive_total']}"
+        )
+        lines.append(
+            "memory_mb: "
+            f"allocated={record['max_memory_allocated_mb']:.2f} "
+            f"reserved={record['max_memory_reserved_mb']:.2f}"
+        )
+        lines.append(
+            "per_label_predicted_positive_count: "
+            f"{record['per_label_predicted_positive_count']}"
+        )
+        lines.append(
+            "per_label_true_positive_count: "
+            f"{record['per_label_true_positive_count']}"
+        )
+        lines.append(
+            "per_label_mean_pred_prob: "
+            f"{[round(value, 6) for value in record['per_label_mean_pred_prob']]}"
+        )
+        for threshold, threshold_metrics in record["threshold_scan"].items():
+            lines.append(
+                f"threshold={threshold}: "
+                f"micro_f1={threshold_metrics['micro_f1']:.6f} "
+                f"macro_f1={threshold_metrics['macro_f1']:.6f} "
+                "predicted_positive_total="
+                f"{threshold_metrics['predicted_positive_total']}"
+            )
+        lines.append("")
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def get_report_stem(config):
     checkpoint_name = Path(config["checkpoint_dir"]).name
     if checkpoint_name == "sanity":
-        report_stem = "sanity_train_report"
-    elif checkpoint_name.startswith("sanity_"):
-        report_stem = f"{checkpoint_name}_report"
-    else:
-        report_stem = f"{checkpoint_name}_report"
+        return "sanity_train_report"
+    if checkpoint_name.startswith("sanity_"):
+        return f"{checkpoint_name}_report"
+    return f"{checkpoint_name}_report"
+
+
+def get_sanity_report_paths(config, report_dir):
+    report_stem = get_report_stem(config)
     return report_dir / f"{report_stem}.txt", report_dir / f"{report_stem}.json"
+
+
+def get_epoch_history_paths(config, report_dir):
+    report_stem = get_report_stem(config)
+    if report_stem.endswith("_report"):
+        history_stem = report_stem[: -len("_report")] + "_epoch_history"
+    else:
+        history_stem = f"{report_stem}_epoch_history"
+    return (
+        report_dir / f"{history_stem}.txt",
+        report_dir / f"{history_stem}.json",
+    )
 
 
 def build_training_components(config):
@@ -313,12 +377,15 @@ def main():
     ensure_dir(Path(config.get("result_dir", "results")))
     report_dir = Path(config.get("report_dir", "data/reports"))
     ensure_dir(report_dir)
+    history_txt_path, history_json_path = get_epoch_history_paths(config, report_dir)
 
     tokenizer_save_dir = save_tokenizer_artifact(config, tokenizer, checkpoint_dir)
 
     first_batch_info = inspect_first_batch(model, valid_loader, device)
     best_valid_loss = float("inf")
     best_metrics = {}
+    best_train_loss = None
+    best_epoch = None
     best_checkpoint_path = checkpoint_dir / "best.pt"
     threshold = float(config.get("threshold", 0.5))
     scan_thresholds = get_thresholds(config)
@@ -326,9 +393,13 @@ def main():
     gradient_accumulation_steps = int(config.get("gradient_accumulation_steps", 1))
     last_train_loss = None
     last_valid_loss = None
+    last_metrics = {}
     last_memory_stats = {}
     patience = config.get("early_stopping_patience")
     patience_counter = 0
+    epoch_history = []
+    early_stopped = False
+    stopped_epoch = None
 
     for epoch in range(1, config["epochs"] + 1):
         if torch.cuda.is_available():
@@ -347,6 +418,7 @@ def main():
         last_memory_stats = cuda_memory_stats()
         last_train_loss = train_loss
         last_valid_loss = valid_loss
+        last_metrics = metrics
         print(
             f"epoch {epoch}/{config['epochs']} "
             f"train_loss={train_loss:.6f} valid_loss={valid_loss:.6f} "
@@ -380,9 +452,12 @@ def main():
                 f"{scan_metrics['predicted_positive_total']}"
             )
 
-        if valid_loss < best_valid_loss:
+        is_best = valid_loss < best_valid_loss
+        if is_best:
             best_valid_loss = valid_loss
+            best_train_loss = train_loss
             best_metrics = metrics
+            best_epoch = epoch
             torch.save(
                 {
                     "epoch": epoch,
@@ -397,9 +472,49 @@ def main():
             patience_counter = 0
         else:
             patience_counter += 1
-            if patience is not None and patience_counter >= patience:
-                print(f"[INFO] early stopping at epoch {epoch}")
-                break
+
+        epoch_record = {
+            "epoch": epoch,
+            "total_epochs": config["epochs"],
+            "train_loss": train_loss,
+            "valid_loss": valid_loss,
+            "is_best": is_best,
+            "best_epoch": best_epoch,
+            "best_valid_loss": best_valid_loss,
+            "patience_counter": patience_counter,
+            "detection_accuracy": metrics["detection_accuracy"],
+            "recognition_micro_f1": metrics["recognition_micro_f1"],
+            "recognition_macro_f1": metrics["recognition_macro_f1"],
+            "predicted_positive_total": metrics["predicted_positive_total"],
+            "per_label_predicted_positive_count": metrics[
+                "per_label_predicted_positive_count"
+            ],
+            "per_label_true_positive_count": metrics[
+                "per_label_true_positive_count"
+            ],
+            "per_label_mean_pred_prob": metrics["per_label_mean_pred_prob"],
+            "threshold_scan": metrics["threshold_scan"],
+            "max_memory_allocated_mb": last_memory_stats[
+                "max_memory_allocated_mb"
+            ],
+            "max_memory_reserved_mb": last_memory_stats[
+                "max_memory_reserved_mb"
+            ],
+        }
+        epoch_history.append(epoch_record)
+        write_epoch_history_report(history_txt_path, epoch_history)
+        history_json_path.write_text(
+            json.dumps(epoch_history, indent=2), encoding="utf-8"
+        )
+        (
+            Path(config.get("result_dir", "results")) / "epoch_history.json"
+        ).write_text(json.dumps(epoch_history, indent=2), encoding="utf-8")
+
+        if not is_best and patience is not None and patience_counter >= patience:
+            early_stopped = True
+            stopped_epoch = epoch
+            print(f"[INFO] early stopping at epoch {epoch}")
+            break
 
     cuda_device_name = (
         torch.cuda.get_device_name(0)
@@ -456,6 +571,11 @@ def main():
         "vocab_size": len(tokenizer) if hasattr(tokenizer, "__len__") else None,
         "train_samples": len(datasets["train"]),
         "valid_samples": len(datasets["valid"]),
+        "completed_epochs": len(epoch_history),
+        "early_stopped": early_stopped,
+        "stopped_epoch": stopped_epoch,
+        "early_stopping_patience": patience,
+        "best_epoch": best_epoch,
         "use_mlsmote_train": config.get("use_mlsmote_train", False),
         "freeze_encoder": config.get("freeze_encoder", False),
         "max_len": config.get("max_len"),
@@ -485,8 +605,14 @@ def main():
         ),
         "batch_shapes": first_batch_info["batch_shapes"],
         "logits_shapes": first_batch_info["logits_shapes"],
-        "train_loss": last_train_loss,
-        "valid_loss": last_valid_loss,
+        "train_loss": best_train_loss,
+        "valid_loss": best_valid_loss,
+        "metric_source": "best_checkpoint_epoch",
+        "last_train_loss": last_train_loss,
+        "last_valid_loss": last_valid_loss,
+        "last_detection_accuracy": last_metrics.get("detection_accuracy"),
+        "last_recognition_micro_f1": last_metrics.get("recognition_micro_f1"),
+        "last_recognition_macro_f1": last_metrics.get("recognition_macro_f1"),
         "detection_accuracy": best_metrics.get("detection_accuracy"),
         "recognition_micro_f1": best_metrics.get("recognition_micro_f1"),
         "recognition_macro_f1": best_metrics.get("recognition_macro_f1"),
@@ -505,6 +631,9 @@ def main():
         "checkpoint_path": str(best_checkpoint_path),
         "tokenizer_saved": tokenizer_save_dir.exists(),
         "tokenizer_path": str(tokenizer_save_dir),
+        "epoch_history_saved": history_txt_path.exists() and history_json_path.exists(),
+        "epoch_history_txt_path": str(history_txt_path),
+        "epoch_history_json_path": str(history_json_path),
         "can_enter_full_training": (
             best_checkpoint_path.exists()
             and last_train_loss is not None
