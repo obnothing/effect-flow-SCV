@@ -1,0 +1,61 @@
+CorrelaScan epoch history
+
+epoch 1/10 train_loss=0.212958 valid_loss=0.965834 is_best=True best_epoch=1 patience_counter=0
+metrics: detection_accuracy=0.397634 recognition_micro_f1=0.085179 recognition_macro_f1=0.114854 predicted_positive_total=30978
+memory_mb: allocated=8060.66 reserved=9302.00
+per_label_predicted_positive_count: [180, 15043, 15406, 5, 0, 98, 79, 0, 4, 163]
+per_label_true_positive_count: [86, 1365, 1807, 77, 17, 84, 546, 63, 195, 542]
+per_label_mean_pred_prob: [0.242084, 0.498214, 0.525309, 0.158068, 0.030074, 0.132229, 0.045806, 0.009118, 0.021444, 0.046914]
+threshold=0.1: micro_f1=0.078112 macro_f1=0.113610 predicted_positive_total=99351
+threshold=0.2: micro_f1=0.075994 macro_f1=0.137661 predicted_positive_total=82777
+threshold=0.3: micro_f1=0.100080 macro_f1=0.163928 predicted_positive_total=48855
+threshold=0.4: micro_f1=0.083148 macro_f1=0.142708 predicted_positive_total=45706
+threshold=0.5: micro_f1=0.085179 macro_f1=0.114854 predicted_positive_total=30978
+
+epoch 2/10 train_loss=0.179273 valid_loss=0.641099 is_best=True best_epoch=2 patience_counter=0
+metrics: detection_accuracy=0.399015 recognition_micro_f1=0.151299 recognition_macro_f1=0.176221 predicted_positive_total=18232
+memory_mb: allocated=8060.66 reserved=9302.00
+per_label_predicted_positive_count: [142, 15051, 2400, 216, 0, 204, 35, 1, 1, 182]
+per_label_true_positive_count: [86, 1365, 1807, 77, 17, 84, 546, 63, 195, 542]
+per_label_mean_pred_prob: [0.093989, 0.37129, 0.343377, 0.07045, 0.01006, 0.065947, 0.040086, 0.002946, 0.008761, 0.049363]
+threshold=0.1: micro_f1=0.080195 macro_f1=0.119606 predicted_positive_total=92231
+threshold=0.2: micro_f1=0.144746 macro_f1=0.186410 predicted_positive_total=39461
+threshold=0.3: micro_f1=0.139256 macro_f1=0.225360 predicted_positive_total=33895
+threshold=0.4: micro_f1=0.118566 macro_f1=0.199059 predicted_positive_total=32615
+threshold=0.5: micro_f1=0.151299 macro_f1=0.176221 predicted_positive_total=18232
+
+epoch 3/10 train_loss=0.168608 valid_loss=0.287876 is_best=True best_epoch=3 patience_counter=0
+metrics: detection_accuracy=0.937479 recognition_micro_f1=0.465343 recognition_macro_f1=0.275287 predicted_positive_total=3023
+memory_mb: allocated=8060.66 reserved=9302.00
+per_label_predicted_positive_count: [219, 674, 1539, 105, 4, 230, 92, 3, 26, 131]
+per_label_true_positive_count: [86, 1365, 1807, 77, 17, 84, 546, 63, 195, 542]
+per_label_mean_pred_prob: [0.020998, 0.183664, 0.128276, 0.011382, 0.003407, 0.018494, 0.021965, 0.004089, 0.010701, 0.027994]
+threshold=0.1: micro_f1=0.232165 macro_f1=0.254959 predicted_positive_total=28005
+threshold=0.2: micro_f1=0.246105 macro_f1=0.293719 predicted_positive_total=20443
+threshold=0.3: micro_f1=0.520798 macro_f1=0.336267 predicted_positive_total=5291
+threshold=0.4: micro_f1=0.503584 macro_f1=0.320770 predicted_positive_total=4146
+threshold=0.5: micro_f1=0.465343 macro_f1=0.275287 predicted_positive_total=3023
+
+epoch 4/10 train_loss=0.160401 valid_loss=0.580627 is_best=False best_epoch=3 patience_counter=1
+metrics: detection_accuracy=0.405733 recognition_micro_f1=0.464189 recognition_macro_f1=0.206708 predicted_positive_total=2241
+memory_mb: allocated=8060.66 reserved=9302.00
+per_label_predicted_positive_count: [29, 902, 1018, 16, 3, 0, 99, 3, 10, 161]
+per_label_true_positive_count: [86, 1365, 1807, 77, 17, 84, 546, 63, 195, 542]
+per_label_mean_pred_prob: [0.070499, 0.32389, 0.223107, 0.030978, 0.005454, 0.024835, 0.030372, 0.00234, 0.013654, 0.036288]
+threshold=0.1: micro_f1=0.124664 macro_f1=0.201082 predicted_positive_total=57032
+threshold=0.2: micro_f1=0.143631 macro_f1=0.239438 predicted_positive_total=38245
+threshold=0.3: micro_f1=0.142367 macro_f1=0.259126 predicted_positive_total=31069
+threshold=0.4: micro_f1=0.194145 macro_f1=0.238078 predicted_positive_total=16429
+threshold=0.5: micro_f1=0.464189 macro_f1=0.206708 predicted_positive_total=2241
+
+epoch 5/10 train_loss=0.153963 valid_loss=1.360530 is_best=False best_epoch=3 patience_counter=2
+metrics: detection_accuracy=0.285954 recognition_micro_f1=0.082813 recognition_macro_f1=0.157588 predicted_positive_total=46031
+memory_mb: allocated=8060.66 reserved=9302.00
+per_label_predicted_positive_count: [14340, 15244, 15778, 50, 5, 12, 310, 4, 23, 265]
+per_label_true_positive_count: [86, 1365, 1807, 77, 17, 84, 546, 63, 195, 542]
+per_label_mean_pred_prob: [0.300634, 0.511787, 0.493817, 0.066223, 0.044694, 0.074956, 0.068625, 0.003484, 0.008835, 0.035371]
+threshold=0.1: micro_f1=0.083859 macro_f1=0.154515 predicted_positive_total=90664
+threshold=0.2: micro_f1=0.116151 macro_f1=0.243413 predicted_positive_total=54348
+threshold=0.3: micro_f1=0.104441 macro_f1=0.242974 predicted_positive_total=52207
+threshold=0.4: micro_f1=0.098267 macro_f1=0.232848 predicted_positive_total=47504
+threshold=0.5: micro_f1=0.082813 macro_f1=0.157588 predicted_positive_total=46031

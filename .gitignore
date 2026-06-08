@@ -12,6 +12,7 @@ logs/
 results/
 *.pt
 *.pth
+output.log
 
 # Large datasets
 data/raw/BJUT_SC01/BJUT_SC01.zip

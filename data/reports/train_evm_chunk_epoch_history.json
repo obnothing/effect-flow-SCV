@@ -1,0 +1,397 @@
+[
+  {
+    "epoch": 1,
+    "total_epochs": 10,
+    "train_loss": 0.21295849055776533,
+    "valid_loss": 0.965833682389063,
+    "is_best": true,
+    "best_epoch": 1,
+    "best_valid_loss": 0.965833682389063,
+    "patience_counter": 0,
+    "detection_accuracy": 0.3976335336493599,
+    "recognition_micro_f1": 0.08517897091722594,
+    "recognition_macro_f1": 0.11485392261597285,
+    "predicted_positive_total": 30978,
+    "per_label_predicted_positive_count": [
+      180,
+      15043,
+      15406,
+      5,
+      0,
+      98,
+      79,
+      0,
+      4,
+      163
+    ],
+    "per_label_true_positive_count": [
+      86,
+      1365,
+      1807,
+      77,
+      17,
+      84,
+      546,
+      63,
+      195,
+      542
+    ],
+    "per_label_mean_pred_prob": [
+      0.24208417534828186,
+      0.4982135593891144,
+      0.5253088474273682,
+      0.15806762874126434,
+      0.030073577538132668,
+      0.13222940266132355,
+      0.045806411653757095,
+      0.009118224494159222,
+      0.021443631500005722,
+      0.04691449552774429
+    ],
+    "threshold_scan": {
+      "0.1": {
+        "micro_f1": 0.07811164568388503,
+        "macro_f1": 0.11361007106333991,
+        "predicted_positive_total": 99351
+      },
+      "0.2": {
+        "micro_f1": 0.0759944722986786,
+        "macro_f1": 0.1376605059498935,
+        "predicted_positive_total": 82777
+      },
+      "0.3": {
+        "micro_f1": 0.10008016854037324,
+        "macro_f1": 0.16392767549578102,
+        "predicted_positive_total": 48855
+      },
+      "0.4": {
+        "micro_f1": 0.08314847092378387,
+        "macro_f1": 0.14270833406746566,
+        "predicted_positive_total": 45706
+      },
+      "0.5": {
+        "micro_f1": 0.08517897091722594,
+        "macro_f1": 0.11485392261597285,
+        "predicted_positive_total": 30978
+      }
+    },
+    "max_memory_allocated_mb": 8060.6640625,
+    "max_memory_reserved_mb": 9302.0
+  },
+  {
+    "epoch": 2,
+    "total_epochs": 10,
+    "train_loss": 0.17927252533508647,
+    "valid_loss": 0.6410988857236142,
+    "is_best": true,
+    "best_epoch": 2,
+    "best_valid_loss": 0.6410988857236142,
+    "patience_counter": 0,
+    "detection_accuracy": 0.3990145944533612,
+    "recognition_micro_f1": 0.15129920917702266,
+    "recognition_macro_f1": 0.17622064023868697,
+    "predicted_positive_total": 18232,
+    "per_label_predicted_positive_count": [
+      142,
+      15051,
+      2400,
+      216,
+      0,
+      204,
+      35,
+      1,
+      1,
+      182
+    ],
+    "per_label_true_positive_count": [
+      86,
+      1365,
+      1807,
+      77,
+      17,
+      84,
+      546,
+      63,
+      195,
+      542
+    ],
+    "per_label_mean_pred_prob": [
+      0.09398926794528961,
+      0.371289998292923,
+      0.34337732195854187,
+      0.07045027613639832,
+      0.010060426779091358,
+      0.06594658643007278,
+      0.04008595272898674,
+      0.0029462368693202734,
+      0.00876053236424923,
+      0.04936335235834122
+    ],
+    "threshold_scan": {
+      "0.1": {
+        "micro_f1": 0.080195437724841,
+        "macro_f1": 0.11960639869842578,
+        "predicted_positive_total": 92231
+      },
+      "0.2": {
+        "micro_f1": 0.14474606152385686,
+        "macro_f1": 0.1864104177268286,
+        "predicted_positive_total": 39461
+      },
+      "0.3": {
+        "micro_f1": 0.1392558885125527,
+        "macro_f1": 0.22535957532443662,
+        "predicted_positive_total": 33895
+      },
+      "0.4": {
+        "micro_f1": 0.11856566034708667,
+        "macro_f1": 0.1990593833629643,
+        "predicted_positive_total": 32615
+      },
+      "0.5": {
+        "micro_f1": 0.15129920917702266,
+        "macro_f1": 0.17622064023868697,
+        "predicted_positive_total": 18232
+      }
+    },
+    "max_memory_allocated_mb": 8060.6640625,
+    "max_memory_reserved_mb": 9302.0
+  },
+  {
+    "epoch": 3,
+    "total_epochs": 10,
+    "train_loss": 0.1686077454521775,
+    "valid_loss": 0.28787617582987846,
+    "is_best": true,
+    "best_epoch": 3,
+    "best_valid_loss": 0.28787617582987846,
+    "patience_counter": 0,
+    "detection_accuracy": 0.9374790041431824,
+    "recognition_micro_f1": 0.46534272901985907,
+    "recognition_macro_f1": 0.27528725422945677,
+    "predicted_positive_total": 3023,
+    "per_label_predicted_positive_count": [
+      219,
+      674,
+      1539,
+      105,
+      4,
+      230,
+      92,
+      3,
+      26,
+      131
+    ],
+    "per_label_true_positive_count": [
+      86,
+      1365,
+      1807,
+      77,
+      17,
+      84,
+      546,
+      63,
+      195,
+      542
+    ],
+    "per_label_mean_pred_prob": [
+      0.02099834382534027,
+      0.18366359174251556,
+      0.1282755732536316,
+      0.011381934396922588,
+      0.0034071302507072687,
+      0.01849353313446045,
+      0.0219649076461792,
+      0.0040888674557209015,
+      0.010701089166104794,
+      0.027994198724627495
+    ],
+    "threshold_scan": {
+      "0.1": {
+        "micro_f1": 0.23216518742184405,
+        "macro_f1": 0.2549588780865506,
+        "predicted_positive_total": 28005
+      },
+      "0.2": {
+        "micro_f1": 0.24610505450941528,
+        "macro_f1": 0.2937191708049783,
+        "predicted_positive_total": 20443
+      },
+      "0.3": {
+        "micro_f1": 0.520798173334657,
+        "macro_f1": 0.3362669412635384,
+        "predicted_positive_total": 5291
+      },
+      "0.4": {
+        "micro_f1": 0.503584229390681,
+        "macro_f1": 0.32076977827209735,
+        "predicted_positive_total": 4146
+      },
+      "0.5": {
+        "micro_f1": 0.46534272901985907,
+        "macro_f1": 0.27528725422945677,
+        "predicted_positive_total": 3023
+      }
+    },
+    "max_memory_allocated_mb": 8060.6640625,
+    "max_memory_reserved_mb": 9302.0
+  },
+  {
+    "epoch": 4,
+    "total_epochs": 10,
+    "train_loss": 0.16040148615642658,
+    "valid_loss": 0.5806269512371758,
+    "is_best": false,
+    "best_epoch": 3,
+    "best_valid_loss": 0.28787617582987846,
+    "patience_counter": 1,
+    "detection_accuracy": 0.4057332686349894,
+    "recognition_micro_f1": 0.4641890929802079,
+    "recognition_macro_f1": 0.20670776460482285,
+    "predicted_positive_total": 2241,
+    "per_label_predicted_positive_count": [
+      29,
+      902,
+      1018,
+      16,
+      3,
+      0,
+      99,
+      3,
+      10,
+      161
+    ],
+    "per_label_true_positive_count": [
+      86,
+      1365,
+      1807,
+      77,
+      17,
+      84,
+      546,
+      63,
+      195,
+      542
+    ],
+    "per_label_mean_pred_prob": [
+      0.07049933820962906,
+      0.32388997077941895,
+      0.2231067717075348,
+      0.030977724120020866,
+      0.005453591234982014,
+      0.024834739044308662,
+      0.03037186712026596,
+      0.0023397239856421947,
+      0.013653917238116264,
+      0.03628770634531975
+    ],
+    "threshold_scan": {
+      "0.1": {
+        "micro_f1": 0.12466431552722684,
+        "macro_f1": 0.20108201559960742,
+        "predicted_positive_total": 57032
+      },
+      "0.2": {
+        "micro_f1": 0.14363074348664792,
+        "macro_f1": 0.23943847901373724,
+        "predicted_positive_total": 38245
+      },
+      "0.3": {
+        "micro_f1": 0.1423670190510725,
+        "macro_f1": 0.2591261814625099,
+        "predicted_positive_total": 31069
+      },
+      "0.4": {
+        "micro_f1": 0.19414454764037528,
+        "macro_f1": 0.2380779278083632,
+        "predicted_positive_total": 16429
+      },
+      "0.5": {
+        "micro_f1": 0.4641890929802079,
+        "macro_f1": 0.20670776460482285,
+        "predicted_positive_total": 2241
+      }
+    },
+    "max_memory_allocated_mb": 8060.6640625,
+    "max_memory_reserved_mb": 9302.0
+  },
+  {
+    "epoch": 5,
+    "total_epochs": 10,
+    "train_loss": 0.1539627452682558,
+    "valid_loss": 1.3605298429709773,
+    "is_best": false,
+    "best_epoch": 3,
+    "best_valid_loss": 0.28787617582987846,
+    "patience_counter": 2,
+    "detection_accuracy": 0.2859542383636296,
+    "recognition_micro_f1": 0.0828134532501525,
+    "recognition_macro_f1": 0.1575882270544168,
+    "predicted_positive_total": 46031,
+    "per_label_predicted_positive_count": [
+      14340,
+      15244,
+      15778,
+      50,
+      5,
+      12,
+      310,
+      4,
+      23,
+      265
+    ],
+    "per_label_true_positive_count": [
+      86,
+      1365,
+      1807,
+      77,
+      17,
+      84,
+      546,
+      63,
+      195,
+      542
+    ],
+    "per_label_mean_pred_prob": [
+      0.3006339371204376,
+      0.5117865800857544,
+      0.4938172996044159,
+      0.06622328609228134,
+      0.04469386488199234,
+      0.07495562732219696,
+      0.06862511485815048,
+      0.00348364538513124,
+      0.00883533526211977,
+      0.035371217876672745
+    ],
+    "threshold_scan": {
+      "0.1": {
+        "micro_f1": 0.08385893594283679,
+        "macro_f1": 0.1545145850060099,
+        "predicted_positive_total": 90664
+      },
+      "0.2": {
+        "micro_f1": 0.11615085405039743,
+        "macro_f1": 0.24341340603011066,
+        "predicted_positive_total": 54348
+      },
+      "0.3": {
+        "micro_f1": 0.10444120795241188,
+        "macro_f1": 0.2429744081085777,
+        "predicted_positive_total": 52207
+      },
+      "0.4": {
+        "micro_f1": 0.09826722258348315,
+        "macro_f1": 0.23284757385367474,
+        "predicted_positive_total": 47504
+      },
+      "0.5": {
+        "micro_f1": 0.0828134532501525,
+        "macro_f1": 0.1575882270544168,
+        "predicted_positive_total": 46031
+      }
+    },
+    "max_memory_allocated_mb": 8060.6640625,
+    "max_memory_reserved_mb": 9302.0
+  }
+]
