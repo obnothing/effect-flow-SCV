@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -426,6 +427,11 @@ def count_push_operand_pairs(opcode):
     return push_count, push_operand_count
 
 
+def opcode_hash(opcode):
+    normalized = " ".join(str(opcode).split())
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
 def split_indices(labels, seed):
     indices = np.arange(len(labels))
     try:
@@ -480,6 +486,53 @@ def split_indices(labels, seed):
         )
 
 
+def build_opcode_hash_groups(df, label_matrix, opcode_field, bytecode_field):
+    groups = {}
+    skipped = 0
+    for row_idx, row in tqdm(
+        df.iterrows(), total=len(df), desc="hash opcode groups"
+    ):
+        opcode, _ = make_opcode(row, opcode_field, bytecode_field)
+        if not opcode:
+            skipped += 1
+            continue
+        digest = opcode_hash(opcode)
+        if digest not in groups:
+            groups[digest] = {
+                "indices": [],
+                "labels": np.zeros(label_matrix.shape[1], dtype=int),
+            }
+        groups[digest]["indices"].append(int(row_idx))
+        groups[digest]["labels"] = np.maximum(
+            groups[digest]["labels"], label_matrix[row_idx]
+        )
+    return groups, skipped
+
+
+def split_opcode_hash_groups(groups, seed):
+    group_hashes = list(groups.keys())
+    group_labels = np.array(
+        [groups[group_hash]["labels"] for group_hash in group_hashes], dtype=int
+    )
+    train_group_idx, valid_group_idx, test_group_idx, split_method = split_indices(
+        group_labels, seed
+    )
+    split_lookup = {}
+    split_group_counts = {}
+    for split_name, group_indices in {
+        "train": train_group_idx,
+        "valid": valid_group_idx,
+        "test": test_group_idx,
+    }.items():
+        split_group_counts[split_name] = int(len(group_indices))
+        for group_pos in group_indices:
+            group_hash = group_hashes[int(group_pos)]
+            for row_idx in groups[group_hash]["indices"]:
+                split_lookup[int(row_idx)] = split_name
+    grouped_method = f"opcode_hash_grouped + {split_method}"
+    return split_lookup, grouped_method, split_group_counts
+
+
 def write_jsonl(path, records):
     with path.open("w", encoding="utf-8") as f:
         for record in records:
@@ -511,6 +564,12 @@ def build_report(summary, text_path, json_path):
         lines.append("")
         lines.append("Opcode operand stats:")
         for key, value in summary["opcode_operand_stats"].items():
+            lines.append(f"- {key}: {value}")
+
+    if summary.get("grouped_split_stats"):
+        lines.append("")
+        lines.append("Grouped split stats:")
+        for key, value in summary["grouped_split_stats"].items():
             lines.append(f"- {key}: {value}")
 
     lines.append("")
@@ -622,6 +681,7 @@ def main():
         "paper_table_ii_comparison": [],
         "split_method": None,
         "opcode_operand_stats": {},
+        "grouped_split_stats": {},
     }
 
     if missing_labels:
@@ -662,15 +722,24 @@ def main():
         print(f"[STOP] wrote report: {text_report.relative_to(PROJECT_ROOT)}")
         sys.exit(1)
 
-    train_idx, valid_idx, test_idx, split_method = split_indices(label_matrix, seed)
-    split_lookup = {}
-    for name, split_indices_for_name in {
-        "train": train_idx,
-        "valid": valid_idx,
-        "test": test_idx,
-    }.items():
-        for idx in split_indices_for_name:
-            split_lookup[int(idx)] = name
+    groups, grouped_split_skipped = build_opcode_hash_groups(
+        df, label_matrix, opcode_field, bytecode_field
+    )
+    if not groups:
+        summary["warnings"].append("No usable opcode hash groups for grouped split.")
+        build_report(summary, text_report, json_report)
+        print(f"[STOP] wrote report: {text_report.relative_to(PROJECT_ROOT)}")
+        sys.exit(1)
+    split_lookup, split_method, split_group_counts = split_opcode_hash_groups(
+        groups, seed
+    )
+    duplicate_groups = sum(1 for group in groups.values() if len(group["indices"]) > 1)
+    grouped_split_stats = {
+        "unique_opcode_hashes": len(groups),
+        "duplicate_opcode_hash_groups": duplicate_groups,
+        "grouped_split_skipped_samples": grouped_split_skipped,
+        "split_group_counts": split_group_counts,
+    }
 
     skipped = 0
     usable_samples = 0
@@ -755,6 +824,7 @@ def main():
             "skipped_samples": skipped,
             "opcode_source": opcode_source_counts,
             "opcode_operand_stats": opcode_operand_stats,
+            "grouped_split_stats": grouped_split_stats,
             "split_method": split_method,
             "splits": split_counts,
             "label_counts": {
