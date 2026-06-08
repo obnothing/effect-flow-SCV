@@ -1,11 +1,11 @@
 Tokenizer fragmentation report
 
 sample_count: 1000
-whitespace_opcode_token_count: {'mean': 1952.873, 'median': 1083.5, 'p90': 4074.0, 'max': 16320.0}
-codeberta_token_count: {'mean': 4052.932, 'median': 2260.0, 'p90': 8607.800000000001, 'max': 32963.0}
-evm_token_count: {'mean': 1954.873, 'median': 1085.5, 'p90': 4076.0, 'max': 16322.0}
-codeberta_fragmentation_ratio: {'mean': 2.112758502080437, 'median': 2.121638924455826, 'p90': 2.161131611316113, 'max': 2.6785714285714284}
-evm_tokenizer_ratio: {'mean': 1.002579451131605, 'median': 1.0018461155751839, 'p90': 1.0037593984962405, 'max': 1.08}
+whitespace_opcode_token_count: {'mean': 2395.245, 'median': 1217.5, 'p90': 5224.3, 'max': 19223.0}
+codeberta_token_count: {'mean': 6004.249, 'median': 3113.0, 'p90': 13064.1, 'max': 46330.0}
+evm_token_count: {'mean': 2397.245, 'median': 1219.5, 'p90': 5226.3, 'max': 19225.0}
+codeberta_fragmentation_ratio: {'mean': 2.562038496047669, 'median': 2.5597221640671344, 'p90': 2.6825396825396823, 'max': 4.095238095238095}
+evm_tokenizer_ratio: {'mean': 1.001977491725844, 'median': 1.0016430122385858, 'p90': 1.0030257186081695, 'max': 1.0952380952380953}
 
 Token examples:
 - PUSH1

@@ -1,7 +1,7 @@
 {
   "status": "ok",
-  "raw_data_dir": "data\\raw\\BJUT_SC01\\extracted",
-  "output_dir": "data\\processed\\BJUT_SC01",
+  "raw_data_dir": "data/raw/BJUT_SC01/extracted",
+  "output_dir": "data/processed/BJUT_SC01",
   "input_rows": 148384,
   "usable_samples": 148384,
   "skipped_samples": 0,
@@ -241,7 +241,13 @@
       "status": "OK"
     }
   ],
-  "split_method": "iterative-stratification",
+  "split_method": "sklearn train_test_split fallback: No module named 'iterstrat'",
+  "opcode_operand_stats": {
+    "push_instruction_count": 71568161,
+    "push_operand_count": 71568161,
+    "samples_with_push": 148384,
+    "samples_with_push_operands": 148384
+  },
   "label_mapping_assumptions": {
     "Unchecked call return value": {
       "paper_label": "Unchecked call return value",

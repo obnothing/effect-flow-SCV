@@ -1,15 +1,21 @@
 BJUT SC01 processed data report
 
 status: ok
-raw_data_dir: data\raw\BJUT_SC01\extracted
-output_dir: data\processed\BJUT_SC01
+raw_data_dir: data/raw/BJUT_SC01/extracted
+output_dir: data/processed/BJUT_SC01
 input_rows: 148384
 usable_samples: 148384
 skipped_samples: 0
 opcode_field: None
 bytecode_field: contractCode
 opcode_source: {'bytecode_converted': 148384}
-split_method: iterative-stratification
+split_method: sklearn train_test_split fallback: No module named 'iterstrat'
+
+Opcode operand stats:
+- push_instruction_count: 71568161
+- push_operand_count: 71568161
+- samples_with_push: 148384
+- samples_with_push_operands: 148384
 
 Label mapping:
 - Reentrancy: Reentrancy
