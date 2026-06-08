@@ -1,0 +1,48 @@
+model_type: evm_chunk
+tokenizer_type: evm
+vocab_path: data/processed/BJUT_SC01/evm_vocab.json
+
+data_dir: data/processed/BJUT_SC01
+checkpoint_dir: checkpoints/sanity_evm_chunk
+log_dir: logs
+result_dir: results/sanity_evm_chunk
+report_dir: data/reports
+
+num_labels: 10
+use_mlsmote_train: true
+
+chunk_size: 512
+chunk_stride: 512
+max_chunks: 8
+chunk_pooling: attention
+
+embedding_dim: 256
+encoder_type: bigru
+bigru_hidden_size: 256
+num_transformer_layers: 2
+num_attention_heads: 4
+dropout: 0.1
+
+batch_size: 8
+gradient_accumulation_steps: 1
+learning_rate: 1e-3
+epochs: 1
+seed: 42
+num_workers: 8
+threshold: 0.5
+gradient_clip_norm: 1.0
+
+debug_num_train_samples: 512
+debug_num_valid_samples: 128
+
+label_names:
+  - Reentrancy
+  - Contract contains unknown address
+  - Integer overflow or underflow
+  - Timestamp dependence
+  - DoS with failed call
+  - Assert violation
+  - Unchecked call return value
+  - Unsafe send
+  - Multiplication after division
+  - Extra gas consumption

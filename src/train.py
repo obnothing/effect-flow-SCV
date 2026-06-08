@@ -9,6 +9,8 @@ from tqdm import tqdm
 from transformers import AutoTokenizer
 
 from dataset import build_datasets
+from evm_dataset import build_evm_chunk_datasets
+from evm_model import EVMChunkCorrelaScan
 from metrics import compute_metrics
 from model import CorrelaScan
 from utils import ensure_dir, get_device, load_config, set_seed
@@ -43,8 +45,15 @@ def normalize_training_config(config):
         "debug_num_valid_samples",
         "early_stopping_patience",
         "gradient_accumulation_steps",
+        "chunk_size",
+        "chunk_stride",
+        "max_chunks",
+        "embedding_dim",
+        "bigru_hidden_size",
+        "num_transformer_layers",
+        "num_attention_heads",
     ]
-    float_keys = ["learning_rate", "threshold", "gradient_clip_norm"]
+    float_keys = ["learning_rate", "threshold", "gradient_clip_norm", "dropout"]
 
     for key in int_keys:
         if typed_config.get(key) is not None:
@@ -150,13 +159,13 @@ def inspect_first_batch(model, dataloader, device):
     batch = next(iter(dataloader))
     device_batch = move_batch_to_device(batch, device)
     outputs = model(**device_batch)
+    batch_shapes = {
+        key: list(value.shape)
+        for key, value in batch.items()
+        if hasattr(value, "shape")
+    }
     return {
-        "batch_shapes": {
-            "input_ids": list(batch["input_ids"].shape),
-            "attention_mask": list(batch["attention_mask"].shape),
-            "binary_label": list(batch["binary_label"].shape),
-            "multi_labels": list(batch["multi_labels"].shape),
-        },
+        "batch_shapes": batch_shapes,
         "logits_shapes": {
             "detection_logits": list(outputs["detection_logits"].shape),
             "recognition_logits": list(outputs["recognition_logits"].shape),
@@ -166,13 +175,15 @@ def inspect_first_batch(model, dataloader, device):
 
 def print_run_info(config, device, datasets, model):
     trainable, total = count_parameters(model)
+    model_type = config.get("model_type", "codebert")
     cuda_name = (
         torch.cuda.get_device_name(0)
         if torch.cuda.is_available()
         else "CPU"
     )
     lines = [
-        f"model_name: {config['model_name']}",
+        f"model_type: {model_type}",
+        f"model_name: {config.get('model_name')}",
         f"device: {device}",
         f"torch version: {torch.__version__}",
         f"cuda available: {torch.cuda.is_available()}",
@@ -184,7 +195,9 @@ def print_run_info(config, device, datasets, model):
         f"{config.get('gradient_accumulation_steps', 1)}",
         "effective_batch_size: "
         f"{config['batch_size'] * config.get('gradient_accumulation_steps', 1)}",
-        f"max_len: {config['max_len']}",
+        f"max_len: {config.get('max_len')}",
+        f"chunk_size: {config.get('chunk_size')}",
+        f"max_chunks: {config.get('max_chunks')}",
         f"freeze_encoder: {config.get('freeze_encoder', False)}",
         f"trainable parameters / total parameters: {trainable} / {total}",
     ]
@@ -221,20 +234,20 @@ def get_sanity_report_paths(config, report_dir):
     return report_dir / f"{report_stem}.txt", report_dir / f"{report_stem}.json"
 
 
-def main():
-    args = parse_args()
-    config = normalize_training_config(load_config(args.config))
-    set_seed(config["seed"])
+def build_training_components(config):
+    if config.get("model_type") == "evm_chunk":
+        datasets, tokenizer = build_evm_chunk_datasets(config)
+        model = EVMChunkCorrelaScan(
+            config,
+            vocab_size=len(tokenizer),
+            pad_token_id=tokenizer.pad_token_id,
+        )
+        return datasets, tokenizer, model
 
-    device = get_device()
-    local_files_only = config.get("local_files_only", True)
-    tokenizer_loaded = False
-    model_loaded = False
     tokenizer = AutoTokenizer.from_pretrained(
         config["model_name"],
-        local_files_only=local_files_only,
+        local_files_only=config.get("local_files_only", True),
     )
-    tokenizer_loaded = True
     datasets = build_datasets(
         config["data_dir"],
         tokenizer,
@@ -245,6 +258,31 @@ def main():
         seed=config.get("seed", 42),
         use_mlsmote_train=config.get("use_mlsmote_train", False),
     )
+    return datasets, tokenizer, CorrelaScan(config)
+
+
+def save_tokenizer_artifact(config, tokenizer, checkpoint_dir):
+    tokenizer_save_dir = checkpoint_dir / "tokenizer"
+    ensure_dir(tokenizer_save_dir)
+    if config.get("model_type") == "evm_chunk":
+        vocab_path = Path(config["vocab_path"])
+        target_path = tokenizer_save_dir / "evm_vocab.json"
+        target_path.write_text(vocab_path.read_text(encoding="utf-8"), encoding="utf-8")
+    else:
+        tokenizer.save_pretrained(tokenizer_save_dir)
+    return tokenizer_save_dir
+
+
+def main():
+    args = parse_args()
+    config = normalize_training_config(load_config(args.config))
+    set_seed(config["seed"])
+
+    device = get_device()
+    tokenizer_loaded = False
+    model_loaded = False
+    datasets, tokenizer, model = build_training_components(config)
+    tokenizer_loaded = True
 
     num_workers = int(config.get("num_workers", 0))
     train_loader = DataLoader(
@@ -260,7 +298,7 @@ def main():
         num_workers=num_workers,
     )
 
-    model = CorrelaScan(config).to(device)
+    model = model.to(device)
     model_loaded = True
     print_run_info(config, device, datasets, model)
     trainable_parameters, total_parameters = count_parameters(model)
@@ -276,8 +314,7 @@ def main():
     report_dir = Path(config.get("report_dir", "data/reports"))
     ensure_dir(report_dir)
 
-    tokenizer_save_dir = checkpoint_dir / "tokenizer"
-    tokenizer.save_pretrained(tokenizer_save_dir)
+    tokenizer_save_dir = save_tokenizer_artifact(config, tokenizer, checkpoint_dir)
 
     first_batch_info = inspect_first_batch(model, valid_loader, device)
     best_valid_loss = float("inf")
@@ -375,8 +412,22 @@ def main():
             "MLSMOTE-compatible text oversampling duplicates real opcode samples; "
             "it does not synthesize opcode sequences by linear interpolation."
         )
-    if config.get("freeze_encoder", False):
-        warnings.append("Encoder is frozen; this run checks classifier-head training only.")
+    if config.get("model_type") == "evm_chunk":
+        max_covered_tokens = config["chunk_size"] + config["chunk_stride"] * (
+            config["max_chunks"] - 1
+        )
+        warnings.append(
+            "EVM chunk baseline is trained from scratch with an EVM opcode-aware "
+            "vocabulary; it does not reuse CodeBERT pretrained embeddings."
+        )
+        warnings.append(
+            f"Each contract is capped at {max_covered_tokens} EVM tokenizer tokens; "
+            "longer contracts are truncated."
+        )
+    elif config.get("freeze_encoder", False):
+        warnings.append(
+            "Encoder is frozen; this run checks classifier-head training only."
+        )
     else:
         warnings.append("Encoder is unfrozen; monitor GPU memory and loss stability.")
     threshold_scan = best_metrics.get("threshold_scan", {})
@@ -393,14 +444,32 @@ def main():
         )
 
     sanity_report = {
-        "loaded_local_model": model_loaded,
+        "loaded_model": model_loaded,
+        "loaded_local_model": (
+            model_loaded if config.get("model_type") != "evm_chunk" else "not_applicable"
+        ),
         "loaded_tokenizer": tokenizer_loaded,
-        "model_name": config["model_name"],
+        "model_type": config.get("model_type", "codebert"),
+        "tokenizer_type": config.get("tokenizer_type", "transformers"),
+        "model_name": config.get("model_name"),
+        "vocab_path": config.get("vocab_path"),
+        "vocab_size": len(tokenizer) if hasattr(tokenizer, "__len__") else None,
         "train_samples": len(datasets["train"]),
         "valid_samples": len(datasets["valid"]),
         "use_mlsmote_train": config.get("use_mlsmote_train", False),
         "freeze_encoder": config.get("freeze_encoder", False),
-        "max_len": config["max_len"],
+        "max_len": config.get("max_len"),
+        "chunk_size": config.get("chunk_size"),
+        "chunk_stride": config.get("chunk_stride"),
+        "max_chunks": config.get("max_chunks"),
+        "max_covered_tokens": (
+            config["chunk_size"] + config["chunk_stride"] * (config["max_chunks"] - 1)
+            if config.get("model_type") == "evm_chunk"
+            else None
+        ),
+        "chunk_pooling": config.get("chunk_pooling"),
+        "encoder_type": config.get("encoder_type"),
+        "embedding_dim": config.get("embedding_dim"),
         "batch_size": config["batch_size"],
         "gradient_accumulation_steps": gradient_accumulation_steps,
         "effective_batch_size": config["batch_size"] * gradient_accumulation_steps,
@@ -438,6 +507,12 @@ def main():
         "tokenizer_path": str(tokenizer_save_dir),
         "can_enter_full_training": (
             best_checkpoint_path.exists()
+            and last_train_loss is not None
+            and last_valid_loss is not None
+        ),
+        "can_enter_full_evm_chunk_training": (
+            config.get("model_type") == "evm_chunk"
+            and best_checkpoint_path.exists()
             and last_train_loss is not None
             and last_valid_loss is not None
         ),
