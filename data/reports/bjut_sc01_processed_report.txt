@@ -9,13 +9,19 @@ skipped_samples: 0
 opcode_field: None
 bytecode_field: contractCode
 opcode_source: {'bytecode_converted': 148384}
-split_method: sklearn train_test_split fallback: No module named 'iterstrat'
+split_method: opcode_hash_grouped + iterative-stratification
 
 Opcode operand stats:
 - push_instruction_count: 71568161
 - push_operand_count: 71568161
 - samples_with_push: 148384
 - samples_with_push_operands: 148384
+
+Grouped split stats:
+- unique_opcode_hashes: 62841
+- duplicate_opcode_hash_groups: 3009
+- grouped_split_skipped_samples: 0
+- split_group_counts: {'train': 50272, 'valid': 6284, 'test': 6285}
 
 Label mapping:
 - Reentrancy: Reentrancy
@@ -34,9 +40,9 @@ Warnings:
 - Unchecked call return value: remapped from column 'Unchecked call return value' (actual count 666) to column 'Overpowered role' because it matches paper Table II expected count 7214.
 
 Splits:
-- train: 118707
-- valid: 14838
-- test: 14839
+- train: 104845
+- valid: 26791
+- test: 16748
 
 Label counts:
 - Reentrancy: 1422

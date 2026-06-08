@@ -13,7 +13,7 @@ set -e
 cd $SLURM_SUBMIT_DIR
 
 source ~/.bashrc
-conda activate correlascan
+conda activate correlascan_a40
 
 mkdir -p logs
 

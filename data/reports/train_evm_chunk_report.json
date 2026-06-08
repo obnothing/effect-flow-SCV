@@ -1,0 +1,147 @@
+{
+  "loaded_model": true,
+  "loaded_local_model": "not_applicable",
+  "loaded_tokenizer": true,
+  "model_type": "evm_chunk",
+  "tokenizer_type": "evm",
+  "model_name": null,
+  "vocab_path": "data/processed/BJUT_SC01/evm_vocab.json",
+  "vocab_size": 1161,
+  "train_samples": 107904,
+  "valid_samples": 26791,
+  "use_mlsmote_train": true,
+  "freeze_encoder": false,
+  "max_len": null,
+  "chunk_size": 512,
+  "chunk_stride": 512,
+  "max_chunks": 8,
+  "max_covered_tokens": 4096,
+  "chunk_pooling": "attention",
+  "encoder_type": "bigru",
+  "embedding_dim": 256,
+  "batch_size": 64,
+  "gradient_accumulation_steps": 1,
+  "effective_batch_size": 64,
+  "learning_rate": 0.001,
+  "device": "cuda",
+  "torch_version": "2.0.1+cu118",
+  "cuda_available": true,
+  "cuda_device_name": "NVIDIA A40",
+  "trainable_parameters": 1092876,
+  "total_parameters": 1092876,
+  "trainable_ratio": 1.0,
+  "batch_shapes": {
+    "input_ids": [
+      64,
+      8,
+      512
+    ],
+    "attention_mask": [
+      64,
+      8,
+      512
+    ],
+    "chunk_mask": [
+      64,
+      8
+    ],
+    "binary_label": [
+      64
+    ],
+    "multi_labels": [
+      64,
+      10
+    ]
+  },
+  "logits_shapes": {
+    "detection_logits": [
+      64
+    ],
+    "recognition_logits": [
+      64,
+      10
+    ]
+  },
+  "train_loss": 0.147708653767338,
+  "valid_loss": 0.7076993079557081,
+  "detection_accuracy": 0.9374790041431824,
+  "recognition_micro_f1": 0.46534272901985907,
+  "recognition_macro_f1": 0.27528725422945677,
+  "predicted_positive_total": 3023,
+  "per_label_predicted_positive_count": [
+    219,
+    674,
+    1539,
+    105,
+    4,
+    230,
+    92,
+    3,
+    26,
+    131
+  ],
+  "per_label_true_positive_count": [
+    86,
+    1365,
+    1807,
+    77,
+    17,
+    84,
+    546,
+    63,
+    195,
+    542
+  ],
+  "per_label_mean_pred_prob": [
+    0.02099834382534027,
+    0.18366359174251556,
+    0.1282755732536316,
+    0.011381934396922588,
+    0.0034071302507072687,
+    0.01849353313446045,
+    0.0219649076461792,
+    0.0040888674557209015,
+    0.010701089166104794,
+    0.027994198724627495
+  ],
+  "threshold_scan": {
+    "0.1": {
+      "micro_f1": 0.23216518742184405,
+      "macro_f1": 0.2549588780865506,
+      "predicted_positive_total": 28005
+    },
+    "0.2": {
+      "micro_f1": 0.24610505450941528,
+      "macro_f1": 0.2937191708049783,
+      "predicted_positive_total": 20443
+    },
+    "0.3": {
+      "micro_f1": 0.520798173334657,
+      "macro_f1": 0.3362669412635384,
+      "predicted_positive_total": 5291
+    },
+    "0.4": {
+      "micro_f1": 0.503584229390681,
+      "macro_f1": 0.32076977827209735,
+      "predicted_positive_total": 4146
+    },
+    "0.5": {
+      "micro_f1": 0.46534272901985907,
+      "macro_f1": 0.27528725422945677,
+      "predicted_positive_total": 3023
+    }
+  },
+  "max_memory_allocated_mb": 8060.6640625,
+  "max_memory_reserved_mb": 9302.0,
+  "checkpoint_saved": true,
+  "checkpoint_path": "checkpoints/train_evm_chunk/best.pt",
+  "tokenizer_saved": true,
+  "tokenizer_path": "checkpoints/train_evm_chunk/tokenizer",
+  "can_enter_full_training": true,
+  "can_enter_full_evm_chunk_training": true,
+  "warnings": [
+    "MLSMOTE-compatible text oversampling duplicates real opcode samples; it does not synthesize opcode sequences by linear interpolation.",
+    "EVM chunk baseline is trained from scratch with an EVM opcode-aware vocabulary; it does not reuse CodeBERT pretrained embeddings.",
+    "Each contract is capped at 4096 EVM tokenizer tokens; longer contracts are truncated."
+  ]
+}

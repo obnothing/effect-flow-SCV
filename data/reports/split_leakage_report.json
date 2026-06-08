@@ -1,0 +1,12 @@
+{
+  "train_samples": 104845,
+  "valid_samples": 26791,
+  "test_samples": 16748,
+  "train_valid_opcode_hash_overlap": 0,
+  "train_test_opcode_hash_overlap": 0,
+  "valid_test_opcode_hash_overlap": 0,
+  "train_valid_address_overlap": 0,
+  "train_test_address_overlap": 0,
+  "valid_test_address_overlap": 0,
+  "leakage_status": "ok"
+}
