@@ -1,12 +1,16 @@
 import argparse
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
 
 import numpy as np
 import torch
+import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader
+from torch.utils.data.distributed import DistributedSampler
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
@@ -32,6 +36,38 @@ def count_parameters(model):
     total = sum(param.numel() for param in model.parameters())
     trainable = sum(param.numel() for param in model.parameters() if param.requires_grad)
     return trainable, total
+
+
+def init_distributed():
+    if "LOCAL_RANK" not in os.environ:
+        return {
+            "enabled": False,
+            "rank": 0,
+            "local_rank": 0,
+            "world_size": 1,
+            "is_main": True,
+        }
+    local_rank = int(os.environ["LOCAL_RANK"])
+    rank = int(os.environ.get("RANK", 0))
+    world_size = int(os.environ.get("WORLD_SIZE", 1))
+    torch.cuda.set_device(local_rank)
+    dist.init_process_group(backend="nccl")
+    return {
+        "enabled": True,
+        "rank": rank,
+        "local_rank": local_rank,
+        "world_size": world_size,
+        "is_main": rank == 0,
+    }
+
+
+def cleanup_distributed(distributed):
+    if distributed["enabled"] and dist.is_initialized():
+        dist.destroy_process_group()
+
+
+def unwrap_model(model):
+    return model.module if hasattr(model, "module") else model
 
 
 def normalize_training_config(config):
@@ -82,12 +118,19 @@ def train_one_epoch(
     device,
     gradient_clip_norm=None,
     gradient_accumulation_steps=1,
+    show_progress=True,
 ):
     model.train()
     total_loss = 0.0
     optimizer.zero_grad(set_to_none=True)
 
-    for step, batch in enumerate(tqdm(dataloader, desc="train", leave=False), start=1):
+    progress = tqdm(
+        dataloader,
+        desc="train",
+        leave=False,
+        disable=not show_progress,
+    )
+    for step, batch in enumerate(progress, start=1):
         batch = move_batch_to_device(batch, device)
 
         outputs = model(**batch)
@@ -110,8 +153,17 @@ def train_one_epoch(
     return total_loss / max(len(dataloader), 1)
 
 
+def reduce_mean(value, device, distributed):
+    if not distributed["enabled"]:
+        return value
+    tensor = torch.tensor(float(value), device=device)
+    dist.all_reduce(tensor, op=dist.ReduceOp.SUM)
+    tensor /= distributed["world_size"]
+    return float(tensor.item())
+
+
 @torch.no_grad()
-def evaluate(model, dataloader, device, threshold, scan_thresholds):
+def evaluate(model, dataloader, device, threshold, scan_thresholds, show_progress=True):
     model.eval()
     total_loss = 0.0
     detection_logits = []
@@ -119,7 +171,12 @@ def evaluate(model, dataloader, device, threshold, scan_thresholds):
     recognition_logits = []
     multi_labels = []
 
-    for batch in tqdm(dataloader, desc="valid", leave=False):
+    for batch in tqdm(
+        dataloader,
+        desc="valid",
+        leave=False,
+        disable=not show_progress,
+    ):
         batch = move_batch_to_device(batch, device)
         outputs = model(**batch)
         total_loss += outputs["loss"].item()
@@ -175,7 +232,8 @@ def inspect_first_batch(model, dataloader, device):
     }
 
 
-def print_run_info(config, device, datasets, model):
+def print_run_info(config, device, datasets, model, distributed=None):
+    distributed = distributed or {"enabled": False, "world_size": 1}
     trainable, total = count_parameters(model)
     model_type = config.get("model_type", "codebert")
     cuda_name = (
@@ -195,8 +253,9 @@ def print_run_info(config, device, datasets, model):
         f"batch_size: {config['batch_size']}",
         "gradient_accumulation_steps: "
         f"{config.get('gradient_accumulation_steps', 1)}",
+        f"world_size: {distributed['world_size']}",
         "effective_batch_size: "
-        f"{config['batch_size'] * config.get('gradient_accumulation_steps', 1)}",
+        f"{config['batch_size'] * config.get('gradient_accumulation_steps', 1) * distributed['world_size']}",
         f"max_len: {config.get('max_len')}",
         f"chunk_size: {config.get('chunk_size')}",
         f"max_chunks: {config.get('max_chunks')}",
@@ -380,21 +439,38 @@ def maybe_plot_training_history(config, history_json_path):
 
 def main():
     args = parse_args()
+    distributed = init_distributed()
     config = normalize_training_config(load_config(args.config))
     config["_config_path"] = args.config
     set_seed(config["seed"])
 
-    device = get_device()
+    device = (
+        torch.device(f"cuda:{distributed['local_rank']}")
+        if distributed["enabled"]
+        else get_device()
+    )
     tokenizer_loaded = False
     model_loaded = False
     datasets, tokenizer, model = build_training_components(config)
     tokenizer_loaded = True
 
     num_workers = int(config.get("num_workers", 0))
+    train_sampler = (
+        DistributedSampler(
+            datasets["train"],
+            num_replicas=distributed["world_size"],
+            rank=distributed["rank"],
+            shuffle=True,
+            seed=config.get("seed", 42),
+        )
+        if distributed["enabled"]
+        else None
+    )
     train_loader = DataLoader(
         datasets["train"],
         batch_size=config["batch_size"],
-        shuffle=True,
+        shuffle=train_sampler is None,
+        sampler=train_sampler,
         num_workers=num_workers,
     )
     valid_loader = DataLoader(
@@ -405,8 +481,23 @@ def main():
     )
 
     model = model.to(device)
+    if distributed["enabled"]:
+        model = DistributedDataParallel(
+            model,
+            device_ids=[distributed["local_rank"]],
+            output_device=distributed["local_rank"],
+            find_unused_parameters=False,
+        )
     model_loaded = True
-    print_run_info(config, device, datasets, model)
+    if distributed["is_main"]:
+        print_run_info(config, device, datasets, model, distributed)
+        if distributed["enabled"]:
+            print(
+                "[INFO] distributed training: "
+                f"world_size={distributed['world_size']} "
+                f"rank={distributed['rank']} "
+                f"local_rank={distributed['local_rank']}"
+            )
     trainable_parameters, total_parameters = count_parameters(model)
     optimizer = torch.optim.AdamW(
         [param for param in model.parameters() if param.requires_grad],
@@ -421,9 +512,15 @@ def main():
     ensure_dir(report_dir)
     history_txt_path, history_json_path = get_epoch_history_paths(config, report_dir)
 
-    tokenizer_save_dir = save_tokenizer_artifact(config, tokenizer, checkpoint_dir)
+    tokenizer_save_dir = checkpoint_dir / "tokenizer"
+    if distributed["is_main"]:
+        tokenizer_save_dir = save_tokenizer_artifact(config, tokenizer, checkpoint_dir)
 
-    first_batch_info = inspect_first_batch(model, valid_loader, device)
+    first_batch_info = (
+        inspect_first_batch(unwrap_model(model), valid_loader, device)
+        if distributed["is_main"]
+        else {"batch_shapes": {}, "logits_shapes": {}}
+    )
     best_valid_loss = float("inf")
     best_metrics = {}
     best_train_loss = None
@@ -444,6 +541,8 @@ def main():
     stopped_epoch = None
 
     for epoch in range(1, config["epochs"] + 1):
+        if train_sampler is not None:
+            train_sampler.set_epoch(epoch)
         if torch.cuda.is_available():
             torch.cuda.reset_peak_memory_stats()
         train_loss = train_one_epoch(
@@ -453,125 +552,145 @@ def main():
             device,
             gradient_clip_norm=gradient_clip_norm,
             gradient_accumulation_steps=gradient_accumulation_steps,
+            show_progress=distributed["is_main"],
         )
-        valid_loss, metrics = evaluate(
-            model, valid_loader, device, threshold, scan_thresholds
-        )
+        train_loss = reduce_mean(train_loss, device, distributed)
         last_memory_stats = cuda_memory_stats()
         last_train_loss = train_loss
-        last_valid_loss = valid_loss
-        last_metrics = metrics
-        print(
-            f"epoch {epoch}/{config['epochs']} "
-            f"train_loss={train_loss:.6f} valid_loss={valid_loss:.6f} "
-            f"detection_accuracy={metrics['detection_accuracy']:.6f} "
-            f"recognition_micro_f1={metrics['recognition_micro_f1']:.6f} "
-            f"recognition_macro_f1={metrics['recognition_macro_f1']:.6f} "
-            f"predicted_positive_total={metrics['predicted_positive_total']} "
-            "max_memory_allocated_mb="
-            f"{last_memory_stats['max_memory_allocated_mb']:.2f} "
-            "max_memory_reserved_mb="
-            f"{last_memory_stats['max_memory_reserved_mb']:.2f}"
-        )
-        print(
-            "[INFO] per-label predicted_positive_count: "
-            f"{metrics['per_label_predicted_positive_count']}"
-        )
-        print(
-            "[INFO] per-label true_positive_count: "
-            f"{metrics['per_label_true_positive_count']}"
-        )
-        print(
-            "[INFO] per-label mean_pred_prob: "
-            f"{[round(value, 6) for value in metrics['per_label_mean_pred_prob']]}"
-        )
-        print(
-            "[INFO] per-label accuracy: "
-            f"{[round(value, 6) for value in metrics['per_label_accuracy']]}"
-        )
-        print(
-            "[INFO] per-label precision: "
-            f"{[round(value, 6) for value in metrics['per_label_precision']]}"
-        )
-        print(
-            "[INFO] per-label recall: "
-            f"{[round(value, 6) for value in metrics['per_label_recall']]}"
-        )
-        for scan_threshold, scan_metrics in metrics["threshold_scan"].items():
+
+        should_stop = False
+        if distributed["is_main"]:
+            valid_loss, metrics = evaluate(
+                unwrap_model(model),
+                valid_loader,
+                device,
+                threshold,
+                scan_thresholds,
+            )
+            last_valid_loss = valid_loss
+            last_metrics = metrics
             print(
-                f"[INFO] threshold={scan_threshold} "
-                f"micro_f1={scan_metrics['micro_f1']:.6f} "
-                f"macro_f1={scan_metrics['macro_f1']:.6f} "
-                "predicted_positive_total="
-                f"{scan_metrics['predicted_positive_total']}"
+                f"epoch {epoch}/{config['epochs']} "
+                f"train_loss={train_loss:.6f} valid_loss={valid_loss:.6f} "
+                f"detection_accuracy={metrics['detection_accuracy']:.6f} "
+                f"recognition_micro_f1={metrics['recognition_micro_f1']:.6f} "
+                f"recognition_macro_f1={metrics['recognition_macro_f1']:.6f} "
+                f"predicted_positive_total={metrics['predicted_positive_total']} "
+                "max_memory_allocated_mb="
+                f"{last_memory_stats['max_memory_allocated_mb']:.2f} "
+                "max_memory_reserved_mb="
+                f"{last_memory_stats['max_memory_reserved_mb']:.2f}"
             )
-
-        is_best = valid_loss < best_valid_loss
-        if is_best:
-            best_valid_loss = valid_loss
-            best_train_loss = train_loss
-            best_metrics = metrics
-            best_epoch = epoch
-            torch.save(
-                {
-                    "epoch": epoch,
-                    "model_state_dict": model.state_dict(),
-                    "optimizer_state_dict": optimizer.state_dict(),
-                    "valid_loss": valid_loss,
-                    "metrics": metrics,
-                    "config": config,
-                },
-                best_checkpoint_path,
+            print(
+                "[INFO] per-label predicted_positive_count: "
+                f"{metrics['per_label_predicted_positive_count']}"
             )
-            patience_counter = 0
-        else:
-            patience_counter += 1
+            print(
+                "[INFO] per-label true_positive_count: "
+                f"{metrics['per_label_true_positive_count']}"
+            )
+            print(
+                "[INFO] per-label mean_pred_prob: "
+                f"{[round(value, 6) for value in metrics['per_label_mean_pred_prob']]}"
+            )
+            print(
+                "[INFO] per-label accuracy: "
+                f"{[round(value, 6) for value in metrics['per_label_accuracy']]}"
+            )
+            print(
+                "[INFO] per-label precision: "
+                f"{[round(value, 6) for value in metrics['per_label_precision']]}"
+            )
+            print(
+                "[INFO] per-label recall: "
+                f"{[round(value, 6) for value in metrics['per_label_recall']]}"
+            )
+            for scan_threshold, scan_metrics in metrics["threshold_scan"].items():
+                print(
+                    f"[INFO] threshold={scan_threshold} "
+                    f"micro_f1={scan_metrics['micro_f1']:.6f} "
+                    f"macro_f1={scan_metrics['macro_f1']:.6f} "
+                    "predicted_positive_total="
+                    f"{scan_metrics['predicted_positive_total']}"
+                )
 
-        epoch_record = {
-            "epoch": epoch,
-            "total_epochs": config["epochs"],
-            "train_loss": train_loss,
-            "valid_loss": valid_loss,
-            "is_best": is_best,
-            "best_epoch": best_epoch,
-            "best_valid_loss": best_valid_loss,
-            "patience_counter": patience_counter,
-            "detection_accuracy": metrics["detection_accuracy"],
-            "recognition_micro_f1": metrics["recognition_micro_f1"],
-            "recognition_macro_f1": metrics["recognition_macro_f1"],
-            "predicted_positive_total": metrics["predicted_positive_total"],
-            "per_label_predicted_positive_count": metrics[
-                "per_label_predicted_positive_count"
-            ],
-            "per_label_true_positive_count": metrics[
-                "per_label_true_positive_count"
-            ],
-            "per_label_mean_pred_prob": metrics["per_label_mean_pred_prob"],
-            "per_label_accuracy": metrics["per_label_accuracy"],
-            "per_label_precision": metrics["per_label_precision"],
-            "per_label_recall": metrics["per_label_recall"],
-            "per_label_f1": metrics["per_label_f1"],
-            "threshold_scan": metrics["threshold_scan"],
-            "max_memory_allocated_mb": last_memory_stats[
-                "max_memory_allocated_mb"
-            ],
-            "max_memory_reserved_mb": last_memory_stats[
-                "max_memory_reserved_mb"
-            ],
-        }
-        epoch_history.append(epoch_record)
-        write_epoch_history_report(history_txt_path, epoch_history)
-        history_json_path.write_text(
-            json.dumps(epoch_history, indent=2), encoding="utf-8"
-        )
-        (
-            Path(config.get("result_dir", "results")) / "epoch_history.json"
-        ).write_text(json.dumps(epoch_history, indent=2), encoding="utf-8")
+            is_best = valid_loss < best_valid_loss
+            if is_best:
+                best_valid_loss = valid_loss
+                best_train_loss = train_loss
+                best_metrics = metrics
+                best_epoch = epoch
+                torch.save(
+                    {
+                        "epoch": epoch,
+                        "model_state_dict": unwrap_model(model).state_dict(),
+                        "optimizer_state_dict": optimizer.state_dict(),
+                        "valid_loss": valid_loss,
+                        "metrics": metrics,
+                        "config": config,
+                    },
+                    best_checkpoint_path,
+                )
+                patience_counter = 0
+            else:
+                patience_counter += 1
 
-        if not is_best and patience is not None and patience_counter >= patience:
-            early_stopped = True
-            stopped_epoch = epoch
-            print(f"[INFO] early stopping at epoch {epoch}")
+            epoch_record = {
+                "epoch": epoch,
+                "total_epochs": config["epochs"],
+                "train_loss": train_loss,
+                "valid_loss": valid_loss,
+                "is_best": is_best,
+                "best_epoch": best_epoch,
+                "best_valid_loss": best_valid_loss,
+                "patience_counter": patience_counter,
+                "detection_accuracy": metrics["detection_accuracy"],
+                "recognition_micro_f1": metrics["recognition_micro_f1"],
+                "recognition_macro_f1": metrics["recognition_macro_f1"],
+                "predicted_positive_total": metrics["predicted_positive_total"],
+                "per_label_predicted_positive_count": metrics[
+                    "per_label_predicted_positive_count"
+                ],
+                "per_label_true_positive_count": metrics[
+                    "per_label_true_positive_count"
+                ],
+                "per_label_mean_pred_prob": metrics["per_label_mean_pred_prob"],
+                "per_label_accuracy": metrics["per_label_accuracy"],
+                "per_label_precision": metrics["per_label_precision"],
+                "per_label_recall": metrics["per_label_recall"],
+                "per_label_f1": metrics["per_label_f1"],
+                "threshold_scan": metrics["threshold_scan"],
+                "max_memory_allocated_mb": last_memory_stats[
+                    "max_memory_allocated_mb"
+                ],
+                "max_memory_reserved_mb": last_memory_stats[
+                    "max_memory_reserved_mb"
+                ],
+            }
+            epoch_history.append(epoch_record)
+            write_epoch_history_report(history_txt_path, epoch_history)
+            history_json_path.write_text(
+                json.dumps(epoch_history, indent=2), encoding="utf-8"
+            )
+            (
+                Path(config.get("result_dir", "results")) / "epoch_history.json"
+            ).write_text(json.dumps(epoch_history, indent=2), encoding="utf-8")
+
+            if not is_best and patience is not None and patience_counter >= patience:
+                early_stopped = True
+                stopped_epoch = epoch
+                should_stop = True
+                print(f"[INFO] early stopping at epoch {epoch}")
+
+        if distributed["enabled"]:
+            stop_tensor = torch.tensor(
+                1 if should_stop else 0,
+                device=device,
+                dtype=torch.int,
+            )
+            dist.broadcast(stop_tensor, src=0)
+            should_stop = bool(stop_tensor.item())
+        if should_stop:
             break
 
     cuda_device_name = (
@@ -579,6 +698,10 @@ def main():
         if torch.cuda.is_available()
         else "CPU"
     )
+    if not distributed["is_main"]:
+        cleanup_distributed(distributed)
+        return
+
     warnings = []
     if config.get("use_mlsmote_train", False):
         warnings.append(
@@ -651,11 +774,18 @@ def main():
         "batch_size": config["batch_size"],
         "gradient_accumulation_steps": gradient_accumulation_steps,
         "effective_batch_size": config["batch_size"] * gradient_accumulation_steps,
+        "global_effective_batch_size": (
+            config["batch_size"]
+            * gradient_accumulation_steps
+            * distributed["world_size"]
+        ),
         "learning_rate": config["learning_rate"],
         "device": str(device),
         "torch_version": torch.__version__,
         "cuda_available": torch.cuda.is_available(),
         "cuda_device_name": cuda_device_name,
+        "distributed": distributed["enabled"],
+        "world_size": distributed["world_size"],
         "trainable_parameters": trainable_parameters,
         "total_parameters": total_parameters,
         "trainable_ratio": (
@@ -718,6 +848,7 @@ def main():
     (Path(config.get("result_dir", "results")) / "sanity_metrics.json").write_text(
         json.dumps(sanity_report, indent=2), encoding="utf-8"
     )
+    cleanup_distributed(distributed)
 
 
 if __name__ == "__main__":
