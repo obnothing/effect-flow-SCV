@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=evm_chunk_train
-#SBATCH --partition=gpu-a40
+#SBATCH --partition=gpu-a30
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=1

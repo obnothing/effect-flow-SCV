@@ -9,6 +9,11 @@
   "vocab_size": 1161,
   "train_samples": 107904,
   "valid_samples": 26791,
+  "completed_epochs": 10,
+  "early_stopped": false,
+  "stopped_epoch": null,
+  "early_stopping_patience": null,
+  "best_epoch": 8,
   "use_mlsmote_train": true,
   "freeze_encoder": false,
   "max_len": null,
@@ -26,7 +31,7 @@
   "device": "cuda",
   "torch_version": "2.0.1+cu118",
   "cuda_available": true,
-  "cuda_device_name": "NVIDIA A40",
+  "cuda_device_name": "NVIDIA A30",
   "trainable_parameters": 1092876,
   "total_parameters": 1092876,
   "trainable_ratio": 1.0,
@@ -62,23 +67,29 @@
       10
     ]
   },
-  "train_loss": 0.147708653767338,
-  "valid_loss": 0.7076993079557081,
-  "detection_accuracy": 0.9374790041431824,
-  "recognition_micro_f1": 0.46534272901985907,
-  "recognition_macro_f1": 0.27528725422945677,
-  "predicted_positive_total": 3023,
+  "train_loss": 0.13913412641596892,
+  "valid_loss": 0.1296345893152476,
+  "metric_source": "best_checkpoint_epoch",
+  "last_train_loss": 0.13241036401118106,
+  "last_valid_loss": 0.9353065317827843,
+  "last_detection_accuracy": 0.4071516554066664,
+  "last_recognition_micro_f1": 0.12356375965341873,
+  "last_recognition_macro_f1": 0.25553713712203596,
+  "detection_accuracy": 0.9407263633309694,
+  "recognition_micro_f1": 0.5233050847457626,
+  "recognition_macro_f1": 0.2377845008641446,
+  "predicted_positive_total": 2770,
   "per_label_predicted_positive_count": [
-    219,
-    674,
-    1539,
-    105,
-    4,
-    230,
-    92,
+    11,
+    911,
+    1373,
+    6,
     3,
-    26,
-    131
+    8,
+    180,
+    6,
+    45,
+    227
   ],
   "per_label_true_positive_count": [
     86,
@@ -93,42 +104,90 @@
     542
   ],
   "per_label_mean_pred_prob": [
-    0.02099834382534027,
-    0.18366359174251556,
-    0.1282755732536316,
-    0.011381934396922588,
-    0.0034071302507072687,
-    0.01849353313446045,
-    0.0219649076461792,
-    0.0040888674557209015,
-    0.010701089166104794,
-    0.027994198724627495
+    0.009272598661482334,
+    0.07069140672683716,
+    0.08280552923679352,
+    0.006076912395656109,
+    0.001222596620209515,
+    0.007078553084284067,
+    0.021828046068549156,
+    0.001975149381905794,
+    0.006605879403650761,
+    0.02018255740404129
+  ],
+  "per_label_accuracy": [
+    0.9965286850061588,
+    0.9676757119928334,
+    0.9531932365346572,
+    0.9969019446829159,
+    0.9992534806464858,
+    0.996640662909186,
+    0.9820835355156582,
+    0.9977231159717815,
+    0.9932813258183718,
+    0.9823448172893883
+  ],
+  "per_label_precision": [
+    0.18181818181818182,
+    0.7738748627881449,
+    0.7013838310269482,
+    0.0,
+    0.0,
+    0.125,
+    0.6833333333333333,
+    0.6666666666666666,
+    0.6666666666666666,
+    0.6519823788546255
+  ],
+  "per_label_recall": [
+    0.023255813953488372,
+    0.5164835164835165,
+    0.5329275041505257,
+    0.0,
+    0.0,
+    0.011904761904761904,
+    0.22527472527472528,
+    0.06349206349206349,
+    0.15384615384615385,
+    0.2730627306273063
+  ],
+  "per_label_f1": [
+    0.04123711340206186,
+    0.6195079086115993,
+    0.6056603773584905,
+    0.0,
+    0.0,
+    0.021739130434782605,
+    0.3388429752066116,
+    0.11594202898550725,
+    0.25,
+    0.3849154746423927
   ],
   "threshold_scan": {
     "0.1": {
-      "micro_f1": 0.23216518742184405,
-      "macro_f1": 0.2549588780865506,
-      "predicted_positive_total": 28005
+      "micro_f1": 0.5031548951760635,
+      "macro_f1": 0.3470891024098722,
+      "predicted_positive_total": 9957
     },
     "0.2": {
-      "micro_f1": 0.24610505450941528,
-      "macro_f1": 0.2937191708049783,
-      "predicted_positive_total": 20443
+      "micro_f1": 0.5496648385131018,
+      "macro_f1": 0.36584093762222547,
+      "predicted_positive_total": 6705
     },
     "0.3": {
-      "micro_f1": 0.520798173334657,
-      "macro_f1": 0.3362669412635384,
-      "predicted_positive_total": 5291
+      "micro_f1": 0.5502315280853634,
+      "macro_f1": 0.36665265112666284,
+      "predicted_positive_total": 5152
     },
     "0.4": {
-      "micro_f1": 0.503584229390681,
-      "macro_f1": 0.32076977827209735,
-      "predicted_positive_total": 4146
+      "micro_f1": 0.5464749210803227,
+      "macro_f1": 0.314433000236249,
+      "predicted_positive_total": 3771
     },
     "0.5": {
-      "micro_f1": 0.46534272901985907,
-      "macro_f1": 0.27528725422945677,
-      "predicted_positive_total": 3023
+      "micro_f1": 0.5233050847457626,
+      "macro_f1": 0.2377845008641446,
+      "predicted_positive_total": 2770
     }
   },
   "max_memory_allocated_mb": 8060.6640625,
@@ -137,6 +196,10 @@
   "checkpoint_path": "checkpoints/train_evm_chunk/best.pt",
   "tokenizer_saved": true,
   "tokenizer_path": "checkpoints/train_evm_chunk/tokenizer",
+  "epoch_history_saved": true,
+  "epoch_history_txt_path": "data/reports/train_evm_chunk_epoch_history.txt",
+  "epoch_history_json_path": "data/reports/train_evm_chunk_epoch_history.json",
+  "plots_generated": false,
   "can_enter_full_training": true,
   "can_enter_full_evm_chunk_training": true,
   "warnings": [
