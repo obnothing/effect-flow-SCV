@@ -21,5 +21,17 @@ num_workers: 8
 threshold: 0.5
 thresholds: [0.1, 0.2, 0.3, 0.4, 0.5]
 gradient_clip_norm: 1.0
-early_stopping_patience: 3
+early_stopping_patience:
 local_files_only: true
+
+label_names:
+  - Reentrancy
+  - Contract contains unknown address
+  - Integer overflow or underflow
+  - Timestamp dependence
+  - DoS with failed call
+  - Assert violation
+  - Unchecked call return value
+  - Unsafe send
+  - Multiplication after division
+  - Extra gas consumption
