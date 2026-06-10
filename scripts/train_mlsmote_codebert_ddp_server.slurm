@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=codebert_mlsmote_ddp
-#SBATCH --partition=gpu-a40
+#SBATCH --partition=gpu-l20
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:2
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=24
+#SBATCH --cpus-per-task=16
 #SBATCH --output=logs/slurm_codebert_mlsmote_ddp_%j.out
 #SBATCH --error=logs/slurm_codebert_mlsmote_ddp_%j.err
 
