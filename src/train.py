@@ -550,7 +550,7 @@ def main():
             model,
             device_ids=[distributed["local_rank"]],
             output_device=distributed["local_rank"],
-            find_unused_parameters=False,
+            find_unused_parameters=config.get("ddp_find_unused_parameters", True),
         )
     model_loaded = True
     if distributed["is_main"]:
@@ -561,6 +561,10 @@ def main():
                 f"world_size={distributed['world_size']} "
                 f"rank={distributed['rank']} "
                 f"local_rank={distributed['local_rank']}"
+            )
+            print(
+                "[INFO] ddp_find_unused_parameters: "
+                f"{config.get('ddp_find_unused_parameters', True)}"
             )
     trainable_parameters, total_parameters = count_parameters(model)
     optimizer = torch.optim.AdamW(

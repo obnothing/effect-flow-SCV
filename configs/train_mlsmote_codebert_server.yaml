@@ -23,6 +23,7 @@ thresholds: [0.1, 0.2, 0.3, 0.4, 0.5]
 gradient_clip_norm: 1.0
 early_stopping_patience:
 local_files_only: true
+ddp_find_unused_parameters: true
 
 label_names:
   - Reentrancy
