@@ -17,6 +17,32 @@ def binary_detection_accuracy(logits, labels, threshold=0.5):
     return float((preds == labels).mean()) if labels.size > 0 else 0.0
 
 
+def binary_detection_metrics(logits, labels, threshold=0.5):
+    probs = sigmoid(logits)
+    preds = (probs >= threshold).astype(int)
+    labels = np.asarray(labels).astype(int)
+    tp = int(((preds == 1) & (labels == 1)).sum())
+    fp = int(((preds == 1) & (labels == 0)).sum())
+    fn = int(((preds == 0) & (labels == 1)).sum())
+    tn = int(((preds == 0) & (labels == 0)).sum())
+    precision = safe_divide(tp, tp + fp)
+    recall = safe_divide(tp, tp + fn)
+    f1 = safe_divide(2 * precision * recall, precision + recall)
+    accuracy = safe_divide(tp + tn, tp + fp + fn + tn)
+    return {
+        "detection_accuracy": accuracy,
+        "detection_precision": precision,
+        "detection_recall": recall,
+        "detection_f1": f1,
+        "detection_tp": tp,
+        "detection_fp": fp,
+        "detection_fn": fn,
+        "detection_tn": tn,
+        "detection_predicted_positive_count": int(preds.sum()),
+        "detection_true_positive_count": int(labels.sum()),
+    }
+
+
 def multilabel_metrics(logits, labels, threshold=0.5):
     probs = sigmoid(logits)
     preds = (probs >= threshold).astype(int)
@@ -55,11 +81,18 @@ def multilabel_metrics(logits, labels, threshold=0.5):
         "micro_precision": micro_precision,
         "micro_recall": micro_recall,
         "micro_f1": micro_f1,
+        "macro_precision": (
+            float(np.mean(per_label_precision)) if per_label_precision else 0.0
+        ),
+        "macro_recall": (
+            float(np.mean(per_label_recall)) if per_label_recall else 0.0
+        ),
         "macro_f1": float(np.mean(per_label_f1)) if per_label_f1 else 0.0,
         "per_label_accuracy": [float(value) for value in per_label_accuracy],
         "per_label_precision": [float(value) for value in per_label_precision],
         "per_label_recall": [float(value) for value in per_label_recall],
         "per_label_f1": [float(value) for value in per_label_f1],
+        "per_label_support": [int(value) for value in labels.sum(axis=0)],
     }
 
 
@@ -87,7 +120,11 @@ def threshold_scan(logits, labels, thresholds):
         multi = multilabel_metrics(logits, labels, threshold=threshold)
         dist = prediction_distribution(logits, labels, threshold=threshold)
         results[str(threshold)] = {
+            "micro_precision": multi["micro_precision"],
+            "micro_recall": multi["micro_recall"],
             "micro_f1": multi["micro_f1"],
+            "macro_precision": multi["macro_precision"],
+            "macro_recall": multi["macro_recall"],
             "macro_f1": multi["macro_f1"],
             "predicted_positive_total": dist["predicted_positive_total"],
         }
@@ -103,17 +140,23 @@ def compute_metrics(
     scan_thresholds=None,
 ):
     multi = multilabel_metrics(recognition_logits, multi_labels, threshold=threshold)
+    detection = binary_detection_metrics(
+        detection_logits, binary_labels, threshold=threshold
+    )
     metrics = {
-        "detection_accuracy": binary_detection_accuracy(
-            detection_logits, binary_labels, threshold=threshold
-        ),
         "recognition_micro_f1": multi["micro_f1"],
+        "recognition_micro_precision": multi["micro_precision"],
+        "recognition_micro_recall": multi["micro_recall"],
         "recognition_macro_f1": multi["macro_f1"],
+        "recognition_macro_precision": multi["macro_precision"],
+        "recognition_macro_recall": multi["macro_recall"],
         "per_label_accuracy": multi["per_label_accuracy"],
         "per_label_precision": multi["per_label_precision"],
         "per_label_recall": multi["per_label_recall"],
         "per_label_f1": multi["per_label_f1"],
+        "per_label_support": multi["per_label_support"],
     }
+    metrics.update(detection)
     metrics.update(
         prediction_distribution(recognition_logits, multi_labels, threshold=threshold)
     )

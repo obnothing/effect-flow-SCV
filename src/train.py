@@ -337,6 +337,19 @@ def write_epoch_history_report(path, history):
             "per_label_f1: "
             f"{[round(value, 6) for value in record['per_label_f1']]}"
         )
+        if "per_label_support" in record:
+            lines.append(
+                "per_label_support: "
+                f"{record['per_label_support']}"
+            )
+        if "best_threshold_by_micro_f1" in record:
+            lines.append(
+                "checkpoint_selection: "
+                f"best_threshold_by_micro_f1={record['best_threshold_by_micro_f1']} "
+                f"best_micro_f1={record['best_micro_f1']:.6f} "
+                f"best_threshold_by_macro_f1={record['best_threshold_by_macro_f1']} "
+                f"best_macro_f1={record['best_macro_f1']:.6f}"
+            )
         for threshold, threshold_metrics in record["threshold_scan"].items():
             lines.append(
                 f"threshold={threshold}: "
@@ -437,6 +450,57 @@ def maybe_plot_training_history(config, history_json_path):
         return False
 
 
+def best_threshold_from_scan(threshold_scan, metric_name):
+    if not threshold_scan:
+        return None, None
+    threshold, metrics = max(
+        threshold_scan.items(),
+        key=lambda item: item[1].get(metric_name, 0.0),
+    )
+    return float(threshold), metrics.get(metric_name, 0.0)
+
+
+def build_checkpoint_payload(
+    model,
+    optimizer,
+    epoch,
+    config,
+    valid_loss,
+    metrics,
+):
+    threshold_scan = metrics.get("threshold_scan", {})
+    best_micro_threshold, best_micro_f1 = best_threshold_from_scan(
+        threshold_scan, "micro_f1"
+    )
+    best_macro_threshold, best_macro_f1 = best_threshold_from_scan(
+        threshold_scan, "macro_f1"
+    )
+    return {
+        "epoch": epoch,
+        "model_state_dict": unwrap_model(model).state_dict(),
+        "optimizer_state_dict": optimizer.state_dict(),
+        "config": config,
+        "valid_loss": valid_loss,
+        "threshold_scan": threshold_scan,
+        "best_threshold_by_micro_f1": best_micro_threshold,
+        "best_threshold_by_macro_f1": best_macro_threshold,
+        "best_micro_f1": best_micro_f1,
+        "best_macro_f1": best_macro_f1,
+        "recognition_micro_f1": metrics.get("recognition_micro_f1"),
+        "recognition_macro_f1": metrics.get("recognition_macro_f1"),
+        "metrics": metrics,
+    }
+
+
+def write_checkpoint_summary(path_txt, path_json, summary):
+    ensure_dir(path_txt.parent)
+    lines = ["Checkpoint selection summary", ""]
+    for key, value in summary.items():
+        lines.append(f"{key}: {value}")
+    path_txt.write_text("\n".join(lines), encoding="utf-8")
+    path_json.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+
 def main():
     args = parse_args()
     distributed = init_distributed()
@@ -525,7 +589,17 @@ def main():
     best_metrics = {}
     best_train_loss = None
     best_epoch = None
-    best_checkpoint_path = checkpoint_dir / "best.pt"
+    best_loss_checkpoint_path = checkpoint_dir / "best_loss.pt"
+    best_micro_checkpoint_path = checkpoint_dir / "best_micro_f1.pt"
+    best_macro_checkpoint_path = checkpoint_dir / "best_macro_f1.pt"
+    last_checkpoint_path = checkpoint_dir / "last.pt"
+    legacy_best_checkpoint_path = checkpoint_dir / "best.pt"
+    best_micro_f1_value = -1.0
+    best_micro_f1_epoch = None
+    best_micro_f1_threshold = None
+    best_macro_f1_value = -1.0
+    best_macro_f1_epoch = None
+    best_macro_f1_threshold = None
     threshold = float(config.get("threshold", 0.5))
     scan_thresholds = get_thresholds(config)
     gradient_clip_norm = config.get("gradient_clip_norm")
@@ -605,6 +679,14 @@ def main():
                 "[INFO] per-label recall: "
                 f"{[round(value, 6) for value in metrics['per_label_recall']]}"
             )
+            print(
+                "[INFO] per-label f1: "
+                f"{[round(value, 6) for value in metrics['per_label_f1']]}"
+            )
+            print(
+                "[INFO] per-label support: "
+                f"{metrics['per_label_support']}"
+            )
             for scan_threshold, scan_metrics in metrics["threshold_scan"].items():
                 print(
                     f"[INFO] threshold={scan_threshold} "
@@ -614,35 +696,67 @@ def main():
                     f"{scan_metrics['predicted_positive_total']}"
                 )
 
-            is_best = valid_loss < best_valid_loss
-            if is_best:
+            checkpoint_payload = build_checkpoint_payload(
+                model=model,
+                optimizer=optimizer,
+                epoch=epoch,
+                config=config,
+                valid_loss=valid_loss,
+                metrics=metrics,
+            )
+            torch.save(checkpoint_payload, last_checkpoint_path)
+
+            scan_best_micro_threshold = checkpoint_payload[
+                "best_threshold_by_micro_f1"
+            ]
+            scan_best_micro_f1 = checkpoint_payload["best_micro_f1"]
+            scan_best_macro_threshold = checkpoint_payload[
+                "best_threshold_by_macro_f1"
+            ]
+            scan_best_macro_f1 = checkpoint_payload["best_macro_f1"]
+
+            is_best_loss = valid_loss < best_valid_loss
+            is_best_micro_f1 = scan_best_micro_f1 > best_micro_f1_value
+            is_best_macro_f1 = scan_best_macro_f1 > best_macro_f1_value
+
+            if is_best_loss:
                 best_valid_loss = valid_loss
                 best_train_loss = train_loss
                 best_metrics = metrics
                 best_epoch = epoch
-                torch.save(
-                    {
-                        "epoch": epoch,
-                        "model_state_dict": unwrap_model(model).state_dict(),
-                        "optimizer_state_dict": optimizer.state_dict(),
-                        "valid_loss": valid_loss,
-                        "metrics": metrics,
-                        "config": config,
-                    },
-                    best_checkpoint_path,
-                )
+                torch.save(checkpoint_payload, best_loss_checkpoint_path)
+                torch.save(checkpoint_payload, legacy_best_checkpoint_path)
                 patience_counter = 0
             else:
                 patience_counter += 1
+
+            if is_best_micro_f1:
+                best_micro_f1_value = scan_best_micro_f1
+                best_micro_f1_epoch = epoch
+                best_micro_f1_threshold = scan_best_micro_threshold
+                torch.save(checkpoint_payload, best_micro_checkpoint_path)
+
+            if is_best_macro_f1:
+                best_macro_f1_value = scan_best_macro_f1
+                best_macro_f1_epoch = epoch
+                best_macro_f1_threshold = scan_best_macro_threshold
+                torch.save(checkpoint_payload, best_macro_checkpoint_path)
 
             epoch_record = {
                 "epoch": epoch,
                 "total_epochs": config["epochs"],
                 "train_loss": train_loss,
                 "valid_loss": valid_loss,
-                "is_best": is_best,
+                "is_best": is_best_loss,
+                "is_best_loss": is_best_loss,
+                "is_best_micro_f1": is_best_micro_f1,
+                "is_best_macro_f1": is_best_macro_f1,
                 "best_epoch": best_epoch,
                 "best_valid_loss": best_valid_loss,
+                "best_threshold_by_micro_f1": scan_best_micro_threshold,
+                "best_micro_f1": scan_best_micro_f1,
+                "best_threshold_by_macro_f1": scan_best_macro_threshold,
+                "best_macro_f1": scan_best_macro_f1,
                 "patience_counter": patience_counter,
                 "detection_accuracy": metrics["detection_accuracy"],
                 "recognition_micro_f1": metrics["recognition_micro_f1"],
@@ -659,6 +773,7 @@ def main():
                 "per_label_precision": metrics["per_label_precision"],
                 "per_label_recall": metrics["per_label_recall"],
                 "per_label_f1": metrics["per_label_f1"],
+                "per_label_support": metrics["per_label_support"],
                 "threshold_scan": metrics["threshold_scan"],
                 "max_memory_allocated_mb": last_memory_stats[
                     "max_memory_allocated_mb"
@@ -676,7 +791,19 @@ def main():
                 Path(config.get("result_dir", "results")) / "epoch_history.json"
             ).write_text(json.dumps(epoch_history, indent=2), encoding="utf-8")
 
-            if not is_best and patience is not None and patience_counter >= patience:
+            print(
+                "[INFO] checkpoint selection: "
+                f"best_threshold_by_micro_f1={scan_best_micro_threshold} "
+                f"best_micro_f1={scan_best_micro_f1:.6f} "
+                f"best_threshold_by_macro_f1={scan_best_macro_threshold} "
+                f"best_macro_f1={scan_best_macro_f1:.6f}"
+            )
+
+            if (
+                not is_best_loss
+                and patience is not None
+                and patience_counter >= patience
+            ):
                 early_stopped = True
                 stopped_epoch = epoch
                 should_stop = True
@@ -739,6 +866,32 @@ def main():
             "non-zero F1; threshold=0.5 may be too high."
         )
 
+    result_dir = Path(config.get("result_dir", "results"))
+    ensure_dir(result_dir)
+    checkpoint_summary = {
+        "best_loss_epoch": best_epoch,
+        "best_loss_value": best_valid_loss,
+        "best_loss_checkpoint": str(best_loss_checkpoint_path),
+        "best_micro_f1_epoch": best_micro_f1_epoch,
+        "best_micro_f1_value": best_micro_f1_value,
+        "best_micro_f1_threshold": best_micro_f1_threshold,
+        "best_micro_f1_checkpoint": str(best_micro_checkpoint_path),
+        "best_macro_f1_epoch": best_macro_f1_epoch,
+        "best_macro_f1_value": best_macro_f1_value,
+        "best_macro_f1_threshold": best_macro_f1_threshold,
+        "best_macro_f1_checkpoint": str(best_macro_checkpoint_path),
+        "last_epoch": epoch_history[-1]["epoch"] if epoch_history else None,
+        "last_checkpoint": str(last_checkpoint_path),
+        "recommendation_for_test": (
+            "Use best_macro_f1.pt for macro-F1-oriented final evaluation."
+        ),
+    }
+    write_checkpoint_summary(
+        result_dir / "checkpoint_summary.txt",
+        result_dir / "checkpoint_summary.json",
+        checkpoint_summary,
+    )
+
     sanity_report = {
         "loaded_model": model_loaded,
         "loaded_local_model": (
@@ -757,6 +910,13 @@ def main():
         "stopped_epoch": stopped_epoch,
         "early_stopping_patience": patience,
         "best_epoch": best_epoch,
+        "best_loss_epoch": best_epoch,
+        "best_micro_f1_epoch": best_micro_f1_epoch,
+        "best_micro_f1_value": best_micro_f1_value,
+        "best_micro_f1_threshold": best_micro_f1_threshold,
+        "best_macro_f1_epoch": best_macro_f1_epoch,
+        "best_macro_f1_value": best_macro_f1_value,
+        "best_macro_f1_threshold": best_macro_f1_threshold,
         "use_mlsmote_train": config.get("use_mlsmote_train", False),
         "freeze_encoder": config.get("freeze_encoder", False),
         "max_len": config.get("max_len"),
@@ -799,10 +959,33 @@ def main():
         "last_train_loss": last_train_loss,
         "last_valid_loss": last_valid_loss,
         "last_detection_accuracy": last_metrics.get("detection_accuracy"),
+        "last_recognition_micro_precision": last_metrics.get(
+            "recognition_micro_precision"
+        ),
+        "last_recognition_micro_recall": last_metrics.get(
+            "recognition_micro_recall"
+        ),
         "last_recognition_micro_f1": last_metrics.get("recognition_micro_f1"),
+        "last_recognition_macro_precision": last_metrics.get(
+            "recognition_macro_precision"
+        ),
+        "last_recognition_macro_recall": last_metrics.get(
+            "recognition_macro_recall"
+        ),
         "last_recognition_macro_f1": last_metrics.get("recognition_macro_f1"),
         "detection_accuracy": best_metrics.get("detection_accuracy"),
+        "detection_precision": best_metrics.get("detection_precision"),
+        "detection_recall": best_metrics.get("detection_recall"),
+        "detection_f1": best_metrics.get("detection_f1"),
+        "recognition_micro_precision": best_metrics.get(
+            "recognition_micro_precision"
+        ),
+        "recognition_micro_recall": best_metrics.get("recognition_micro_recall"),
         "recognition_micro_f1": best_metrics.get("recognition_micro_f1"),
+        "recognition_macro_precision": best_metrics.get(
+            "recognition_macro_precision"
+        ),
+        "recognition_macro_recall": best_metrics.get("recognition_macro_recall"),
         "recognition_macro_f1": best_metrics.get("recognition_macro_f1"),
         "predicted_positive_total": best_metrics.get("predicted_positive_total"),
         "per_label_predicted_positive_count": best_metrics.get(
@@ -816,11 +999,21 @@ def main():
         "per_label_precision": best_metrics.get("per_label_precision"),
         "per_label_recall": best_metrics.get("per_label_recall"),
         "per_label_f1": best_metrics.get("per_label_f1"),
+        "per_label_support": best_metrics.get("per_label_support"),
         "threshold_scan": threshold_scan,
         "max_memory_allocated_mb": last_memory_stats.get("max_memory_allocated_mb"),
         "max_memory_reserved_mb": last_memory_stats.get("max_memory_reserved_mb"),
-        "checkpoint_saved": best_checkpoint_path.exists(),
-        "checkpoint_path": str(best_checkpoint_path),
+        "checkpoint_saved": best_loss_checkpoint_path.exists(),
+        "checkpoint_path": str(best_loss_checkpoint_path),
+        "best_loss_checkpoint_saved": best_loss_checkpoint_path.exists(),
+        "best_loss_checkpoint_path": str(best_loss_checkpoint_path),
+        "best_micro_f1_checkpoint_saved": best_micro_checkpoint_path.exists(),
+        "best_micro_f1_checkpoint_path": str(best_micro_checkpoint_path),
+        "best_macro_f1_checkpoint_saved": best_macro_checkpoint_path.exists(),
+        "best_macro_f1_checkpoint_path": str(best_macro_checkpoint_path),
+        "last_checkpoint_saved": last_checkpoint_path.exists(),
+        "last_checkpoint_path": str(last_checkpoint_path),
+        "checkpoint_summary_path": str(result_dir / "checkpoint_summary.json"),
         "tokenizer_saved": tokenizer_save_dir.exists(),
         "tokenizer_path": str(tokenizer_save_dir),
         "epoch_history_saved": history_txt_path.exists() and history_json_path.exists(),
@@ -828,13 +1021,13 @@ def main():
         "epoch_history_json_path": str(history_json_path),
         "plots_generated": maybe_plot_training_history(config, history_json_path),
         "can_enter_full_training": (
-            best_checkpoint_path.exists()
+            best_loss_checkpoint_path.exists()
             and last_train_loss is not None
             and last_valid_loss is not None
         ),
         "can_enter_full_evm_chunk_training": (
             config.get("model_type") == "evm_chunk"
-            and best_checkpoint_path.exists()
+            and best_loss_checkpoint_path.exists()
             and last_train_loss is not None
             and last_valid_loss is not None
         ),
