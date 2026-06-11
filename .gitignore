@@ -9,7 +9,10 @@ __pycache__/
 # Runtime outputs
 checkpoints/
 logs/
-results/
+results/*
+!results/**/
+!results/**/*.txt
+!results/**/*.json
 *.pt
 *.pth
 output.log
