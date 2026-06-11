@@ -1,0 +1,32 @@
+Strict evaluation report
+
+split: test
+checkpoint: checkpoints/train_mlsmote_codebert/best_macro_f1.pt
+checkpoint_epoch: 10
+threshold: 0.2
+threshold_source: checkpoint_best_threshold_by_macro_f1
+loss: 0.18940480411902302
+detection_accuracy: 0.9006448531167901
+detection_precision: 0.7030325443786982
+detection_recall: 0.6882693700217234
+detection_f1: 0.6955726308086353
+recognition_micro_precision: 0.5310531053105311
+recognition_micro_recall: 0.5779780564263323
+recognition_micro_f1: 0.5535228445445164
+recognition_macro_precision: 0.3952261608089016
+recognition_macro_recall: 0.48013219896807413
+recognition_macro_f1: 0.38995343982458774
+predicted_positive_total: 5555
+
+Per-label metrics:
+id | label | precision | recall | f1 | support | predicted | true | mean_prob
+0 | Reentrancy | 0.212766 | 0.674157 | 0.323450 | 89 | 282 | 89 | 0.009447
+1 | Contract contains unknown address | 0.640313 | 0.600936 | 0.620000 | 1496 | 1404 | 1496 | 0.061449
+2 | Integer overflow or underflow | 0.625372 | 0.694551 | 0.658149 | 1817 | 2018 | 1817 | 0.078831
+3 | Timestamp dependence | 0.218487 | 0.666667 | 0.329114 | 78 | 238 | 78 | 0.007977
+4 | DoS with failed call | 0.069767 | 0.176471 | 0.100000 | 17 | 43 | 17 | 0.002001
+5 | Assert violation | 0.217391 | 0.595238 | 0.318471 | 84 | 230 | 84 | 0.008366
+6 | Unchecked call return value | 0.454976 | 0.467532 | 0.461169 | 616 | 633 | 616 | 0.026372
+7 | Unsafe send | 0.611111 | 0.171875 | 0.268293 | 64 | 18 | 64 | 0.003632
+8 | Multiplication after division | 0.410714 | 0.361257 | 0.384401 | 191 | 168 | 191 | 0.009694
+9 | Extra gas consumption | 0.491363 | 0.392638 | 0.436488 | 652 | 521 | 652 | 0.021311

@@ -1,0 +1,16 @@
+Checkpoint selection summary
+
+best_loss_epoch: 7
+best_loss_value: 0.08929276427280639
+best_loss_checkpoint: checkpoints/train_mlsmote_codebert/best_loss.pt
+best_micro_f1_epoch: 10
+best_micro_f1_value: 0.5811821725845537
+best_micro_f1_threshold: 0.3
+best_micro_f1_checkpoint: checkpoints/train_mlsmote_codebert/best_micro_f1.pt
+best_macro_f1_epoch: 10
+best_macro_f1_value: 0.4212576202757127
+best_macro_f1_threshold: 0.2
+best_macro_f1_checkpoint: checkpoints/train_mlsmote_codebert/best_macro_f1.pt
+last_epoch: 10
+last_checkpoint: checkpoints/train_mlsmote_codebert/last.pt
+recommendation_for_test: Use best_macro_f1.pt for macro-F1-oriented final evaluation.
