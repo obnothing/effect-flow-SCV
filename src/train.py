@@ -101,6 +101,8 @@ def normalize_training_config(config):
         "max_pos_weight",
         "baseline_micro_f1",
         "baseline_macro_f1",
+        "vte_dropout",
+        "vte_temperature",
     ]
 
     for key in int_keys:
@@ -274,6 +276,10 @@ def print_run_info(config, device, datasets, model, distributed=None):
         f"pos_weight_mode: {config.get('pos_weight_mode')}",
         f"max_pos_weight: {config.get('max_pos_weight')}",
         f"apply_pos_weight_to: {config.get('apply_pos_weight_to')}",
+        f"use_vte: {config.get('use_vte', False)}",
+        f"vte_fusion: {config.get('vte_fusion')}",
+        f"vte_dropout: {config.get('vte_dropout')}",
+        f"vte_temperature: {config.get('vte_temperature')}",
         f"trainable parameters / total parameters: {trainable} / {total}",
     ]
     for line in lines:
@@ -642,6 +648,67 @@ def write_pos_weight_report(path_txt, path_json, report):
             lines.append(f"- {warning}")
     path_txt.write_text("\n".join(lines), encoding="utf-8")
     path_json.write_text(json.dumps(report, indent=2), encoding="utf-8")
+
+
+def write_vte_label_correlation_report(path_txt, path_json, model, config):
+    correlation = unwrap_model(model).get_vte_label_correlation()
+    if correlation is None:
+        return None
+
+    label_names = config.get("label_names") or [
+        f"label_{idx}" for idx in range(config["num_labels"])
+    ]
+    matrix = correlation.detach().cpu().numpy()
+    rows = []
+    for idx, label_name in enumerate(label_names):
+        ranked = sorted(
+            [
+                {
+                    "label_id": other_idx,
+                    "label_name": label_names[other_idx],
+                    "cosine": float(matrix[idx, other_idx]),
+                }
+                for other_idx in range(len(label_names))
+                if other_idx != idx
+            ],
+            key=lambda item: item["cosine"],
+            reverse=True,
+        )
+        rows.append(
+            {
+                "label_id": idx,
+                "label_name": label_name,
+                "top_correlated_labels": ranked[:3],
+            }
+        )
+
+    report = {
+        "source": "trainable_vulnerability_type_embedding",
+        "checkpoint_note": "Exported from the final in-memory model after training.",
+        "label_names": label_names,
+        "cosine_matrix": matrix.tolist(),
+        "top_correlated": rows,
+    }
+
+    ensure_dir(path_txt.parent)
+    lines = ["VTE label embedding cosine correlation report", ""]
+    lines.append("Cosine matrix:")
+    lines.append("label | " + " | ".join(label_names))
+    for idx, label_name in enumerate(label_names):
+        values = " | ".join(f"{matrix[idx, j]:.6f}" for j in range(len(label_names)))
+        lines.append(f"{label_name} | {values}")
+    lines.append("")
+    lines.append("Top correlated labels:")
+    for row in rows:
+        top_items = ", ".join(
+            f"{item['label_name']} ({item['cosine']:.4f})"
+            for item in row["top_correlated_labels"]
+        )
+        lines.append(f"{row['label_name']}: {top_items}")
+
+    path_txt.write_text("\n".join(lines), encoding="utf-8")
+    path_json.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    return report
 
 
 def maybe_apply_recognition_pos_weight(model, config, device, is_main=True):
@@ -1035,6 +1102,11 @@ def main():
         )
         if pos_weight_report is not None:
             warnings.extend(pos_weight_report.get("warnings", []))
+    if config.get("use_vte", False):
+        warnings.append(
+            "VTE is enabled: recognition logits use BiGRU features concatenated "
+            "with vulnerability-type label-attention context."
+        )
     if config.get("model_type") == "evm_chunk":
         max_covered_tokens = config["chunk_size"] + config["chunk_stride"] * (
             config["max_chunks"] - 1
@@ -1068,6 +1140,14 @@ def main():
 
     result_dir = Path(config.get("result_dir", "results"))
     ensure_dir(result_dir)
+    vte_correlation_report = None
+    if config.get("use_vte", False):
+        vte_correlation_report = write_vte_label_correlation_report(
+            result_dir / "vte_label_correlation.txt",
+            result_dir / "vte_label_correlation.json",
+            unwrap_model(model),
+            config,
+        )
     checkpoint_summary = {
         "best_loss_epoch": best_epoch,
         "best_loss_value": best_valid_loss,
@@ -1090,6 +1170,15 @@ def main():
         ),
         "pos_weight_report": (
             str(result_dir / "pos_weight.json") if pos_weight_report else None
+        ),
+        "use_vte": config.get("use_vte", False),
+        "vte_fusion": config.get("vte_fusion"),
+        "vte_dropout": config.get("vte_dropout"),
+        "vte_temperature": config.get("vte_temperature"),
+        "vte_label_correlation_report": (
+            str(result_dir / "vte_label_correlation.json")
+            if vte_correlation_report
+            else None
         ),
         "recommendation_for_test": (
             "Use best_macro_f1.pt for macro-F1-oriented final evaluation."
@@ -1135,6 +1224,15 @@ def main():
         ),
         "pos_weight_path": (
             str(result_dir / "pos_weight.json") if pos_weight_report else None
+        ),
+        "use_vte": config.get("use_vte", False),
+        "vte_fusion": config.get("vte_fusion"),
+        "vte_dropout": config.get("vte_dropout"),
+        "vte_temperature": config.get("vte_temperature"),
+        "vte_label_correlation_path": (
+            str(result_dir / "vte_label_correlation.json")
+            if vte_correlation_report
+            else None
         ),
         "use_mlsmote_train": config.get("use_mlsmote_train", False),
         "freeze_encoder": config.get("freeze_encoder", False),

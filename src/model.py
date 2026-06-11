@@ -18,6 +18,8 @@ class CorrelaScan(nn.Module):
 
         encoder_hidden_size = self.encoder.config.hidden_size
         bigru_hidden_size = config["bigru_hidden_size"]
+        self.use_vte = config.get("use_vte", False)
+        self.vte_fusion = config.get("vte_fusion", "concat")
 
         self.detection_bigru = nn.GRU(
             input_size=encoder_hidden_size,
@@ -33,13 +35,27 @@ class CorrelaScan(nn.Module):
         )
 
         self.detection_classifier = nn.Linear(bigru_hidden_size * 2, 1)
-        self.recognition_classifier = nn.Linear(bigru_hidden_size * 2, self.num_labels)
+        recognition_feature_size = bigru_hidden_size * 2
+        if self.use_vte:
+            if self.vte_fusion != "concat":
+                raise ValueError("Only vte_fusion=concat is currently supported.")
+            self.vte_label_embeddings = nn.Embedding(
+                self.num_labels,
+                encoder_hidden_size,
+            )
+            self.vte_layer_norm = nn.LayerNorm(encoder_hidden_size)
+            self.vte_dropout = nn.Dropout(float(config.get("vte_dropout", 0.1)))
+            self.vte_temperature = float(config.get("vte_temperature", 1.0))
+            recognition_feature_size += encoder_hidden_size
+
+        self.recognition_classifier = nn.Linear(
+            recognition_feature_size,
+            self.num_labels,
+        )
 
         self.detection_loss_fn = nn.BCEWithLogitsLoss()
         self.recognition_loss_fn = nn.BCEWithLogitsLoss()
         self.recognition_pos_weight = None
-
-        # TODO: add vulnerability type embedding module in stage 2.
 
     def set_recognition_pos_weight(self, pos_weight):
         self.recognition_pos_weight = pos_weight
@@ -49,6 +65,25 @@ class CorrelaScan(nn.Module):
         summed = (sequence_output * mask).sum(dim=1)
         denom = mask.sum(dim=1).clamp(min=1e-9)
         return summed / denom
+
+    def _vulnerability_type_context(self, sequence_output, attention_mask):
+        token_features = F.normalize(sequence_output, p=2, dim=-1)
+        label_features = F.normalize(self.vte_label_embeddings.weight, p=2, dim=-1)
+        similarity = torch.matmul(token_features, label_features.transpose(0, 1))
+        token_scores = similarity.max(dim=-1).values / max(self.vte_temperature, 1e-6)
+        token_scores = token_scores.masked_fill(attention_mask == 0, -1e4)
+        attention_weights = torch.softmax(token_scores, dim=1)
+        context = torch.bmm(
+            attention_weights.unsqueeze(1),
+            sequence_output,
+        ).squeeze(1)
+        return self.vte_layer_norm(context)
+
+    def get_vte_label_correlation(self):
+        if not self.use_vte:
+            return None
+        label_features = F.normalize(self.vte_label_embeddings.weight.detach(), p=2, dim=-1)
+        return torch.matmul(label_features, label_features.transpose(0, 1))
 
     def forward(
         self,
@@ -70,7 +105,17 @@ class CorrelaScan(nn.Module):
         recognition_pooled = self._masked_mean_pool(recognition_output, attention_mask)
 
         detection_logits = self.detection_classifier(detection_pooled).squeeze(-1)
-        recognition_logits = self.recognition_classifier(recognition_pooled)
+        recognition_features = recognition_pooled
+        if self.use_vte:
+            vte_context = self._vulnerability_type_context(
+                last_hidden_state,
+                attention_mask,
+            )
+            recognition_features = torch.cat(
+                [recognition_pooled, self.vte_dropout(vte_context)],
+                dim=-1,
+            )
+        recognition_logits = self.recognition_classifier(recognition_features)
 
         loss = None
         if binary_label is not None and multi_labels is not None:
