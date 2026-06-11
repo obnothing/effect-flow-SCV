@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=eval_weighted_plthr
-#SBATCH --partition=gpu-a40
+#SBATCH --partition=gpu-a30
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=24
+#SBATCH --cpus-per-task=12
 #SBATCH --output=logs/slurm_eval_weighted_plthr_%j.out
 #SBATCH --error=logs/slurm_eval_weighted_plthr_%j.err
 

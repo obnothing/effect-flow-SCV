@@ -1,0 +1,18 @@
+Validation-selected per-label thresholds
+
+checkpoint: checkpoints/train_mlsmote_codebert_weighted/best_macro_f1.pt
+checkpoint_epoch: 10
+split: valid
+global_threshold_fallback: 0.5
+
+label_name | support | best_threshold | valid_precision | valid_recall | valid_f1 | predicted_positive_count
+Reentrancy | 86 | 0.75 | 0.235521 | 0.709302 | 0.353623 | 259
+Contract contains unknown address | 1365 | 0.45 | 0.714286 | 0.648352 | 0.679724 | 1239
+Integer overflow or underflow | 1807 | 0.45 | 0.653005 | 0.661317 | 0.657135 | 1830
+Timestamp dependence | 77 | 0.65 | 0.233333 | 0.727273 | 0.353312 | 240
+DoS with failed call | 17 | 0.80 | 0.250000 | 0.235294 | 0.242424 | 16
+Assert violation | 84 | 0.30 | 0.226148 | 0.761905 | 0.348774 | 283
+Unchecked call return value | 546 | 0.55 | 0.609071 | 0.516484 | 0.558969 | 463
+Unsafe send | 63 | 0.30 | 0.403226 | 0.396825 | 0.400000 | 62
+Multiplication after division | 195 | 0.60 | 0.601449 | 0.425641 | 0.498498 | 138
+Extra gas consumption | 542 | 0.60 | 0.553776 | 0.446494 | 0.494382 | 437
