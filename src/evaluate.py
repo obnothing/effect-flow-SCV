@@ -19,7 +19,7 @@ from metrics import (
     sigmoid,
 )
 from model import CorrelaScan
-from train import normalize_training_config
+from train import maybe_apply_recognition_pos_weight, normalize_training_config
 from utils import ensure_dir, get_device, load_config, set_seed
 
 
@@ -256,6 +256,10 @@ def write_text_report(path, report):
         "recognition_macro_f1",
         "predicted_positive_total",
         "macro_f1_improvement_over_global_threshold",
+        "baseline_micro_f1",
+        "baseline_macro_f1",
+        "micro_f1_improvement_over_unweighted_baseline",
+        "macro_f1_improvement_over_unweighted_baseline",
     ]
     for key in scalar_keys:
         lines.append(f"{key}: {report.get(key)}")
@@ -282,6 +286,15 @@ def write_text_report(path, report):
         lines.append("Global threshold baseline:")
         for key, value in report["global_threshold_baseline"].items():
             lines.append(f"{key}: {value}")
+    if report.get("small_label_f1_changes"):
+        lines.append("")
+        lines.append("Small-label F1 changes vs unweighted baseline:")
+        lines.append("label | baseline_f1 | current_f1 | diff")
+        for row in report["small_label_f1_changes"]:
+            lines.append(
+                f"{row['label_name']} | {row['baseline_f1']:.6f} | "
+                f"{row['current_f1']:.6f} | {row['diff']:.6f}"
+            )
     if report.get("warnings"):
         lines.append("")
         lines.append("Warnings:")
@@ -321,6 +334,42 @@ def build_evaluation_warnings(metrics, expected_samples, evaluated_samples):
     return warnings
 
 
+def build_baseline_comparison(config, report):
+    comparison = {
+        "baseline_micro_f1": config.get("baseline_micro_f1"),
+        "baseline_macro_f1": config.get("baseline_macro_f1"),
+        "micro_f1_improvement_over_unweighted_baseline": None,
+        "macro_f1_improvement_over_unweighted_baseline": None,
+        "small_label_f1_changes": [],
+    }
+    if comparison["baseline_micro_f1"] is not None:
+        comparison["micro_f1_improvement_over_unweighted_baseline"] = (
+            report["recognition_micro_f1"] - comparison["baseline_micro_f1"]
+        )
+    if comparison["baseline_macro_f1"] is not None:
+        comparison["macro_f1_improvement_over_unweighted_baseline"] = (
+            report["recognition_macro_f1"] - comparison["baseline_macro_f1"]
+        )
+
+    baseline_per_label = config.get("baseline_per_label_f1", {}) or {}
+    small_label_names = config.get("small_label_names", []) or []
+    rows_by_name = {row["label_name"]: row for row in report["per_label"]}
+    for label_name in small_label_names:
+        if label_name not in baseline_per_label or label_name not in rows_by_name:
+            continue
+        baseline_f1 = float(baseline_per_label[label_name])
+        current_f1 = float(rows_by_name[label_name]["f1"])
+        comparison["small_label_f1_changes"].append(
+            {
+                "label_name": label_name,
+                "baseline_f1": baseline_f1,
+                "current_f1": current_f1,
+                "diff": current_f1 - baseline_f1,
+            }
+        )
+    return comparison
+
+
 def main():
     args = parse_args()
     config = normalize_training_config(load_config(args.config))
@@ -342,6 +391,7 @@ def main():
     device = get_device()
     model.load_state_dict(checkpoint["model_state_dict"])
     model = model.to(device)
+    maybe_apply_recognition_pos_weight(model, config, device, is_main=True)
     predictions = collect_predictions(model, dataloader, device)
 
     if args.threshold_search == "per_label":
@@ -460,6 +510,7 @@ def main():
         "global_threshold_baseline": global_baseline,
         "macro_f1_improvement_over_global_threshold": macro_improvement,
     }
+    report.update(build_baseline_comparison(config, report))
     report["warnings"] = build_evaluation_warnings(
         report,
         expected_samples=len(dataset),

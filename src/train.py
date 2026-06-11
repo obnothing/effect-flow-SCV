@@ -1,5 +1,6 @@
 import argparse
 import json
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -90,8 +91,17 @@ def normalize_training_config(config):
         "bigru_hidden_size",
         "num_transformer_layers",
         "num_attention_heads",
+        "effective_batch_size",
     ]
-    float_keys = ["learning_rate", "threshold", "gradient_clip_norm", "dropout"]
+    float_keys = [
+        "learning_rate",
+        "threshold",
+        "gradient_clip_norm",
+        "dropout",
+        "max_pos_weight",
+        "baseline_micro_f1",
+        "baseline_macro_f1",
+    ]
 
     for key in int_keys:
         if typed_config.get(key) is not None:
@@ -260,6 +270,10 @@ def print_run_info(config, device, datasets, model, distributed=None):
         f"chunk_size: {config.get('chunk_size')}",
         f"max_chunks: {config.get('max_chunks')}",
         f"freeze_encoder: {config.get('freeze_encoder', False)}",
+        f"use_pos_weight: {config.get('use_pos_weight', False)}",
+        f"pos_weight_mode: {config.get('pos_weight_mode')}",
+        f"max_pos_weight: {config.get('max_pos_weight')}",
+        f"apply_pos_weight_to: {config.get('apply_pos_weight_to')}",
         f"trainable parameters / total parameters: {trainable} / {total}",
     ]
     for line in lines:
@@ -501,6 +515,166 @@ def write_checkpoint_summary(path_txt, path_json, summary):
     path_json.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
 
+def resolve_pos_weight_source_path(config):
+    source = config.get("pos_weight_source")
+    data_dir = Path(config["data_dir"])
+    if source in (None, "actual_train"):
+        filename = "train_mlsmote.jsonl" if config.get("use_mlsmote_train") else "train.jsonl"
+        return data_dir / filename
+    if source == "train_mlsmote":
+        return data_dir / "train_mlsmote.jsonl"
+    if source == "train":
+        return data_dir / "train.jsonl"
+    return Path(source)
+
+
+def compute_multilabel_pos_weight(
+    train_jsonl_path,
+    num_labels,
+    mode="sqrt_ratio",
+    max_pos_weight=5.0,
+    label_names=None,
+):
+    path = Path(train_jsonl_path)
+    if not path.exists():
+        raise FileNotFoundError(f"pos_weight source file not found: {path}")
+
+    positive_counts = np.zeros(num_labels, dtype=np.int64)
+    total = 0
+    with path.open("r", encoding="utf-8") as f:
+        for line_no, line in enumerate(f, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            item = json.loads(line)
+            labels = item.get("multi_labels")
+            if labels is None or len(labels) != num_labels:
+                raise ValueError(
+                    f"{path}:{line_no} expected {num_labels} multi_labels, "
+                    f"got {None if labels is None else len(labels)}"
+                )
+            positive_counts += np.asarray(labels, dtype=np.int64)
+            total += 1
+
+    if label_names is None:
+        label_names = [f"label_{idx}" for idx in range(num_labels)]
+
+    rows = []
+    weights = []
+    warnings = []
+    for label_idx in range(num_labels):
+        pos_count = int(positive_counts[label_idx])
+        neg_count = int(total - pos_count)
+        if pos_count == 0:
+            raw_ratio = None
+            sqrt_ratio = None
+            final_weight = 1.0
+            warnings.append(
+                f"{label_names[label_idx]} has zero positive samples in {path}; "
+                "using pos_weight=1.0."
+            )
+        else:
+            raw_ratio = neg_count / pos_count
+            sqrt_ratio = math.sqrt(raw_ratio)
+            if mode == "sqrt_ratio":
+                value = sqrt_ratio
+            elif mode == "ratio":
+                value = raw_ratio
+            else:
+                raise ValueError(f"Unsupported pos_weight mode: {mode}")
+            final_weight = min(float(value), float(max_pos_weight))
+            final_weight = max(final_weight, 1.0)
+
+        weights.append(final_weight)
+        rows.append(
+            {
+                "label_id": label_idx,
+                "label_name": label_names[label_idx],
+                "positive_count": pos_count,
+                "negative_count": neg_count,
+                "raw_ratio": raw_ratio,
+                "sqrt_ratio": sqrt_ratio,
+                "final_pos_weight": final_weight,
+                "max_pos_weight": float(max_pos_weight),
+                "source_file": str(path),
+            }
+        )
+
+    return {
+        "source_file": str(path),
+        "total_samples": total,
+        "mode": mode,
+        "max_pos_weight": float(max_pos_weight),
+        "weights": weights,
+        "table": rows,
+        "warnings": warnings,
+    }
+
+
+def write_pos_weight_report(path_txt, path_json, report):
+    ensure_dir(path_txt.parent)
+    lines = ["Recognition pos_weight report", ""]
+    lines.append(f"source_file: {report['source_file']}")
+    lines.append(f"total_samples: {report['total_samples']}")
+    lines.append(f"mode: {report['mode']}")
+    lines.append(f"max_pos_weight: {report['max_pos_weight']}")
+    lines.append("")
+    lines.append(
+        "label_name | positive_count | negative_count | raw_ratio | "
+        "sqrt_ratio | final_pos_weight"
+    )
+    for row in report["table"]:
+        raw_ratio = (
+            "None" if row["raw_ratio"] is None else f"{row['raw_ratio']:.6f}"
+        )
+        sqrt_ratio = (
+            "None" if row["sqrt_ratio"] is None else f"{row['sqrt_ratio']:.6f}"
+        )
+        lines.append(
+            f"{row['label_name']} | {row['positive_count']} | "
+            f"{row['negative_count']} | {raw_ratio} | {sqrt_ratio} | "
+            f"{row['final_pos_weight']:.6f}"
+        )
+    if report.get("warnings"):
+        lines.append("")
+        lines.append("Warnings:")
+        for warning in report["warnings"]:
+            lines.append(f"- {warning}")
+    path_txt.write_text("\n".join(lines), encoding="utf-8")
+    path_json.write_text(json.dumps(report, indent=2), encoding="utf-8")
+
+
+def maybe_apply_recognition_pos_weight(model, config, device, is_main=True):
+    if not config.get("use_pos_weight", False):
+        return None
+    apply_to = config.get("apply_pos_weight_to", "recognition_only")
+    if apply_to != "recognition_only":
+        raise ValueError(
+            "Only apply_pos_weight_to=recognition_only is supported in Stage 6G."
+        )
+
+    report = compute_multilabel_pos_weight(
+        resolve_pos_weight_source_path(config),
+        config["num_labels"],
+        mode=config.get("pos_weight_mode", "sqrt_ratio"),
+        max_pos_weight=config.get("max_pos_weight", 5.0),
+        label_names=config.get("label_names"),
+    )
+    pos_weight = torch.tensor(report["weights"], dtype=torch.float, device=device)
+    unwrap_model(model).set_recognition_pos_weight(pos_weight)
+
+    if is_main:
+        print("[INFO] use_pos_weight: True")
+        print(f"[INFO] pos_weight_source_file: {report['source_file']}")
+        print(
+            "[INFO] recognition pos_weight: "
+            f"{[round(value, 6) for value in report['weights']]}"
+        )
+        for warning in report["warnings"]:
+            print(f"[WARN] {warning}")
+    return report
+
+
 def main():
     args = parse_args()
     distributed = init_distributed()
@@ -545,6 +719,15 @@ def main():
     )
 
     model = model.to(device)
+    pos_weight_report = maybe_apply_recognition_pos_weight(
+        model,
+        config,
+        device,
+        is_main=distributed["is_main"],
+    )
+    if pos_weight_report is not None:
+        config["recognition_pos_weight"] = pos_weight_report["weights"]
+        config["_pos_weight_source_file"] = pos_weight_report["source_file"]
     if distributed["enabled"]:
         model = DistributedDataParallel(
             model,
@@ -575,10 +758,17 @@ def main():
     checkpoint_dir = Path(config["checkpoint_dir"])
     ensure_dir(checkpoint_dir)
     ensure_dir(Path(config.get("log_dir", "logs")))
-    ensure_dir(Path(config.get("result_dir", "results")))
+    result_dir = Path(config.get("result_dir", "results"))
+    ensure_dir(result_dir)
     report_dir = Path(config.get("report_dir", "data/reports"))
     ensure_dir(report_dir)
     history_txt_path, history_json_path = get_epoch_history_paths(config, report_dir)
+    if distributed["is_main"] and pos_weight_report is not None:
+        write_pos_weight_report(
+            result_dir / "pos_weight.txt",
+            result_dir / "pos_weight.json",
+            pos_weight_report,
+        )
 
     tokenizer_save_dir = checkpoint_dir / "tokenizer"
     if distributed["is_main"]:
@@ -839,6 +1029,12 @@ def main():
             "MLSMOTE-compatible text oversampling duplicates real opcode samples; "
             "it does not synthesize opcode sequences by linear interpolation."
         )
+    if config.get("use_pos_weight", False):
+        warnings.append(
+            "Recognition loss uses pos_weight; detection loss remains ordinary BCE."
+        )
+        if pos_weight_report is not None:
+            warnings.extend(pos_weight_report.get("warnings", []))
     if config.get("model_type") == "evm_chunk":
         max_covered_tokens = config["chunk_size"] + config["chunk_stride"] * (
             config["max_chunks"] - 1
@@ -886,6 +1082,15 @@ def main():
         "best_macro_f1_checkpoint": str(best_macro_checkpoint_path),
         "last_epoch": epoch_history[-1]["epoch"] if epoch_history else None,
         "last_checkpoint": str(last_checkpoint_path),
+        "use_pos_weight": config.get("use_pos_weight", False),
+        "pos_weight_mode": config.get("pos_weight_mode"),
+        "max_pos_weight": config.get("max_pos_weight"),
+        "pos_weight_source_file": (
+            pos_weight_report.get("source_file") if pos_weight_report else None
+        ),
+        "pos_weight_report": (
+            str(result_dir / "pos_weight.json") if pos_weight_report else None
+        ),
         "recommendation_for_test": (
             "Use best_macro_f1.pt for macro-F1-oriented final evaluation."
         ),
@@ -921,6 +1126,16 @@ def main():
         "best_macro_f1_epoch": best_macro_f1_epoch,
         "best_macro_f1_value": best_macro_f1_value,
         "best_macro_f1_threshold": best_macro_f1_threshold,
+        "use_pos_weight": config.get("use_pos_weight", False),
+        "pos_weight_mode": config.get("pos_weight_mode"),
+        "max_pos_weight": config.get("max_pos_weight"),
+        "pos_weight_source": config.get("pos_weight_source"),
+        "pos_weight_source_file": (
+            pos_weight_report.get("source_file") if pos_weight_report else None
+        ),
+        "pos_weight_path": (
+            str(result_dir / "pos_weight.json") if pos_weight_report else None
+        ),
         "use_mlsmote_train": config.get("use_mlsmote_train", False),
         "freeze_encoder": config.get("freeze_encoder", False),
         "max_len": config.get("max_len"),
@@ -1004,6 +1219,17 @@ def main():
         "per_label_recall": best_metrics.get("per_label_recall"),
         "per_label_f1": best_metrics.get("per_label_f1"),
         "per_label_support": best_metrics.get("per_label_support"),
+        "pos_weight_table": (
+            pos_weight_report.get("table") if pos_weight_report else None
+        ),
+        "baseline_micro_f1": config.get("baseline_micro_f1"),
+        "baseline_macro_f1": config.get("baseline_macro_f1"),
+        "macro_f1_improvement_over_unweighted_baseline": (
+            best_macro_f1_value - config["baseline_macro_f1"]
+            if config.get("baseline_macro_f1") is not None
+            and best_macro_f1_value is not None
+            else None
+        ),
         "threshold_scan": threshold_scan,
         "max_memory_allocated_mb": last_memory_stats.get("max_memory_allocated_mb"),
         "max_memory_reserved_mb": last_memory_stats.get("max_memory_reserved_mb"),

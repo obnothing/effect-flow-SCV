@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from transformers import AutoModel
 
 
@@ -36,8 +37,12 @@ class CorrelaScan(nn.Module):
 
         self.detection_loss_fn = nn.BCEWithLogitsLoss()
         self.recognition_loss_fn = nn.BCEWithLogitsLoss()
+        self.recognition_pos_weight = None
 
         # TODO: add vulnerability type embedding module in stage 2.
+
+    def set_recognition_pos_weight(self, pos_weight):
+        self.recognition_pos_weight = pos_weight
 
     def _masked_mean_pool(self, sequence_output, attention_mask):
         mask = attention_mask.unsqueeze(-1).type_as(sequence_output)
@@ -72,9 +77,16 @@ class CorrelaScan(nn.Module):
             detection_loss = self.detection_loss_fn(
                 detection_logits, binary_label.float()
             )
-            recognition_loss = self.recognition_loss_fn(
-                recognition_logits, multi_labels.float()
-            )
+            if self.recognition_pos_weight is None:
+                recognition_loss = self.recognition_loss_fn(
+                    recognition_logits, multi_labels.float()
+                )
+            else:
+                recognition_loss = F.binary_cross_entropy_with_logits(
+                    recognition_logits,
+                    multi_labels.float(),
+                    pos_weight=self.recognition_pos_weight,
+                )
             loss = (detection_loss + recognition_loss) / 2
 
         return {
