@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=8
 #SBATCH --output=logs/slurm_eval_codebert_per_label_threshold_%j.out
 #SBATCH --error=logs/slurm_eval_codebert_per_label_threshold_%j.err
 
