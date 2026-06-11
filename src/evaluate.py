@@ -40,6 +40,8 @@ def parse_args():
     )
     parser.add_argument(
         "--output-prefix",
+        "--output_prefix",
+        dest="output_prefix",
         default=None,
         help="Output file prefix. Defaults to result_dir/<split>_best_macro_metrics.",
     )
@@ -57,7 +59,7 @@ def parse_args():
     parser.add_argument(
         "--global_threshold",
         type=float,
-        default=0.2,
+        default=None,
         help="Global threshold baseline for comparison and support=0 fallback.",
     )
     return parser.parse_args()
@@ -255,6 +257,7 @@ def write_text_report(path, report):
         "recognition_macro_recall",
         "recognition_macro_f1",
         "predicted_positive_total",
+        "micro_f1_change_over_global_threshold",
         "macro_f1_improvement_over_global_threshold",
         "baseline_micro_f1",
         "baseline_macro_f1",
@@ -304,12 +307,15 @@ def write_text_report(path, report):
 
 
 def resolve_output_paths(config, args):
-    if args.output_prefix:
-        prefix = Path(args.output_prefix)
-    elif args.threshold_file:
+    result_dir = Path(config.get("result_dir", "results"))
+    if args.threshold_file:
         prefix = Path(config.get("result_dir", "results")) / f"{args.split}_per_label_threshold_metrics"
+    elif args.output_prefix:
+        prefix = Path(args.output_prefix)
+        if prefix.parent == Path("."):
+            prefix = result_dir / prefix
     else:
-        prefix = Path(config.get("result_dir", "results")) / f"{args.split}_best_macro_metrics"
+        prefix = result_dir / f"{args.split}_best_macro_metrics"
     ensure_dir(prefix.parent)
     return prefix.with_suffix(".json"), prefix.with_suffix(".txt")
 
@@ -370,6 +376,14 @@ def build_baseline_comparison(config, report):
     return comparison
 
 
+def resolve_global_threshold(args, config, checkpoint_threshold):
+    if args.global_threshold is not None:
+        return float(args.global_threshold)
+    if config.get("threshold") is not None:
+        return float(config["threshold"])
+    return float(checkpoint_threshold if checkpoint_threshold is not None else 0.5)
+
+
 def main():
     args = parse_args()
     config = normalize_training_config(load_config(args.config))
@@ -378,6 +392,7 @@ def main():
 
     checkpoint = torch.load(args.checkpoint, map_location="cpu")
     threshold, threshold_source = resolve_threshold(args.threshold, checkpoint)
+    global_threshold = resolve_global_threshold(args, config, threshold)
 
     datasets, tokenizer, model = build_components(config)
     dataset = datasets[args.split]
@@ -403,7 +418,7 @@ def main():
             predictions["recognition_probs"],
             threshold_grid,
             label_names=config.get("label_names"),
-            global_threshold=args.global_threshold,
+            global_threshold=global_threshold,
         )
         threshold_report = {
             "checkpoint": args.checkpoint,
@@ -411,7 +426,7 @@ def main():
             "split": args.split,
             "evaluated_samples": predictions["evaluated_samples"],
             "expected_samples": len(dataset),
-            "global_threshold_fallback": args.global_threshold,
+            "global_threshold_fallback": global_threshold,
             "threshold_grid": threshold_grid,
             "thresholds": selection["thresholds"],
             "per_label": selection["per_label"],
@@ -439,6 +454,7 @@ def main():
     per_label_threshold_rows = None
     global_baseline = None
     macro_improvement = None
+    micro_change = None
     if args.threshold_file:
         threshold_file_data, per_label_thresholds = load_threshold_file(
             args.threshold_file
@@ -449,14 +465,14 @@ def main():
         loss, metrics = run_per_label_evaluation(
             predictions,
             per_label_thresholds,
-            detection_threshold=args.global_threshold,
+            detection_threshold=global_threshold,
         )
         _, global_metrics = run_global_evaluation(
             predictions,
-            threshold=args.global_threshold,
+            threshold=global_threshold,
         )
         global_baseline = {
-            "threshold": args.global_threshold,
+            "threshold": global_threshold,
             "recognition_micro_precision": global_metrics[
                 "recognition_micro_precision"
             ],
@@ -472,6 +488,10 @@ def main():
         macro_improvement = (
             metrics["recognition_macro_f1"]
             - global_baseline["recognition_macro_f1"]
+        )
+        micro_change = (
+            metrics["recognition_micro_f1"]
+            - global_baseline["recognition_micro_f1"]
         )
         per_label_threshold_rows = threshold_file_data.get("per_label", [])
     else:
@@ -508,6 +528,7 @@ def main():
         "per_label": label_table(config, metrics),
         "per_label_thresholds": per_label_threshold_rows,
         "global_threshold_baseline": global_baseline,
+        "micro_f1_change_over_global_threshold": micro_change,
         "macro_f1_improvement_over_global_threshold": macro_improvement,
     }
     report.update(build_baseline_comparison(config, report))
