@@ -1,0 +1,152 @@
+{
+  "source_pdf": "C:\\Users\\oyjt\\Desktop\\correlascan\\A_vulnerability_type_correlation-aware_smart_contract_multi-vulnerability_detection_model.pdf",
+  "summary": {
+    "bert_model_name": "BERT is specified, but no concrete checkpoint name is given.",
+    "max_sequence_length": "not specified",
+    "tokenizer": "not specified",
+    "pretrained_weights": "not specified",
+    "encoder_freeze": "not specified",
+    "batch_size": "64, but micro-batch vs effective batch is not specified",
+    "gradient_accumulation": "not specified",
+    "split_ratio_seed": "not specified",
+    "mlsmote_space": "unclear",
+    "average_f1": "averages over 10 vulnerabilities; closest to macro/per-label average F1"
+  },
+  "paper_explicit_settings": {
+    "epochs": 80,
+    "batch_size": 64,
+    "learning_rate": 0.001,
+    "optimizer": "Adam",
+    "dropout_rate": 0.5,
+    "joint_loss": "(detection_loss + recognition_loss) / 2",
+    "mlsmote_timing": "after train/test split, training set only"
+  },
+  "our_current_setting": {
+    "model": "CodeBERT-base",
+    "model_name": "./models/codebert-base",
+    "max_len": 512,
+    "batch_size": 8,
+    "gradient_accumulation_steps": 2,
+    "learning_rate": 1e-5,
+    "optimizer": "AdamW",
+    "weighted_bce": true,
+    "split": "strict opcode-hash grouped split",
+    "split_counts": {
+      "train": 104845,
+      "valid": 26791,
+      "test": 16748
+    },
+    "opcode_hash_overlap": {
+      "train_valid": 0,
+      "train_test": 0,
+      "valid_test": 0
+    }
+  },
+  "audit_table": [
+    {
+      "paper_setting": "Shared encoder concrete model name",
+      "specified_value": "BERT only; no checkpoint name.",
+      "our_setting": "CodeBERT-base",
+      "mismatch_risk": "High"
+    },
+    {
+      "paper_setting": "Max sequence length",
+      "specified_value": "not specified",
+      "our_setting": "512",
+      "mismatch_risk": "Medium/high"
+    },
+    {
+      "paper_setting": "Tokenizer",
+      "specified_value": "not specified",
+      "our_setting": "CodeBERT BPE tokenizer",
+      "mismatch_risk": "High"
+    },
+    {
+      "paper_setting": "Pretrained weights",
+      "specified_value": "not specified",
+      "our_setting": "pretrained CodeBERT-base",
+      "mismatch_risk": "High"
+    },
+    {
+      "paper_setting": "Encoder freeze",
+      "specified_value": "not specified",
+      "our_setting": "freeze_encoder=false",
+      "mismatch_risk": "Medium"
+    },
+    {
+      "paper_setting": "Batch size",
+      "specified_value": "64; micro/effective unclear",
+      "our_setting": "micro-batch 8, grad accumulation 2",
+      "mismatch_risk": "High"
+    },
+    {
+      "paper_setting": "Gradient accumulation",
+      "specified_value": "not specified",
+      "our_setting": "2",
+      "mismatch_risk": "Medium"
+    },
+    {
+      "paper_setting": "Epochs",
+      "specified_value": "80",
+      "our_setting": "10",
+      "mismatch_risk": "High"
+    },
+    {
+      "paper_setting": "Learning rate",
+      "specified_value": "0.001",
+      "our_setting": "1e-5",
+      "mismatch_risk": "High"
+    },
+    {
+      "paper_setting": "Optimizer",
+      "specified_value": "Adam",
+      "our_setting": "AdamW",
+      "mismatch_risk": "Medium"
+    },
+    {
+      "paper_setting": "Train/valid/test split",
+      "specified_value": "not specified",
+      "our_setting": "strict opcode-hash grouped split",
+      "mismatch_risk": "Very high"
+    },
+    {
+      "paper_setting": "MLSMOTE feature space",
+      "specified_value": "unclear",
+      "our_setting": "duplicate-based MLSMOTE-compatible oversampling",
+      "mismatch_risk": "Very high"
+    },
+    {
+      "paper_setting": "Average F1",
+      "specified_value": "averages over 10 vulnerabilities",
+      "our_setting": "macro-F1 and micro-F1 both reported; macro is closest",
+      "mismatch_risk": "Medium"
+    },
+    {
+      "paper_setting": "Raw label mapping",
+      "specified_value": "not specified",
+      "our_setting": "audited compatibility mapping from BJUT raw columns",
+      "mismatch_risk": "Very high"
+    }
+  ],
+  "most_likely_metric_gap_causes": [
+    "Strict opcode-hash grouped split is harder than an unspecified random split.",
+    "BERT checkpoint and tokenizer are not specified; CodeBERT-base may not match.",
+    "Current oversampling is not true synthetic MLSMOTE.",
+    "Training hyperparameters differ from Table VIII.",
+    "Raw label mapping, especially Unchecked call return value, is ambiguous.",
+    "Evaluation threshold protocol is not specified."
+  ],
+  "not_strictly_reproducible_from_paper": [
+    "concrete BERT checkpoint",
+    "tokenizer and vocabulary",
+    "max sequence length",
+    "pretraining/fine-tuning/freeze protocol",
+    "batch size interpretation",
+    "gradient accumulation",
+    "split ratio and random seed",
+    "MLSMOTE feature space",
+    "raw label mapping",
+    "multi-label decision threshold",
+    "full VTE fusion details"
+  ]
+}

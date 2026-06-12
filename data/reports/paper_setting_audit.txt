@@ -1,0 +1,71 @@
+CorrelaScan paper setting audit
+
+Source PDF:
+C:\Users\oyjt\Desktop\correlascan\A_vulnerability_type_correlation-aware_smart_contract_multi-vulnerability_detection_model.pdf
+
+Scope:
+This audit focuses on experiment settings that affect reproduction but are unclear or under-specified in the paper.
+
+Key paper evidence:
+- Shared encoder: the paper states that the sharing layer uses BERT for feature extraction and that opcodes are converted by Token, Segment, and Position Embeddings before the Transformer encoder.
+- Dataset: BJUT SC01 contains 148,384 contracts and 10 target vulnerability labels. Table II reports the before/after MLSMOTE counts.
+- Loss: the joint loss is the average of detection loss and recognition loss.
+- MLSMOTE: the paper says MLSMOTE is applied only after splitting train/test, and only to the training set.
+- Parameter settings: Table VIII reports epoch=80, batch size=64, learning rate=0.001, optimizer=Adam, dropout=0.5.
+- Average metrics: in the shared-layer ablation, the paper says precision, recall, and F1 are calculated as averages over 10 vulnerabilities.
+
+Audit table:
+
+| paper setting | specified value | our setting | mismatch risk |
+| --- | --- | --- | --- |
+| Shared encoder concrete model name | BERT is specified, but no concrete checkpoint name is given. It does not say bert-base-uncased, CodeBERT, RoBERTa, or a custom BERT checkpoint. | CodeBERT-base from ./models/codebert-base | High: CodeBERT/RoBERTa tokenization and pretraining differ from generic BERT. |
+| Encoder architecture family | BERT-like bidirectional Transformer encoder. | CodeBERT-base shared encoder plus BiGRU task branches. | Medium/high: family is close, exact architecture/checkpoint is not. |
+| Input modality | Opcode sequence. | Opcode sequence. | Low for modality. |
+| Max sequence length | Not specified. | max_len=512. | Medium/high: opcode contracts can be long; truncation policy strongly affects labels. |
+| Tokenizer | Not specified beyond BERT Token/Segment/Position Embedding. No WordPiece/BPE/opcode-level vocab is described. | CodeBERT BPE tokenizer. | High: opcode fragmentation can differ greatly from the paper implementation. |
+| Pretrained weights | Not specified. The paper uses the term BERT but does not state whether pretrained weights are loaded or trained from scratch. | Pretrained CodeBERT-base local checkpoint. | High: pretraining source can dominate performance. |
+| Encoder freeze | Not specified. | freeze_encoder=false for full training. | Medium: freezing changes optimization and overfitting behavior. |
+| Batch size | Table VIII: 64. It does not say GPU micro-batch or effective batch. | batch_size=8 per GPU, gradient_accumulation_steps=2. Effective batch is 16 on one GPU, 32 on two GPUs. | High: not equal to paper 64 unless more accumulation/world size is used. |
+| Gradient accumulation | Not specified. | gradient_accumulation_steps=2. | Medium: changes optimizer step frequency. |
+| Epochs | Table VIII: 80. | epochs=10 with early stopping/checkpoint selection. | High: training budget is much smaller. |
+| Learning rate | Table VIII: 0.001. | learning_rate=1e-5. | High: our LR is two orders lower, chosen for fine-tuning pretrained CodeBERT. |
+| Optimizer | Table VIII: Adam. | AdamW. | Medium: AdamW decoupled weight decay differs from Adam. |
+| Dropout | Table VIII: 0.5. | Config does not globally match 0.5; VTE dropout is 0.1 in the VTE config. | Medium: regularization differs. |
+| Train/valid/test split ratio | Not specified. The paper only says MLSMOTE is applied after splitting train/test and only to training set. | Strict opcode-hash grouped train/valid/test split. Current counts: train=104845, valid=26791, test=16748; zero opcode hash overlap. | Very high: strict de-dup/grouped split is harder than random split and may lower F1. |
+| Split random seed | Not specified. | seed=42. | Medium: exact reproduction impossible without seed. |
+| Validation set protocol | Not specified. | Explicit validation set, checkpoint selection by validation loss/F1. | Medium/high: paper may not have used the same validation protocol. |
+| MLSMOTE timing | Specified only as after train/test split and applied to train set. | Applied only to training data. | Low for timing. |
+| MLSMOTE feature space | Unclear. The paper describes distances between contracts and synthetic contracts, but does not specify raw opcode, token, embedding, or vector feature space. | Current implementation is MLSMOTE-compatible oversampling by duplicating real opcode samples, not true synthetic feature-space MLSMOTE. | Very high: this is a known reproduction defect. |
+| Weighted BCE | Not specified; paper uses cross-entropy-style losses and MLSMOTE for imbalance. | Weighted BCE for recognition branch in the strongest baseline. | Medium/high: improves macro-F1 but is an extra method beyond the paper. |
+| Joint loss | Specified as average of detection and recognition losses. | loss=(detection_loss + recognition_loss)/2. | Low: matched. |
+| Detection/recognition tasks | Detection branch plus vulnerability type recognition branch. | Same two-task setup. | Low/medium: branch details may still differ. |
+| VTE formulation | Equations describe trainable label embeddings, cosine similarity between opcode features and labels, max pooling, softmax attention, and context vector. Exact integration details are not fully specified. | Implemented as label embedding cosine attention over encoder states, then recognition-branch concat fusion. | Medium/high: equation-level match, but fusion details may differ. |
+| Average F1 definition | The paper says Pre/Rec/F1 are averages over 10 vulnerabilities. It does not explicitly call it macro-F1, but this is closest to per-label macro average. | We report both micro-F1 and macro-F1; paper comparison should use macro/per-label average F1. | Medium: direct comparison to micro-F1 would be wrong. |
+| Evaluation threshold | Not specified. | Global threshold 0.5 for weighted baseline; validation-selected global/per-label thresholds are ablations. | High: thresholding heavily changes multi-label F1. |
+| Raw label mapping | Table II lists target labels and counts, but the paper does not document the raw CSV column mapping from the 29 original labels to the 10 labels. | Includes audited compatibility mapping, including Unchecked call return value mapped to Overpowered role due to count match. | Very high: semantic correctness cannot be guaranteed without author code/docs. |
+| Hardware | RTX 3080 10GB. | Server GPUs include A40/L20/A10 depending on queue. | Low for final metric, medium for feasible batch/training time. |
+
+Most likely reasons our metrics are below the paper:
+
+1. Split protocol mismatch is probably the largest factor. The paper does not specify a strict opcode-hash grouped split. Our split removes exact opcode overlap across train/valid/test, which is a harder and more leakage-resistant protocol.
+2. The exact BERT model and tokenizer are not specified. Our CodeBERT-base BPE setup may not match their BERT tokenizer or possible custom opcode embedding/tokenizer.
+3. MLSMOTE is not strictly reproduced. The paper describes synthetic kNN-based multi-label oversampling, but not the feature space. Our current training uses duplicate-based MLSMOTE-compatible oversampling.
+4. Training hyperparameters differ strongly. Paper Table VIII uses epoch=80, batch size=64, LR=0.001, Adam, dropout=0.5. Our strongest baseline uses epochs=10, micro-batch=8, grad accumulation=2, LR=1e-5, AdamW, and weighted BCE.
+5. Label mapping is not fully documented by the paper. The Unchecked call return value mapping remains a reproduction risk because the raw same-name column count does not match Table II.
+6. Evaluation thresholding is unspecified. Multi-label F1 can change substantially with the threshold.
+
+Settings that cannot be strictly reproduced from the paper alone:
+
+- Concrete BERT checkpoint/model name.
+- Tokenizer algorithm and vocabulary.
+- Max sequence length and truncation policy.
+- Whether BERT loads pretrained weights.
+- Whether the shared BERT encoder is frozen or fine-tuned.
+- Whether batch size 64 is micro-batch or effective batch.
+- Whether gradient accumulation is used.
+- Train/test/validation split ratio and random seed.
+- Exact MLSMOTE feature representation and generation details.
+- Raw 29-label to 10-label mapping rules.
+- Multi-label decision threshold.
+- Exact macro/micro averaging convention beyond "averages over 10 vulnerabilities".
+- Full VTE fusion implementation beyond the equations.
