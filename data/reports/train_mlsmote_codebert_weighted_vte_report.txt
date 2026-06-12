@@ -1,0 +1,340 @@
+CorrelaScan sanity training report
+
+loaded_model: True
+
+loaded_local_model: True
+
+loaded_tokenizer: True
+
+model_type: codebert
+
+tokenizer_type: transformers
+
+model_name: ./models/codebert-base
+
+vocab_path: None
+
+vocab_size: 50265
+
+train_samples: 107904
+
+valid_samples: 26791
+
+completed_epochs: 7
+
+early_stopped: True
+
+stopped_epoch: 7
+
+early_stopping_patience: 3
+
+best_epoch: 4
+
+best_loss_epoch: 4
+
+best_micro_f1_epoch: 7
+
+best_micro_f1_value: 0.5692890653193793
+
+best_micro_f1_threshold: 0.5
+
+best_macro_f1_epoch: 7
+
+best_macro_f1_value: 0.43651903812393755
+
+best_macro_f1_threshold: 0.5
+
+use_pos_weight: True
+
+pos_weight_mode: sqrt_ratio
+
+max_pos_weight: 5.0
+
+pos_weight_source: train_mlsmote
+
+pos_weight_source_file: data/processed/BJUT_SC01/train_mlsmote.jsonl
+
+pos_weight_path: results/train_mlsmote_codebert_weighted_vte/pos_weight.json
+
+use_vte: True
+
+vte_fusion: concat
+
+vte_dropout: 0.1
+
+vte_temperature: 1.0
+
+vte_label_correlation_path: results/train_mlsmote_codebert_weighted_vte/vte_label_correlation.json
+
+use_mlsmote_train: True
+
+freeze_encoder: False
+
+max_len: 512
+
+chunk_size: None
+
+chunk_stride: None
+
+max_chunks: None
+
+max_covered_tokens: None
+
+chunk_pooling: None
+
+encoder_type: None
+
+embedding_dim: None
+
+batch_size: 8
+
+gradient_accumulation_steps: 2
+
+effective_batch_size: 16
+
+global_effective_batch_size: 32
+
+learning_rate: 1e-05
+
+device: cuda:0
+
+torch_version: 2.0.1+cu118
+
+cuda_available: True
+
+cuda_device_name: NVIDIA L20
+
+distributed: True
+
+world_size: 2
+
+trainable_parameters: 127820043
+
+total_parameters: 127820043
+
+trainable_ratio: 1.0
+
+batch_shapes:
+- input_ids: [8, 512]
+- attention_mask: [8, 512]
+- binary_label: [8]
+- multi_labels: [8, 10]
+
+logits_shapes:
+- detection_logits: [8]
+- recognition_logits: [8, 10]
+
+train_loss: 0.2050689458847046
+
+valid_loss: 0.10454564946581253
+
+metric_source: best_checkpoint_epoch
+
+last_train_loss: 0.17618247866630554
+
+last_valid_loss: 0.11925886558989741
+
+last_detection_accuracy: 0.9428912694561606
+
+last_recognition_micro_precision: 0.5006347191367819
+
+last_recognition_micro_recall: 0.6597657883730657
+
+last_recognition_micro_f1: 0.5692890653193793
+
+last_recognition_macro_precision: 0.394686056158602
+
+last_recognition_macro_recall: 0.5902739176268715
+
+last_recognition_macro_f1: 0.43651903812393755
+
+detection_accuracy: 0.9406890373632937
+
+detection_precision: 0.725096194955109
+
+detection_recall: 0.6419379258137774
+
+detection_f1: 0.68098775346316
+
+recognition_micro_precision: 0.4704932472108045
+
+recognition_micro_recall: 0.6702216645754914
+
+recognition_micro_f1: 0.5528721752630671
+
+recognition_macro_precision: 0.35969082889422543
+
+recognition_macro_recall: 0.5893360545238016
+
+recognition_macro_f1: 0.4164284669093991
+
+predicted_positive_total: 6812
+
+per_label_predicted_positive_count:
+- 307
+- 1369
+- 2504
+- 263
+- 53
+- 249
+- 693
+- 36
+- 254
+- 1084
+
+per_label_true_positive_count:
+- 86
+- 1365
+- 1807
+- 77
+- 17
+- 84
+- 546
+- 63
+- 195
+- 542
+
+per_label_mean_pred_prob:
+- 0.012234585359692574
+- 0.06843217462301254
+- 0.09614218026399612
+- 0.009946749545633793
+- 0.003659032052382827
+- 0.01176844909787178
+- 0.042053498327732086
+- 0.009900553151965141
+- 0.023991482332348824
+- 0.05755437910556793
+
+per_label_accuracy:
+- 0.9902579224366391
+- 0.9637938113545593
+- 0.941286252846105
+- 0.9915643313052891
+- 0.9978350938748087
+- 0.9916763092083162
+- 0.9775670934268971
+- 0.9976484640364301
+- 0.9901832705012877
+- 0.9646896345787764
+
+per_label_precision:
+- 0.21498371335504887
+- 0.6442658875091307
+- 0.5467252396166135
+- 0.21673003802281368
+- 0.11320754716981132
+- 0.22088353413654618
+- 0.4603174603174603
+- 0.5
+- 0.3661417322834646
+- 0.31365313653136534
+
+per_label_recall:
+- 0.7674418604651163
+- 0.6461538461538462
+- 0.7576092971776425
+- 0.7402597402597403
+- 0.35294117647058826
+- 0.6547619047619048
+- 0.5842490842490843
+- 0.2857142857142857
+- 0.47692307692307695
+- 0.6273062730627307
+
+per_label_f1:
+- 0.3358778625954199
+- 0.6452084857351864
+- 0.6351194618418
+- 0.33529411764705885
+- 0.17142857142857143
+- 0.3303303303303303
+- 0.5149313962873284
+- 0.36363636363636365
+- 0.4142538975501114
+- 0.41820418204182047
+
+per_label_support:
+- 86
+- 1365
+- 1807
+- 77
+- 17
+- 84
+- 546
+- 63
+- 195
+- 542
+
+pos_weight_table:
+- {'label_id': 0, 'label_name': 'Reentrancy', 'positive_count': 4281, 'negative_count': 103623, 'raw_ratio': 24.20532585844429, 'sqrt_ratio': 4.919890838061785, 'final_pos_weight': 4.919890838061785, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 1, 'label_name': 'Contract contains unknown address', 'positive_count': 17888, 'negative_count': 90016, 'raw_ratio': 5.032200357781753, 'sqrt_ratio': 2.2432566410871835, 'final_pos_weight': 2.2432566410871835, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 2, 'label_name': 'Integer overflow or underflow', 'positive_count': 15860, 'negative_count': 92044, 'raw_ratio': 5.803530895334174, 'sqrt_ratio': 2.409051866468253, 'final_pos_weight': 2.409051866468253, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 3, 'label_name': 'Timestamp dependence', 'positive_count': 1773, 'negative_count': 106131, 'raw_ratio': 59.8595600676819, 'sqrt_ratio': 7.7368960228041, 'final_pos_weight': 5.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 4, 'label_name': 'DoS with failed call', 'positive_count': 2225, 'negative_count': 105679, 'raw_ratio': 47.4961797752809, 'sqrt_ratio': 6.891747222242042, 'final_pos_weight': 5.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 5, 'label_name': 'Assert violation', 'positive_count': 1792, 'negative_count': 106112, 'raw_ratio': 59.214285714285715, 'sqrt_ratio': 7.69508191732133, 'final_pos_weight': 5.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 6, 'label_name': 'Unchecked call return value', 'positive_count': 7222, 'negative_count': 100682, 'raw_ratio': 13.941013569648296, 'sqrt_ratio': 3.733766673166428, 'final_pos_weight': 3.733766673166428, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 7, 'label_name': 'Unsafe send', 'positive_count': 1394, 'negative_count': 106510, 'raw_ratio': 76.40602582496413, 'sqrt_ratio': 8.741054045420617, 'final_pos_weight': 5.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 8, 'label_name': 'Multiplication after division', 'positive_count': 1591, 'negative_count': 106313, 'raw_ratio': 66.82149591451918, 'sqrt_ratio': 8.17444162707883, 'final_pos_weight': 5.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 9, 'label_name': 'Extra gas consumption', 'positive_count': 4458, 'negative_count': 103446, 'raw_ratio': 23.20457604306864, 'sqrt_ratio': 4.817112832710963, 'final_pos_weight': 4.817112832710963, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+
+baseline_micro_f1: 0.5604
+
+baseline_macro_f1: 0.4215
+
+macro_f1_improvement_over_unweighted_baseline: 0.015019038123937567
+
+threshold_scan:
+- 0.1: {'micro_precision': 0.24397776405188387, 'micro_recall': 0.9086156419907988, 'micro_f1': 0.38466646009472805, 'macro_precision': 0.17211696574364138, 'macro_recall': 0.7957920303441609, 'macro_f1': 0.27465547356413267, 'predicted_positive_total': 17809}
+- 0.2: {'micro_precision': 0.311154144074361, 'micro_recall': 0.8400250941028858, 'micro_f1': 0.4541035496269501, 'macro_precision': 0.2174413342469471, 'macro_recall': 0.7280145401206398, 'macro_f1': 0.3263644623451208, 'predicted_positive_total': 12910}
+- 0.3: {'micro_precision': 0.36991150442477877, 'micro_recall': 0.7867001254705144, 'micro_f1': 0.5032102728731943, 'macro_precision': 0.25902808629486856, 'macro_recall': 0.6738598074904016, 'macro_f1': 0.3638670354289245, 'predicted_positive_total': 10170}
+- 0.4: {'micro_precision': 0.42125697646202376, 'micro_recall': 0.726056043496445, 'micro_f1': 0.5331695331695332, 'macro_precision': 0.30389678550339844, 'macro_recall': 0.624295373790762, 'macro_f1': 0.3921226574268345, 'predicted_positive_total': 8242}
+- 0.5: {'micro_precision': 0.4704932472108045, 'micro_recall': 0.6702216645754914, 'micro_f1': 0.5528721752630671, 'macro_precision': 0.35969082889422543, 'macro_recall': 0.5893360545238016, 'macro_f1': 0.4164284669093991, 'predicted_positive_total': 6812}
+
+max_memory_allocated_mb: 7767.72509765625
+
+max_memory_reserved_mb: 7994.0
+
+checkpoint_saved: True
+
+checkpoint_path: checkpoints/train_mlsmote_codebert_weighted_vte/best_loss.pt
+
+best_loss_checkpoint_saved: True
+
+best_loss_checkpoint_path: checkpoints/train_mlsmote_codebert_weighted_vte/best_loss.pt
+
+best_micro_f1_checkpoint_saved: True
+
+best_micro_f1_checkpoint_path: checkpoints/train_mlsmote_codebert_weighted_vte/best_micro_f1.pt
+
+best_macro_f1_checkpoint_saved: True
+
+best_macro_f1_checkpoint_path: checkpoints/train_mlsmote_codebert_weighted_vte/best_macro_f1.pt
+
+last_checkpoint_saved: True
+
+last_checkpoint_path: checkpoints/train_mlsmote_codebert_weighted_vte/last.pt
+
+checkpoint_summary_path: results/train_mlsmote_codebert_weighted_vte/checkpoint_summary.json
+
+tokenizer_saved: True
+
+tokenizer_path: checkpoints/train_mlsmote_codebert_weighted_vte/tokenizer
+
+epoch_history_saved: True
+
+epoch_history_txt_path: data/reports/train_mlsmote_codebert_weighted_vte_epoch_history.txt
+
+epoch_history_json_path: data/reports/train_mlsmote_codebert_weighted_vte_epoch_history.json
+
+plots_generated: True
+
+can_enter_full_training: True
+
+can_enter_full_evm_chunk_training: False
+
+warnings:
+- MLSMOTE-compatible text oversampling duplicates real opcode samples; it does not synthesize opcode sequences by linear interpolation.
+- Recognition loss uses pos_weight; detection loss remains ordinary BCE.
+- VTE is enabled: recognition logits use BiGRU features concatenated with vulnerability-type label-attention context.
+- Encoder is unfrozen; monitor GPU memory and loss stability.

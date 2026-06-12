@@ -1,0 +1,210 @@
+{
+  "split": "test",
+  "samples": 16748,
+  "evaluated_samples": 16748,
+  "expected_samples": 16748,
+  "checkpoint": "checkpoints/train_mlsmote_codebert_weighted_vte/best_macro_f1.pt",
+  "checkpoint_epoch": 7,
+  "threshold": 0.5,
+  "threshold_source": "checkpoint_best_threshold_by_macro_f1",
+  "threshold_mode": "global",
+  "threshold_file": null,
+  "loss": 0.1865508271539815,
+  "detection_accuracy": 0.8989133030809648,
+  "detection_precision": 0.7489520260829063,
+  "detection_recall": 0.5821868211440985,
+  "detection_f1": 0.6551232430230189,
+  "recognition_micro_precision": 0.5008130081300813,
+  "recognition_micro_recall": 0.603448275862069,
+  "recognition_micro_f1": 0.5473609383330371,
+  "recognition_macro_precision": 0.3764396768546337,
+  "recognition_macro_recall": 0.5325388240967132,
+  "recognition_macro_f1": 0.41521780134625824,
+  "predicted_positive_total": 6150,
+  "per_label_predicted_positive_count": [
+    281,
+    1411,
+    1976,
+    239,
+    21,
+    242,
+    848,
+    40,
+    224,
+    868
+  ],
+  "per_label_true_positive_count": [
+    89,
+    1496,
+    1817,
+    78,
+    17,
+    84,
+    616,
+    64,
+    191,
+    652
+  ],
+  "per_label_mean_pred_prob": [
+    0.01810794323682785,
+    0.1037570908665657,
+    0.12402611970901489,
+    0.014473817311227322,
+    0.002452933695167303,
+    0.016582276672124863,
+    0.07393309473991394,
+    0.006944956723600626,
+    0.02964422106742859,
+    0.0713975727558136
+  ],
+  "per_label": [
+    {
+      "label_id": 0,
+      "label_name": "Reentrancy",
+      "precision": 0.2099644128113879,
+      "recall": 0.6629213483146067,
+      "f1": 0.3189189189189189,
+      "support": 89,
+      "predicted_positive_count": 281,
+      "true_positive_count": 89,
+      "mean_pred_prob": 0.01810794323682785
+    },
+    {
+      "label_id": 1,
+      "label_name": "Contract contains unknown address",
+      "precision": 0.6293408929836996,
+      "recall": 0.5935828877005348,
+      "f1": 0.6109391124871001,
+      "support": 1496,
+      "predicted_positive_count": 1411,
+      "true_positive_count": 1496,
+      "mean_pred_prob": 0.1037570908665657
+    },
+    {
+      "label_id": 2,
+      "label_name": "Integer overflow or underflow",
+      "precision": 0.625,
+      "recall": 0.6796917996697853,
+      "f1": 0.6511995781703137,
+      "support": 1817,
+      "predicted_positive_count": 1976,
+      "true_positive_count": 1817,
+      "mean_pred_prob": 0.12402611970901489
+    },
+    {
+      "label_id": 3,
+      "label_name": "Timestamp dependence",
+      "precision": 0.24267782426778242,
+      "recall": 0.7435897435897436,
+      "f1": 0.3659305993690852,
+      "support": 78,
+      "predicted_positive_count": 239,
+      "true_positive_count": 78,
+      "mean_pred_prob": 0.014473817311227322
+    },
+    {
+      "label_id": 4,
+      "label_name": "DoS with failed call",
+      "precision": 0.14285714285714285,
+      "recall": 0.17647058823529413,
+      "f1": 0.15789473684210528,
+      "support": 17,
+      "predicted_positive_count": 21,
+      "true_positive_count": 17,
+      "mean_pred_prob": 0.002452933695167303
+    },
+    {
+      "label_id": 5,
+      "label_name": "Assert violation",
+      "precision": 0.21487603305785125,
+      "recall": 0.6190476190476191,
+      "f1": 0.31901840490797545,
+      "support": 84,
+      "predicted_positive_count": 242,
+      "true_positive_count": 84,
+      "mean_pred_prob": 0.016582276672124863
+    },
+    {
+      "label_id": 6,
+      "label_name": "Unchecked call return value",
+      "precision": 0.4186320754716981,
+      "recall": 0.5762987012987013,
+      "f1": 0.4849726775956284,
+      "support": 616,
+      "predicted_positive_count": 848,
+      "true_positive_count": 616,
+      "mean_pred_prob": 0.07393309473991394
+    },
+    {
+      "label_id": 7,
+      "label_name": "Unsafe send",
+      "precision": 0.525,
+      "recall": 0.328125,
+      "f1": 0.40384615384615385,
+      "support": 64,
+      "predicted_positive_count": 40,
+      "true_positive_count": 64,
+      "mean_pred_prob": 0.006944956723600626
+    },
+    {
+      "label_id": 8,
+      "label_name": "Multiplication after division",
+      "precision": 0.38392857142857145,
+      "recall": 0.450261780104712,
+      "f1": 0.41445783132530123,
+      "support": 191,
+      "predicted_positive_count": 224,
+      "true_positive_count": 191,
+      "mean_pred_prob": 0.02964422106742859
+    },
+    {
+      "label_id": 9,
+      "label_name": "Extra gas consumption",
+      "precision": 0.3721198156682028,
+      "recall": 0.495398773006135,
+      "f1": 0.42500000000000004,
+      "support": 652,
+      "predicted_positive_count": 868,
+      "true_positive_count": 652,
+      "mean_pred_prob": 0.0713975727558136
+    }
+  ],
+  "per_label_thresholds": null,
+  "global_threshold_baseline": null,
+  "micro_f1_change_over_global_threshold": null,
+  "macro_f1_improvement_over_global_threshold": null,
+  "baseline_micro_f1": 0.5604,
+  "baseline_macro_f1": 0.4215,
+  "micro_f1_improvement_over_unweighted_baseline": -0.013039061666962892,
+  "macro_f1_improvement_over_unweighted_baseline": -0.006282198653741744,
+  "small_label_f1_changes": [
+    {
+      "label_name": "Reentrancy",
+      "baseline_f1": 0.314607,
+      "current_f1": 0.3189189189189189,
+      "diff": 0.004311918918918856
+    },
+    {
+      "label_name": "DoS with failed call",
+      "baseline_f1": 0.193548,
+      "current_f1": 0.15789473684210528,
+      "diff": -0.035653263157894716
+    },
+    {
+      "label_name": "Assert violation",
+      "baseline_f1": 0.323625,
+      "current_f1": 0.31901840490797545,
+      "diff": -0.004606595092024546
+    },
+    {
+      "label_name": "Unsafe send",
+      "baseline_f1": 0.367347,
+      "current_f1": 0.40384615384615385,
+      "diff": 0.036499153846153876
+    }
+  ],
+  "warnings": [
+    "Reentrancy: predicted positives may be too many (281 vs support 89).",
+    "Timestamp dependence: predicted positives may be too many (239 vs support 78)."
+  ]
+}

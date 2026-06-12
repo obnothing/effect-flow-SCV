@@ -1,0 +1,53 @@
+Strict evaluation report
+
+split: test
+checkpoint: checkpoints/train_mlsmote_codebert_weighted_vte/best_macro_f1.pt
+checkpoint_epoch: 7
+threshold: 0.5
+threshold_source: checkpoint_best_threshold_by_macro_f1
+threshold_mode: global
+threshold_file: None
+evaluated_samples: 16748
+expected_samples: 16748
+loss: 0.1865508271539815
+detection_accuracy: 0.8989133030809648
+detection_precision: 0.7489520260829063
+detection_recall: 0.5821868211440985
+detection_f1: 0.6551232430230189
+recognition_micro_precision: 0.5008130081300813
+recognition_micro_recall: 0.603448275862069
+recognition_micro_f1: 0.5473609383330371
+recognition_macro_precision: 0.3764396768546337
+recognition_macro_recall: 0.5325388240967132
+recognition_macro_f1: 0.41521780134625824
+predicted_positive_total: 6150
+micro_f1_change_over_global_threshold: None
+macro_f1_improvement_over_global_threshold: None
+baseline_micro_f1: 0.5604
+baseline_macro_f1: 0.4215
+micro_f1_improvement_over_unweighted_baseline: -0.013039061666962892
+macro_f1_improvement_over_unweighted_baseline: -0.006282198653741744
+
+Per-label metrics:
+id | label | precision | recall | f1 | support | predicted | true | mean_prob
+0 | Reentrancy | 0.209964 | 0.662921 | 0.318919 | 89 | 281 | 89 | 0.018108
+1 | Contract contains unknown address | 0.629341 | 0.593583 | 0.610939 | 1496 | 1411 | 1496 | 0.103757
+2 | Integer overflow or underflow | 0.625000 | 0.679692 | 0.651200 | 1817 | 1976 | 1817 | 0.124026
+3 | Timestamp dependence | 0.242678 | 0.743590 | 0.365931 | 78 | 239 | 78 | 0.014474
+4 | DoS with failed call | 0.142857 | 0.176471 | 0.157895 | 17 | 21 | 17 | 0.002453
+5 | Assert violation | 0.214876 | 0.619048 | 0.319018 | 84 | 242 | 84 | 0.016582
+6 | Unchecked call return value | 0.418632 | 0.576299 | 0.484973 | 616 | 848 | 616 | 0.073933
+7 | Unsafe send | 0.525000 | 0.328125 | 0.403846 | 64 | 40 | 64 | 0.006945
+8 | Multiplication after division | 0.383929 | 0.450262 | 0.414458 | 191 | 224 | 191 | 0.029644
+9 | Extra gas consumption | 0.372120 | 0.495399 | 0.425000 | 652 | 868 | 652 | 0.071398
+
+Small-label F1 changes vs unweighted baseline:
+label | baseline_f1 | current_f1 | diff
+Reentrancy | 0.314607 | 0.318919 | 0.004312
+DoS with failed call | 0.193548 | 0.157895 | -0.035653
+Assert violation | 0.323625 | 0.319018 | -0.004607
+Unsafe send | 0.367347 | 0.403846 | 0.036499
+
+Warnings:
+- Reentrancy: predicted positives may be too many (281 vs support 89).
+- Timestamp dependence: predicted positives may be too many (239 vs support 78).

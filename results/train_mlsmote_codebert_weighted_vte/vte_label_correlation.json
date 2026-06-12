@@ -1,0 +1,350 @@
+{
+  "source": "trainable_vulnerability_type_embedding",
+  "checkpoint_note": "Exported from the final in-memory model after training.",
+  "label_names": [
+    "Reentrancy",
+    "Contract contains unknown address",
+    "Integer overflow or underflow",
+    "Timestamp dependence",
+    "DoS with failed call",
+    "Assert violation",
+    "Unchecked call return value",
+    "Unsafe send",
+    "Multiplication after division",
+    "Extra gas consumption"
+  ],
+  "cosine_matrix": [
+    [
+      1.0000001192092896,
+      0.039928533136844635,
+      -0.03205449879169464,
+      0.02316896989941597,
+      0.00734745105728507,
+      0.027088016271591187,
+      -0.0153721384704113,
+      0.01749471202492714,
+      0.03459365293383598,
+      -0.019717372953891754
+    ],
+    [
+      0.039928533136844635,
+      1.0,
+      -0.03075803630053997,
+      0.03669825196266174,
+      -0.006729461252689362,
+      0.015325852669775486,
+      -0.03840397298336029,
+      0.02589610032737255,
+      -0.04794774577021599,
+      0.004993673413991928
+    ],
+    [
+      -0.03205449879169464,
+      -0.03075803630053997,
+      1.0000001192092896,
+      -0.038050778210163116,
+      -0.06274907290935516,
+      -0.014961585402488708,
+      0.011172612197697163,
+      -0.045157842338085175,
+      0.0017189886420965195,
+      -0.09254545718431473
+    ],
+    [
+      0.02316896989941597,
+      0.03669825196266174,
+      -0.038050778210163116,
+      0.9999999403953552,
+      -0.009110823273658752,
+      0.06256085634231567,
+      -0.0159014742821455,
+      0.005361607298254967,
+      0.03223297744989395,
+      -0.020198840647935867
+    ],
+    [
+      0.00734745105728507,
+      -0.006729461252689362,
+      -0.06274907290935516,
+      -0.009110823273658752,
+      1.0000001192092896,
+      0.015031696297228336,
+      0.02170596644282341,
+      -0.0038617136888206005,
+      -0.057124897837638855,
+      0.025247547775506973
+    ],
+    [
+      0.027088016271591187,
+      0.015325852669775486,
+      -0.014961585402488708,
+      0.06256085634231567,
+      0.015031696297228336,
+      1.0000001192092896,
+      -0.025288961827754974,
+      0.06592355668544769,
+      0.008077102713286877,
+      0.00045630859676748514
+    ],
+    [
+      -0.0153721384704113,
+      -0.03840397298336029,
+      0.011172612197697163,
+      -0.0159014742821455,
+      0.02170596644282341,
+      -0.025288961827754974,
+      1.0,
+      0.0060354070737957954,
+      0.03612423688173294,
+      0.03724104166030884
+    ],
+    [
+      0.01749471202492714,
+      0.02589610032737255,
+      -0.045157842338085175,
+      0.005361607298254967,
+      -0.0038617136888206005,
+      0.06592355668544769,
+      0.0060354070737957954,
+      1.0,
+      0.017786728218197823,
+      0.02669335901737213
+    ],
+    [
+      0.03459365293383598,
+      -0.04794774577021599,
+      0.0017189886420965195,
+      0.03223297744989395,
+      -0.057124897837638855,
+      0.008077102713286877,
+      0.03612423688173294,
+      0.017786728218197823,
+      1.0000001192092896,
+      0.006040764506906271
+    ],
+    [
+      -0.019717372953891754,
+      0.004993673413991928,
+      -0.09254545718431473,
+      -0.020198840647935867,
+      0.025247547775506973,
+      0.00045630859676748514,
+      0.03724104166030884,
+      0.02669335901737213,
+      0.006040764506906271,
+      1.0
+    ]
+  ],
+  "top_correlated": [
+    {
+      "label_id": 0,
+      "label_name": "Reentrancy",
+      "top_correlated_labels": [
+        {
+          "label_id": 1,
+          "label_name": "Contract contains unknown address",
+          "cosine": 0.039928533136844635
+        },
+        {
+          "label_id": 8,
+          "label_name": "Multiplication after division",
+          "cosine": 0.03459365293383598
+        },
+        {
+          "label_id": 5,
+          "label_name": "Assert violation",
+          "cosine": 0.027088016271591187
+        }
+      ]
+    },
+    {
+      "label_id": 1,
+      "label_name": "Contract contains unknown address",
+      "top_correlated_labels": [
+        {
+          "label_id": 0,
+          "label_name": "Reentrancy",
+          "cosine": 0.039928533136844635
+        },
+        {
+          "label_id": 3,
+          "label_name": "Timestamp dependence",
+          "cosine": 0.03669825196266174
+        },
+        {
+          "label_id": 7,
+          "label_name": "Unsafe send",
+          "cosine": 0.02589610032737255
+        }
+      ]
+    },
+    {
+      "label_id": 2,
+      "label_name": "Integer overflow or underflow",
+      "top_correlated_labels": [
+        {
+          "label_id": 6,
+          "label_name": "Unchecked call return value",
+          "cosine": 0.011172612197697163
+        },
+        {
+          "label_id": 8,
+          "label_name": "Multiplication after division",
+          "cosine": 0.0017189886420965195
+        },
+        {
+          "label_id": 5,
+          "label_name": "Assert violation",
+          "cosine": -0.014961585402488708
+        }
+      ]
+    },
+    {
+      "label_id": 3,
+      "label_name": "Timestamp dependence",
+      "top_correlated_labels": [
+        {
+          "label_id": 5,
+          "label_name": "Assert violation",
+          "cosine": 0.06256085634231567
+        },
+        {
+          "label_id": 1,
+          "label_name": "Contract contains unknown address",
+          "cosine": 0.03669825196266174
+        },
+        {
+          "label_id": 8,
+          "label_name": "Multiplication after division",
+          "cosine": 0.03223297744989395
+        }
+      ]
+    },
+    {
+      "label_id": 4,
+      "label_name": "DoS with failed call",
+      "top_correlated_labels": [
+        {
+          "label_id": 9,
+          "label_name": "Extra gas consumption",
+          "cosine": 0.025247547775506973
+        },
+        {
+          "label_id": 6,
+          "label_name": "Unchecked call return value",
+          "cosine": 0.02170596644282341
+        },
+        {
+          "label_id": 5,
+          "label_name": "Assert violation",
+          "cosine": 0.015031696297228336
+        }
+      ]
+    },
+    {
+      "label_id": 5,
+      "label_name": "Assert violation",
+      "top_correlated_labels": [
+        {
+          "label_id": 7,
+          "label_name": "Unsafe send",
+          "cosine": 0.06592355668544769
+        },
+        {
+          "label_id": 3,
+          "label_name": "Timestamp dependence",
+          "cosine": 0.06256085634231567
+        },
+        {
+          "label_id": 0,
+          "label_name": "Reentrancy",
+          "cosine": 0.027088016271591187
+        }
+      ]
+    },
+    {
+      "label_id": 6,
+      "label_name": "Unchecked call return value",
+      "top_correlated_labels": [
+        {
+          "label_id": 9,
+          "label_name": "Extra gas consumption",
+          "cosine": 0.03724104166030884
+        },
+        {
+          "label_id": 8,
+          "label_name": "Multiplication after division",
+          "cosine": 0.03612423688173294
+        },
+        {
+          "label_id": 4,
+          "label_name": "DoS with failed call",
+          "cosine": 0.02170596644282341
+        }
+      ]
+    },
+    {
+      "label_id": 7,
+      "label_name": "Unsafe send",
+      "top_correlated_labels": [
+        {
+          "label_id": 5,
+          "label_name": "Assert violation",
+          "cosine": 0.06592355668544769
+        },
+        {
+          "label_id": 9,
+          "label_name": "Extra gas consumption",
+          "cosine": 0.02669335901737213
+        },
+        {
+          "label_id": 1,
+          "label_name": "Contract contains unknown address",
+          "cosine": 0.02589610032737255
+        }
+      ]
+    },
+    {
+      "label_id": 8,
+      "label_name": "Multiplication after division",
+      "top_correlated_labels": [
+        {
+          "label_id": 6,
+          "label_name": "Unchecked call return value",
+          "cosine": 0.03612423688173294
+        },
+        {
+          "label_id": 0,
+          "label_name": "Reentrancy",
+          "cosine": 0.03459365293383598
+        },
+        {
+          "label_id": 3,
+          "label_name": "Timestamp dependence",
+          "cosine": 0.03223297744989395
+        }
+      ]
+    },
+    {
+      "label_id": 9,
+      "label_name": "Extra gas consumption",
+      "top_correlated_labels": [
+        {
+          "label_id": 6,
+          "label_name": "Unchecked call return value",
+          "cosine": 0.03724104166030884
+        },
+        {
+          "label_id": 7,
+          "label_name": "Unsafe send",
+          "cosine": 0.02669335901737213
+        },
+        {
+          "label_id": 4,
+          "label_name": "DoS with failed call",
+          "cosine": 0.025247547775506973
+        }
+      ]
+    }
+  ]
+}

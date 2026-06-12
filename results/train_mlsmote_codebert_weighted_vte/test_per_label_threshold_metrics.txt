@@ -1,0 +1,74 @@
+Strict evaluation report
+
+split: test
+checkpoint: checkpoints/train_mlsmote_codebert_weighted_vte/best_macro_f1.pt
+checkpoint_epoch: 7
+threshold: None
+threshold_source: validation set
+threshold_mode: per_label
+threshold_file: results/train_mlsmote_codebert_weighted_vte/per_label_thresholds_valid.json
+evaluated_samples: 16748
+expected_samples: 16748
+loss: 0.1865508271539815
+detection_accuracy: 0.8989133030809648
+detection_precision: 0.7489520260829063
+detection_recall: 0.5821868211440985
+detection_f1: 0.6551232430230189
+recognition_micro_precision: 0.5394786550812241
+recognition_micro_recall: 0.5595611285266457
+recognition_micro_f1: 0.54933641084824
+recognition_macro_precision: 0.39320448732005436
+recognition_macro_recall: 0.5031857170125642
+recognition_macro_f1: 0.412995786431662
+predicted_positive_total: 5294
+micro_f1_change_over_global_threshold: 0.001975472515202914
+macro_f1_improvement_over_global_threshold: -0.0022220149145962265
+baseline_micro_f1: 0.5604
+baseline_macro_f1: 0.4215
+micro_f1_improvement_over_unweighted_baseline: -0.011063589151759978
+macro_f1_improvement_over_unweighted_baseline: -0.00850421356833797
+
+Per-label metrics:
+id | label | precision | recall | f1 | support | predicted | true | mean_prob
+0 | Reentrancy | 0.208000 | 0.584270 | 0.306785 | 89 | 250 | 89 | 0.018108
+1 | Contract contains unknown address | 0.660465 | 0.569519 | 0.611630 | 1496 | 1290 | 1496 | 0.103757
+2 | Integer overflow or underflow | 0.654195 | 0.635113 | 0.644513 | 1817 | 1764 | 1817 | 0.124026
+3 | Timestamp dependence | 0.233463 | 0.769231 | 0.358209 | 78 | 257 | 78 | 0.014474
+4 | DoS with failed call | 0.200000 | 0.117647 | 0.148148 | 17 | 10 | 17 | 0.002453
+5 | Assert violation | 0.212245 | 0.619048 | 0.316109 | 84 | 245 | 84 | 0.016582
+6 | Unchecked call return value | 0.473071 | 0.527597 | 0.498849 | 616 | 687 | 616 | 0.073933
+7 | Unsafe send | 0.382353 | 0.406250 | 0.393939 | 64 | 68 | 64 | 0.006945
+8 | Multiplication after division | 0.441341 | 0.413613 | 0.427027 | 191 | 179 | 191 | 0.029644
+9 | Extra gas consumption | 0.466912 | 0.389571 | 0.424749 | 652 | 544 | 652 | 0.071398
+
+Per-label thresholds:
+0 | Reentrancy | 0.75
+1 | Contract contains unknown address | 0.55
+2 | Integer overflow or underflow | 0.55
+3 | Timestamp dependence | 0.30
+4 | DoS with failed call | 0.90
+5 | Assert violation | 0.40
+6 | Unchecked call return value | 0.60
+7 | Unsafe send | 0.30
+8 | Multiplication after division | 0.60
+9 | Extra gas consumption | 0.70
+
+Global threshold baseline:
+threshold: 0.5
+recognition_micro_precision: 0.5008130081300813
+recognition_micro_recall: 0.603448275862069
+recognition_micro_f1: 0.5473609383330371
+recognition_macro_precision: 0.3764396768546337
+recognition_macro_recall: 0.5325388240967132
+recognition_macro_f1: 0.41521780134625824
+predicted_positive_total: 6150
+
+Small-label F1 changes vs unweighted baseline:
+label | baseline_f1 | current_f1 | diff
+Reentrancy | 0.314607 | 0.306785 | -0.007822
+DoS with failed call | 0.193548 | 0.148148 | -0.045400
+Assert violation | 0.323625 | 0.316109 | -0.007516
+Unsafe send | 0.367347 | 0.393939 | 0.026592
+
+Warnings:
+- Timestamp dependence: predicted positives may be too many (257 vs support 78).

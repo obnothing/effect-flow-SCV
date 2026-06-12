@@ -1,0 +1,26 @@
+VTE label embedding cosine correlation report
+
+Cosine matrix:
+label | Reentrancy | Contract contains unknown address | Integer overflow or underflow | Timestamp dependence | DoS with failed call | Assert violation | Unchecked call return value | Unsafe send | Multiplication after division | Extra gas consumption
+Reentrancy | 1.000000 | 0.039929 | -0.032054 | 0.023169 | 0.007347 | 0.027088 | -0.015372 | 0.017495 | 0.034594 | -0.019717
+Contract contains unknown address | 0.039929 | 1.000000 | -0.030758 | 0.036698 | -0.006729 | 0.015326 | -0.038404 | 0.025896 | -0.047948 | 0.004994
+Integer overflow or underflow | -0.032054 | -0.030758 | 1.000000 | -0.038051 | -0.062749 | -0.014962 | 0.011173 | -0.045158 | 0.001719 | -0.092545
+Timestamp dependence | 0.023169 | 0.036698 | -0.038051 | 1.000000 | -0.009111 | 0.062561 | -0.015901 | 0.005362 | 0.032233 | -0.020199
+DoS with failed call | 0.007347 | -0.006729 | -0.062749 | -0.009111 | 1.000000 | 0.015032 | 0.021706 | -0.003862 | -0.057125 | 0.025248
+Assert violation | 0.027088 | 0.015326 | -0.014962 | 0.062561 | 0.015032 | 1.000000 | -0.025289 | 0.065924 | 0.008077 | 0.000456
+Unchecked call return value | -0.015372 | -0.038404 | 0.011173 | -0.015901 | 0.021706 | -0.025289 | 1.000000 | 0.006035 | 0.036124 | 0.037241
+Unsafe send | 0.017495 | 0.025896 | -0.045158 | 0.005362 | -0.003862 | 0.065924 | 0.006035 | 1.000000 | 0.017787 | 0.026693
+Multiplication after division | 0.034594 | -0.047948 | 0.001719 | 0.032233 | -0.057125 | 0.008077 | 0.036124 | 0.017787 | 1.000000 | 0.006041
+Extra gas consumption | -0.019717 | 0.004994 | -0.092545 | -0.020199 | 0.025248 | 0.000456 | 0.037241 | 0.026693 | 0.006041 | 1.000000
+
+Top correlated labels:
+Reentrancy: Contract contains unknown address (0.0399), Multiplication after division (0.0346), Assert violation (0.0271)
+Contract contains unknown address: Reentrancy (0.0399), Timestamp dependence (0.0367), Unsafe send (0.0259)
+Integer overflow or underflow: Unchecked call return value (0.0112), Multiplication after division (0.0017), Assert violation (-0.0150)
+Timestamp dependence: Assert violation (0.0626), Contract contains unknown address (0.0367), Multiplication after division (0.0322)
+DoS with failed call: Extra gas consumption (0.0252), Unchecked call return value (0.0217), Assert violation (0.0150)
+Assert violation: Unsafe send (0.0659), Timestamp dependence (0.0626), Reentrancy (0.0271)
+Unchecked call return value: Extra gas consumption (0.0372), Multiplication after division (0.0361), DoS with failed call (0.0217)
+Unsafe send: Assert violation (0.0659), Extra gas consumption (0.0267), Contract contains unknown address (0.0259)
+Multiplication after division: Unchecked call return value (0.0361), Reentrancy (0.0346), Timestamp dependence (0.0322)
+Extra gas consumption: Unchecked call return value (0.0372), Unsafe send (0.0267), DoS with failed call (0.0252)
