@@ -16,6 +16,8 @@ from tqdm import tqdm
 from transformers import AutoTokenizer
 
 from dataset import build_datasets
+from evm_bert_classification_dataset import build_evm_bert_datasets
+from evm_bert_correlascan import EVMBertCorrelaScan
 from evm_dataset import build_evm_chunk_datasets
 from evm_model import EVMChunkCorrelaScan
 from metrics import compute_metrics
@@ -101,6 +103,11 @@ def normalize_training_config(config):
         "max_pos_weight",
         "baseline_micro_f1",
         "baseline_macro_f1",
+        "baseline_detection_f1",
+        "encoder_learning_rate",
+        "head_learning_rate",
+        "weight_decay",
+        "warmup_ratio",
         "vte_dropout",
         "vte_temperature",
     ]
@@ -131,10 +138,15 @@ def train_one_epoch(
     gradient_clip_norm=None,
     gradient_accumulation_steps=1,
     show_progress=True,
+    scaler=None,
+    fp16=False,
+    bf16=False,
 ):
     model.train()
     total_loss = 0.0
     optimizer.zero_grad(set_to_none=True)
+    use_amp = (fp16 or bf16) and torch.cuda.is_available()
+    autocast_dtype = torch.bfloat16 if bf16 else torch.float16
 
     progress = tqdm(
         dataloader,
@@ -145,10 +157,14 @@ def train_one_epoch(
     for step, batch in enumerate(progress, start=1):
         batch = move_batch_to_device(batch, device)
 
-        outputs = model(**batch)
-        loss = outputs["loss"]
-        scaled_loss = loss / gradient_accumulation_steps
-        scaled_loss.backward()
+        with torch.cuda.amp.autocast(enabled=use_amp, dtype=autocast_dtype):
+            outputs = model(**batch)
+            loss = outputs["loss"]
+            scaled_loss = loss / gradient_accumulation_steps
+        if scaler is not None and scaler.is_enabled():
+            scaler.scale(scaled_loss).backward()
+        else:
+            scaled_loss.backward()
 
         total_loss += loss.item()
 
@@ -158,8 +174,14 @@ def train_one_epoch(
         )
         if should_step:
             if gradient_clip_norm is not None:
+                if scaler is not None and scaler.is_enabled():
+                    scaler.unscale_(optimizer)
                 torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_clip_norm)
-            optimizer.step()
+            if scaler is not None and scaler.is_enabled():
+                scaler.step(optimizer)
+                scaler.update()
+            else:
+                optimizer.step()
             optimizer.zero_grad(set_to_none=True)
 
     return total_loss / max(len(dataloader), 1)
@@ -175,13 +197,25 @@ def reduce_mean(value, device, distributed):
 
 
 @torch.no_grad()
-def evaluate(model, dataloader, device, threshold, scan_thresholds, show_progress=True):
+def evaluate(
+    model,
+    dataloader,
+    device,
+    threshold,
+    scan_thresholds,
+    show_progress=True,
+    fp16=False,
+    bf16=False,
+):
     model.eval()
     total_loss = 0.0
     detection_logits = []
     binary_labels = []
     recognition_logits = []
     multi_labels = []
+
+    use_amp = (fp16 or bf16) and torch.cuda.is_available()
+    autocast_dtype = torch.bfloat16 if bf16 else torch.float16
 
     for batch in tqdm(
         dataloader,
@@ -190,7 +224,8 @@ def evaluate(model, dataloader, device, threshold, scan_thresholds, show_progres
         disable=not show_progress,
     ):
         batch = move_batch_to_device(batch, device)
-        outputs = model(**batch)
+        with torch.cuda.amp.autocast(enabled=use_amp, dtype=autocast_dtype):
+            outputs = model(**batch)
         total_loss += outputs["loss"].item()
         detection_logits.append(outputs["detection_logits"].detach().cpu().numpy())
         binary_labels.append(batch["binary_label"].detach().cpu().numpy())
@@ -256,6 +291,8 @@ def print_run_info(config, device, datasets, model, distributed=None):
     lines = [
         f"model_type: {model_type}",
         f"model_name: {config.get('model_name')}",
+        f"hf_model_path: {config.get('hf_model_path')}",
+        f"vocab_path: {config.get('vocab_path')}",
         f"device: {device}",
         f"torch version: {torch.__version__}",
         f"cuda available: {torch.cuda.is_available()}",
@@ -273,6 +310,9 @@ def print_run_info(config, device, datasets, model, distributed=None):
         f"max_chunks: {config.get('max_chunks')}",
         f"freeze_encoder: {config.get('freeze_encoder', False)}",
         f"use_pos_weight: {config.get('use_pos_weight', False)}",
+        f"encoder_learning_rate: {config.get('encoder_learning_rate')}",
+        f"head_learning_rate: {config.get('head_learning_rate')}",
+        f"learning_rate: {config.get('learning_rate')}",
         f"pos_weight_mode: {config.get('pos_weight_mode')}",
         f"max_pos_weight: {config.get('max_pos_weight')}",
         f"apply_pos_weight_to: {config.get('apply_pos_weight_to')}",
@@ -418,6 +458,14 @@ def build_training_components(config):
         )
         return datasets, tokenizer, model
 
+    if config.get("model_type") == "evm_bert":
+        datasets, tokenizer = build_evm_bert_datasets(config)
+        model = EVMBertCorrelaScan(
+            config,
+            pad_token_id=tokenizer.pad_token_id,
+        )
+        return datasets, tokenizer, model
+
     tokenizer = AutoTokenizer.from_pretrained(
         config["model_name"],
         local_files_only=config.get("local_files_only", True),
@@ -438,7 +486,7 @@ def build_training_components(config):
 def save_tokenizer_artifact(config, tokenizer, checkpoint_dir):
     tokenizer_save_dir = checkpoint_dir / "tokenizer"
     ensure_dir(tokenizer_save_dir)
-    if config.get("model_type") == "evm_chunk":
+    if config.get("model_type") in {"evm_chunk", "evm_bert"}:
         vocab_path = Path(config["vocab_path"])
         target_path = tokenizer_save_dir / "evm_vocab.json"
         target_path.write_text(vocab_path.read_text(encoding="utf-8"), encoding="utf-8")
@@ -742,6 +790,43 @@ def maybe_apply_recognition_pos_weight(model, config, device, is_main=True):
     return report
 
 
+def build_optimizer(model, config):
+    weight_decay = float(config.get("weight_decay", 0.0))
+    if config.get("model_type") == "evm_bert":
+        encoder_lr = float(config.get("encoder_learning_rate", 2e-5))
+        head_lr = float(config.get("head_learning_rate", 1e-4))
+        encoder_params = []
+        head_params = []
+        for name, param in model.named_parameters():
+            if not param.requires_grad:
+                continue
+            normalized_name = name
+            if normalized_name.startswith("module."):
+                normalized_name = normalized_name[len("module.") :]
+            if normalized_name.startswith("encoder."):
+                encoder_params.append(param)
+            else:
+                head_params.append(param)
+        param_groups = []
+        if encoder_params:
+            param_groups.append(
+                {"params": encoder_params, "lr": encoder_lr, "weight_decay": weight_decay}
+            )
+        if head_params:
+            param_groups.append(
+                {"params": head_params, "lr": head_lr, "weight_decay": weight_decay}
+            )
+        if not param_groups:
+            raise ValueError("No trainable parameters found for optimizer.")
+        return torch.optim.AdamW(param_groups)
+
+    return torch.optim.AdamW(
+        [param for param in model.parameters() if param.requires_grad],
+        lr=config["learning_rate"],
+        weight_decay=weight_decay,
+    )
+
+
 def main():
     args = parse_args()
     distributed = init_distributed()
@@ -817,10 +902,7 @@ def main():
                 f"{config.get('ddp_find_unused_parameters', True)}"
             )
     trainable_parameters, total_parameters = count_parameters(model)
-    optimizer = torch.optim.AdamW(
-        [param for param in model.parameters() if param.requires_grad],
-        lr=config["learning_rate"],
-    )
+    optimizer = build_optimizer(model, config)
 
     checkpoint_dir = Path(config["checkpoint_dir"])
     ensure_dir(checkpoint_dir)
@@ -865,6 +947,9 @@ def main():
     scan_thresholds = get_thresholds(config)
     gradient_clip_norm = config.get("gradient_clip_norm")
     gradient_accumulation_steps = int(config.get("gradient_accumulation_steps", 1))
+    fp16 = bool(config.get("fp16", False)) and torch.cuda.is_available()
+    bf16 = bool(config.get("bf16", False)) and torch.cuda.is_available()
+    scaler = torch.cuda.amp.GradScaler(enabled=fp16 and not bf16)
     last_train_loss = None
     last_valid_loss = None
     last_metrics = {}
@@ -888,6 +973,9 @@ def main():
             gradient_clip_norm=gradient_clip_norm,
             gradient_accumulation_steps=gradient_accumulation_steps,
             show_progress=distributed["is_main"],
+            scaler=scaler,
+            fp16=fp16,
+            bf16=bf16,
         )
         train_loss = reduce_mean(train_loss, device, distributed)
         last_memory_stats = cuda_memory_stats()
@@ -901,6 +989,8 @@ def main():
                 device,
                 threshold,
                 scan_thresholds,
+                fp16=fp16,
+                bf16=bf16,
             )
             last_valid_loss = valid_loss
             last_metrics = metrics
@@ -1119,12 +1209,23 @@ def main():
             f"Each contract is capped at {max_covered_tokens} EVM tokenizer tokens; "
             "longer contracts are truncated."
         )
-    elif config.get("freeze_encoder", False):
+    if config.get("model_type") == "evm_bert":
         warnings.append(
-            "Encoder is frozen; this run checks classifier-head training only."
+            "EVM-BERT uses full BJUT unlabeled transductive pretraining; "
+            "this is not a strict inductive baseline."
         )
-    else:
-        warnings.append("Encoder is unfrozen; monitor GPU memory and loss stability.")
+        warnings.append(
+            "EVM-BERT downstream fine-tuning uses the fixed EVM opcode-aware "
+            "vocabulary and truncates each contract to the first 510 EVM tokens "
+            "plus [CLS]/[SEP]. Chunk aggregation is not enabled in this stage."
+        )
+    elif config.get("model_type") != "evm_chunk":
+        if config.get("freeze_encoder", False):
+            warnings.append(
+                "Encoder is frozen; this run checks classifier-head training only."
+            )
+        else:
+            warnings.append("Encoder is unfrozen; monitor GPU memory and loss stability.")
     threshold_scan = best_metrics.get("threshold_scan", {})
     threshold_key = str(threshold)
     default_threshold_f1 = threshold_scan.get(threshold_key, {}).get("micro_f1")
@@ -1189,9 +1290,15 @@ def main():
         result_dir / "checkpoint_summary.json",
         checkpoint_summary,
     )
+    encoder_config = getattr(unwrap_model(model), "encoder", None)
+    encoder_config = getattr(encoder_config, "config", None)
+    model_vocab_size = getattr(encoder_config, "vocab_size", None)
 
     sanity_report = {
         "loaded_model": model_loaded,
+        "loaded_pretrained_evm_bert": (
+            model_loaded if config.get("model_type") == "evm_bert" else None
+        ),
         "loaded_local_model": (
             model_loaded if config.get("model_type") != "evm_chunk" else "not_applicable"
         ),
@@ -1199,8 +1306,21 @@ def main():
         "model_type": config.get("model_type", "codebert"),
         "tokenizer_type": config.get("tokenizer_type", "transformers"),
         "model_name": config.get("model_name"),
+        "hf_model_path": config.get("hf_model_path"),
         "vocab_path": config.get("vocab_path"),
         "vocab_size": len(tokenizer) if hasattr(tokenizer, "__len__") else None,
+        "model_vocab_size": model_vocab_size,
+        "vocab_size_matches_model": (
+            len(tokenizer) == model_vocab_size
+            if hasattr(tokenizer, "__len__") and model_vocab_size is not None
+            else None
+        ),
+        "hidden_size": getattr(encoder_config, "hidden_size", None),
+        "num_hidden_layers": getattr(encoder_config, "num_hidden_layers", None),
+        "num_attention_heads": getattr(encoder_config, "num_attention_heads", None),
+        "is_transductive_pretraining": (
+            True if config.get("model_type") == "evm_bert" else None
+        ),
         "train_samples": len(datasets["train"]),
         "valid_samples": len(datasets["valid"]),
         "completed_epochs": len(epoch_history),
@@ -1256,11 +1376,18 @@ def main():
             * gradient_accumulation_steps
             * distributed["world_size"]
         ),
-        "learning_rate": config["learning_rate"],
+        "learning_rate": config.get(
+            "learning_rate",
+            config.get("encoder_learning_rate"),
+        ),
+        "encoder_learning_rate": config.get("encoder_learning_rate"),
+        "head_learning_rate": config.get("head_learning_rate"),
         "device": str(device),
         "torch_version": torch.__version__,
         "cuda_available": torch.cuda.is_available(),
         "cuda_device_name": cuda_device_name,
+        "fp16": fp16,
+        "bf16": bf16,
         "distributed": distributed["enabled"],
         "world_size": distributed["world_size"],
         "trainable_parameters": trainable_parameters,

@@ -9,6 +9,8 @@ from tqdm import tqdm
 from transformers import AutoTokenizer
 
 from dataset import build_datasets
+from evm_bert_classification_dataset import build_evm_bert_datasets
+from evm_bert_correlascan import EVMBertCorrelaScan
 from evm_dataset import build_evm_chunk_datasets
 from evm_model import EVMChunkCorrelaScan
 from metrics import (
@@ -71,6 +73,14 @@ def build_components(config):
         model = EVMChunkCorrelaScan(
             config,
             vocab_size=len(tokenizer),
+            pad_token_id=tokenizer.pad_token_id,
+        )
+        return datasets, tokenizer, model
+
+    if config.get("model_type") == "evm_bert":
+        datasets, tokenizer = build_evm_bert_datasets(config)
+        model = EVMBertCorrelaScan(
+            config,
             pad_token_id=tokenizer.pad_token_id,
         )
         return datasets, tokenizer, model
@@ -243,6 +253,9 @@ def write_text_report(path, report):
         "threshold_source",
         "threshold_mode",
         "threshold_file",
+        "model_type",
+        "hf_model_path",
+        "is_transductive_pretraining",
         "evaluated_samples",
         "expected_samples",
         "loss",
@@ -259,10 +272,16 @@ def write_text_report(path, report):
         "predicted_positive_total",
         "micro_f1_change_over_global_threshold",
         "macro_f1_improvement_over_global_threshold",
+        "reference_baseline_name",
         "baseline_micro_f1",
         "baseline_macro_f1",
+        "baseline_detection_f1",
+        "micro_f1_change_over_reference_baseline",
+        "macro_f1_change_over_reference_baseline",
+        "detection_f1_change_over_reference_baseline",
         "micro_f1_improvement_over_unweighted_baseline",
         "macro_f1_improvement_over_unweighted_baseline",
+        "detection_f1_improvement_over_baseline",
     ]
     for key in scalar_keys:
         lines.append(f"{key}: {report.get(key)}")
@@ -337,25 +356,52 @@ def build_evaluation_warnings(metrics, expected_samples, evaluated_samples):
                 f"{row['label_name']}: predicted positives may be too many "
                 f"({predicted} vs support {support})."
             )
+    if metrics.get("model_type") == "evm_bert":
+        warnings.append(
+            "EVM-BERT uses full BJUT unlabeled transductive pretraining; "
+            "this result is not a strict inductive baseline."
+        )
     return warnings
 
 
 def build_baseline_comparison(config, report):
     comparison = {
+        "reference_baseline_name": config.get(
+            "reference_baseline_name",
+            "CodeBERT-base weighted BCE global threshold baseline",
+        ),
         "baseline_micro_f1": config.get("baseline_micro_f1"),
         "baseline_macro_f1": config.get("baseline_macro_f1"),
+        "baseline_detection_f1": config.get("baseline_detection_f1"),
+        "micro_f1_change_over_reference_baseline": None,
+        "macro_f1_change_over_reference_baseline": None,
+        "detection_f1_change_over_reference_baseline": None,
         "micro_f1_improvement_over_unweighted_baseline": None,
         "macro_f1_improvement_over_unweighted_baseline": None,
+        "detection_f1_improvement_over_baseline": None,
         "small_label_f1_changes": [],
     }
     if comparison["baseline_micro_f1"] is not None:
-        comparison["micro_f1_improvement_over_unweighted_baseline"] = (
+        comparison["micro_f1_change_over_reference_baseline"] = (
             report["recognition_micro_f1"] - comparison["baseline_micro_f1"]
         )
+        comparison["micro_f1_improvement_over_unweighted_baseline"] = comparison[
+            "micro_f1_change_over_reference_baseline"
+        ]
     if comparison["baseline_macro_f1"] is not None:
-        comparison["macro_f1_improvement_over_unweighted_baseline"] = (
+        comparison["macro_f1_change_over_reference_baseline"] = (
             report["recognition_macro_f1"] - comparison["baseline_macro_f1"]
         )
+        comparison["macro_f1_improvement_over_unweighted_baseline"] = comparison[
+            "macro_f1_change_over_reference_baseline"
+        ]
+    if comparison["baseline_detection_f1"] is not None:
+        comparison["detection_f1_change_over_reference_baseline"] = (
+            report["detection_f1"] - comparison["baseline_detection_f1"]
+        )
+        comparison["detection_f1_improvement_over_baseline"] = comparison[
+            "detection_f1_change_over_reference_baseline"
+        ]
 
     baseline_per_label = config.get("baseline_per_label_f1", {}) or {}
     small_label_names = config.get("small_label_names", []) or []
@@ -508,6 +554,11 @@ def main():
         "threshold_source": threshold_source,
         "threshold_mode": threshold_mode,
         "threshold_file": args.threshold_file,
+        "model_type": config.get("model_type", "codebert"),
+        "hf_model_path": config.get("hf_model_path"),
+        "is_transductive_pretraining": (
+            True if config.get("model_type") == "evm_bert" else None
+        ),
         "loss": loss,
         "detection_accuracy": metrics["detection_accuracy"],
         "detection_precision": metrics["detection_precision"],
