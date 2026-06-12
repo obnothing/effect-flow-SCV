@@ -1,0 +1,47 @@
+[
+  {
+    "epoch": 1,
+    "epochs": 10,
+    "train_mlm_loss": 1.615324931764868,
+    "global_step": 5868,
+    "learning_rate": 9.574329224075417e-05,
+    "max_memory_allocated_mb": 9298.4375,
+    "max_memory_reserved_mb": 9788.0
+  },
+  {
+    "epoch": 2,
+    "epochs": 10,
+    "train_mlm_loss": 0.16288223729863913,
+    "global_step": 11736,
+    "learning_rate": 8.510514865844815e-05,
+    "max_memory_allocated_mb": 9298.4375,
+    "max_memory_reserved_mb": 9788.0
+  },
+  {
+    "epoch": 3,
+    "epochs": 10,
+    "train_mlm_loss": 0.11222549334703115,
+    "global_step": 17604,
+    "learning_rate": 7.446700507614213e-05,
+    "max_memory_allocated_mb": 9298.4375,
+    "max_memory_reserved_mb": 9788.0
+  },
+  {
+    "epoch": 4,
+    "epochs": 10,
+    "train_mlm_loss": 0.08953780423355688,
+    "global_step": 23472,
+    "learning_rate": 6.38288614938361e-05,
+    "max_memory_allocated_mb": 9298.4375,
+    "max_memory_reserved_mb": 9788.0
+  },
+  {
+    "epoch": 5,
+    "epochs": 10,
+    "train_mlm_loss": 0.07594146527498098,
+    "global_step": 29340,
+    "learning_rate": 5.31907179115301e-05,
+    "max_memory_allocated_mb": 9298.4375,
+    "max_memory_reserved_mb": 9788.0
+  }
+]

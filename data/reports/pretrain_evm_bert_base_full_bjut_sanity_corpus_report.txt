@@ -1,0 +1,28 @@
+Full BJUT SC01 unlabeled EVM-BERT pretraining corpus report
+
+experiment_name: pretrain_evm_bert_base_full_bjut_sanity
+pretrain_corpus_path: data/processed/BJUT_SC01/pretrain_corpus_full_bjut_sanity.jsonl
+vocab_path: data/processed/BJUT_SC01/evm_vocab.json
+is_transductive_pretraining: True
+use_labels: False
+transductive_warning: This pretraining corpus uses opcode inputs from train/valid/test without labels. It is a transductive self-supervised setting.
+
+train samples: 2048
+valid samples: 0
+test samples: 0
+total samples: 2048
+original_contract_samples: 2048
+generated_mlm_chunks: 6970
+average_chunks_per_contract: 3.403320
+max_chunks_per_contract: 4
+max_chunks_per_contract_limit: 4
+truncated_contract_count: 899
+unique opcode hash count: 923
+duplicate opcode hash count: 1125
+empty_opcode_count: 0
+covered_token_ratio_mean: 0.809484
+covered_token_ratio_p50: 1.000000
+covered_token_ratio_p90: 1.000000
+
+Split chunk counts:
+- train: 6970

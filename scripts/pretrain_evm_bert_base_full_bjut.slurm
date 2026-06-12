@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=evmbert_base_pretrain
-#SBATCH --partition=gpu-a40
+#SBATCH --partition=gpu-l20
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:2
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=24
+#SBATCH --cpus-per-task=16
 #SBATCH --output=logs/slurm_evmbert_base_pretrain_%j.out
 #SBATCH --error=logs/slurm_evmbert_base_pretrain_%j.err
 
