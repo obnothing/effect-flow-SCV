@@ -1,0 +1,131 @@
+{
+  "source_file": "data/processed/BJUT_SC01/train_mlsmote.jsonl",
+  "total_samples": 107904,
+  "mode": "sqrt_ratio",
+  "max_pos_weight": 5.0,
+  "weights": [
+    4.919890838061785,
+    2.2432566410871835,
+    2.409051866468253,
+    5.0,
+    5.0,
+    5.0,
+    3.733766673166428,
+    5.0,
+    5.0,
+    4.817112832710963
+  ],
+  "table": [
+    {
+      "label_id": 0,
+      "label_name": "Reentrancy",
+      "positive_count": 4281,
+      "negative_count": 103623,
+      "raw_ratio": 24.20532585844429,
+      "sqrt_ratio": 4.919890838061785,
+      "final_pos_weight": 4.919890838061785,
+      "max_pos_weight": 5.0,
+      "source_file": "data/processed/BJUT_SC01/train_mlsmote.jsonl"
+    },
+    {
+      "label_id": 1,
+      "label_name": "Contract contains unknown address",
+      "positive_count": 17888,
+      "negative_count": 90016,
+      "raw_ratio": 5.032200357781753,
+      "sqrt_ratio": 2.2432566410871835,
+      "final_pos_weight": 2.2432566410871835,
+      "max_pos_weight": 5.0,
+      "source_file": "data/processed/BJUT_SC01/train_mlsmote.jsonl"
+    },
+    {
+      "label_id": 2,
+      "label_name": "Integer overflow or underflow",
+      "positive_count": 15860,
+      "negative_count": 92044,
+      "raw_ratio": 5.803530895334174,
+      "sqrt_ratio": 2.409051866468253,
+      "final_pos_weight": 2.409051866468253,
+      "max_pos_weight": 5.0,
+      "source_file": "data/processed/BJUT_SC01/train_mlsmote.jsonl"
+    },
+    {
+      "label_id": 3,
+      "label_name": "Timestamp dependence",
+      "positive_count": 1773,
+      "negative_count": 106131,
+      "raw_ratio": 59.8595600676819,
+      "sqrt_ratio": 7.7368960228041,
+      "final_pos_weight": 5.0,
+      "max_pos_weight": 5.0,
+      "source_file": "data/processed/BJUT_SC01/train_mlsmote.jsonl"
+    },
+    {
+      "label_id": 4,
+      "label_name": "DoS with failed call",
+      "positive_count": 2225,
+      "negative_count": 105679,
+      "raw_ratio": 47.4961797752809,
+      "sqrt_ratio": 6.891747222242042,
+      "final_pos_weight": 5.0,
+      "max_pos_weight": 5.0,
+      "source_file": "data/processed/BJUT_SC01/train_mlsmote.jsonl"
+    },
+    {
+      "label_id": 5,
+      "label_name": "Assert violation",
+      "positive_count": 1792,
+      "negative_count": 106112,
+      "raw_ratio": 59.214285714285715,
+      "sqrt_ratio": 7.69508191732133,
+      "final_pos_weight": 5.0,
+      "max_pos_weight": 5.0,
+      "source_file": "data/processed/BJUT_SC01/train_mlsmote.jsonl"
+    },
+    {
+      "label_id": 6,
+      "label_name": "Unchecked call return value",
+      "positive_count": 7222,
+      "negative_count": 100682,
+      "raw_ratio": 13.941013569648296,
+      "sqrt_ratio": 3.733766673166428,
+      "final_pos_weight": 3.733766673166428,
+      "max_pos_weight": 5.0,
+      "source_file": "data/processed/BJUT_SC01/train_mlsmote.jsonl"
+    },
+    {
+      "label_id": 7,
+      "label_name": "Unsafe send",
+      "positive_count": 1394,
+      "negative_count": 106510,
+      "raw_ratio": 76.40602582496413,
+      "sqrt_ratio": 8.741054045420617,
+      "final_pos_weight": 5.0,
+      "max_pos_weight": 5.0,
+      "source_file": "data/processed/BJUT_SC01/train_mlsmote.jsonl"
+    },
+    {
+      "label_id": 8,
+      "label_name": "Multiplication after division",
+      "positive_count": 1591,
+      "negative_count": 106313,
+      "raw_ratio": 66.82149591451918,
+      "sqrt_ratio": 8.17444162707883,
+      "final_pos_weight": 5.0,
+      "max_pos_weight": 5.0,
+      "source_file": "data/processed/BJUT_SC01/train_mlsmote.jsonl"
+    },
+    {
+      "label_id": 9,
+      "label_name": "Extra gas consumption",
+      "positive_count": 4458,
+      "negative_count": 103446,
+      "raw_ratio": 23.20457604306864,
+      "sqrt_ratio": 4.817112832710963,
+      "final_pos_weight": 4.817112832710963,
+      "max_pos_weight": 5.0,
+      "source_file": "data/processed/BJUT_SC01/train_mlsmote.jsonl"
+    }
+  ],
+  "warnings": []
+}
