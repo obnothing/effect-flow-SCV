@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=eval_evmbert_weighted
-#SBATCH --partition=gpu-a30
+#SBATCH --partition=gpu-l20
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=12
+#SBATCH --cpus-per-task=4
 #SBATCH --output=logs/slurm_eval_evmbert_weighted_%j.out
 #SBATCH --error=logs/slurm_eval_evmbert_weighted_%j.err
 
