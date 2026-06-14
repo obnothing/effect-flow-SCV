@@ -65,6 +65,7 @@ num_workers: 4
 fp16: true
 local_files_only: true
 ddp_find_unused_parameters: false
+ddp_static_graph: false
 
 label_names:
   - Reentrancy

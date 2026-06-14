@@ -306,6 +306,7 @@ def print_run_info(config, device, datasets, model, distributed=None):
         "gradient_accumulation_steps: "
         f"{config.get('gradient_accumulation_steps', 1)}",
         f"world_size: {distributed['world_size']}",
+        f"num_workers: {config.get('num_workers', 0)}",
         "effective_batch_size: "
         f"{config['batch_size'] * config.get('gradient_accumulation_steps', 1) * distributed['world_size']}",
         f"max_len: {config.get('max_len')}",
@@ -898,6 +899,13 @@ def main():
             output_device=distributed["local_rank"],
             find_unused_parameters=config.get("ddp_find_unused_parameters", True),
         )
+        if config.get("ddp_static_graph", False):
+            if not hasattr(model, "_set_static_graph"):
+                raise RuntimeError(
+                    "ddp_static_graph=true but this PyTorch DistributedDataParallel "
+                    "does not expose _set_static_graph()."
+                )
+            model._set_static_graph()
     model_loaded = True
     if distributed["is_main"]:
         print_run_info(config, device, datasets, model, distributed)
@@ -911,6 +919,10 @@ def main():
             print(
                 "[INFO] ddp_find_unused_parameters: "
                 f"{config.get('ddp_find_unused_parameters', True)}"
+            )
+            print(
+                "[INFO] ddp_static_graph: "
+                f"{config.get('ddp_static_graph', False)}"
             )
     trainable_parameters, total_parameters = count_parameters(model)
     optimizer = build_optimizer(model, config)

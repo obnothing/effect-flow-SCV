@@ -62,10 +62,11 @@ baseline_detection_f1: 0.6430
 reference_baseline_name: CodeBERT-base weighted BCE global threshold baseline
 
 seed: 42
-num_workers: 8
+num_workers: 2
 fp16: true
 local_files_only: true
 ddp_find_unused_parameters: false
+ddp_static_graph: true
 
 label_names:
   - Reentrancy
