@@ -9,6 +9,8 @@ from tqdm import tqdm
 from transformers import AutoTokenizer
 
 from dataset import build_datasets
+from evm_bert_chunk_correlascan import EVMBertChunkCorrelaScan
+from evm_bert_chunk_dataset import build_evm_bert_chunk_datasets
 from evm_bert_classification_dataset import build_evm_bert_datasets
 from evm_bert_correlascan import EVMBertCorrelaScan
 from evm_dataset import build_evm_chunk_datasets
@@ -85,6 +87,14 @@ def build_components(config):
         )
         return datasets, tokenizer, model
 
+    if config.get("model_type") == "evm_bert_chunk":
+        datasets, tokenizer = build_evm_bert_chunk_datasets(config)
+        model = EVMBertChunkCorrelaScan(
+            config,
+            pad_token_id=tokenizer.pad_token_id,
+        )
+        return datasets, tokenizer, model
+
     tokenizer = AutoTokenizer.from_pretrained(
         config["model_name"],
         local_files_only=config.get("local_files_only", True),
@@ -117,17 +127,20 @@ def default_threshold_grid():
 
 
 @torch.no_grad()
-def collect_predictions(model, dataloader, device):
+def collect_predictions(model, dataloader, device, fp16=False, bf16=False):
     model.eval()
     total_loss = 0.0
     detection_logits = []
     binary_labels = []
     recognition_logits = []
     multi_labels = []
+    use_amp = (fp16 or bf16) and torch.cuda.is_available()
+    autocast_dtype = torch.bfloat16 if bf16 else torch.float16
 
     for batch in tqdm(dataloader, desc="evaluate", leave=False):
         batch = {key: value.to(device) for key, value in batch.items()}
-        outputs = model(**batch)
+        with torch.cuda.amp.autocast(enabled=use_amp, dtype=autocast_dtype):
+            outputs = model(**batch)
         total_loss += outputs["loss"].item()
         detection_logits.append(outputs["detection_logits"].detach().cpu().numpy())
         binary_labels.append(batch["binary_label"].detach().cpu().numpy())
@@ -356,7 +369,7 @@ def build_evaluation_warnings(metrics, expected_samples, evaluated_samples):
                 f"{row['label_name']}: predicted positives may be too many "
                 f"({predicted} vs support {support})."
             )
-    if metrics.get("model_type") == "evm_bert":
+    if metrics.get("model_type") in {"evm_bert", "evm_bert_chunk"}:
         warnings.append(
             "EVM-BERT uses full BJUT unlabeled transductive pretraining; "
             "this result is not a strict inductive baseline."
@@ -453,7 +466,9 @@ def main():
     model.load_state_dict(checkpoint["model_state_dict"])
     model = model.to(device)
     maybe_apply_recognition_pos_weight(model, config, device, is_main=True)
-    predictions = collect_predictions(model, dataloader, device)
+    fp16 = bool(config.get("fp16", False)) and torch.cuda.is_available()
+    bf16 = bool(config.get("bf16", False)) and torch.cuda.is_available()
+    predictions = collect_predictions(model, dataloader, device, fp16=fp16, bf16=bf16)
 
     if args.threshold_search == "per_label":
         if args.split != "valid":
@@ -557,8 +572,12 @@ def main():
         "model_type": config.get("model_type", "codebert"),
         "hf_model_path": config.get("hf_model_path"),
         "is_transductive_pretraining": (
-            True if config.get("model_type") == "evm_bert" else None
+            True
+            if config.get("model_type") in {"evm_bert", "evm_bert_chunk"}
+            else None
         ),
+        "fp16": fp16,
+        "bf16": bf16,
         "loss": loss,
         "detection_accuracy": metrics["detection_accuracy"],
         "detection_precision": metrics["detection_precision"],

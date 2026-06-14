@@ -16,6 +16,8 @@ from tqdm import tqdm
 from transformers import AutoTokenizer
 
 from dataset import build_datasets
+from evm_bert_chunk_correlascan import EVMBertChunkCorrelaScan
+from evm_bert_chunk_dataset import build_evm_bert_chunk_datasets
 from evm_bert_classification_dataset import build_evm_bert_datasets
 from evm_bert_correlascan import EVMBertCorrelaScan
 from evm_dataset import build_evm_chunk_datasets
@@ -89,6 +91,7 @@ def normalize_training_config(config):
         "chunk_size",
         "chunk_stride",
         "max_chunks",
+        "encoder_chunk_batch_size",
         "embedding_dim",
         "bigru_hidden_size",
         "num_transformer_layers",
@@ -466,6 +469,14 @@ def build_training_components(config):
         )
         return datasets, tokenizer, model
 
+    if config.get("model_type") == "evm_bert_chunk":
+        datasets, tokenizer = build_evm_bert_chunk_datasets(config)
+        model = EVMBertChunkCorrelaScan(
+            config,
+            pad_token_id=tokenizer.pad_token_id,
+        )
+        return datasets, tokenizer, model
+
     tokenizer = AutoTokenizer.from_pretrained(
         config["model_name"],
         local_files_only=config.get("local_files_only", True),
@@ -486,7 +497,7 @@ def build_training_components(config):
 def save_tokenizer_artifact(config, tokenizer, checkpoint_dir):
     tokenizer_save_dir = checkpoint_dir / "tokenizer"
     ensure_dir(tokenizer_save_dir)
-    if config.get("model_type") in {"evm_chunk", "evm_bert"}:
+    if config.get("model_type") in {"evm_chunk", "evm_bert", "evm_bert_chunk"}:
         vocab_path = Path(config["vocab_path"])
         target_path = tokenizer_save_dir / "evm_vocab.json"
         target_path.write_text(vocab_path.read_text(encoding="utf-8"), encoding="utf-8")
@@ -792,7 +803,7 @@ def maybe_apply_recognition_pos_weight(model, config, device, is_main=True):
 
 def build_optimizer(model, config):
     weight_decay = float(config.get("weight_decay", 0.0))
-    if config.get("model_type") == "evm_bert":
+    if config.get("model_type") in {"evm_bert", "evm_bert_chunk"}:
         encoder_lr = float(config.get("encoder_learning_rate", 2e-5))
         head_lr = float(config.get("head_learning_rate", 1e-4))
         encoder_params = []
@@ -1219,6 +1230,20 @@ def main():
             "vocabulary and truncates each contract to the first 510 EVM tokens "
             "plus [CLS]/[SEP]. Chunk aggregation is not enabled in this stage."
         )
+    elif config.get("model_type") == "evm_bert_chunk":
+        max_covered_tokens = (
+            (config.get("chunk_size", config.get("max_len", 512)) - 2)
+            + config["chunk_stride"] * (config["max_chunks"] - 1)
+        )
+        warnings.append(
+            "EVM-BERT chunk aggregation uses the full BJUT unlabeled "
+            "transductive MLM-pretrained encoder; this is not a strict "
+            "inductive baseline."
+        )
+        warnings.append(
+            f"Each contract is capped at approximately {max_covered_tokens} "
+            "EVM tokenizer content tokens before chunk-level aggregation."
+        )
     elif config.get("model_type") != "evm_chunk":
         if config.get("freeze_encoder", False):
             warnings.append(
@@ -1297,7 +1322,9 @@ def main():
     sanity_report = {
         "loaded_model": model_loaded,
         "loaded_pretrained_evm_bert": (
-            model_loaded if config.get("model_type") == "evm_bert" else None
+            model_loaded
+            if config.get("model_type") in {"evm_bert", "evm_bert_chunk"}
+            else None
         ),
         "loaded_local_model": (
             model_loaded if config.get("model_type") != "evm_chunk" else "not_applicable"
@@ -1319,7 +1346,9 @@ def main():
         "num_hidden_layers": getattr(encoder_config, "num_hidden_layers", None),
         "num_attention_heads": getattr(encoder_config, "num_attention_heads", None),
         "is_transductive_pretraining": (
-            True if config.get("model_type") == "evm_bert" else None
+            True
+            if config.get("model_type") in {"evm_bert", "evm_bert_chunk"}
+            else None
         ),
         "train_samples": len(datasets["train"]),
         "valid_samples": len(datasets["valid"]),
@@ -1363,8 +1392,14 @@ def main():
         "max_covered_tokens": (
             config["chunk_size"] + config["chunk_stride"] * (config["max_chunks"] - 1)
             if config.get("model_type") == "evm_chunk"
-            else None
+            else (
+                (config.get("chunk_size", config.get("max_len", 512)) - 2)
+                + config["chunk_stride"] * (config["max_chunks"] - 1)
+                if config.get("model_type") == "evm_bert_chunk"
+                else None
+            )
         ),
+        "encoder_chunk_batch_size": config.get("encoder_chunk_batch_size"),
         "chunk_pooling": config.get("chunk_pooling"),
         "encoder_type": config.get("encoder_type"),
         "embedding_dim": config.get("embedding_dim"),
