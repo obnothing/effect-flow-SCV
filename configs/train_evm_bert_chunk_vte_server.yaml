@@ -30,7 +30,7 @@ weight_decay: 0.01
 warmup_ratio: 0.06
 gradient_clip_norm: 1.0
 early_stopping_patience: 3
-gradient_checkpointing: true
+gradient_checkpointing: false
 
 freeze_encoder: false
 use_mlsmote_train: true
@@ -66,7 +66,7 @@ num_workers: 2
 fp16: true
 local_files_only: true
 ddp_find_unused_parameters: false
-ddp_static_graph: true
+ddp_static_graph: false
 
 label_names:
   - Reentrancy
