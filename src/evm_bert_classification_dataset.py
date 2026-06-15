@@ -125,6 +125,8 @@ class EVMBertClassificationDataset(Dataset):
             raise ValueError(
                 f"input_ids.max()={int(input_ids.max().item())} >= vocab_size={len(self.tokenizer)}"
             )
+        if int(input_ids.min().item()) < 0:
+            raise ValueError(f"input_ids.min()={int(input_ids.min().item())} < 0")
         return input_ids, attention_mask, token_type_ids
 
     def __len__(self):

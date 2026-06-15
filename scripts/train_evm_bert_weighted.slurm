@@ -16,6 +16,8 @@ conda activate correlascan_a40
 mkdir -p logs
 
 python scripts/finalize_pretrain_report.py
+python scripts/check_evm_bert_pretrained_model.py \
+  --config configs/train_evm_bert_weighted_server.yaml
 
 torchrun \
   --standalone \

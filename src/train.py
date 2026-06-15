@@ -568,6 +568,16 @@ def build_checkpoint_payload(
         "best_macro_f1": best_macro_f1,
         "recognition_micro_f1": metrics.get("recognition_micro_f1"),
         "recognition_macro_f1": metrics.get("recognition_macro_f1"),
+        "encoder_weight_source": (
+            config.get("hf_model_path")
+            if config.get("model_type") in {"evm_bert", "evm_bert_chunk"}
+            else config.get("model_name")
+        ),
+        "is_transductive_pretraining": (
+            bool(config.get("is_transductive_pretraining", True))
+            if config.get("model_type") in {"evm_bert", "evm_bert_chunk"}
+            else None
+        ),
         "metrics": metrics,
     }
 

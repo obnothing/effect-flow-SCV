@@ -54,6 +54,7 @@ num_workers: 8
 fp16: true
 local_files_only: true
 ddp_find_unused_parameters: false
+is_transductive_pretraining: true
 
 label_names:
   - Reentrancy
