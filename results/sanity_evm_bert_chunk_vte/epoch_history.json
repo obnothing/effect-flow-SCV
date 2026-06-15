@@ -1,0 +1,168 @@
+[
+  {
+    "epoch": 1,
+    "total_epochs": 1,
+    "train_loss": 0.501494270254625,
+    "valid_loss": 0.2668652015272528,
+    "is_best": true,
+    "is_best_loss": true,
+    "is_best_micro_f1": true,
+    "is_best_macro_f1": true,
+    "best_epoch": 1,
+    "best_valid_loss": 0.2668652015272528,
+    "best_threshold_by_micro_f1": 0.2,
+    "best_micro_f1": 0.2898550724637681,
+    "best_threshold_by_macro_f1": 0.1,
+    "best_macro_f1": 0.0752734778121775,
+    "patience_counter": 0,
+    "detection_accuracy": 0.84375,
+    "recognition_micro_f1": 0.1111111111111111,
+    "recognition_macro_f1": 0.04,
+    "predicted_positive_total": 1,
+    "per_label_predicted_positive_count": [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "per_label_true_positive_count": [
+      0,
+      4,
+      7,
+      0,
+      0,
+      0,
+      4,
+      1,
+      0,
+      1
+    ],
+    "per_label_mean_pred_prob": [
+      0.08306884765625,
+      0.24365234375,
+      0.13427734375,
+      0.05072021484375,
+      0.019439697265625,
+      0.054595947265625,
+      0.0760498046875,
+      0.04351806640625,
+      0.0249786376953125,
+      0.035186767578125
+    ],
+    "per_label_accuracy": [
+      1.0,
+      0.953125,
+      0.890625,
+      1.0,
+      1.0,
+      1.0,
+      0.9375,
+      0.984375,
+      1.0,
+      0.984375
+    ],
+    "per_label_precision": [
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "per_label_recall": [
+      0.0,
+      0.25,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "per_label_f1": [
+      0.0,
+      0.4,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "per_label_support": [
+      0,
+      4,
+      7,
+      0,
+      0,
+      0,
+      4,
+      1,
+      0,
+      1
+    ],
+    "threshold_scan": {
+      "0.1": {
+        "micro_precision": 0.11450381679389313,
+        "micro_recall": 0.8823529411764706,
+        "micro_f1": 0.2027027027027027,
+        "macro_precision": 0.04421526054590571,
+        "macro_recall": 0.3,
+        "macro_f1": 0.0752734778121775,
+        "predicted_positive_total": 131
+      },
+      "0.2": {
+        "micro_precision": 0.19230769230769232,
+        "micro_recall": 0.5882352941176471,
+        "micro_f1": 0.2898550724637681,
+        "macro_precision": 0.042499999999999996,
+        "macro_recall": 0.18571428571428572,
+        "macro_f1": 0.06666666666666667,
+        "predicted_positive_total": 52
+      },
+      "0.3": {
+        "micro_precision": 0.1724137931034483,
+        "micro_recall": 0.29411764705882354,
+        "micro_f1": 0.2173913043478261,
+        "macro_precision": 0.0782051282051282,
+        "macro_recall": 0.10357142857142856,
+        "macro_f1": 0.06,
+        "predicted_positive_total": 29
+      },
+      "0.4": {
+        "micro_precision": 0.21428571428571427,
+        "micro_recall": 0.17647058823529413,
+        "micro_f1": 0.1935483870967742,
+        "macro_precision": 0.02142857142857143,
+        "macro_recall": 0.075,
+        "macro_f1": 0.03333333333333333,
+        "predicted_positive_total": 14
+      },
+      "0.5": {
+        "micro_precision": 1.0,
+        "micro_recall": 0.058823529411764705,
+        "micro_f1": 0.1111111111111111,
+        "macro_precision": 0.1,
+        "macro_recall": 0.025,
+        "macro_f1": 0.04,
+        "predicted_positive_total": 1
+      }
+    },
+    "max_memory_allocated_mb": 2086.361328125,
+    "max_memory_reserved_mb": 2834.0
+  }
+]

@@ -1,0 +1,369 @@
+CorrelaScan sanity training report
+
+loaded_model: True
+
+loaded_pretrained_evm_bert: True
+
+loaded_local_model: True
+
+loaded_tokenizer: True
+
+model_type: evm_bert_chunk
+
+tokenizer_type: evm
+
+model_name: None
+
+hf_model_path: checkpoints/pretrain_evm_bert_base_full_bjut/hf_model
+
+vocab_path: data/processed/BJUT_SC01/evm_vocab.json
+
+vocab_size: 1161
+
+model_vocab_size: 1161
+
+vocab_size_matches_model: True
+
+hidden_size: 768
+
+num_hidden_layers: 12
+
+num_attention_heads: 12
+
+is_transductive_pretraining: True
+
+train_samples: 107904
+
+valid_samples: 26791
+
+completed_epochs: 5
+
+early_stopped: True
+
+stopped_epoch: 5
+
+early_stopping_patience: 3
+
+best_epoch: 2
+
+best_loss_epoch: 2
+
+best_micro_f1_epoch: 4
+
+best_micro_f1_value: 0.580446247464503
+
+best_micro_f1_threshold: 0.5
+
+best_macro_f1_epoch: 5
+
+best_macro_f1_value: 0.43578479673083914
+
+best_macro_f1_threshold: 0.5
+
+use_pos_weight: True
+
+pos_weight_mode: sqrt_ratio
+
+max_pos_weight: 5.0
+
+pos_weight_source: train_mlsmote
+
+pos_weight_source_file: data/processed/BJUT_SC01/train_mlsmote.jsonl
+
+pos_weight_path: results/train_evm_bert_chunk_vte/pos_weight.json
+
+use_vte: True
+
+vte_fusion: concat
+
+vte_dropout: 0.1
+
+vte_temperature: 1.0
+
+vte_label_correlation_path: results/train_evm_bert_chunk_vte/vte_label_correlation.json
+
+use_mlsmote_train: True
+
+freeze_encoder: False
+
+max_len: 512
+
+chunk_size: 512
+
+chunk_stride: 510
+
+max_chunks: 32
+
+max_covered_tokens: 16320
+
+encoder_chunk_batch_size: 16
+
+chunk_pooling: attention
+
+encoder_type: None
+
+embedding_dim: None
+
+batch_size: 2
+
+gradient_accumulation_steps: 16
+
+effective_batch_size: 32
+
+global_effective_batch_size: 64
+
+learning_rate: 1e-05
+
+encoder_learning_rate: 1e-05
+
+head_learning_rate: 0.0001
+
+device: cuda:0
+
+torch_version: 2.0.1+cu118
+
+cuda_available: True
+
+cuda_device_name: NVIDIA L20
+
+fp16: True
+
+bf16: False
+
+distributed: True
+
+world_size: 2
+
+trainable_parameters: 89517837
+
+total_parameters: 89517837
+
+trainable_ratio: 1.0
+
+batch_shapes:
+- input_ids: [2, 32, 512]
+- attention_mask: [2, 32, 512]
+- token_type_ids: [2, 32, 512]
+- chunk_mask: [2, 32]
+- binary_label: [2]
+- multi_labels: [2, 10]
+
+logits_shapes:
+- detection_logits: [2]
+- recognition_logits: [2, 10]
+
+train_loss: 0.20953607559204102
+
+valid_loss: 0.1806734448528966
+
+metric_source: best_checkpoint_epoch
+
+last_train_loss: 0.15468478202819824
+
+last_valid_loss: 0.29467322855553596
+
+last_detection_accuracy: 0.8177372998394984
+
+last_recognition_micro_precision: 0.4550978247660712
+
+last_recognition_micro_recall: 0.7831451275616896
+
+last_recognition_micro_f1: 0.5756667435247098
+
+last_recognition_macro_precision: 0.3405316294257411
+
+last_recognition_macro_recall: 0.6654700064316363
+
+last_recognition_macro_f1: 0.43578479673083914
+
+detection_accuracy: 0.817252062259714
+
+detection_precision: 0.3159098333877818
+
+detection_recall: 0.7320211960635882
+
+detection_f1: 0.44135098128708355
+
+recognition_micro_precision: 0.43060756129967387
+
+recognition_micro_recall: 0.7455039732329569
+
+recognition_micro_f1: 0.5459000076563816
+
+recognition_macro_precision: 0.32335175582350695
+
+recognition_macro_recall: 0.6124259424636741
+
+recognition_macro_f1: 0.3891150001745187
+
+predicted_positive_total: 8279
+
+per_label_predicted_positive_count:
+- 351
+- 1840
+- 3241
+- 263
+- 54
+- 294
+- 819
+- 17
+- 295
+- 1105
+
+per_label_true_positive_count:
+- 86
+- 1365
+- 1807
+- 77
+- 17
+- 84
+- 546
+- 63
+- 195
+- 542
+
+per_label_mean_pred_prob:
+- 0.0195465087890625
+- 0.10565185546875
+- 0.12115478515625
+- 0.0108184814453125
+- 0.003765106201171875
+- 0.0122833251953125
+- 0.047149658203125
+- 0.00821685791015625
+- 0.0245513916015625
+- 0.046417236328125
+
+per_label_accuracy:
+- 0.9887648837296107
+- 0.9538277779851443
+- 0.9270650591616587
+- 0.9916389832406405
+- 0.997797767907133
+- 0.9903699003396663
+- 0.9740584524653801
+- 0.997536486133403
+- 0.9882796461498264
+- 0.969280728602889
+
+per_label_precision:
+- 0.19373219373219372
+- 0.5347826086956522
+- 0.4773218142548596
+- 0.22053231939163498
+- 0.1111111111111111
+- 0.20408163265306123
+- 0.409035409035409
+- 0.4117647058823529
+- 0.2983050847457627
+- 0.3728506787330317
+
+per_label_recall:
+- 0.7906976744186046
+- 0.7208791208791209
+- 0.8561151079136691
+- 0.7532467532467533
+- 0.35294117647058826
+- 0.7142857142857143
+- 0.6135531135531136
+- 0.1111111111111111
+- 0.4512820512820513
+- 0.7601476014760148
+
+per_label_f1:
+- 0.3112128146453089
+- 0.6140405616224649
+- 0.6129160063391442
+- 0.3411764705882353
+- 0.16901408450704225
+- 0.31746031746031744
+- 0.49084249084249093
+- 0.17500000000000002
+- 0.3591836734693878
+- 0.5003035822707954
+
+per_label_support:
+- 86
+- 1365
+- 1807
+- 77
+- 17
+- 84
+- 546
+- 63
+- 195
+- 542
+
+pos_weight_table:
+- {'label_id': 0, 'label_name': 'Reentrancy', 'positive_count': 4281, 'negative_count': 103623, 'raw_ratio': 24.20532585844429, 'sqrt_ratio': 4.919890838061785, 'final_pos_weight': 4.919890838061785, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 1, 'label_name': 'Contract contains unknown address', 'positive_count': 17888, 'negative_count': 90016, 'raw_ratio': 5.032200357781753, 'sqrt_ratio': 2.2432566410871835, 'final_pos_weight': 2.2432566410871835, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 2, 'label_name': 'Integer overflow or underflow', 'positive_count': 15860, 'negative_count': 92044, 'raw_ratio': 5.803530895334174, 'sqrt_ratio': 2.409051866468253, 'final_pos_weight': 2.409051866468253, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 3, 'label_name': 'Timestamp dependence', 'positive_count': 1773, 'negative_count': 106131, 'raw_ratio': 59.8595600676819, 'sqrt_ratio': 7.7368960228041, 'final_pos_weight': 5.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 4, 'label_name': 'DoS with failed call', 'positive_count': 2225, 'negative_count': 105679, 'raw_ratio': 47.4961797752809, 'sqrt_ratio': 6.891747222242042, 'final_pos_weight': 5.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 5, 'label_name': 'Assert violation', 'positive_count': 1792, 'negative_count': 106112, 'raw_ratio': 59.214285714285715, 'sqrt_ratio': 7.69508191732133, 'final_pos_weight': 5.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 6, 'label_name': 'Unchecked call return value', 'positive_count': 7222, 'negative_count': 100682, 'raw_ratio': 13.941013569648296, 'sqrt_ratio': 3.733766673166428, 'final_pos_weight': 3.733766673166428, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 7, 'label_name': 'Unsafe send', 'positive_count': 1394, 'negative_count': 106510, 'raw_ratio': 76.40602582496413, 'sqrt_ratio': 8.741054045420617, 'final_pos_weight': 5.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 8, 'label_name': 'Multiplication after division', 'positive_count': 1591, 'negative_count': 106313, 'raw_ratio': 66.82149591451918, 'sqrt_ratio': 8.17444162707883, 'final_pos_weight': 5.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 9, 'label_name': 'Extra gas consumption', 'positive_count': 4458, 'negative_count': 103446, 'raw_ratio': 23.20457604306864, 'sqrt_ratio': 4.817112832710963, 'final_pos_weight': 4.817112832710963, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+
+baseline_micro_f1: 0.5604
+
+baseline_macro_f1: 0.4215
+
+macro_f1_improvement_over_unweighted_baseline: 0.014284796730839155
+
+threshold_scan:
+- 0.1: {'micro_precision': 0.19322033898305085, 'micro_recall': 0.9535759096612296, 'micro_f1': 0.3213304206891692, 'macro_precision': 0.1480557368283614, 'macro_recall': 0.8581837071207705, 'macro_f1': 0.2478010004669114, 'predicted_positive_total': 23600}
+- 0.2: {'micro_precision': 0.2745382336254176, 'micro_recall': 0.910706817231284, 'micro_f1': 0.42189392104625817, 'macro_precision': 0.1964918218574791, 'macro_recall': 0.783707583735091, 'macro_f1': 0.31011037448455564, 'predicted_positive_total': 15863}
+- 0.3: {'micro_precision': 0.32440523081770917, 'micro_recall': 0.8611459640317859, 'micro_f1': 0.47127489127946903, 'macro_precision': 0.23591685019170142, 'macro_recall': 0.7232272315118059, 'macro_f1': 0.3481397159757199, 'predicted_positive_total': 12694}
+- 0.4: {'micro_precision': 0.3795032885049573, 'micro_recall': 0.8084483479715601, 'micro_f1': 0.51653417061928, 'macro_precision': 0.2873436301311393, 'macro_recall': 0.6807871258312372, 'macro_f1': 0.38477114052622646, 'predicted_positive_total': 10187}
+- 0.5: {'micro_precision': 0.43060756129967387, 'micro_recall': 0.7455039732329569, 'micro_f1': 0.5459000076563816, 'macro_precision': 0.32335175582350695, 'macro_recall': 0.6124259424636741, 'macro_f1': 0.3891150001745187, 'predicted_positive_total': 8279}
+
+max_memory_allocated_mb: 29248.8671875
+
+max_memory_reserved_mb: 31278.0
+
+checkpoint_saved: True
+
+checkpoint_path: checkpoints/train_evm_bert_chunk_vte/best_loss.pt
+
+best_loss_checkpoint_saved: True
+
+best_loss_checkpoint_path: checkpoints/train_evm_bert_chunk_vte/best_loss.pt
+
+best_micro_f1_checkpoint_saved: True
+
+best_micro_f1_checkpoint_path: checkpoints/train_evm_bert_chunk_vte/best_micro_f1.pt
+
+best_macro_f1_checkpoint_saved: True
+
+best_macro_f1_checkpoint_path: checkpoints/train_evm_bert_chunk_vte/best_macro_f1.pt
+
+last_checkpoint_saved: True
+
+last_checkpoint_path: checkpoints/train_evm_bert_chunk_vte/last.pt
+
+checkpoint_summary_path: results/train_evm_bert_chunk_vte/checkpoint_summary.json
+
+tokenizer_saved: True
+
+tokenizer_path: checkpoints/train_evm_bert_chunk_vte/tokenizer
+
+epoch_history_saved: True
+
+epoch_history_txt_path: data/reports/train_evm_bert_chunk_vte_epoch_history.txt
+
+epoch_history_json_path: data/reports/train_evm_bert_chunk_vte_epoch_history.json
+
+plots_generated: True
+
+can_enter_full_training: True
+
+can_enter_full_evm_chunk_training: False
+
+warnings:
+- MLSMOTE-compatible text oversampling duplicates real opcode samples; it does not synthesize opcode sequences by linear interpolation.
+- Recognition loss uses pos_weight; detection loss remains ordinary BCE.
+- VTE is enabled: recognition logits use BiGRU features concatenated with vulnerability-type label-attention context.
+- EVM-BERT chunk aggregation uses the full BJUT unlabeled transductive MLM-pretrained encoder; this is not a strict inductive baseline.
+- Each contract is capped at approximately 16320 EVM tokenizer content tokens before chunk-level aggregation.

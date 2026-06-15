@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=4
 #SBATCH --output=logs/slurm_evmbert_chunk_vte_sanity_%j.out
 #SBATCH --error=logs/slurm_evmbert_chunk_vte_sanity_%j.err
 

@@ -13,6 +13,6 @@ set -e
 cd $SLURM_SUBMIT_DIR
 
 source ~/.bashrc
-conda activate correlascan
+conda activate correlascan_a40
 
 bash scripts/sanity_train_server.sh configs/sanity_mlsmote_unfrozen_server.yaml

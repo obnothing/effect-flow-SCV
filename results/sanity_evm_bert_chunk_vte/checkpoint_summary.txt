@@ -1,0 +1,26 @@
+Checkpoint selection summary
+
+best_loss_epoch: 1
+best_loss_value: 0.2668652015272528
+best_loss_checkpoint: checkpoints/sanity_evm_bert_chunk_vte/best_loss.pt
+best_micro_f1_epoch: 1
+best_micro_f1_value: 0.2898550724637681
+best_micro_f1_threshold: 0.2
+best_micro_f1_checkpoint: checkpoints/sanity_evm_bert_chunk_vte/best_micro_f1.pt
+best_macro_f1_epoch: 1
+best_macro_f1_value: 0.0752734778121775
+best_macro_f1_threshold: 0.1
+best_macro_f1_checkpoint: checkpoints/sanity_evm_bert_chunk_vte/best_macro_f1.pt
+last_epoch: 1
+last_checkpoint: checkpoints/sanity_evm_bert_chunk_vte/last.pt
+use_pos_weight: True
+pos_weight_mode: sqrt_ratio
+max_pos_weight: 5.0
+pos_weight_source_file: data/processed/BJUT_SC01/train_mlsmote.jsonl
+pos_weight_report: results/sanity_evm_bert_chunk_vte/pos_weight.json
+use_vte: True
+vte_fusion: concat
+vte_dropout: 0.1
+vte_temperature: 1.0
+vte_label_correlation_report: results/sanity_evm_bert_chunk_vte/vte_label_correlation.json
+recommendation_for_test: Use best_macro_f1.pt for macro-F1-oriented final evaluation.

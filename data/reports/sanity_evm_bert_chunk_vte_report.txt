@@ -1,0 +1,369 @@
+CorrelaScan sanity training report
+
+loaded_model: True
+
+loaded_pretrained_evm_bert: True
+
+loaded_local_model: True
+
+loaded_tokenizer: True
+
+model_type: evm_bert_chunk
+
+tokenizer_type: evm
+
+model_name: None
+
+hf_model_path: checkpoints/pretrain_evm_bert_base_full_bjut/hf_model
+
+vocab_path: data/processed/BJUT_SC01/evm_vocab.json
+
+vocab_size: 1161
+
+model_vocab_size: 1161
+
+vocab_size_matches_model: True
+
+hidden_size: 768
+
+num_hidden_layers: 12
+
+num_attention_heads: 12
+
+is_transductive_pretraining: True
+
+train_samples: 128
+
+valid_samples: 64
+
+completed_epochs: 1
+
+early_stopped: False
+
+stopped_epoch: None
+
+early_stopping_patience: None
+
+best_epoch: 1
+
+best_loss_epoch: 1
+
+best_micro_f1_epoch: 1
+
+best_micro_f1_value: 0.2898550724637681
+
+best_micro_f1_threshold: 0.2
+
+best_macro_f1_epoch: 1
+
+best_macro_f1_value: 0.0752734778121775
+
+best_macro_f1_threshold: 0.1
+
+use_pos_weight: True
+
+pos_weight_mode: sqrt_ratio
+
+max_pos_weight: 5.0
+
+pos_weight_source: train_mlsmote
+
+pos_weight_source_file: data/processed/BJUT_SC01/train_mlsmote.jsonl
+
+pos_weight_path: results/sanity_evm_bert_chunk_vte/pos_weight.json
+
+use_vte: True
+
+vte_fusion: concat
+
+vte_dropout: 0.1
+
+vte_temperature: 1.0
+
+vte_label_correlation_path: results/sanity_evm_bert_chunk_vte/vte_label_correlation.json
+
+use_mlsmote_train: True
+
+freeze_encoder: False
+
+max_len: 512
+
+chunk_size: 512
+
+chunk_stride: 510
+
+max_chunks: 8
+
+max_covered_tokens: 4080
+
+encoder_chunk_batch_size: 8
+
+chunk_pooling: attention
+
+encoder_type: None
+
+embedding_dim: None
+
+batch_size: 1
+
+gradient_accumulation_steps: 4
+
+effective_batch_size: 4
+
+global_effective_batch_size: 4
+
+learning_rate: 1e-05
+
+encoder_learning_rate: 1e-05
+
+head_learning_rate: 0.0001
+
+device: cuda
+
+torch_version: 2.0.1+cu118
+
+cuda_available: True
+
+cuda_device_name: NVIDIA L20
+
+fp16: True
+
+bf16: False
+
+distributed: False
+
+world_size: 1
+
+trainable_parameters: 89517837
+
+total_parameters: 89517837
+
+trainable_ratio: 1.0
+
+batch_shapes:
+- input_ids: [1, 8, 512]
+- attention_mask: [1, 8, 512]
+- token_type_ids: [1, 8, 512]
+- chunk_mask: [1, 8]
+- binary_label: [1]
+- multi_labels: [1, 10]
+
+logits_shapes:
+- detection_logits: [1]
+- recognition_logits: [1, 10]
+
+train_loss: 0.501494270254625
+
+valid_loss: 0.2668652015272528
+
+metric_source: best_checkpoint_epoch
+
+last_train_loss: 0.501494270254625
+
+last_valid_loss: 0.2668652015272528
+
+last_detection_accuracy: 0.84375
+
+last_recognition_micro_precision: 1.0
+
+last_recognition_micro_recall: 0.058823529411764705
+
+last_recognition_micro_f1: 0.1111111111111111
+
+last_recognition_macro_precision: 0.1
+
+last_recognition_macro_recall: 0.025
+
+last_recognition_macro_f1: 0.04
+
+detection_accuracy: 0.84375
+
+detection_precision: 0.0
+
+detection_recall: 0.0
+
+detection_f1: 0.0
+
+recognition_micro_precision: 1.0
+
+recognition_micro_recall: 0.058823529411764705
+
+recognition_micro_f1: 0.1111111111111111
+
+recognition_macro_precision: 0.1
+
+recognition_macro_recall: 0.025
+
+recognition_macro_f1: 0.04
+
+predicted_positive_total: 1
+
+per_label_predicted_positive_count:
+- 0
+- 1
+- 0
+- 0
+- 0
+- 0
+- 0
+- 0
+- 0
+- 0
+
+per_label_true_positive_count:
+- 0
+- 4
+- 7
+- 0
+- 0
+- 0
+- 4
+- 1
+- 0
+- 1
+
+per_label_mean_pred_prob:
+- 0.08306884765625
+- 0.24365234375
+- 0.13427734375
+- 0.05072021484375
+- 0.019439697265625
+- 0.054595947265625
+- 0.0760498046875
+- 0.04351806640625
+- 0.0249786376953125
+- 0.035186767578125
+
+per_label_accuracy:
+- 1.0
+- 0.953125
+- 0.890625
+- 1.0
+- 1.0
+- 1.0
+- 0.9375
+- 0.984375
+- 1.0
+- 0.984375
+
+per_label_precision:
+- 0.0
+- 1.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+
+per_label_recall:
+- 0.0
+- 0.25
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+
+per_label_f1:
+- 0.0
+- 0.4
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+
+per_label_support:
+- 0
+- 4
+- 7
+- 0
+- 0
+- 0
+- 4
+- 1
+- 0
+- 1
+
+pos_weight_table:
+- {'label_id': 0, 'label_name': 'Reentrancy', 'positive_count': 4281, 'negative_count': 103623, 'raw_ratio': 24.20532585844429, 'sqrt_ratio': 4.919890838061785, 'final_pos_weight': 4.919890838061785, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 1, 'label_name': 'Contract contains unknown address', 'positive_count': 17888, 'negative_count': 90016, 'raw_ratio': 5.032200357781753, 'sqrt_ratio': 2.2432566410871835, 'final_pos_weight': 2.2432566410871835, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 2, 'label_name': 'Integer overflow or underflow', 'positive_count': 15860, 'negative_count': 92044, 'raw_ratio': 5.803530895334174, 'sqrt_ratio': 2.409051866468253, 'final_pos_weight': 2.409051866468253, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 3, 'label_name': 'Timestamp dependence', 'positive_count': 1773, 'negative_count': 106131, 'raw_ratio': 59.8595600676819, 'sqrt_ratio': 7.7368960228041, 'final_pos_weight': 5.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 4, 'label_name': 'DoS with failed call', 'positive_count': 2225, 'negative_count': 105679, 'raw_ratio': 47.4961797752809, 'sqrt_ratio': 6.891747222242042, 'final_pos_weight': 5.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 5, 'label_name': 'Assert violation', 'positive_count': 1792, 'negative_count': 106112, 'raw_ratio': 59.214285714285715, 'sqrt_ratio': 7.69508191732133, 'final_pos_weight': 5.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 6, 'label_name': 'Unchecked call return value', 'positive_count': 7222, 'negative_count': 100682, 'raw_ratio': 13.941013569648296, 'sqrt_ratio': 3.733766673166428, 'final_pos_weight': 3.733766673166428, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 7, 'label_name': 'Unsafe send', 'positive_count': 1394, 'negative_count': 106510, 'raw_ratio': 76.40602582496413, 'sqrt_ratio': 8.741054045420617, 'final_pos_weight': 5.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 8, 'label_name': 'Multiplication after division', 'positive_count': 1591, 'negative_count': 106313, 'raw_ratio': 66.82149591451918, 'sqrt_ratio': 8.17444162707883, 'final_pos_weight': 5.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+- {'label_id': 9, 'label_name': 'Extra gas consumption', 'positive_count': 4458, 'negative_count': 103446, 'raw_ratio': 23.20457604306864, 'sqrt_ratio': 4.817112832710963, 'final_pos_weight': 4.817112832710963, 'max_pos_weight': 5.0, 'source_file': 'data/processed/BJUT_SC01/train_mlsmote.jsonl'}
+
+baseline_micro_f1: 0.5604
+
+baseline_macro_f1: 0.4215
+
+macro_f1_improvement_over_unweighted_baseline: -0.34622652218782246
+
+threshold_scan:
+- 0.1: {'micro_precision': 0.11450381679389313, 'micro_recall': 0.8823529411764706, 'micro_f1': 0.2027027027027027, 'macro_precision': 0.04421526054590571, 'macro_recall': 0.3, 'macro_f1': 0.0752734778121775, 'predicted_positive_total': 131}
+- 0.2: {'micro_precision': 0.19230769230769232, 'micro_recall': 0.5882352941176471, 'micro_f1': 0.2898550724637681, 'macro_precision': 0.042499999999999996, 'macro_recall': 0.18571428571428572, 'macro_f1': 0.06666666666666667, 'predicted_positive_total': 52}
+- 0.3: {'micro_precision': 0.1724137931034483, 'micro_recall': 0.29411764705882354, 'micro_f1': 0.2173913043478261, 'macro_precision': 0.0782051282051282, 'macro_recall': 0.10357142857142856, 'macro_f1': 0.06, 'predicted_positive_total': 29}
+- 0.4: {'micro_precision': 0.21428571428571427, 'micro_recall': 0.17647058823529413, 'micro_f1': 0.1935483870967742, 'macro_precision': 0.02142857142857143, 'macro_recall': 0.075, 'macro_f1': 0.03333333333333333, 'predicted_positive_total': 14}
+- 0.5: {'micro_precision': 1.0, 'micro_recall': 0.058823529411764705, 'micro_f1': 0.1111111111111111, 'macro_precision': 0.1, 'macro_recall': 0.025, 'macro_f1': 0.04, 'predicted_positive_total': 1}
+
+max_memory_allocated_mb: 2086.361328125
+
+max_memory_reserved_mb: 2834.0
+
+checkpoint_saved: True
+
+checkpoint_path: checkpoints/sanity_evm_bert_chunk_vte/best_loss.pt
+
+best_loss_checkpoint_saved: True
+
+best_loss_checkpoint_path: checkpoints/sanity_evm_bert_chunk_vte/best_loss.pt
+
+best_micro_f1_checkpoint_saved: True
+
+best_micro_f1_checkpoint_path: checkpoints/sanity_evm_bert_chunk_vte/best_micro_f1.pt
+
+best_macro_f1_checkpoint_saved: True
+
+best_macro_f1_checkpoint_path: checkpoints/sanity_evm_bert_chunk_vte/best_macro_f1.pt
+
+last_checkpoint_saved: True
+
+last_checkpoint_path: checkpoints/sanity_evm_bert_chunk_vte/last.pt
+
+checkpoint_summary_path: results/sanity_evm_bert_chunk_vte/checkpoint_summary.json
+
+tokenizer_saved: True
+
+tokenizer_path: checkpoints/sanity_evm_bert_chunk_vte/tokenizer
+
+epoch_history_saved: True
+
+epoch_history_txt_path: data/reports/sanity_evm_bert_chunk_vte_epoch_history.txt
+
+epoch_history_json_path: data/reports/sanity_evm_bert_chunk_vte_epoch_history.json
+
+plots_generated: True
+
+can_enter_full_training: True
+
+can_enter_full_evm_chunk_training: False
+
+warnings:
+- MLSMOTE-compatible text oversampling duplicates real opcode samples; it does not synthesize opcode sequences by linear interpolation.
+- Recognition loss uses pos_weight; detection loss remains ordinary BCE.
+- VTE is enabled: recognition logits use BiGRU features concatenated with vulnerability-type label-attention context.
+- EVM-BERT chunk aggregation uses the full BJUT unlabeled transductive MLM-pretrained encoder; this is not a strict inductive baseline.
+- Each contract is capped at approximately 4080 EVM tokenizer content tokens before chunk-level aggregation.
