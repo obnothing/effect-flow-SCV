@@ -76,6 +76,7 @@ def collect_predictions(model, loader, device):
     detection_logits = []
     recognition_logits = []
     chunk_logits = []
+    chunk_scores = []
     chunk_masks = []
     binary_labels = []
     multi_labels = []
@@ -93,6 +94,7 @@ def collect_predictions(model, loader, device):
         detection_logits.append(outputs["detection_logits"].detach().cpu())
         recognition_logits.append(outputs["recognition_logits"].detach().cpu())
         chunk_logits.append(outputs["chunk_logits"].detach().cpu())
+        chunk_scores.append(outputs.get("chunk_scores", outputs["chunk_logits"]).detach().cpu())
         chunk_masks.append(inputs["chunk_mask"].detach().cpu())
         binary_labels.append(inputs["binary_label"].detach().cpu())
         multi_labels.append(inputs["multi_labels"].detach().cpu())
@@ -103,6 +105,7 @@ def collect_predictions(model, loader, device):
         "detection_logits": torch.cat(detection_logits).numpy(),
         "recognition_logits": torch.cat(recognition_logits).numpy(),
         "chunk_logits": torch.cat(chunk_logits),
+        "chunk_scores": torch.cat(chunk_scores),
         "chunk_mask": torch.cat(chunk_masks),
         "binary_labels": torch.cat(binary_labels).numpy(),
         "multi_labels": torch.cat(multi_labels).numpy(),
@@ -114,7 +117,7 @@ def write_top_chunks(path, config, predictions, threshold):
     probs = sigmoid(predictions["recognition_logits"])
     pred_labels = (probs >= threshold).astype(int)
     true_labels = predictions["multi_labels"].astype(int)
-    chunk_logits = predictions["chunk_logits"]
+    chunk_scores = predictions.get("chunk_scores", predictions["chunk_logits"])
     chunk_mask = predictions["chunk_mask"].bool()
     top_k = int(config.get("top_k", 2))
     ensure_dir(path.parent)
@@ -128,24 +131,22 @@ def write_top_chunks(path, config, predictions, threshold):
             if not label_ids:
                 continue
             for label_id in label_ids:
-                scores = chunk_logits[row_idx, :, label_id].clone()
+                scores = chunk_scores[row_idx, :, label_id].clone()
                 scores[~chunk_mask[row_idx]] = -1e9
                 k = min(top_k, real_count)
                 top_scores, top_indices = torch.topk(scores, k=k)
                 record = {
                     "id": contract_id,
-                    "predicted_labels": [
-                        label_names[idx] for idx in np.where(pred_labels[row_idx] == 1)[0]
-                    ],
-                    "true_labels": [
-                        label_names[idx] for idx in np.where(true_labels[row_idx] == 1)[0]
-                    ],
                     "label_name": label_names[label_id],
                     "label_id": int(label_id),
-                    "contract_label_probability": float(probs[row_idx, label_id]),
+                    "true_label": int(true_labels[row_idx, label_id]),
+                    "predicted_label": int(pred_labels[row_idx, label_id]),
+                    "contract_probability": float(probs[row_idx, label_id]),
                     "top_chunk_indices": [int(v) for v in top_indices.tolist()],
                     "top_chunk_scores": [float(v) for v in top_scores.tolist()],
                     "num_chunks_kept": real_count,
+                    "feature_pooling": config.get("feature_pooling"),
+                    "recognition_aggregation": config.get("recognition_aggregation"),
                     "metadata": predictions["metadata"][row_idx],
                 }
                 f.write(json.dumps(record, ensure_ascii=False) + "\n")
@@ -246,4 +247,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

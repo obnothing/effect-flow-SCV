@@ -123,10 +123,22 @@ def build_contract_chunks(tokenizer, opcode, config):
 def pool_encoder_output(outputs, attention_mask, pooling):
     hidden = outputs.last_hidden_state
     if pooling == "cls":
-        return hidden[:, 0, :]
+        return hidden[:, 0, :], 0
     if pooling == "masked_mean":
-        mask = attention_mask.unsqueeze(-1).type_as(hidden)
-        return (hidden * mask).sum(dim=1) / mask.sum(dim=1).clamp(min=1e-9)
+        valid_mask = attention_mask.clone().bool()
+        valid_mask[:, 0] = False
+        lengths = attention_mask.sum(dim=1).long()
+        sep_positions = (lengths - 1).clamp(min=0)
+        valid_mask.scatter_(1, sep_positions.unsqueeze(1), False)
+        valid_counts = valid_mask.sum(dim=1)
+        fallback_mask = valid_counts == 0
+        mask = valid_mask.unsqueeze(-1).type_as(hidden)
+        pooled = (hidden * mask).sum(dim=1) / valid_counts.clamp(min=1).unsqueeze(-1).type_as(hidden)
+        if fallback_mask.any():
+            pooled[fallback_mask] = hidden[fallback_mask, 0, :]
+        return pooled, int(fallback_mask.sum().item())
+    if pooling == "cls_mean_concat":
+        raise ValueError("cls_mean_concat is reserved for a later ablation.")
     raise ValueError(f"Unsupported pooling: {pooling}")
 
 
@@ -153,7 +165,7 @@ def flush_chunk_batch(
                     attention_mask=attention_mask,
                     token_type_ids=token_type_ids,
                 )
-                pooled = pool_encoder_output(
+                pooled, fallback_count = pool_encoder_output(
                     outputs,
                     attention_mask,
                     config.get("pooling", "cls"),
@@ -164,10 +176,11 @@ def flush_chunk_batch(
                 attention_mask=attention_mask,
                 token_type_ids=token_type_ids,
             )
-            pooled = pool_encoder_output(outputs, attention_mask, config.get("pooling", "cls"))
+            pooled, fallback_count = pool_encoder_output(outputs, attention_mask, config.get("pooling", "cls"))
     pooled = pooled.detach().cpu().to(features.dtype)
     for row_idx, chunk_idx, pooled_idx in chunk_targets:
         features[row_idx, chunk_idx] = pooled[pooled_idx]
+    flush_chunk_batch.fallback_count += fallback_count
     chunk_input_ids.clear()
     chunk_attention_masks.clear()
     chunk_targets.clear()
@@ -193,6 +206,7 @@ def extract_split(split_name, input_path, output_path, tokenizer, encoder, confi
     chunk_input_ids = []
     chunk_attention_masks = []
     chunk_targets = []
+    flush_chunk_batch.fallback_count = 0
     total_chunks = 0
     truncated_count = 0
     coverage_values = []
@@ -253,6 +267,7 @@ def extract_split(split_name, input_path, output_path, tokenizer, encoder, confi
     report = {
         "split": split_name,
         "samples": sample_count,
+        "pooling": config.get("pooling", "cls"),
         "max_chunks_per_contract": max_chunks,
         "generated_chunks": int(total_chunks),
         "mean_chunks_per_contract": float(np.mean(chunks_kept_values)),
@@ -263,6 +278,9 @@ def extract_split(split_name, input_path, output_path, tokenizer, encoder, confi
         "p95_coverage_ratio": float(np.percentile(coverage_values, 95)),
         "feature_shape": list(features.shape),
         "dtype": str(features.dtype),
+        "nan_count": int(torch.isnan(features.float()).sum().item()),
+        "inf_count": int(torch.isinf(features.float()).sum().item()),
+        "empty_content_fallback_to_cls_count": int(flush_chunk_batch.fallback_count),
         "hf_model_path": config["hf_model_path"],
         "is_transductive_pretraining": bool(config.get("is_transductive_pretraining", True)),
     }
@@ -357,4 +375,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -13,6 +13,11 @@ def parse_args():
     parser.add_argument("--feature_dir", default="data/features/evm_bert_chunks")
     parser.add_argument("--data_dir", default="data/processed/BJUT_SC01")
     parser.add_argument("--report_dir", default="data/reports")
+    parser.add_argument(
+        "--output",
+        default=None,
+        help="Optional txt report path. JSON is written beside it.",
+    )
     return parser.parse_args()
 
 
@@ -102,8 +107,13 @@ def main():
             for split in ["train", "valid", "test"]
         },
     }
-    txt_path = report_dir / "check_evm_bert_chunk_features_report.txt"
-    json_path = report_dir / "check_evm_bert_chunk_features_report.json"
+    if args.output:
+        txt_path = resolve_path(args.output)
+        json_path = txt_path.with_suffix(".json")
+        txt_path.parent.mkdir(parents=True, exist_ok=True)
+    else:
+        txt_path = report_dir / "check_evm_bert_chunk_features_report.txt"
+        json_path = report_dir / "check_evm_bert_chunk_features_report.json"
     lines = ["EVM-BERT chunk feature cache check", ""]
     lines.append(f"status: {report['status']}")
     lines.append(f"feature_dir: {report['feature_dir']}")
@@ -119,4 +129,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

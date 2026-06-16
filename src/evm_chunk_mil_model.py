@@ -9,6 +9,7 @@ class EVMChunkMILClassifier(nn.Module):
         self.num_labels = int(config.get("num_labels", 10))
         feature_dim = int(config.get("feature_dim", 768))
         hidden_dim = int(config.get("hidden_dim", 512))
+        attn_dim = int(config.get("attn_dim", 256))
         dropout = float(config.get("dropout", 0.1))
         self.recognition_aggregation = config.get("recognition_aggregation", "topk_mean")
         self.top_k = int(config.get("top_k", 2))
@@ -20,6 +21,11 @@ class EVMChunkMILClassifier(nn.Module):
             nn.Dropout(dropout),
         )
         self.chunk_classifier = nn.Linear(hidden_dim, self.num_labels)
+        self.attn_v = nn.Linear(hidden_dim, attn_dim)
+        self.attn_u = nn.Linear(hidden_dim, attn_dim)
+        self.label_attn = nn.Parameter(torch.empty(self.num_labels, attn_dim))
+        self.label_out = nn.Parameter(torch.empty(self.num_labels, hidden_dim))
+        self.label_bias = nn.Parameter(torch.zeros(self.num_labels))
         self.detection_classifier = nn.Sequential(
             nn.LayerNorm(hidden_dim),
             nn.Linear(hidden_dim, hidden_dim // 2),
@@ -29,6 +35,8 @@ class EVMChunkMILClassifier(nn.Module):
         )
         self.detection_loss_fn = nn.BCEWithLogitsLoss()
         self.recognition_pos_weight = None
+        nn.init.xavier_uniform_(self.label_attn)
+        nn.init.xavier_uniform_(self.label_out)
 
     def set_recognition_pos_weight(self, pos_weight):
         self.recognition_pos_weight = pos_weight
@@ -53,6 +61,17 @@ class EVMChunkMILClassifier(nn.Module):
             return torch.logit(contract_probs.clamp(1e-6, 1 - 1e-6))
         raise ValueError(f"Unsupported recognition_aggregation: {self.recognition_aggregation}")
 
+    def label_gated_attention(self, h, chunk_mask):
+        v = torch.tanh(self.attn_v(h))
+        u = torch.sigmoid(self.attn_u(h))
+        gated = v * u
+        attn_logits = torch.einsum("bca,ka->bck", gated, self.label_attn)
+        attn_logits = attn_logits.masked_fill(~chunk_mask.unsqueeze(-1), -1e9)
+        attn_weights = torch.softmax(attn_logits, dim=1)
+        z = torch.einsum("bck,bch->bkh", attn_weights, h)
+        recognition_logits = (z * self.label_out.unsqueeze(0)).sum(dim=-1) + self.label_bias
+        return recognition_logits, attn_weights, attn_logits
+
     def top_chunk_indices(self, chunk_logits, chunk_mask, k=None):
         k = int(k or self.top_k)
         k = min(k, chunk_logits.shape[1])
@@ -64,7 +83,18 @@ class EVMChunkMILClassifier(nn.Module):
         chunk_mask = chunk_mask.bool()
         h = self.chunk_projection(chunk_features)
         chunk_logits = self.chunk_classifier(h)
-        recognition_logits = self.aggregate_recognition(chunk_logits, chunk_mask)
+        chunk_scores = None
+        if self.recognition_aggregation == "label_gated_attention":
+            recognition_logits, chunk_scores, chunk_logits = self.label_gated_attention(
+                h,
+                chunk_mask,
+            )
+        else:
+            recognition_logits = self.aggregate_recognition(chunk_logits, chunk_mask)
+            chunk_scores = torch.sigmoid(chunk_logits).masked_fill(
+                ~chunk_mask.unsqueeze(-1),
+                0.0,
+            )
         global_h = self.masked_mean(h, chunk_mask)
         detection_logits = self.detection_classifier(global_h).squeeze(-1)
 
@@ -88,5 +118,5 @@ class EVMChunkMILClassifier(nn.Module):
             "detection_logits": detection_logits,
             "recognition_logits": recognition_logits,
             "chunk_logits": chunk_logits,
+            "chunk_scores": chunk_scores,
         }
-

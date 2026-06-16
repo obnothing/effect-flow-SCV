@@ -399,6 +399,7 @@ def main():
         "model_type": "evm_chunk_mil",
         "encoder_frozen": True,
         "feature_dir": config["feature_dir"],
+        "feature_pooling": config.get("feature_pooling"),
         "max_chunks": config["max_chunks"],
         "feature_dim": config["feature_dim"],
         "hidden_dim": config["hidden_dim"],
