@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:2
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=10
+#SBATCH --cpus-per-task=4
 #SBATCH --output=logs/slurm_evmbert_weighted_all_%j.out
 #SBATCH --error=logs/slurm_evmbert_weighted_all_%j.err
 

@@ -1,17 +1,17 @@
 Checkpoint selection summary
 
-best_loss_epoch: 3
-best_loss_value: 0.10216340938830851
+best_loss_epoch: 4
+best_loss_value: 0.10412410596886786
 best_loss_checkpoint: checkpoints/train_evm_bert_weighted/best_loss.pt
-best_micro_f1_epoch: 3
-best_micro_f1_value: 0.5769082498072474
+best_micro_f1_epoch: 5
+best_micro_f1_value: 0.5821415474880821
 best_micro_f1_threshold: 0.5
 best_micro_f1_checkpoint: checkpoints/train_evm_bert_weighted/best_micro_f1.pt
-best_macro_f1_epoch: 5
-best_macro_f1_value: 0.43417873355455294
+best_macro_f1_epoch: 7
+best_macro_f1_value: 0.44607315897582067
 best_macro_f1_threshold: 0.5
 best_macro_f1_checkpoint: checkpoints/train_evm_bert_weighted/best_macro_f1.pt
-last_epoch: 6
+last_epoch: 7
 last_checkpoint: checkpoints/train_evm_bert_weighted/last.pt
 use_pos_weight: True
 pos_weight_mode: sqrt_ratio

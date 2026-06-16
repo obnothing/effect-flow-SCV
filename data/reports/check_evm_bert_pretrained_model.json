@@ -1,0 +1,33 @@
+{
+  "status": "ok",
+  "hf_model_path": "checkpoints/pretrain_evm_bert_base_full_bjut/hf_model",
+  "config_json_exists": true,
+  "model_safetensors_exists": true,
+  "pytorch_model_bin_exists": false,
+  "vocab_path": "data/processed/BJUT_SC01/evm_vocab.json",
+  "hf_vocab_path": "checkpoints/pretrain_evm_bert_base_full_bjut/hf_model/evm_vocab.json",
+  "hf_vocab_copied_from_project_vocab": false,
+  "vocab_size": 1161,
+  "model_config_vocab_size": 1161,
+  "vocab_size_matches_model": true,
+  "hidden_size": 768,
+  "num_hidden_layers": 12,
+  "num_attention_heads": 12,
+  "intermediate_size": 3072,
+  "max_position_embeddings": 512,
+  "total_parameters": 86935689,
+  "encoder_parameters": 86342400,
+  "embedding_weight_sha256": "78e325ad6ae69695ea9d8733099796ede3a0405162c4aed770e95a24854aae34",
+  "first_attention_sha256": "517aa0b1caf0f3f4a858fdfe7b46590568f334acf5ec2878be67684838768fc8",
+  "first_attention_components_sha256": {
+    "query_weight": "3dbf7940474fe9e32ec36bdd4824bd9d8bba007919de1d0850c5e9f851f72db1",
+    "key_weight": "a9d76dbbc48f526e13cdc25e30efb9e12ec518bc6b6c2a4a8a6b91d57933ddb4",
+    "value_weight": "220a860339e82db127df29615ade351d0d11c4be858eb58f41fe36e584685a15"
+  },
+  "encoder_weight_source": "checkpoints/pretrain_evm_bert_base_full_bjut/hf_model",
+  "loaded_with": "BertForMaskedLM.from_pretrained(...).bert",
+  "local_files_only": true,
+  "is_transductive_pretraining": true,
+  "transductive_warning": "EVM-BERT was pretrained on unlabeled BJUT train/valid/test opcodes; use this result as transductive domain pretraining, not a strict inductive baseline.",
+  "preserved_operand_count": 1000
+}

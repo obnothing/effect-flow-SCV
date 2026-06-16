@@ -96,6 +96,8 @@ max_chunks: None
 
 max_covered_tokens: None
 
+encoder_chunk_batch_size: None
+
 chunk_pooling: None
 
 encoder_type: None
