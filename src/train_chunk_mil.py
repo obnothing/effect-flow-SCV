@@ -404,7 +404,7 @@ def main():
         "feature_dim": config["feature_dim"],
         "hidden_dim": config["hidden_dim"],
         "recognition_aggregation": config["recognition_aggregation"],
-        "top_k": config["top_k"],
+        "top_k": int(config.get("top_k", 2)),
         "use_pos_weight": config.get("use_pos_weight", False),
         "pos_weight_rows": pos_weight_rows,
         "best_loss_epoch": best_loss_epoch,

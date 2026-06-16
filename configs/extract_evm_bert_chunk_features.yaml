@@ -16,8 +16,8 @@ chunk_content_size: 510
 chunk_stride: 510
 max_chunks_per_contract: 16
 
-batch_size: 16
-num_workers: 8
+batch_size: 64
+num_workers: 4
 fp16: true
 
 pooling: cls

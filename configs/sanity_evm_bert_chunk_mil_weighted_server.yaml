@@ -38,7 +38,7 @@ thresholds:
   - 0.5
 
 seed: 42
-num_workers: 8
+num_workers: 4
 debug_num_train_samples: 512
 debug_num_valid_samples: 128
 

@@ -16,6 +16,7 @@ dropout: 0.1
 
 feature_pooling: masked_mean
 recognition_aggregation: label_gated_attention
+top_k: 2
 
 batch_size: 128
 gradient_accumulation_steps: 1
@@ -39,7 +40,7 @@ thresholds:
   - 0.5
 
 seed: 42
-num_workers: 8
+num_workers: 4
 
 is_transductive_pretraining: true
 encoder_frozen: true
