@@ -1,8 +1,8 @@
 EVM-BERT chunk feature extraction report
 
-experiment_name: extract_evm_bert_chunk_features
-output_dir: data/features/evm_bert_chunks
-pooling: cls
+experiment_name: extract_evm_bert_chunk_features_mean
+output_dir: data/features/evm_bert_chunks_mean
+pooling: masked_mean
 max_len: 512
 chunk_content_size: 510
 chunk_stride: 510
@@ -13,6 +13,7 @@ splits:
 - train:
   split: train
   samples: 107904
+  pooling: masked_mean
   max_chunks_per_contract: 16
   generated_chunks: 564280
   mean_chunks_per_contract: 5.2294632265717675
@@ -23,12 +24,16 @@ splits:
   p95_coverage_ratio: 1.0
   feature_shape: [107904, 16, 768]
   dtype: torch.float16
+  nan_count: 0
+  inf_count: 0
+  empty_content_fallback_to_cls_count: 0
   hf_model_path: checkpoints/pretrain_evm_bert_base_full_bjut/hf_model
   is_transductive_pretraining: True
-  disk_size_bytes: 2670871955
+  disk_size_bytes: 2670872083
 - valid:
   split: valid
   samples: 26791
+  pooling: masked_mean
   max_chunks_per_contract: 16
   generated_chunks: 122686
   mean_chunks_per_contract: 4.5793736702624015
@@ -39,12 +44,16 @@ splits:
   p95_coverage_ratio: 1.0
   feature_shape: [26791, 16, 768]
   dtype: torch.float16
+  nan_count: 0
+  inf_count: 0
+  empty_content_fallback_to_cls_count: 0
   hf_model_path: checkpoints/pretrain_evm_bert_base_full_bjut/hf_model
   is_transductive_pretraining: True
-  disk_size_bytes: 663131667
+  disk_size_bytes: 663131795
 - test:
   split: test
   samples: 16748
+  pooling: masked_mean
   max_chunks_per_contract: 16
   generated_chunks: 71667
   mean_chunks_per_contract: 4.279137807499403
@@ -55,6 +64,9 @@ splits:
   p95_coverage_ratio: 1.0
   feature_shape: [16748, 16, 768]
   dtype: torch.float16
+  nan_count: 0
+  inf_count: 0
+  empty_content_fallback_to_cls_count: 0
   hf_model_path: checkpoints/pretrain_evm_bert_base_full_bjut/hf_model
   is_transductive_pretraining: True
-  disk_size_bytes: 414547213
+  disk_size_bytes: 414547341

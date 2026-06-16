@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=4
 #SBATCH --output=logs/slurm_stage10b_mil_%j.out
 #SBATCH --error=logs/slurm_stage10b_mil_%j.err
 

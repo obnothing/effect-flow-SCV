@@ -1,0 +1,16 @@
+Stage 10 ablation summary
+
+model | feature_pooling | aggregation | encoder_frozen | micro-F1 | macro-F1 | detection F1 | predicted positives | best valid macro-F1 | best epoch | threshold | notes
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CodeBERT weighted | codebert tokenizer | BiGRU | False | 0.5604 | 0.4215 | 0.6430 | 4831 | 0.44228610711197175 | 10 | 0.5 | strict inductive baseline
+EVM-BERT first-512 weighted | first_512 | BiGRU | False | 0.5659 | 0.4326 | 0.6895 | 5806 | 0.44607315897582067 | 7 | 0.5 | transductive EVM-domain pretraining baseline
+CLS top-k MIL | cls | topk_mean | True | 0.5261 | 0.3915 | 0.6395 | 5951 | 0.41315972361376563 | 30 | 0.5 | Stage 10A frozen chunk feature MIL
+Masked-mean top-k MIL | masked_mean | topk_mean | True | 0.5560 | 0.4177 | 0.6637 | 6119 | 0.4415724869965135 | 14 | 0.5 | Stage 10B pooling ablation
+Masked-mean label-attention MIL | masked_mean | label_gated_attention | True | 0.5823 | 0.4375 | 0.6752 | 7106 | 0.46613919953252003 | 26 | 0.5 | Stage 10B label-wise gated attention MIL
+
+Macro-F1 deltas:
+- CodeBERT weighted: vs_cls=0.02996379229707191, vs_first512=-0.011066408085571466, vs_codebert=0.0
+- EVM-BERT first-512 weighted: vs_cls=0.04103020038264338, vs_first512=0.0, vs_codebert=0.011066408085571466
+- CLS top-k MIL: vs_cls=0.0, vs_first512=-0.04103020038264338, vs_codebert=-0.02996379229707191
+- Masked-mean top-k MIL: vs_cls=0.026142454935477566, vs_first512=-0.014887745447165812, vs_codebert=-0.0038213373615943458
+- Masked-mean label-attention MIL: vs_cls=0.046005577436523115, vs_first512=0.004975377053879737, vs_codebert=0.016041785139451203

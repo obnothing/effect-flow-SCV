@@ -1,0 +1,234 @@
+{
+  "experiment_name": "train_evm_bert_chunk_mil_mean_topk_weighted",
+  "model_type": "evm_chunk_mil",
+  "encoder_frozen": true,
+  "feature_dir": "data/features/evm_bert_chunks_mean",
+  "feature_pooling": "masked_mean",
+  "max_chunks": 16,
+  "feature_dim": 768,
+  "hidden_dim": 512,
+  "recognition_aggregation": "topk_mean",
+  "top_k": 2,
+  "use_pos_weight": true,
+  "pos_weight_rows": [
+    {
+      "label_id": 0,
+      "label_name": "Reentrancy",
+      "positive_count": 4281,
+      "negative_count": 103623,
+      "raw_ratio": 24.20532585844429,
+      "sqrt_ratio": 4.919890838061785,
+      "final_pos_weight": 4.919890838061785
+    },
+    {
+      "label_id": 1,
+      "label_name": "Contract contains unknown address",
+      "positive_count": 17888,
+      "negative_count": 90016,
+      "raw_ratio": 5.032200357781753,
+      "sqrt_ratio": 2.2432566410871835,
+      "final_pos_weight": 2.2432566410871835
+    },
+    {
+      "label_id": 2,
+      "label_name": "Integer overflow or underflow",
+      "positive_count": 15860,
+      "negative_count": 92044,
+      "raw_ratio": 5.803530895334174,
+      "sqrt_ratio": 2.409051866468253,
+      "final_pos_weight": 2.409051866468253
+    },
+    {
+      "label_id": 3,
+      "label_name": "Timestamp dependence",
+      "positive_count": 1773,
+      "negative_count": 106131,
+      "raw_ratio": 59.8595600676819,
+      "sqrt_ratio": 7.7368960228041,
+      "final_pos_weight": 5.0
+    },
+    {
+      "label_id": 4,
+      "label_name": "DoS with failed call",
+      "positive_count": 2225,
+      "negative_count": 105679,
+      "raw_ratio": 47.4961797752809,
+      "sqrt_ratio": 6.891747222242042,
+      "final_pos_weight": 5.0
+    },
+    {
+      "label_id": 5,
+      "label_name": "Assert violation",
+      "positive_count": 1792,
+      "negative_count": 106112,
+      "raw_ratio": 59.214285714285715,
+      "sqrt_ratio": 7.69508191732133,
+      "final_pos_weight": 5.0
+    },
+    {
+      "label_id": 6,
+      "label_name": "Unchecked call return value",
+      "positive_count": 7222,
+      "negative_count": 100682,
+      "raw_ratio": 13.941013569648296,
+      "sqrt_ratio": 3.733766673166428,
+      "final_pos_weight": 3.733766673166428
+    },
+    {
+      "label_id": 7,
+      "label_name": "Unsafe send",
+      "positive_count": 1394,
+      "negative_count": 106510,
+      "raw_ratio": 76.40602582496413,
+      "sqrt_ratio": 8.741054045420617,
+      "final_pos_weight": 5.0
+    },
+    {
+      "label_id": 8,
+      "label_name": "Multiplication after division",
+      "positive_count": 1591,
+      "negative_count": 106313,
+      "raw_ratio": 66.82149591451918,
+      "sqrt_ratio": 8.17444162707883,
+      "final_pos_weight": 5.0
+    },
+    {
+      "label_id": 9,
+      "label_name": "Extra gas consumption",
+      "positive_count": 4458,
+      "negative_count": 103446,
+      "raw_ratio": 23.20457604306864,
+      "sqrt_ratio": 4.817112832710963,
+      "final_pos_weight": 4.817112832710963
+    }
+  ],
+  "best_loss_epoch": 19,
+  "best_loss_value": 0.09754130966598279,
+  "best_micro_f1_epoch": 16,
+  "best_micro_f1_value": 0.5819309123117804,
+  "best_macro_f1_epoch": 14,
+  "best_macro_f1_value": 0.4415724869965135,
+  "best_macro_f1_threshold": 0.5,
+  "valid_loss_at_best_macro": 0.09829677157436631,
+  "valid_micro_f1": 0.5787249678486129,
+  "valid_macro_f1": 0.4415724869965135,
+  "detection_f1": 0.6925851703406813,
+  "predicted_positive_total": 6104,
+  "baseline_comparison": {
+    "codebert_weighted_micro_f1": 0.5604,
+    "codebert_weighted_macro_f1": 0.4215,
+    "codebert_weighted_detection_f1": 0.643,
+    "evm_bert_first512_micro_f1": 0.5659,
+    "evm_bert_first512_macro_f1": 0.4326,
+    "evm_bert_first512_detection_f1": 0.6895,
+    "cls_topk_mil_micro_f1": 0.5261,
+    "cls_topk_mil_macro_f1": 0.3915,
+    "cls_topk_mil_detection_f1": 0.6395
+  },
+  "improves_evm_bert_first512_macro_f1": true,
+  "is_transductive_pretraining": true,
+  "train_samples": 107904,
+  "valid_samples": 26791,
+  "per_label_table": [
+    {
+      "label_id": 0,
+      "label_name": "Reentrancy",
+      "precision": 0.22426470588235295,
+      "recall": 0.7093023255813954,
+      "f1": 0.34078212290502796,
+      "support": 86,
+      "predicted_positive_count": 272,
+      "true_positive_count": 86
+    },
+    {
+      "label_id": 1,
+      "label_name": "Contract contains unknown address",
+      "precision": 0.7073378839590444,
+      "recall": 0.6073260073260073,
+      "f1": 0.6535277887268427,
+      "support": 1365,
+      "predicted_positive_count": 1172,
+      "true_positive_count": 1365
+    },
+    {
+      "label_id": 2,
+      "label_name": "Integer overflow or underflow",
+      "precision": 0.5897319400272604,
+      "recall": 0.7183176535694521,
+      "f1": 0.6477045908183633,
+      "support": 1807,
+      "predicted_positive_count": 2201,
+      "true_positive_count": 1807
+    },
+    {
+      "label_id": 3,
+      "label_name": "Timestamp dependence",
+      "precision": 0.21374045801526717,
+      "recall": 0.7272727272727273,
+      "f1": 0.3303834808259587,
+      "support": 77,
+      "predicted_positive_count": 262,
+      "true_positive_count": 77
+    },
+    {
+      "label_id": 4,
+      "label_name": "DoS with failed call",
+      "precision": 0.16666666666666666,
+      "recall": 0.29411764705882354,
+      "f1": 0.21276595744680848,
+      "support": 17,
+      "predicted_positive_count": 30,
+      "true_positive_count": 17
+    },
+    {
+      "label_id": 5,
+      "label_name": "Assert violation",
+      "precision": 0.22594142259414227,
+      "recall": 0.6428571428571429,
+      "f1": 0.33436532507739936,
+      "support": 84,
+      "predicted_positive_count": 239,
+      "true_positive_count": 84
+    },
+    {
+      "label_id": 6,
+      "label_name": "Unchecked call return value",
+      "precision": 0.4900763358778626,
+      "recall": 0.5879120879120879,
+      "f1": 0.5345545378850957,
+      "support": 546,
+      "predicted_positive_count": 655,
+      "true_positive_count": 546
+    },
+    {
+      "label_id": 7,
+      "label_name": "Unsafe send",
+      "precision": 0.5806451612903226,
+      "recall": 0.2857142857142857,
+      "f1": 0.3829787234042553,
+      "support": 63,
+      "predicted_positive_count": 31,
+      "true_positive_count": 63
+    },
+    {
+      "label_id": 8,
+      "label_name": "Multiplication after division",
+      "precision": 0.4368932038834951,
+      "recall": 0.46153846153846156,
+      "f1": 0.4488778054862843,
+      "support": 195,
+      "predicted_positive_count": 206,
+      "true_positive_count": 195
+    },
+    {
+      "label_id": 9,
+      "label_name": "Extra gas consumption",
+      "precision": 0.4034749034749035,
+      "recall": 0.7712177121771218,
+      "f1": 0.5297845373891001,
+      "support": 542,
+      "predicted_positive_count": 1036,
+      "true_positive_count": 542
+    }
+  ]
+}
