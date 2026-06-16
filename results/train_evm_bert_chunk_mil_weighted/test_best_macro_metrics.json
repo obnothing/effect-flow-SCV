@@ -1,0 +1,219 @@
+{
+  "split": "test",
+  "checkpoint": "checkpoints/train_evm_bert_chunk_mil_weighted/best_macro_f1.pt",
+  "checkpoint_epoch": 30,
+  "threshold": 0.5,
+  "threshold_source": "checkpoint_best_threshold_by_macro_f1",
+  "model_type": "evm_chunk_mil",
+  "encoder_frozen": true,
+  "feature_dir": "data/features/evm_bert_chunks",
+  "evaluated_samples": 16748,
+  "loss": 0.26622443548794694,
+  "detection_precision": 0.6290718038528896,
+  "detection_recall": 0.6502534395365677,
+  "detection_f1": 0.6394872707851166,
+  "recognition_micro_precision": 0.4886573685094942,
+  "recognition_micro_recall": 0.5697492163009404,
+  "recognition_micro_f1": 0.5260967887833559,
+  "recognition_macro_precision": 0.35411867752163306,
+  "recognition_macro_recall": 0.5001196973606903,
+  "recognition_macro_f1": 0.39153383887668414,
+  "predicted_positive_total": 5951,
+  "per_label_predicted_positive_count": [
+    281,
+    1441,
+    1881,
+    252,
+    20,
+    228,
+    890,
+    62,
+    154,
+    742
+  ],
+  "per_label_true_positive_count": [
+    89,
+    1496,
+    1817,
+    78,
+    17,
+    84,
+    616,
+    64,
+    191,
+    652
+  ],
+  "per_label_mean_pred_prob": [
+    0.01814587600529194,
+    0.12102833390235901,
+    0.1290779709815979,
+    0.012542742304503918,
+    0.002307526534423232,
+    0.014205104671418667,
+    0.06781884282827377,
+    0.01209992915391922,
+    0.01996968686580658,
+    0.06142938509583473
+  ],
+  "per_label": [
+    {
+      "label_id": 0,
+      "label_name": "Reentrancy",
+      "precision": 0.2099644128113879,
+      "recall": 0.6629213483146067,
+      "f1": 0.3189189189189189,
+      "support": 89,
+      "predicted_positive_count": 281,
+      "true_positive_count": 89
+    },
+    {
+      "label_id": 1,
+      "label_name": "Contract contains unknown address",
+      "precision": 0.5988896599583623,
+      "recall": 0.5768716577540107,
+      "f1": 0.5876744977868574,
+      "support": 1496,
+      "predicted_positive_count": 1441,
+      "true_positive_count": 1496
+    },
+    {
+      "label_id": 2,
+      "label_name": "Integer overflow or underflow",
+      "precision": 0.6097820308346624,
+      "recall": 0.6312603192074848,
+      "f1": 0.6203353163872364,
+      "support": 1817,
+      "predicted_positive_count": 1881,
+      "true_positive_count": 1817
+    },
+    {
+      "label_id": 3,
+      "label_name": "Timestamp dependence",
+      "precision": 0.21825396825396826,
+      "recall": 0.7051282051282052,
+      "f1": 0.33333333333333337,
+      "support": 78,
+      "predicted_positive_count": 252,
+      "true_positive_count": 78
+    },
+    {
+      "label_id": 4,
+      "label_name": "DoS with failed call",
+      "precision": 0.15,
+      "recall": 0.17647058823529413,
+      "f1": 0.16216216216216214,
+      "support": 17,
+      "predicted_positive_count": 20,
+      "true_positive_count": 17
+    },
+    {
+      "label_id": 5,
+      "label_name": "Assert violation",
+      "precision": 0.21929824561403508,
+      "recall": 0.5952380952380952,
+      "f1": 0.3205128205128205,
+      "support": 84,
+      "predicted_positive_count": 228,
+      "true_positive_count": 84
+    },
+    {
+      "label_id": 6,
+      "label_name": "Unchecked call return value",
+      "precision": 0.36404494382022473,
+      "recall": 0.525974025974026,
+      "f1": 0.43027888446215146,
+      "support": 616,
+      "predicted_positive_count": 890,
+      "true_positive_count": 616
+    },
+    {
+      "label_id": 7,
+      "label_name": "Unsafe send",
+      "precision": 0.25806451612903225,
+      "recall": 0.25,
+      "f1": 0.25396825396825395,
+      "support": 64,
+      "predicted_positive_count": 62,
+      "true_positive_count": 64
+    },
+    {
+      "label_id": 8,
+      "label_name": "Multiplication after division",
+      "precision": 0.487012987012987,
+      "recall": 0.39267015706806285,
+      "f1": 0.43478260869565216,
+      "support": 191,
+      "predicted_positive_count": 154,
+      "true_positive_count": 191
+    },
+    {
+      "label_id": 9,
+      "label_name": "Extra gas consumption",
+      "precision": 0.42587601078167114,
+      "recall": 0.48466257668711654,
+      "f1": 0.4533715925394548,
+      "support": 652,
+      "predicted_positive_count": 742,
+      "true_positive_count": 652
+    }
+  ],
+  "threshold_scan": {
+    "0.1": {
+      "micro_precision": 0.27478699905332915,
+      "micro_recall": 0.8530564263322884,
+      "micro_f1": 0.4156761659267746,
+      "macro_precision": 0.18791791666658114,
+      "macro_recall": 0.6977077141268148,
+      "macro_f1": 0.29112544045661026,
+      "predicted_positive_total": 15845
+    },
+    "0.2": {
+      "micro_precision": 0.3451590353023418,
+      "micro_recall": 0.7739028213166145,
+      "micro_f1": 0.4773990814599951,
+      "macro_precision": 0.23579472729381118,
+      "macro_recall": 0.6304696903680762,
+      "macro_f1": 0.3376294145367036,
+      "predicted_positive_total": 11444
+    },
+    "0.3": {
+      "micro_precision": 0.3958612975391499,
+      "micro_recall": 0.6933777429467085,
+      "micro_f1": 0.5039874679578469,
+      "macro_precision": 0.27417377534441956,
+      "macro_recall": 0.5862923317076436,
+      "macro_f1": 0.3640406090718253,
+      "predicted_positive_total": 8940
+    },
+    "0.4": {
+      "micro_precision": 0.4472195391196357,
+      "micro_recall": 0.6349921630094044,
+      "micro_f1": 0.5248158043883087,
+      "macro_precision": 0.3162143902530037,
+      "macro_recall": 0.5428448560367918,
+      "macro_f1": 0.38363837438739296,
+      "predicted_positive_total": 7247
+    },
+    "0.5": {
+      "micro_precision": 0.4886573685094942,
+      "micro_recall": 0.5697492163009404,
+      "micro_f1": 0.5260967887833559,
+      "macro_precision": 0.35411867752163306,
+      "macro_recall": 0.5001196973606903,
+      "macro_f1": 0.39153383887668414,
+      "predicted_positive_total": 5951
+    }
+  },
+  "top_chunks_path": "results/train_evm_bert_chunk_mil_weighted/top_chunks_test.jsonl",
+  "baseline_comparison": {
+    "evm_bert_first512_micro_f1": 0.5659,
+    "evm_bert_first512_macro_f1": 0.4326,
+    "evm_bert_first512_detection_f1": 0.6895,
+    "codebert_weighted_micro_f1": 0.5604,
+    "codebert_weighted_macro_f1": 0.4215
+  },
+  "macro_f1_change_over_evm_bert_first512": -0.04106616112331585,
+  "micro_f1_change_over_evm_bert_first512": -0.0398032112166441,
+  "detection_f1_change_over_evm_bert_first512": -0.05001272921488342,
+  "is_transductive_pretraining": true
+}

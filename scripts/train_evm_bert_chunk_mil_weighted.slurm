@@ -1,10 +1,10 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #SBATCH --job-name=mil_train
-#SBATCH --partition=gpu-l20
+#SBATCH --partition=gpu-a100
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=4
 #SBATCH --output=logs/slurm_mil_train_%j.out
 #SBATCH --error=logs/slurm_mil_train_%j.err
 

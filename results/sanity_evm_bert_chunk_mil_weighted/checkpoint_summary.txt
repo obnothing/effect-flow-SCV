@@ -1,0 +1,41 @@
+EVM chunk MIL training report
+
+experiment_name: sanity_evm_bert_chunk_mil_weighted
+model_type: evm_chunk_mil
+encoder_frozen: True
+feature_dir: data/features/evm_bert_chunks
+max_chunks: 16
+feature_dim: 768
+hidden_dim: 512
+recognition_aggregation: topk_mean
+top_k: 2
+use_pos_weight: True
+pos_weight_rows: [{'label_id': 0, 'label_name': 'Reentrancy', 'positive_count': 4281, 'negative_count': 103623, 'raw_ratio': 24.20532585844429, 'sqrt_ratio': 4.919890838061785, 'final_pos_weight': 4.919890838061785}, {'label_id': 1, 'label_name': 'Contract contains unknown address', 'positive_count': 17888, 'negative_count': 90016, 'raw_ratio': 5.032200357781753, 'sqrt_ratio': 2.2432566410871835, 'final_pos_weight': 2.2432566410871835}, {'label_id': 2, 'label_name': 'Integer overflow or underflow', 'positive_count': 15860, 'negative_count': 92044, 'raw_ratio': 5.803530895334174, 'sqrt_ratio': 2.409051866468253, 'final_pos_weight': 2.409051866468253}, {'label_id': 3, 'label_name': 'Timestamp dependence', 'positive_count': 1773, 'negative_count': 106131, 'raw_ratio': 59.8595600676819, 'sqrt_ratio': 7.7368960228041, 'final_pos_weight': 5.0}, {'label_id': 4, 'label_name': 'DoS with failed call', 'positive_count': 2225, 'negative_count': 105679, 'raw_ratio': 47.4961797752809, 'sqrt_ratio': 6.891747222242042, 'final_pos_weight': 5.0}, {'label_id': 5, 'label_name': 'Assert violation', 'positive_count': 1792, 'negative_count': 106112, 'raw_ratio': 59.214285714285715, 'sqrt_ratio': 7.69508191732133, 'final_pos_weight': 5.0}, {'label_id': 6, 'label_name': 'Unchecked call return value', 'positive_count': 7222, 'negative_count': 100682, 'raw_ratio': 13.941013569648296, 'sqrt_ratio': 3.733766673166428, 'final_pos_weight': 3.733766673166428}, {'label_id': 7, 'label_name': 'Unsafe send', 'positive_count': 1394, 'negative_count': 106510, 'raw_ratio': 76.40602582496413, 'sqrt_ratio': 8.741054045420617, 'final_pos_weight': 5.0}, {'label_id': 8, 'label_name': 'Multiplication after division', 'positive_count': 1591, 'negative_count': 106313, 'raw_ratio': 66.82149591451918, 'sqrt_ratio': 8.17444162707883, 'final_pos_weight': 5.0}, {'label_id': 9, 'label_name': 'Extra gas consumption', 'positive_count': 4458, 'negative_count': 103446, 'raw_ratio': 23.20457604306864, 'sqrt_ratio': 4.817112832710963, 'final_pos_weight': 4.817112832710963}]
+best_loss_epoch: 1
+best_loss_value: 0.2441796436905861
+best_micro_f1_epoch: 1
+best_micro_f1_value: 0.27397260273972607
+best_macro_f1_epoch: 1
+best_macro_f1_value: 0.09141025641025642
+best_macro_f1_threshold: 0.3
+valid_loss_at_best_macro: 0.2441796436905861
+valid_micro_f1: 0.0
+valid_macro_f1: 0.0
+detection_f1: 0.6
+predicted_positive_total: 0
+baseline_comparison: {'evm_bert_first512_micro_f1': 0.5659, 'evm_bert_first512_macro_f1': 0.4326, 'evm_bert_first512_detection_f1': 0.6895, 'codebert_weighted_micro_f1': 0.5604, 'codebert_weighted_macro_f1': 0.4215}
+improves_evm_bert_first512_macro_f1: False
+is_transductive_pretraining: True
+train_samples: 512
+valid_samples: 128
+per_label_table:
+- Reentrancy: precision=0.000000 recall=0.000000 f1=0.000000 support=1
+- Contract contains unknown address: precision=0.000000 recall=0.000000 f1=0.000000 support=7
+- Integer overflow or underflow: precision=0.000000 recall=0.000000 f1=0.000000 support=7
+- Timestamp dependence: precision=0.000000 recall=0.000000 f1=0.000000 support=0
+- DoS with failed call: precision=0.000000 recall=0.000000 f1=0.000000 support=0
+- Assert violation: precision=0.000000 recall=0.000000 f1=0.000000 support=0
+- Unchecked call return value: precision=0.000000 recall=0.000000 f1=0.000000 support=3
+- Unsafe send: precision=0.000000 recall=0.000000 f1=0.000000 support=0
+- Multiplication after division: precision=0.000000 recall=0.000000 f1=0.000000 support=0
+- Extra gas consumption: precision=0.000000 recall=0.000000 f1=0.000000 support=2

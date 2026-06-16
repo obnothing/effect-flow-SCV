@@ -1,0 +1,60 @@
+EVM-BERT chunk feature extraction report
+
+experiment_name: extract_evm_bert_chunk_features
+output_dir: data/features/evm_bert_chunks
+pooling: cls
+max_len: 512
+chunk_content_size: 510
+chunk_stride: 510
+max_chunks_per_contract: 16
+hf_model_path: checkpoints/pretrain_evm_bert_base_full_bjut/hf_model
+is_transductive_pretraining: True
+splits:
+- train:
+  split: train
+  samples: 107904
+  max_chunks_per_contract: 16
+  generated_chunks: 564280
+  mean_chunks_per_contract: 5.2294632265717675
+  truncated_contract_count: 4917
+  mean_coverage_ratio: 0.9881555410467113
+  p50_coverage_ratio: 1.0
+  p90_coverage_ratio: 1.0
+  p95_coverage_ratio: 1.0
+  feature_shape: [107904, 16, 768]
+  dtype: torch.float16
+  hf_model_path: checkpoints/pretrain_evm_bert_base_full_bjut/hf_model
+  is_transductive_pretraining: True
+  disk_size_bytes: 2670871955
+- valid:
+  split: valid
+  samples: 26791
+  max_chunks_per_contract: 16
+  generated_chunks: 122686
+  mean_chunks_per_contract: 4.5793736702624015
+  truncated_contract_count: 565
+  mean_coverage_ratio: 0.9949647812751674
+  p50_coverage_ratio: 1.0
+  p90_coverage_ratio: 1.0
+  p95_coverage_ratio: 1.0
+  feature_shape: [26791, 16, 768]
+  dtype: torch.float16
+  hf_model_path: checkpoints/pretrain_evm_bert_base_full_bjut/hf_model
+  is_transductive_pretraining: True
+  disk_size_bytes: 663131667
+- test:
+  split: test
+  samples: 16748
+  max_chunks_per_contract: 16
+  generated_chunks: 71667
+  mean_chunks_per_contract: 4.279137807499403
+  truncated_contract_count: 616
+  mean_coverage_ratio: 0.9890887594571688
+  p50_coverage_ratio: 1.0
+  p90_coverage_ratio: 1.0
+  p95_coverage_ratio: 1.0
+  feature_shape: [16748, 16, 768]
+  dtype: torch.float16
+  hf_model_path: checkpoints/pretrain_evm_bert_base_full_bjut/hf_model
+  is_transductive_pretraining: True
+  disk_size_bytes: 414547213
