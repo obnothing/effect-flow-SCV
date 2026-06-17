@@ -20,6 +20,8 @@ def metric_row(
     metrics_path,
     summary_path=None,
     notes="",
+    threshold_mode=None,
+    threshold_source=None,
 ):
     metrics = load_json(metrics_path)
     summary = load_json(summary_path) if summary_path else None
@@ -38,8 +40,12 @@ def metric_row(
         "aggregation": aggregation,
         "encoder_frozen": encoder_frozen,
         "status": "ok",
+        "threshold_mode": threshold_mode or "global",
+        "threshold_source": threshold_source,
         "micro_f1": metrics.get("recognition_micro_f1"),
         "macro_f1": metrics.get("recognition_macro_f1"),
+        "macro_precision": metrics.get("recognition_macro_precision"),
+        "macro_recall": metrics.get("recognition_macro_recall"),
         "detection_f1": metrics.get("detection_f1"),
         "predicted_positives": metrics.get("predicted_positive_total"),
         "best_valid_macro_f1": (
@@ -53,10 +59,59 @@ def metric_row(
     }
 
 
+def calibrated_metric_row(
+    model,
+    feature_pooling,
+    aggregation,
+    threshold_mode,
+    metrics_path,
+    result_key,
+    notes="",
+):
+    metrics = load_json(metrics_path)
+    if metrics is None or result_key not in metrics:
+        return {
+            "model": model,
+            "feature_pooling": feature_pooling,
+            "aggregation": aggregation,
+            "encoder_frozen": True,
+            "threshold_mode": threshold_mode,
+            "threshold_source": "validation set",
+            "status": "missing",
+            "notes": notes,
+        }
+    result = metrics[result_key]
+    return {
+        "model": model,
+        "feature_pooling": feature_pooling,
+        "aggregation": aggregation,
+        "encoder_frozen": True,
+        "threshold_mode": result.get("threshold_mode", threshold_mode),
+        "threshold_source": result.get("threshold_source", "validation set"),
+        "status": "ok",
+        "micro_f1": result.get("recognition_micro_f1"),
+        "macro_f1": result.get("recognition_macro_f1"),
+        "macro_precision": result.get("recognition_macro_precision"),
+        "macro_recall": result.get("recognition_macro_recall"),
+        "detection_f1": result.get("detection_f1"),
+        "predicted_positives": result.get("predicted_positive_total"),
+        "best_valid_macro_f1": None,
+        "best_epoch": metrics.get("checkpoint_epoch"),
+        "threshold": result.get("thresholds"),
+        "notes": notes,
+    }
+
+
 def delta(value, baseline):
     if value is None or baseline is None:
         return None
     return value - baseline
+
+
+def fmt_float(value):
+    if value is None:
+        return "missing"
+    return f"{float(value):.4f}"
 
 
 def main():
@@ -69,6 +124,8 @@ def main():
             "results/train_mlsmote_codebert_weighted/test_best_macro_metrics.json",
             "results/train_mlsmote_codebert_weighted/checkpoint_summary.json",
             "strict inductive baseline",
+            "global",
+            "checkpoint",
         ),
         metric_row(
             "EVM-BERT first-512 weighted",
@@ -78,6 +135,8 @@ def main():
             "results/train_evm_bert_weighted/test_best_macro_metrics.json",
             "results/train_evm_bert_weighted/checkpoint_summary.json",
             "transductive EVM-domain pretraining baseline",
+            "global",
+            "checkpoint",
         ),
         metric_row(
             "CLS top-k MIL",
@@ -87,6 +146,8 @@ def main():
             "results/train_evm_bert_chunk_mil_weighted/test_best_macro_metrics.json",
             "results/train_evm_bert_chunk_mil_weighted/checkpoint_summary.json",
             "Stage 10A frozen chunk feature MIL",
+            "global",
+            "checkpoint",
         ),
         metric_row(
             "Masked-mean top-k MIL",
@@ -96,6 +157,8 @@ def main():
             "results/train_evm_bert_chunk_mil_mean_topk_weighted/test_best_macro_metrics.json",
             "results/train_evm_bert_chunk_mil_mean_topk_weighted/checkpoint_summary.json",
             "Stage 10B pooling ablation",
+            "global",
+            "checkpoint",
         ),
         metric_row(
             "Masked-mean label-attention MIL",
@@ -105,6 +168,26 @@ def main():
             "results/train_evm_bert_chunk_mil_mean_labelattn_weighted/test_best_macro_metrics.json",
             "results/train_evm_bert_chunk_mil_mean_labelattn_weighted/checkpoint_summary.json",
             "Stage 10B label-wise gated attention MIL",
+            "global",
+            "checkpoint",
+        ),
+        calibrated_metric_row(
+            "Masked-mean label-attention MIL calibrated",
+            "masked_mean",
+            "label_gated_attention",
+            "global_best_macro",
+            "results/train_evm_bert_chunk_mil_mean_labelattn_weighted/test_threshold_calibration_metrics.json",
+            "best_global_threshold_result",
+            "Stage 10C validation-selected global threshold",
+        ),
+        calibrated_metric_row(
+            "Masked-mean label-attention MIL calibrated",
+            "masked_mean",
+            "label_gated_attention",
+            "per_label",
+            "results/train_evm_bert_chunk_mil_mean_labelattn_weighted/test_threshold_calibration_metrics.json",
+            "per_label_threshold_result",
+            "Stage 10C validation-selected per-label thresholds",
         ),
     ]
     by_name = {row["model"]: row for row in rows}
@@ -141,20 +224,29 @@ def main():
     json_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     lines = ["Stage 10 ablation summary", ""]
     header = (
-        "model | feature_pooling | aggregation | encoder_frozen | micro-F1 | "
-        "macro-F1 | detection F1 | predicted positives | best valid macro-F1 | "
-        "best epoch | threshold | notes"
+        "model | feature_pooling | aggregation | threshold_mode | threshold_source | "
+        "encoder_frozen | micro-F1 | macro-F1 | macro precision | macro recall | "
+        "detection F1 | predicted positives | best valid macro-F1 | best epoch | "
+        "threshold | notes"
     )
     lines.append(header)
     lines.append("-" * len(header))
     for row in rows:
         if row.get("status") != "ok":
-            lines.append(f"{row['model']} | {row['feature_pooling']} | {row['aggregation']} | {row['encoder_frozen']} | missing | missing | missing | missing | missing | missing | missing | {row['notes']}")
+            lines.append(
+                f"{row['model']} | {row['feature_pooling']} | {row['aggregation']} | "
+                f"{row.get('threshold_mode')} | {row.get('threshold_source')} | "
+                f"{row['encoder_frozen']} | missing | missing | missing | missing | "
+                f"missing | missing | missing | missing | missing | {row['notes']}"
+            )
             continue
         lines.append(
             f"{row['model']} | {row['feature_pooling']} | {row['aggregation']} | "
-            f"{row['encoder_frozen']} | {row['micro_f1']:.4f} | {row['macro_f1']:.4f} | "
-            f"{row['detection_f1']:.4f} | {row['predicted_positives']} | "
+            f"{row.get('threshold_mode')} | {row.get('threshold_source')} | "
+            f"{row['encoder_frozen']} | {fmt_float(row.get('micro_f1'))} | "
+            f"{fmt_float(row.get('macro_f1'))} | {fmt_float(row.get('macro_precision'))} | "
+            f"{fmt_float(row.get('macro_recall'))} | {fmt_float(row.get('detection_f1'))} | "
+            f"{row['predicted_positives']} | "
             f"{row['best_valid_macro_f1']} | {row['best_epoch']} | {row['threshold']} | "
             f"{row['notes']}"
         )
@@ -173,4 +265,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
