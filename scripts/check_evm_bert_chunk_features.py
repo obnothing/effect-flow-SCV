@@ -13,6 +13,13 @@ def parse_args():
     parser.add_argument("--feature_dir", default="data/features/evm_bert_chunks")
     parser.add_argument("--data_dir", default="data/processed/BJUT_SC01")
     parser.add_argument("--report_dir", default="data/reports")
+    parser.add_argument("--expected_max_chunks", type=int, default=None)
+    parser.add_argument("--expected_feature_dim", type=int, default=None)
+    parser.add_argument(
+        "--coverage_baseline_dir",
+        default=None,
+        help="Optional feature dir to compare coverage ratios against.",
+    )
     parser.add_argument(
         "--output",
         default=None,
@@ -45,7 +52,7 @@ def count_jsonl(path):
     return count
 
 
-def check_split(split, feature_dir, data_dir):
+def check_split(split, feature_dir, data_dir, expected_max_chunks=None, expected_feature_dim=None):
     path = feature_dir / f"{split}.pt"
     if not path.exists():
         raise FileNotFoundError(f"Missing feature cache: {path}")
@@ -55,6 +62,7 @@ def check_split(split, feature_dir, data_dir):
     binary_labels = payload["binary_labels"]
     multi_labels = payload["multi_labels"]
     ids = payload["ids"]
+    source_report = payload.get("report", {})
     expected_file = "train_mlsmote.jsonl" if split == "train" else f"{split}.jsonl"
     expected_samples = count_jsonl(data_dir / expected_file)
     checks = {
@@ -73,13 +81,35 @@ def check_split(split, feature_dir, data_dir):
         "has_inf": bool(torch.isinf(features.float()).any().item()),
         "min_real_chunks": int(chunk_mask.sum(dim=1).min().item()),
         "max_real_chunks": int(chunk_mask.sum(dim=1).max().item()),
+        "mean_real_chunks": float(chunk_mask.sum(dim=1).float().mean().item()),
         "sample_count_matches_jsonl": int(features.shape[0]) == expected_samples,
         "disk_size_bytes": path.stat().st_size,
+        "source_report": {
+            "pooling": source_report.get("pooling"),
+            "max_chunks_per_contract": source_report.get("max_chunks_per_contract"),
+            "generated_chunks": source_report.get("generated_chunks"),
+            "mean_chunks_per_contract": source_report.get("mean_chunks_per_contract"),
+            "truncated_contract_count": source_report.get("truncated_contract_count"),
+            "mean_coverage_ratio": source_report.get("mean_coverage_ratio"),
+            "p50_coverage_ratio": source_report.get("p50_coverage_ratio"),
+            "p90_coverage_ratio": source_report.get("p90_coverage_ratio"),
+            "p95_coverage_ratio": source_report.get("p95_coverage_ratio"),
+            "hf_model_path": source_report.get("hf_model_path"),
+            "is_transductive_pretraining": source_report.get("is_transductive_pretraining"),
+        },
     }
     if features.ndim != 3:
         raise ValueError(f"{path} features must be [N, C, H], got {features.shape}")
     if chunk_mask.shape != features.shape[:2]:
         raise ValueError(f"{path} chunk_mask shape mismatch")
+    if expected_max_chunks is not None and features.shape[1] != expected_max_chunks:
+        raise ValueError(
+            f"{path} expected max_chunks={expected_max_chunks}, got {features.shape[1]}"
+        )
+    if expected_feature_dim is not None and features.shape[2] != expected_feature_dim:
+        raise ValueError(
+            f"{path} expected feature_dim={expected_feature_dim}, got {features.shape[2]}"
+        )
     if binary_labels.shape[0] != features.shape[0]:
         raise ValueError(f"{path} binary_labels shape mismatch")
     if multi_labels.shape != (features.shape[0], 10):
@@ -93,6 +123,37 @@ def check_split(split, feature_dir, data_dir):
     return checks
 
 
+def coverage_from_payload(path):
+    if not path.exists():
+        return None
+    payload = torch.load(path, map_location="cpu")
+    report = payload.get("report", {})
+    value = report.get("mean_coverage_ratio")
+    return float(value) if value is not None else None
+
+
+def add_coverage_comparison(report, baseline_dir):
+    if baseline_dir is None:
+        return
+    baseline_dir = resolve_path(baseline_dir)
+    report["coverage_baseline_dir"] = project_relative(baseline_dir)
+    warnings = []
+    for split, row in report["splits"].items():
+        current = row.get("source_report", {}).get("mean_coverage_ratio")
+        baseline = coverage_from_payload(baseline_dir / f"{split}.pt")
+        row["baseline_mean_coverage_ratio"] = baseline
+        row["coverage_delta_vs_baseline"] = (
+            float(current) - float(baseline)
+            if current is not None and baseline is not None
+            else None
+        )
+        if row["coverage_delta_vs_baseline"] is not None and row["coverage_delta_vs_baseline"] < -0.02:
+            warnings.append(
+                f"{split}: mean coverage ratio is more than 0.02 below baseline"
+            )
+    report["coverage_warnings"] = warnings
+
+
 def main():
     args = parse_args()
     feature_dir = resolve_path(args.feature_dir)
@@ -102,11 +163,20 @@ def main():
     report = {
         "status": "ok",
         "feature_dir": project_relative(feature_dir),
+        "expected_max_chunks": args.expected_max_chunks,
+        "expected_feature_dim": args.expected_feature_dim,
         "splits": {
-            split: check_split(split, feature_dir, data_dir)
+            split: check_split(
+                split,
+                feature_dir,
+                data_dir,
+                expected_max_chunks=args.expected_max_chunks,
+                expected_feature_dim=args.expected_feature_dim,
+            )
             for split in ["train", "valid", "test"]
         },
     }
+    add_coverage_comparison(report, args.coverage_baseline_dir)
     if args.output:
         txt_path = resolve_path(args.output)
         json_path = txt_path.with_suffix(".json")
@@ -117,6 +187,14 @@ def main():
     lines = ["EVM-BERT chunk feature cache check", ""]
     lines.append(f"status: {report['status']}")
     lines.append(f"feature_dir: {report['feature_dir']}")
+    lines.append(f"expected_max_chunks: {report.get('expected_max_chunks')}")
+    lines.append(f"expected_feature_dim: {report.get('expected_feature_dim')}")
+    if report.get("coverage_baseline_dir"):
+        lines.append(f"coverage_baseline_dir: {report['coverage_baseline_dir']}")
+    if report.get("coverage_warnings"):
+        lines.append("coverage_warnings:")
+        for warning in report["coverage_warnings"]:
+            lines.append(f"  - {warning}")
     for split, row in report["splits"].items():
         lines.append(f"{split}:")
         for key, value in row.items():

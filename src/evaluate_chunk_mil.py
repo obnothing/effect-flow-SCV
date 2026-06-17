@@ -445,6 +445,16 @@ def add_comparison_fields(result, baseline, config):
         result["recognition_macro_f1"]
         - comparisons.get("codebert_weighted_macro_f1", 0.0)
     )
+    if "nonoverlap_labelattn_calibrated_macro_f1" in comparisons:
+        result["macro_f1_change_over_nonoverlap_calibrated"] = (
+            result["recognition_macro_f1"]
+            - comparisons["nonoverlap_labelattn_calibrated_macro_f1"]
+        )
+    if "nonoverlap_labelattn_calibrated_micro_f1" in comparisons:
+        result["micro_f1_change_over_nonoverlap_calibrated"] = (
+            result["recognition_micro_f1"]
+            - comparisons["nonoverlap_labelattn_calibrated_micro_f1"]
+        )
     return result
 
 
@@ -527,6 +537,30 @@ def write_threshold_calibration_report(
             for idx, value in enumerate(per_label_thresholds)
         ],
         "comparison_baselines": {
+            "nonoverlap_labelattn_calibrated": {
+                "micro_f1": config.get("baseline_comparison", {}).get(
+                    "nonoverlap_labelattn_calibrated_micro_f1",
+                    0.5918,
+                ),
+                "macro_f1": config.get("baseline_comparison", {}).get(
+                    "nonoverlap_labelattn_calibrated_macro_f1",
+                    0.4421,
+                ),
+            },
+            "nonoverlap_labelattn_threshold_0_5": {
+                "micro_f1": config.get("baseline_comparison", {}).get(
+                    "nonoverlap_labelattn_threshold05_micro_f1",
+                    0.5823,
+                ),
+                "macro_f1": config.get("baseline_comparison", {}).get(
+                    "nonoverlap_labelattn_threshold05_macro_f1",
+                    0.4375,
+                ),
+                "detection_f1": config.get("baseline_comparison", {}).get(
+                    "nonoverlap_labelattn_threshold05_detection_f1",
+                    0.6752,
+                ),
+            },
             "weighted_global_threshold_0_5": {
                 "micro_f1": 0.5823,
                 "macro_f1": 0.4375,

@@ -1,20 +1,26 @@
 Stage 10 ablation summary
 
-model | feature_pooling | aggregation | threshold_mode | threshold_source | encoder_frozen | micro-F1 | macro-F1 | macro precision | macro recall | detection F1 | predicted positives | best valid macro-F1 | best epoch | threshold | notes
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-CodeBERT weighted | codebert tokenizer | BiGRU | global | checkpoint | False | 0.5604 | 0.4215 | 0.4338 | 0.4847 | 0.6430 | 4831 | 0.44228610711197175 | 10 | 0.5 | strict inductive baseline
-EVM-BERT first-512 weighted | first_512 | BiGRU | global | checkpoint | False | 0.5659 | 0.4326 | 0.4035 | 0.5354 | 0.6895 | 5806 | 0.44607315897582067 | 7 | 0.5 | transductive EVM-domain pretraining baseline
-CLS top-k MIL | cls | topk_mean | global | checkpoint | True | 0.5261 | 0.3915 | 0.3541 | 0.5001 | 0.6395 | 5951 | 0.41315972361376563 | 30 | 0.5 | Stage 10A frozen chunk feature MIL
-Masked-mean top-k MIL | masked_mean | topk_mean | global | checkpoint | True | 0.5560 | 0.4177 | 0.3988 | 0.5285 | 0.6637 | 6119 | 0.4415724869965135 | 14 | 0.5 | Stage 10B pooling ablation
-Masked-mean label-attention MIL | masked_mean | label_gated_attention | global | checkpoint | True | 0.5823 | 0.4375 | 0.3828 | 0.5983 | 0.6752 | 7106 | 0.46613919953252003 | 26 | 0.5 | Stage 10B label-wise gated attention MIL
-Masked-mean label-attention MIL calibrated | masked_mean | label_gated_attention | global_best_macro | validation set | True | missing | missing | missing | missing | missing | missing | missing | missing | missing | Stage 10C validation-selected global threshold
-Masked-mean label-attention MIL calibrated | masked_mean | label_gated_attention | per_label | validation set | True | missing | missing | missing | missing | missing | missing | missing | missing | missing | Stage 10C validation-selected per-label thresholds
+model | feature_pooling | chunk_stride | max_chunks | aggregation | threshold_mode | threshold_source | encoder_frozen | micro-F1 | macro-F1 | macro precision | macro recall | detection F1 | predicted positives | best valid macro-F1 | best epoch | threshold | notes
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CodeBERT weighted | codebert tokenizer | None | None | BiGRU | global | checkpoint | False | 0.5604 | 0.4215 | 0.4338 | 0.4847 | 0.6430 | 4831 | 0.44228610711197175 | 10 | 0.5 | strict inductive baseline
+EVM-BERT first-512 weighted | first_512 | None | None | BiGRU | global | checkpoint | False | 0.5659 | 0.4326 | 0.4035 | 0.5354 | 0.6895 | 5806 | 0.44607315897582067 | 7 | 0.5 | transductive EVM-domain pretraining baseline
+CLS top-k MIL | cls | 510 | 16 | topk_mean | global | checkpoint | True | 0.5261 | 0.3915 | 0.3541 | 0.5001 | 0.6395 | 5951 | 0.41315972361376563 | 30 | 0.5 | Stage 10A frozen chunk feature MIL
+Masked-mean top-k MIL | masked_mean | 510 | 16 | topk_mean | global | checkpoint | True | 0.5560 | 0.4177 | 0.3988 | 0.5285 | 0.6637 | 6119 | 0.4415724869965135 | 14 | 0.5 | Stage 10B pooling ablation
+Masked-mean label-attention MIL | masked_mean | 510 | 16 | label_gated_attention | global | checkpoint | True | 0.5823 | 0.4375 | 0.3828 | 0.5983 | 0.6752 | 7106 | 0.46613919953252003 | 26 | 0.5 | Stage 10B threshold=0.5
+Masked-mean label-attention MIL | masked_mean | 510 | 16 | label_gated_attention | global | validation_best_macro_f1 | True | 0.5859 | 0.4416 | 0.4297 | 0.5459 | 0.6752 | 5737 | None | 26 | 0.65 | Stage 10C validation-selected global threshold
+Masked-mean label-attention MIL | masked_mean | 510 | 16 | label_gated_attention | per_label | validation_selected_per_label | True | 0.5918 | 0.4421 | 0.4369 | 0.5335 | 0.6752 | 5941 | None | 26 | [0.65, 0.55, 0.55, 0.6, 0.75, 0.85, 0.7, 0.5, 0.9, 0.75] | Stage 10C validation-selected per-label thresholds
+Stride256 masked-mean label-attention MIL | masked_mean | 256 | 32 | label_gated_attention | global | checkpoint | True | missing | missing | missing | missing | missing | missing | missing | missing | missing | Stage 10D threshold=0.5
+Stride256 masked-mean label-attention MIL | masked_mean | 256 | 32 | label_gated_attention | global_best_macro | validation set | True | missing | missing | missing | missing | missing | missing | missing | missing | missing | Stage 10D validation-selected global threshold
+Stride256 masked-mean label-attention MIL | masked_mean | 256 | 32 | label_gated_attention | per_label | validation set | True | missing | missing | missing | missing | missing | missing | missing | missing | missing | Stage 10D validation-selected per-label thresholds
 
 Macro-F1 deltas:
-- CodeBERT weighted: vs_cls=0.02996379229707191, vs_first512=-0.011066408085571466, vs_codebert=0.0
-- EVM-BERT first-512 weighted: vs_cls=0.04103020038264338, vs_first512=0.0, vs_codebert=0.011066408085571466
-- CLS top-k MIL: vs_cls=0.0, vs_first512=-0.04103020038264338, vs_codebert=-0.02996379229707191
-- Masked-mean top-k MIL: vs_cls=0.026142454935477566, vs_first512=-0.014887745447165812, vs_codebert=-0.0038213373615943458
-- Masked-mean label-attention MIL: vs_cls=0.046005577436523115, vs_first512=0.004975377053879737, vs_codebert=0.016041785139451203
-- Masked-mean label-attention MIL calibrated: vs_cls=None, vs_first512=None, vs_codebert=None
-- Masked-mean label-attention MIL calibrated: vs_cls=None, vs_first512=None, vs_codebert=None
+- CodeBERT weighted [global, stride=None]: vs_cls=0.02996379229707191, vs_first512=-0.011066408085571466, vs_codebert=0.0, vs_nonoverlap_calibrated=-0.020592112145567
+- EVM-BERT first-512 weighted [global, stride=None]: vs_cls=0.04103020038264338, vs_first512=0.0, vs_codebert=0.011066408085571466, vs_nonoverlap_calibrated=-0.009525704059995532
+- CLS top-k MIL [global, stride=510]: vs_cls=0.0, vs_first512=-0.04103020038264338, vs_codebert=-0.02996379229707191, vs_nonoverlap_calibrated=-0.05055590444263891
+- Masked-mean top-k MIL [global, stride=510]: vs_cls=0.026142454935477566, vs_first512=-0.014887745447165812, vs_codebert=-0.0038213373615943458, vs_nonoverlap_calibrated=-0.024413449507161344
+- Masked-mean label-attention MIL [global, stride=510]: vs_cls=0.046005577436523115, vs_first512=0.004975377053879737, vs_codebert=0.016041785139451203, vs_nonoverlap_calibrated=-0.004550327006115795
+- Masked-mean label-attention MIL [global, stride=510]: vs_cls=0.05002844059301137, vs_first512=0.008998240210367991, vs_codebert=0.020064648295939458, vs_nonoverlap_calibrated=-0.0005274638496275408
+- Masked-mean label-attention MIL [per_label, stride=510]: vs_cls=0.05055590444263891, vs_first512=0.009525704059995532, vs_codebert=0.020592112145567, vs_nonoverlap_calibrated=0.0
+- Stride256 masked-mean label-attention MIL [global, stride=256]: vs_cls=None, vs_first512=None, vs_codebert=None, vs_nonoverlap_calibrated=None
+- Stride256 masked-mean label-attention MIL [global_best_macro, stride=256]: vs_cls=None, vs_first512=None, vs_codebert=None, vs_nonoverlap_calibrated=None
+- Stride256 masked-mean label-attention MIL [per_label, stride=256]: vs_cls=None, vs_first512=None, vs_codebert=None, vs_nonoverlap_calibrated=None

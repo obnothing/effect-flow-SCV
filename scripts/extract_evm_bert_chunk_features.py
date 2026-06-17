@@ -305,8 +305,9 @@ def extract_split(split_name, input_path, output_path, tokenizer, encoder, confi
 def write_report(config, reports):
     report_dir = resolve_path(config.get("report_dir", "data/reports"))
     report_dir.mkdir(parents=True, exist_ok=True)
+    experiment_name = config.get("experiment_name")
     report = {
-        "experiment_name": config.get("experiment_name"),
+        "experiment_name": experiment_name,
         "output_dir": config["output_dir"],
         "pooling": config.get("pooling", "cls"),
         "max_len": config["max_len"],
@@ -317,8 +318,6 @@ def write_report(config, reports):
         "is_transductive_pretraining": bool(config.get("is_transductive_pretraining", True)),
         "splits": reports,
     }
-    txt_path = report_dir / "extract_evm_bert_chunk_features_report.txt"
-    json_path = report_dir / "extract_evm_bert_chunk_features_report.json"
     lines = ["EVM-BERT chunk feature extraction report", ""]
     for key, value in report.items():
         if key == "splits":
@@ -329,10 +328,17 @@ def write_report(config, reports):
                     lines.append(f"  {skey}: {svalue}")
         else:
             lines.append(f"{key}: {value}")
-    txt_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    json_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
-    print(f"[OK] wrote {project_relative(txt_path)}")
-    print(f"[OK] wrote {project_relative(json_path)}")
+    base_names = []
+    if experiment_name:
+        base_names.append(f"{experiment_name}_report")
+    base_names.append("extract_evm_bert_chunk_features_report")
+    for base_name in dict.fromkeys(base_names):
+        txt_path = report_dir / f"{base_name}.txt"
+        json_path = report_dir / f"{base_name}.json"
+        txt_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        json_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+        print(f"[OK] wrote {project_relative(txt_path)}")
+        print(f"[OK] wrote {project_relative(json_path)}")
 
 
 def main():
