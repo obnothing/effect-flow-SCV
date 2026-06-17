@@ -1,0 +1,120 @@
+{
+  "thresholds": [
+    0.65,
+    0.55,
+    0.55,
+    0.6,
+    0.75,
+    0.85,
+    0.7,
+    0.5,
+    0.9,
+    0.75
+  ],
+  "per_label": [
+    {
+      "label_id": 0,
+      "label_name": "Reentrancy",
+      "support": 86,
+      "best_threshold": 0.65,
+      "best_valid_precision": 0.23985239852398524,
+      "best_valid_recall": 0.7558139534883721,
+      "best_valid_f1": 0.3641456582633053,
+      "predicted_positive_count_at_best_threshold": 271
+    },
+    {
+      "label_id": 1,
+      "label_name": "Contract contains unknown address",
+      "support": 1365,
+      "best_threshold": 0.55,
+      "best_valid_precision": 0.6774193548387096,
+      "best_valid_recall": 0.6615384615384615,
+      "best_valid_f1": 0.6693847294292068,
+      "predicted_positive_count_at_best_threshold": 1333
+    },
+    {
+      "label_id": 2,
+      "label_name": "Integer overflow or underflow",
+      "support": 1807,
+      "best_threshold": 0.55,
+      "best_valid_precision": 0.6246233318984072,
+      "best_valid_recall": 0.8029883785279469,
+      "best_valid_f1": 0.7026634382566587,
+      "predicted_positive_count_at_best_threshold": 2323
+    },
+    {
+      "label_id": 3,
+      "label_name": "Timestamp dependence",
+      "support": 77,
+      "best_threshold": 0.6,
+      "best_valid_precision": 0.23015873015873015,
+      "best_valid_recall": 0.7532467532467533,
+      "best_valid_f1": 0.3525835866261398,
+      "predicted_positive_count_at_best_threshold": 252
+    },
+    {
+      "label_id": 4,
+      "label_name": "DoS with failed call",
+      "support": 17,
+      "best_threshold": 0.75,
+      "best_valid_precision": 0.3333333333333333,
+      "best_valid_recall": 0.23529411764705882,
+      "best_valid_f1": 0.27586206896551724,
+      "predicted_positive_count_at_best_threshold": 12
+    },
+    {
+      "label_id": 5,
+      "label_name": "Assert violation",
+      "support": 84,
+      "best_threshold": 0.85,
+      "best_valid_precision": 0.22916666666666666,
+      "best_valid_recall": 0.6547619047619048,
+      "best_valid_f1": 0.3395061728395062,
+      "predicted_positive_count_at_best_threshold": 240
+    },
+    {
+      "label_id": 6,
+      "label_name": "Unchecked call return value",
+      "support": 546,
+      "best_threshold": 0.7,
+      "best_valid_precision": 0.6125,
+      "best_valid_recall": 0.5384615384615384,
+      "best_valid_f1": 0.5730994152046783,
+      "predicted_positive_count_at_best_threshold": 480
+    },
+    {
+      "label_id": 7,
+      "label_name": "Unsafe send",
+      "support": 63,
+      "best_threshold": 0.5,
+      "best_valid_precision": 0.6451612903225806,
+      "best_valid_recall": 0.31746031746031744,
+      "best_valid_f1": 0.425531914893617,
+      "predicted_positive_count_at_best_threshold": 31
+    },
+    {
+      "label_id": 8,
+      "label_name": "Multiplication after division",
+      "support": 195,
+      "best_threshold": 0.9,
+      "best_valid_precision": 0.676923076923077,
+      "best_valid_recall": 0.4512820512820513,
+      "best_valid_f1": 0.5415384615384615,
+      "predicted_positive_count_at_best_threshold": 130
+    },
+    {
+      "label_id": 9,
+      "label_name": "Extra gas consumption",
+      "support": 542,
+      "best_threshold": 0.75,
+      "best_valid_precision": 0.578853046594982,
+      "best_valid_recall": 0.5959409594095941,
+      "best_valid_f1": 0.5872727272727272,
+      "predicted_positive_count_at_best_threshold": 558
+    }
+  ],
+  "warnings": [],
+  "global_threshold_scan_path": "results/train_evm_bert_chunk_mil_mean_labelattn_weighted/valid_global_threshold_scan.json",
+  "best_global_macro_threshold": 0.65,
+  "best_global_micro_threshold": 0.65
+}

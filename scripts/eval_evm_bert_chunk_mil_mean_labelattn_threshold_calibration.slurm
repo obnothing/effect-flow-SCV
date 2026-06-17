@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=eval_mil_thr_calib
-#SBATCH --partition=gpu-a40
+#SBATCH --partition=gpu-a30
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=1
