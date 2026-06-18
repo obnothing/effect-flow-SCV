@@ -1,0 +1,26 @@
+experiment_name: extract_evm_bert_chunk_features_mean_stride256_random_split
+hf_model_path: checkpoints/pretrain_evm_bert_base_full_bjut/hf_model
+vocab_path: data/processed/BJUT_SC01/evm_vocab.json
+data_dir: data/processed/BJUT_SC01_random_split
+
+train_path: data/processed/BJUT_SC01_random_split/train_mlsmote.jsonl
+valid_path: data/processed/BJUT_SC01_random_split/valid.jsonl
+test_path: data/processed/BJUT_SC01_random_split/test.jsonl
+
+output_dir: data/features/evm_bert_chunks_mean_stride256_random_split
+report_dir: data/reports
+log_dir: logs
+
+max_len: 512
+chunk_content_size: 510
+chunk_stride: 256
+max_chunks_per_contract: 32
+
+batch_size: 16
+num_workers: 4
+fp16: true
+
+pooling: masked_mean
+is_transductive_pretraining: true
+split_policy: random_sample_split
+

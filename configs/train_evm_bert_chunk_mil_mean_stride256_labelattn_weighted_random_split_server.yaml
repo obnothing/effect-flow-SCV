@@ -1,0 +1,73 @@
+experiment_name: train_evm_bert_chunk_mil_mean_stride256_labelattn_weighted_random_split
+model_type: evm_chunk_mil
+feature_dir: data/features/evm_bert_chunks_mean_stride256_random_split
+
+checkpoint_dir: checkpoints/train_evm_bert_chunk_mil_mean_stride256_labelattn_weighted_random_split
+result_dir: results/train_evm_bert_chunk_mil_mean_stride256_labelattn_weighted_random_split
+report_dir: data/reports
+log_dir: logs
+
+num_labels: 10
+feature_dim: 768
+hidden_dim: 512
+attn_dim: 256
+max_chunks: 32
+dropout: 0.1
+
+feature_pooling: masked_mean
+chunk_stride: 256
+recognition_aggregation: label_gated_attention
+top_k: 2
+
+batch_size: 64
+gradient_accumulation_steps: 1
+epochs: 30
+learning_rate: 3e-4
+weight_decay: 0.01
+early_stopping_patience: 5
+gradient_clip_norm: 1.0
+
+use_pos_weight: true
+pos_weight_source: train_mlsmote
+pos_weight_mode: sqrt_ratio
+max_pos_weight: 5.0
+
+threshold: 0.5
+thresholds:
+  - 0.1
+  - 0.2
+  - 0.3
+  - 0.4
+  - 0.5
+
+seed: 42
+num_workers: 4
+
+is_transductive_pretraining: true
+encoder_frozen: true
+data_dir: data/processed/BJUT_SC01_random_split
+split_policy: random_sample_split
+
+baseline_comparison:
+  grouped_stride256_threshold05_micro_f1: 0.6120
+  grouped_stride256_threshold05_macro_f1: 0.4717
+  grouped_stride256_threshold05_detection_f1: 0.6968
+  grouped_nonoverlap_calibrated_micro_f1: 0.5918
+  grouped_nonoverlap_calibrated_macro_f1: 0.4421
+  codebert_weighted_micro_f1: 0.5604
+  codebert_weighted_macro_f1: 0.4215
+  evm_bert_first512_micro_f1: 0.5659
+  evm_bert_first512_macro_f1: 0.4326
+
+label_names:
+  - Reentrancy
+  - Contract contains unknown address
+  - Integer overflow or underflow
+  - Timestamp dependence
+  - DoS with failed call
+  - Assert violation
+  - Unchecked call return value
+  - Unsafe send
+  - Multiplication after division
+  - Extra gas consumption
+
