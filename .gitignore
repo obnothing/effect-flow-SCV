@@ -15,12 +15,14 @@ results/*
 !results/**/*.json
 *.pt
 *.pth
+*.json
 output.log
 
 # Large datasets
 data/raw/BJUT_SC01/BJUT_SC01.zip
 data/raw/BJUT_SC01/extracted/
 data/processed/BJUT_SC01/*.jsonl
+data/processed/BJUT_SC01_random_split/
 
 # Local model weights and caches
 models/

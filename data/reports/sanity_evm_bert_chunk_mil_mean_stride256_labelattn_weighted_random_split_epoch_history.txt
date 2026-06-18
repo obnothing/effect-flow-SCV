@@ -1,0 +1,9 @@
+EVM chunk MIL epoch history
+
+epoch 1/1 train_loss=0.475082 valid_loss=0.373488 micro_f1=0.309091 macro_f1=0.078442 predicted_positive_total=52
+per_label_f1: [0.0, 0.457143, 0.327273, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+threshold=0.1: micro_f1=0.187156 macro_f1=0.191102 predicted_positive_total=487
+threshold=0.2: micro_f1=0.343284 macro_f1=0.179083 predicted_positive_total=210
+threshold=0.3: micro_f1=0.408163 macro_f1=0.169424 predicted_positive_total=138
+threshold=0.4: micro_f1=0.418919 macro_f1=0.099798 predicted_positive_total=90
+threshold=0.5: micro_f1=0.309091 macro_f1=0.078442 predicted_positive_total=52

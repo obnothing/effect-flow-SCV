@@ -1,6 +1,6 @@
 {
-  "experiment_name": "extract_evm_bert_chunk_features_mean_stride256",
-  "output_dir": "data/features/evm_bert_chunks_mean_stride256",
+  "experiment_name": "extract_evm_bert_chunk_features_mean_stride256_random_split",
+  "output_dir": "data/features/evm_bert_chunks_mean_stride256_random_split",
   "pooling": "masked_mean",
   "max_len": 512,
   "chunk_content_size": 510,
@@ -11,18 +11,18 @@
   "splits": {
     "train": {
       "split": "train",
-      "samples": 107904,
+      "samples": 121481,
       "pooling": "masked_mean",
       "max_chunks_per_contract": 32,
-      "generated_chunks": 1062150,
-      "mean_chunks_per_contract": 9.843471975088969,
-      "truncated_contract_count": 4897,
-      "mean_coverage_ratio": 0.9892977900165261,
+      "generated_chunks": 1139166,
+      "mean_chunks_per_contract": 9.377318263761412,
+      "truncated_contract_count": 4866,
+      "mean_coverage_ratio": 0.9904518749466638,
       "p50_coverage_ratio": 1.0,
       "p90_coverage_ratio": 1.0,
       "p95_coverage_ratio": 1.0,
       "feature_shape": [
-        107904,
+        121481,
         32,
         768
       ],
@@ -32,22 +32,22 @@
       "empty_content_fallback_to_cls_count": 0,
       "hf_model_path": "checkpoints/pretrain_evm_bert_base_full_bjut/hf_model",
       "is_transductive_pretraining": true,
-      "disk_size_bytes": 5324447583
+      "disk_size_bytes": 5994388639
     },
     "valid": {
       "split": "valid",
-      "samples": 26791,
+      "samples": 14838,
       "pooling": "masked_mean",
       "max_chunks_per_contract": 32,
-      "generated_chunks": 225663,
-      "mean_chunks_per_contract": 8.423089843604195,
-      "truncated_contract_count": 563,
-      "mean_coverage_ratio": 0.9955077186360526,
+      "generated_chunks": 138863,
+      "mean_chunks_per_contract": 9.358606281169969,
+      "truncated_contract_count": 603,
+      "mean_coverage_ratio": 0.9906395705162453,
       "p50_coverage_ratio": 1.0,
       "p90_coverage_ratio": 1.0,
       "p95_coverage_ratio": 1.0,
       "feature_shape": [
-        26791,
+        14838,
         32,
         768
       ],
@@ -57,22 +57,22 @@
       "empty_content_fallback_to_cls_count": 0,
       "hf_model_path": "checkpoints/pretrain_evm_bert_base_full_bjut/hf_model",
       "is_transductive_pretraining": true,
-      "disk_size_bytes": 1321976083
+      "disk_size_bytes": 732166611
     },
     "test": {
       "split": "test",
-      "samples": 16748,
+      "samples": 14839,
       "pooling": "masked_mean",
       "max_chunks_per_contract": 32,
-      "generated_chunks": 130768,
-      "mean_chunks_per_contract": 7.807977071889181,
-      "truncated_contract_count": 615,
-      "mean_coverage_ratio": 0.9899658823598002,
+      "generated_chunks": 140126,
+      "mean_chunks_per_contract": 9.443089156951277,
+      "truncated_contract_count": 606,
+      "mean_coverage_ratio": 0.9902682427365672,
       "p50_coverage_ratio": 1.0,
       "p90_coverage_ratio": 1.0,
       "p95_coverage_ratio": 1.0,
       "feature_shape": [
-        16748,
+        14839,
         32,
         768
       ],
@@ -82,7 +82,7 @@
       "empty_content_fallback_to_cls_count": 0,
       "hf_model_path": "checkpoints/pretrain_evm_bert_base_full_bjut/hf_model",
       "is_transductive_pretraining": true,
-      "disk_size_bytes": 826414157
+      "disk_size_bytes": 732216013
     }
   }
 }

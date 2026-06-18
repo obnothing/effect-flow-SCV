@@ -1,0 +1,13 @@
+BJUT SC01 split leakage report
+
+data_dir: data/processed/BJUT_SC01_random_split
+train_samples: 118707
+valid_samples: 14838
+test_samples: 14839
+train_valid_opcode_hash_overlap: 824
+train_test_opcode_hash_overlap: 848
+valid_test_opcode_hash_overlap: 355
+train_valid_address_overlap: 0
+train_test_address_overlap: 0
+valid_test_address_overlap: 0
+leakage_status: warning
