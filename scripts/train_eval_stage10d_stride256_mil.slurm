@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=stage10d_stride256
-#SBATCH --partition=gpu-a30
+#SBATCH --partition=gpu-l20
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=1

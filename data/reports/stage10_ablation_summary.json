@@ -210,14 +210,23 @@
       "max_chunks": 32,
       "aggregation": "label_gated_attention",
       "encoder_frozen": true,
-      "threshold_mode": "global_best_macro",
-      "threshold_source": "validation set",
+      "threshold_mode": "global",
+      "threshold_source": "validation_best_macro_f1",
       "notes": "Stage 10D validation-selected global threshold",
-      "status": "missing",
-      "macro_f1_delta_vs_cls_topk_mil": null,
-      "macro_f1_delta_vs_evm_bert_first512": null,
-      "macro_f1_delta_vs_codebert_weighted": null,
-      "macro_f1_delta_vs_nonoverlap_calibrated": null
+      "status": "ok",
+      "micro_f1": 0.6003189194259451,
+      "macro_f1": 0.4599937120247485,
+      "macro_precision": 0.4468828339344757,
+      "macro_recall": 0.5588495606643352,
+      "detection_f1": 0.6967764789231314,
+      "predicted_positives": 5557,
+      "best_valid_macro_f1": null,
+      "best_epoch": 26,
+      "threshold": 0.65,
+      "macro_f1_delta_vs_cls_topk_mil": 0.06845987314806434,
+      "macro_f1_delta_vs_evm_bert_first512": 0.027429672765420965,
+      "macro_f1_delta_vs_codebert_weighted": 0.03849608085099243,
+      "macro_f1_delta_vs_nonoverlap_calibrated": 0.017903968705425433
     },
     {
       "model": "Stride256 masked-mean label-attention MIL",
@@ -227,18 +236,38 @@
       "aggregation": "label_gated_attention",
       "encoder_frozen": true,
       "threshold_mode": "per_label",
-      "threshold_source": "validation set",
+      "threshold_source": "validation_selected_per_label",
       "notes": "Stage 10D validation-selected per-label thresholds",
-      "status": "missing",
-      "macro_f1_delta_vs_cls_topk_mil": null,
-      "macro_f1_delta_vs_evm_bert_first512": null,
-      "macro_f1_delta_vs_codebert_weighted": null,
-      "macro_f1_delta_vs_nonoverlap_calibrated": null
+      "status": "ok",
+      "micro_f1": 0.6179775280898877,
+      "macro_f1": 0.44573377018828586,
+      "macro_precision": 0.46354854838774495,
+      "macro_recall": 0.5029411456454331,
+      "detection_f1": 0.6967764789231314,
+      "predicted_positives": 5398,
+      "best_valid_macro_f1": null,
+      "best_epoch": 26,
+      "threshold": [
+        0.9,
+        0.65,
+        0.55,
+        0.65,
+        0.5,
+        0.8,
+        0.75,
+        0.6,
+        0.7,
+        0.7
+      ],
+      "macro_f1_delta_vs_cls_topk_mil": 0.05419993131160172,
+      "macro_f1_delta_vs_evm_bert_first512": 0.013169730928958345,
+      "macro_f1_delta_vs_codebert_weighted": 0.02423613901452981,
+      "macro_f1_delta_vs_nonoverlap_calibrated": 0.003644026868962813
     }
   ],
   "success_criteria": {
     "masked_mean_topk_better_than_cls_topk": true,
     "label_attention_beats_first512": true,
-    "stride256_calibrated_beats_nonoverlap_calibrated": false
+    "stride256_calibrated_beats_nonoverlap_calibrated": true
   }
 }

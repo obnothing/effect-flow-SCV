@@ -1,0 +1,111 @@
+[
+  {
+    "epoch": 1,
+    "epochs": 1,
+    "train_loss": 0.5009853271767497,
+    "valid_loss": 0.28882000409066677,
+    "recognition_micro_f1": 0.18749999999999997,
+    "recognition_macro_f1": 0.05969230769230769,
+    "best_threshold_by_micro_f1": 0.4,
+    "best_micro_f1": 0.271604938271605,
+    "best_threshold_by_macro_f1": 0.4,
+    "best_macro_f1": 0.10975690975690974,
+    "detection_f1": 0.4782608695652174,
+    "predicted_positive_total": 44,
+    "per_label_f1": [
+      0.0,
+      0.07692307692307693,
+      0.32,
+      0.0,
+      0.0,
+      0.0,
+      0.2,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "per_label_precision": [
+      0.0,
+      0.05263157894736842,
+      0.2222222222222222,
+      0.0,
+      0.0,
+      0.0,
+      0.14285714285714285,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "per_label_recall": [
+      0.0,
+      0.14285714285714285,
+      0.5714285714285714,
+      0.0,
+      0.0,
+      0.0,
+      0.3333333333333333,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "per_label_support": [
+      1,
+      7,
+      7,
+      0,
+      0,
+      0,
+      3,
+      0,
+      0,
+      2
+    ],
+    "threshold_scan": {
+      "0.1": {
+        "micro_precision": 0.031825795644891124,
+        "micro_recall": 0.95,
+        "micro_f1": 0.06158833063209077,
+        "macro_precision": 0.019732862903225807,
+        "macro_recall": 0.4,
+        "macro_f1": 0.03744210553370859,
+        "predicted_positive_total": 597
+      },
+      "0.2": {
+        "micro_precision": 0.05105105105105105,
+        "micro_recall": 0.85,
+        "micro_f1": 0.0963172804532578,
+        "macro_precision": 0.02799902065928256,
+        "macro_recall": 0.31666666666666665,
+        "macro_f1": 0.05039171373149391,
+        "predicted_positive_total": 333
+      },
+      "0.3": {
+        "micro_precision": 0.12727272727272726,
+        "micro_recall": 0.7,
+        "micro_f1": 0.2153846153846154,
+        "macro_precision": 0.05712493180578286,
+        "macro_recall": 0.25476190476190474,
+        "macro_f1": 0.09120062753783684,
+        "predicted_positive_total": 110
+      },
+      "0.4": {
+        "micro_precision": 0.18032786885245902,
+        "micro_recall": 0.55,
+        "micro_f1": 0.271604938271605,
+        "macro_precision": 0.07510989010989011,
+        "macro_recall": 0.21190476190476187,
+        "macro_f1": 0.10975690975690974,
+        "predicted_positive_total": 61
+      },
+      "0.5": {
+        "micro_precision": 0.13636363636363635,
+        "micro_recall": 0.3,
+        "micro_f1": 0.18749999999999997,
+        "macro_precision": 0.04177109440267335,
+        "macro_recall": 0.10476190476190475,
+        "macro_f1": 0.05969230769230769,
+        "predicted_positive_total": 44
+      }
+    }
+  }
+]
