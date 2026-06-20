@@ -22,9 +22,9 @@ chunk_stride: 510
 max_chunks_per_contract: 16
 mlm_probability: 0.15
 
-batch_size: 16
-gradient_accumulation_steps: 8
-effective_batch_size: 128
+batch_size: 32
+gradient_accumulation_steps: 4
+effective_batch_size: 256
 
 learning_rate: 0.00002
 weight_decay: 0.01
