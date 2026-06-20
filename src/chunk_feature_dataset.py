@@ -6,7 +6,7 @@ from torch.utils.data import Dataset
 
 
 class ChunkFeatureDataset(Dataset):
-    def __init__(self, path, debug_num_samples=None, seed=42):
+    def __init__(self, path, debug_num_samples=None, seed=42, num_labels=None):
         self.path = Path(path)
         if not self.path.exists():
             raise FileNotFoundError(f"Feature cache not found: {self.path}")
@@ -16,6 +16,7 @@ class ChunkFeatureDataset(Dataset):
         self.chunk_mask = payload["chunk_mask"].bool()
         self.binary_labels = payload["binary_labels"].float()
         self.multi_labels = payload["multi_labels"].float()
+        self.num_labels = int(num_labels) if num_labels is not None else int(self.multi_labels.shape[1])
         self.metadata = payload.get("metadata", [{} for _ in self.ids])
         self.report = payload.get("report", {})
         self.indices = list(range(len(self.ids)))
@@ -35,8 +36,11 @@ class ChunkFeatureDataset(Dataset):
             raise ValueError("chunk_mask shape mismatch")
         if self.binary_labels.shape[0] != n:
             raise ValueError("binary_labels shape mismatch")
-        if self.multi_labels.shape != (n, 10):
-            raise ValueError("multi_labels must be [N, 10]")
+        if self.multi_labels.shape != (n, self.num_labels):
+            raise ValueError(
+                f"multi_labels must be [N, {self.num_labels}], "
+                f"got {tuple(self.multi_labels.shape)}"
+            )
         if torch.isnan(self.features.float()).any() or torch.isinf(self.features.float()).any():
             raise ValueError(f"{self.path} contains NaN/Inf features")
         if self.chunk_mask.sum(dim=1).min().item() < 1:
@@ -65,12 +69,17 @@ def build_chunk_feature_datasets(config):
             feature_dir / "train.pt",
             debug_num_samples=config.get("debug_num_train_samples"),
             seed=seed,
+            num_labels=config.get("num_labels"),
         ),
         "valid": ChunkFeatureDataset(
             feature_dir / "valid.pt",
             debug_num_samples=config.get("debug_num_valid_samples"),
             seed=seed,
+            num_labels=config.get("num_labels"),
         ),
-        "test": ChunkFeatureDataset(feature_dir / "test.pt", seed=seed),
+        "test": ChunkFeatureDataset(
+            feature_dir / "test.pt",
+            seed=seed,
+            num_labels=config.get("num_labels"),
+        ),
     }
-

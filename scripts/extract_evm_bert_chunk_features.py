@@ -193,12 +193,13 @@ def extract_split(split_name, input_path, output_path, tokenizer, encoder, confi
 
     sample_count = count_jsonl(input_path)
     max_chunks = int(config["max_chunks_per_contract"])
+    num_labels = int(config.get("num_labels", len(config.get("label_names", [])) or 10))
     hidden_size = int(encoder.config.hidden_size)
     output_dtype = torch.float16 if bool(config.get("fp16", False)) else torch.float32
     features = torch.zeros(sample_count, max_chunks, hidden_size, dtype=output_dtype)
     chunk_mask = torch.zeros(sample_count, max_chunks, dtype=torch.bool)
     binary_labels = torch.zeros(sample_count, dtype=torch.float32)
-    multi_labels = torch.zeros(sample_count, 10, dtype=torch.float32)
+    multi_labels = torch.zeros(sample_count, num_labels, dtype=torch.float32)
     ids = []
     metadata = []
 
@@ -216,8 +217,11 @@ def extract_split(split_name, input_path, output_path, tokenizer, encoder, confi
     for row_idx, (line_idx, item) in enumerate(iter_jsonl(input_path)):
         contract_id = item.get("id") or item.get("address") or f"{split_name}_{line_idx}"
         labels = item["multi_labels"]
-        if len(labels) != 10:
-            raise ValueError(f"{input_path}:{line_idx + 1} expected 10 labels")
+        if len(labels) != num_labels:
+            raise ValueError(
+                f"{input_path}:{line_idx + 1} expected {num_labels} labels, "
+                f"got {len(labels)}"
+            )
         chunk_info = build_contract_chunks(tokenizer, item.get("opcode", ""), config)
         ids.append(str(contract_id))
         binary_labels[row_idx] = float(item["binary_label"])
@@ -283,6 +287,8 @@ def extract_split(split_name, input_path, output_path, tokenizer, encoder, confi
         "empty_content_fallback_to_cls_count": int(flush_chunk_batch.fallback_count),
         "hf_model_path": config["hf_model_path"],
         "is_transductive_pretraining": bool(config.get("is_transductive_pretraining", True)),
+        "num_labels": num_labels,
+        "label_names": config.get("label_names"),
     }
     payload = {
         "ids": ids,
@@ -316,6 +322,8 @@ def write_report(config, reports):
         "max_chunks_per_contract": config["max_chunks_per_contract"],
         "hf_model_path": config["hf_model_path"],
         "is_transductive_pretraining": bool(config.get("is_transductive_pretraining", True)),
+        "num_labels": int(config.get("num_labels", len(config.get("label_names", [])) or 10)),
+        "label_names": config.get("label_names"),
         "splits": reports,
     }
     lines = ["EVM-BERT chunk feature extraction report", ""]

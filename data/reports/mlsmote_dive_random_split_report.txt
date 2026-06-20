@@ -1,0 +1,29 @@
+DIVE random split MLSMOTE-compatible oversampling report
+
+status: ok
+input_train_path: data/processed/DIVE_random_split/train.jsonl
+output_train_path: data/processed/DIVE_random_split/train_mlsmote.jsonl
+original_train_samples: 17864
+oversampled_train_samples: 20134
+added_samples: 2270
+max_duplicate_per_sample: 5
+random_seed: 42
+warning: This stage uses text-compatible oversampling by duplicating real opcode samples. It does not synthesize opcode sequences by linear interpolation.
+
+Label Counts:
+Label | before | target_after | achieved_after | diff | IRLbl_before | IRLbl_after
+Reentrancy | 9140 | 9140 | 10780 | 1640 | 1.463566739606127 | 1.433116883116883
+Access Control | 13377 | 13377 | 15449 | 2072 | 1.0 | 1.0
+Arithmetic | 7625 | 7625 | 8723 | 1098 | 1.754360655737705 | 1.7710650005731974
+Unchecked Return Values | 4748 | 4748 | 5298 | 550 | 2.817396798652064 | 2.9160060400151
+DoS | 3038 | 3038 | 4003 | 965 | 4.403225806451613 | 3.8593554833874593
+Bad Randomness | 509 | 1787 | 1787 | 0 | 26.280943025540275 | 8.645215444879687
+Front Running | 490 | 1787 | 1787 | 0 | 27.3 | 8.645215444879687
+Time manipulation | 5052 | 5052 | 5919 | 867 | 2.6478622327790973 | 2.6100692684575098
+
+MeanIR before: 8.45841940734586
+MeanIR after: 3.8600054456636905
+
+Minority labels before:
+- Bad Randomness
+- Front Running

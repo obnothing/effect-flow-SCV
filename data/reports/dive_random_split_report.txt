@@ -1,0 +1,22 @@
+DIVE random split report
+
+status: warning
+warning: This is a non-grouped random split. The continued EVM-BERT was pretrained on the previous DIVE strict-train opcode inputs, so random valid/test may contain MLM-seen contracts. This is not strict generalization.
+source_data_dir: data/processed/DIVE
+output_data_dir: data/processed/DIVE_random_split
+seed: 42
+ratios: {"train": 0.8, "valid": 0.1, "test": 0.1}
+total_samples: 22330
+split_samples: {"train": 17864, "valid": 2233, "test": 2233}
+schema: ["id", "opcode", "binary_label", "multi_labels"]
+num_labels: 8
+label_names: ["Reentrancy", "Access Control", "Arithmetic", "Unchecked Return Values", "DoS", "Bad Randomness", "Front Running", "Time manipulation"]
+label_counts: {"train": {"Reentrancy": 9140, "Access Control": 13377, "Arithmetic": 7625, "Unchecked Return Values": 4748, "DoS": 3038, "Bad Randomness": 509, "Front Running": 490, "Time manipulation": 5052}, "valid": {"Reentrancy": 1121, "Access Control": 1665, "Arithmetic": 968, "Unchecked Return Values": 582, "DoS": 369, "Bad Randomness": 53, "Front Running": 66, "Time manipulation": 631}, "test": {"Reentrancy": 1139, "Access Control": 1681, "Arithmetic": 949, "Unchecked Return Values": 581, "DoS": 374, "Bad Randomness": 72, "Front Running": 50, "Time manipulation": 639}}
+safe_counts: {"train": 2135, "valid": 292, "test": 259}
+safe_ratios: {"train": 0.1195141065830721, "valid": 0.13076578593819974, "test": 0.11598746081504702}
+average_labels_per_sample: {"train": 2.4618786386027764, "valid": 2.4429019256605464, "test": 2.456336766681594}
+raw_opcode_length_statistics: {"train": {"mean": 5499.883396775638, "min": 14, "max": 30982}, "valid": {"mean": 5515.736677115988, "min": 27, "max": 20963}, "test": {"mean": 5624.653381101657, "min": 23, "max": 20920}}
+opcode_hash_overlap: {"train_valid": 118, "train_test": 132, "valid_test": 51}
+leakage_status: warning
+continued_mlm_exposure: {"train": {"sample_count": 17864, "ids_seen_in_dive_strict_train_mlm": 12501, "id_seen_ratio": 0.6997872816838334, "opcode_hashes_seen_in_dive_strict_train_mlm": 11384, "unique_opcode_hash_count": 16261, "opcode_hash_seen_ratio": 0.700079945882787}, "valid": {"sample_count": 2233, "ids_seen_in_dive_strict_train_mlm": 1546, "id_seen_ratio": 0.6923421406180027, "opcode_hashes_seen_in_dive_strict_train_mlm": 1480, "unique_opcode_hash_count": 2128, "opcode_hash_seen_ratio": 0.6954887218045113}, "test": {"sample_count": 2233, "ids_seen_in_dive_strict_train_mlm": 1569, "id_seen_ratio": 0.7026421854008061, "opcode_hashes_seen_in_dive_strict_train_mlm": 1507, "unique_opcode_hash_count": 2143, "opcode_hash_seen_ratio": 0.7032197853476435}}
+continued_mlm_setting: transductive_under_this_random_split

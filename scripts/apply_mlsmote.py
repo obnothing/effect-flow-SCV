@@ -67,12 +67,18 @@ def validate_label_names(config_label_names, mapping):
 
 
 def build_target_strategy(config):
-    return {
+    strategy = {
         "name": config["target_strategy"],
-        "paper_before_counts": config["paper_before_counts"],
-        "paper_after_counts": config["paper_after_counts"],
         "max_duplicate_per_sample": config.get("max_duplicate_per_sample", 5),
     }
+    for key in [
+        "paper_before_counts",
+        "paper_after_counts",
+        "minimum_positive_ratio",
+    ]:
+        if key in config:
+            strategy[key] = config[key]
+    return strategy
 
 
 def compute_per_label_diff(label_names, targets, achieved):
@@ -86,7 +92,7 @@ def write_text_report(path, report):
     path = resolve_project_path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = [
-        "BJUT SC01 MLSMOTE-compatible oversampling report",
+        f"{report['dataset_name']} MLSMOTE-compatible oversampling report",
         "",
         f"status: {report['status']}",
         f"input_train_path: {report['input_train_path']}",
@@ -168,6 +174,8 @@ def main():
 
     report = {
         "status": status,
+        "dataset_name": config.get("dataset_name", "BJUT SC01"),
+        "target_strategy": target_strategy,
         "input_train_path": input_train_path.relative_to(PROJECT_ROOT).as_posix(),
         "output_train_path": output_train_path.relative_to(PROJECT_ROOT).as_posix(),
         "original_train_samples": len(train_samples),

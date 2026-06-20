@@ -91,19 +91,25 @@ def _target_counts_from_strategy(samples, label_names, target_strategy):
     Y = get_label_matrix(samples)
     before_counts = compute_label_counts(Y)
     strategy_name = target_strategy.get("name", target_strategy.get("type"))
-    if strategy_name != "paper_after_proportional":
-        raise ValueError(f"Unsupported target_strategy: {strategy_name}")
-
-    paper_before = target_strategy["paper_before_counts"]
-    paper_after = target_strategy["paper_after_counts"]
     targets = before_counts.copy()
-    for idx, label in enumerate(label_names):
-        expected_before = int(paper_before[label])
-        expected_after = int(paper_after[label])
-        if expected_before <= 0:
-            continue
-        target = round(int(before_counts[idx]) * expected_after / expected_before)
-        targets[idx] = max(int(before_counts[idx]), int(target))
+    if strategy_name == "paper_after_proportional":
+        paper_before = target_strategy["paper_before_counts"]
+        paper_after = target_strategy["paper_after_counts"]
+        for idx, label in enumerate(label_names):
+            expected_before = int(paper_before[label])
+            expected_after = int(paper_after[label])
+            if expected_before <= 0:
+                continue
+            target = round(int(before_counts[idx]) * expected_after / expected_before)
+            targets[idx] = max(int(before_counts[idx]), int(target))
+    elif strategy_name == "minimum_positive_ratio":
+        minimum_ratio = float(target_strategy.get("minimum_positive_ratio", 0.1))
+        if not 0.0 < minimum_ratio < 1.0:
+            raise ValueError("minimum_positive_ratio must be between 0 and 1.")
+        minimum_count = int(np.ceil(len(samples) * minimum_ratio))
+        targets = np.maximum(before_counts, minimum_count)
+    else:
+        raise ValueError(f"Unsupported target_strategy: {strategy_name}")
     return targets.astype(np.int64)
 
 

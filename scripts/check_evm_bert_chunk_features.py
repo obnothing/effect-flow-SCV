@@ -15,6 +15,7 @@ def parse_args():
     parser.add_argument("--report_dir", default="data/reports")
     parser.add_argument("--expected_max_chunks", type=int, default=None)
     parser.add_argument("--expected_feature_dim", type=int, default=None)
+    parser.add_argument("--expected_num_labels", type=int, default=None)
     parser.add_argument(
         "--coverage_baseline_dir",
         default=None,
@@ -52,7 +53,14 @@ def count_jsonl(path):
     return count
 
 
-def check_split(split, feature_dir, data_dir, expected_max_chunks=None, expected_feature_dim=None):
+def check_split(
+    split,
+    feature_dir,
+    data_dir,
+    expected_max_chunks=None,
+    expected_feature_dim=None,
+    expected_num_labels=None,
+):
     path = feature_dir / f"{split}.pt"
     if not path.exists():
         raise FileNotFoundError(f"Missing feature cache: {path}")
@@ -112,8 +120,14 @@ def check_split(split, feature_dir, data_dir, expected_max_chunks=None, expected
         )
     if binary_labels.shape[0] != features.shape[0]:
         raise ValueError(f"{path} binary_labels shape mismatch")
-    if multi_labels.shape != (features.shape[0], 10):
+    inferred_num_labels = int(multi_labels.shape[1]) if multi_labels.ndim == 2 else None
+    if multi_labels.ndim != 2 or multi_labels.shape[0] != features.shape[0]:
         raise ValueError(f"{path} multi_labels shape mismatch")
+    if expected_num_labels is not None and inferred_num_labels != expected_num_labels:
+        raise ValueError(
+            f"{path} expected num_labels={expected_num_labels}, got {inferred_num_labels}"
+        )
+    checks["num_labels"] = inferred_num_labels
     if checks["has_nan"] or checks["has_inf"]:
         raise ValueError(f"{path} contains NaN or Inf features")
     if checks["min_real_chunks"] < 1:
@@ -165,6 +179,7 @@ def main():
         "feature_dir": project_relative(feature_dir),
         "expected_max_chunks": args.expected_max_chunks,
         "expected_feature_dim": args.expected_feature_dim,
+        "expected_num_labels": args.expected_num_labels,
         "splits": {
             split: check_split(
                 split,
@@ -172,6 +187,7 @@ def main():
                 data_dir,
                 expected_max_chunks=args.expected_max_chunks,
                 expected_feature_dim=args.expected_feature_dim,
+                expected_num_labels=args.expected_num_labels,
             )
             for split in ["train", "valid", "test"]
         },
@@ -189,6 +205,7 @@ def main():
     lines.append(f"feature_dir: {report['feature_dir']}")
     lines.append(f"expected_max_chunks: {report.get('expected_max_chunks')}")
     lines.append(f"expected_feature_dim: {report.get('expected_feature_dim')}")
+    lines.append(f"expected_num_labels: {report.get('expected_num_labels')}")
     if report.get("coverage_baseline_dir"):
         lines.append(f"coverage_baseline_dir: {report['coverage_baseline_dir']}")
     if report.get("coverage_warnings"):

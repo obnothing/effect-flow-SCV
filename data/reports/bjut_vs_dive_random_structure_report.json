@@ -1,0 +1,277 @@
+{
+  "status": "warning",
+  "bjut": {
+    "data_dir": "data/processed/BJUT_SC01_random_split",
+    "label_names": [
+      "Reentrancy",
+      "Contract contains unknown address",
+      "Integer overflow or underflow",
+      "Timestamp dependence",
+      "DoS with failed call",
+      "Assert violation",
+      "Unchecked call return value",
+      "Unsafe send",
+      "Multiplication after division",
+      "Extra gas consumption"
+    ],
+    "num_labels": 10,
+    "splits": {
+      "train": {
+        "samples": 118707,
+        "schema": [
+          "id",
+          "opcode",
+          "binary_label",
+          "multi_labels"
+        ],
+        "safe_samples": 93003,
+        "safe_ratio": 0.7834668553665749,
+        "vulnerable_samples": 25704,
+        "average_labels_per_sample": 0.3799944400919912,
+        "label_counts": {
+          "Reentrancy": 1147,
+          "Contract contains unknown address": 14727,
+          "Integer overflow or underflow": 14635,
+          "Timestamp dependence": 638,
+          "DoS with failed call": 425,
+          "Assert violation": 686,
+          "Unchecked call return value": 5779,
+          "Unsafe send": 1005,
+          "Multiplication after division": 1548,
+          "Extra gas consumption": 4518
+        },
+        "raw_opcode_length": {
+          "mean": 1934.905565804881,
+          "p50": 1133.0,
+          "p90": 4081.4000000000087,
+          "max": 18544
+        },
+        "unique_opcode_hashes": 49951
+      },
+      "valid": {
+        "samples": 14838,
+        "schema": [
+          "id",
+          "opcode",
+          "binary_label",
+          "multi_labels"
+        ],
+        "safe_samples": 11666,
+        "safe_ratio": 0.7862245585658445,
+        "vulnerable_samples": 3172,
+        "average_labels_per_sample": 0.37195039762771265,
+        "label_counts": {
+          "Reentrancy": 133,
+          "Contract contains unknown address": 1856,
+          "Integer overflow or underflow": 1769,
+          "Timestamp dependence": 69,
+          "DoS with failed call": 48,
+          "Assert violation": 78,
+          "Unchecked call return value": 718,
+          "Unsafe send": 127,
+          "Multiplication after division": 186,
+          "Extra gas consumption": 535
+        },
+        "raw_opcode_length": {
+          "mean": 1939.4584175764928,
+          "p50": 1147.0,
+          "p90": 4074.0,
+          "max": 18059
+        },
+        "unique_opcode_hashes": 6774
+      },
+      "test": {
+        "samples": 14839,
+        "schema": [
+          "id",
+          "opcode",
+          "binary_label",
+          "multi_labels"
+        ],
+        "safe_samples": 11619,
+        "safe_ratio": 0.7830042455691084,
+        "vulnerable_samples": 3220,
+        "average_labels_per_sample": 0.380888200013478,
+        "label_counts": {
+          "Reentrancy": 142,
+          "Contract contains unknown address": 1850,
+          "Integer overflow or underflow": 1859,
+          "Timestamp dependence": 70,
+          "DoS with failed call": 48,
+          "Assert violation": 90,
+          "Unchecked call return value": 717,
+          "Unsafe send": 129,
+          "Multiplication after division": 203,
+          "Extra gas consumption": 544
+        },
+        "raw_opcode_length": {
+          "mean": 1921.2753554821754,
+          "p50": 1162.0,
+          "p90": 4073.2000000000007,
+          "max": 18535
+        },
+        "unique_opcode_hashes": 6846
+      }
+    },
+    "total_samples": 148384,
+    "opcode_hash_overlap": {
+      "train_valid": 867,
+      "train_test": 892,
+      "valid_test": 383
+    },
+    "unique_opcode_hashes": 61768,
+    "duplicate_opcode_hash_groups": 3036,
+    "duplicate_opcode_samples": 89652
+  },
+  "dive": {
+    "data_dir": "data/processed/DIVE_random_split",
+    "label_names": [
+      "Reentrancy",
+      "Access Control",
+      "Arithmetic",
+      "Unchecked Return Values",
+      "DoS",
+      "Bad Randomness",
+      "Front Running",
+      "Time manipulation"
+    ],
+    "num_labels": 8,
+    "splits": {
+      "train": {
+        "samples": 17864,
+        "schema": [
+          "id",
+          "opcode",
+          "binary_label",
+          "multi_labels"
+        ],
+        "safe_samples": 2135,
+        "safe_ratio": 0.1195141065830721,
+        "vulnerable_samples": 15729,
+        "average_labels_per_sample": 2.4618786386027764,
+        "label_counts": {
+          "Reentrancy": 9140,
+          "Access Control": 13377,
+          "Arithmetic": 7625,
+          "Unchecked Return Values": 4748,
+          "DoS": 3038,
+          "Bad Randomness": 509,
+          "Front Running": 490,
+          "Time manipulation": 5052
+        },
+        "raw_opcode_length": {
+          "mean": 5499.883396775638,
+          "p50": 5146.0,
+          "p90": 9910.7,
+          "max": 30982
+        },
+        "unique_opcode_hashes": 16261
+      },
+      "valid": {
+        "samples": 2233,
+        "schema": [
+          "id",
+          "opcode",
+          "binary_label",
+          "multi_labels"
+        ],
+        "safe_samples": 292,
+        "safe_ratio": 0.13076578593819974,
+        "vulnerable_samples": 1941,
+        "average_labels_per_sample": 2.4429019256605464,
+        "label_counts": {
+          "Reentrancy": 1121,
+          "Access Control": 1665,
+          "Arithmetic": 968,
+          "Unchecked Return Values": 582,
+          "DoS": 369,
+          "Bad Randomness": 53,
+          "Front Running": 66,
+          "Time manipulation": 631
+        },
+        "raw_opcode_length": {
+          "mean": 5515.736677115988,
+          "p50": 5114.0,
+          "p90": 10124.4,
+          "max": 20963
+        },
+        "unique_opcode_hashes": 2128
+      },
+      "test": {
+        "samples": 2233,
+        "schema": [
+          "id",
+          "opcode",
+          "binary_label",
+          "multi_labels"
+        ],
+        "safe_samples": 259,
+        "safe_ratio": 0.11598746081504702,
+        "vulnerable_samples": 1974,
+        "average_labels_per_sample": 2.456336766681594,
+        "label_counts": {
+          "Reentrancy": 1139,
+          "Access Control": 1681,
+          "Arithmetic": 949,
+          "Unchecked Return Values": 581,
+          "DoS": 374,
+          "Bad Randomness": 72,
+          "Front Running": 50,
+          "Time manipulation": 639
+        },
+        "raw_opcode_length": {
+          "mean": 5624.653381101657,
+          "p50": 5348.0,
+          "p90": 9908.4,
+          "max": 20920
+        },
+        "unique_opcode_hashes": 2143
+      }
+    },
+    "total_samples": 22330,
+    "opcode_hash_overlap": {
+      "train_valid": 118,
+      "train_test": 132,
+      "valid_test": 51
+    },
+    "unique_opcode_hashes": 20277,
+    "duplicate_opcode_hash_groups": 453,
+    "duplicate_opcode_samples": 2506
+  },
+  "comparison": {
+    "same_jsonl_schema": true,
+    "bjut_num_labels": 10,
+    "dive_num_labels": 8,
+    "sample_count_ratio_bjut_over_dive": 6.645051500223914,
+    "semantic_difference": "BJUT uses 10 fine-grained vulnerability labels; DIVE uses 8 broader categories. Label indices and classifier heads are not interchangeable.",
+    "class_balance_difference": "DIVE has far fewer all-zero safe contracts and substantially higher multi-label cardinality than BJUT, so raw F1 values are not directly comparable.",
+    "split_warning": "Both requested experiments use non-grouped random splits. BJUT also uses BJUT-full-corpus MLM; DIVE random valid/test overlap the old strict-train continued-MLM corpus. Both are non-strict/transductive results."
+  },
+  "dive_continued_mlm_exposure": {
+    "train": {
+      "sample_count": 17864,
+      "ids_seen_in_dive_strict_train_mlm": 12501,
+      "id_seen_ratio": 0.6997872816838334,
+      "opcode_hashes_seen_in_dive_strict_train_mlm": 11384,
+      "unique_opcode_hash_count": 16261,
+      "opcode_hash_seen_ratio": 0.700079945882787
+    },
+    "valid": {
+      "sample_count": 2233,
+      "ids_seen_in_dive_strict_train_mlm": 1546,
+      "id_seen_ratio": 0.6923421406180027,
+      "opcode_hashes_seen_in_dive_strict_train_mlm": 1480,
+      "unique_opcode_hash_count": 2128,
+      "opcode_hash_seen_ratio": 0.6954887218045113
+    },
+    "test": {
+      "sample_count": 2233,
+      "ids_seen_in_dive_strict_train_mlm": 1569,
+      "id_seen_ratio": 0.7026421854008061,
+      "opcode_hashes_seen_in_dive_strict_train_mlm": 1507,
+      "unique_opcode_hash_count": 2143,
+      "opcode_hash_seen_ratio": 0.7032197853476435
+    }
+  },
+  "reporting_rule": "Report results separately by dataset. Do not merge label spaces or claim strict cross-dataset generalization from these random-split experiments."
+}

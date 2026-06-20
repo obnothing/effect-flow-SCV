@@ -77,7 +77,10 @@ def compute_pos_weight_from_feature_cache(config):
         rows.append(
             {
                 "label_id": idx,
-                "label_name": config.get("label_names", [f"label_{idx}"] * 10)[idx],
+                "label_name": config.get(
+                    "label_names",
+                    [f"label_{label_idx}" for label_idx in range(labels.shape[1])],
+                )[idx],
                 "positive_count": int(pos),
                 "negative_count": int(neg),
                 "raw_ratio": raw_ratio,
@@ -269,7 +272,10 @@ def write_summary(path_json, path_txt, summary):
 
 
 def label_table(config, metrics):
-    names = config.get("label_names", [f"label_{idx}" for idx in range(10)])
+    names = config.get(
+        "label_names",
+        [f"label_{idx}" for idx in range(int(config.get("num_labels", 10)))],
+    )
     return [
         {
             "label_id": idx,

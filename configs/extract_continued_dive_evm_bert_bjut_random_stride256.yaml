@@ -1,0 +1,39 @@
+experiment_name: extract_continued_dive_evm_bert_bjut_random_stride256
+hf_model_path: checkpoints/continue_pretrain_evm_bert_dive_train_only/hf_model
+vocab_path: data/processed/BJUT_SC01/evm_vocab.json
+data_dir: data/processed/BJUT_SC01_random_split
+
+train_path: data/processed/BJUT_SC01_random_split/train_mlsmote.jsonl
+valid_path: data/processed/BJUT_SC01_random_split/valid.jsonl
+test_path: data/processed/BJUT_SC01_random_split/test.jsonl
+
+output_dir: data/features/continued_dive_evm_bert_bjut_random_stride256
+report_dir: data/reports
+log_dir: logs
+
+num_labels: 10
+max_len: 512
+chunk_content_size: 510
+chunk_stride: 256
+max_chunks_per_contract: 32
+batch_size: 64
+num_workers: 4
+fp16: true
+pooling: masked_mean
+
+is_transductive_pretraining: true
+pretraining_provenance: BJUT-full-corpus MLM followed by DIVE-strict-train continued MLM
+split_policy: random_sample_split
+leakage_warning: BJUT full-corpus MLM and random opcode-hash overlap make this a non-strict result.
+
+label_names:
+  - Reentrancy
+  - Contract contains unknown address
+  - Integer overflow or underflow
+  - Timestamp dependence
+  - DoS with failed call
+  - Assert violation
+  - Unchecked call return value
+  - Unsafe send
+  - Multiplication after division
+  - Extra gas consumption

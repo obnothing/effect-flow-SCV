@@ -1,0 +1,20 @@
+dataset_name: DIVE random split
+input_train_path: data/processed/DIVE_random_split/train.jsonl
+output_train_path: data/processed/DIVE_random_split/train_mlsmote.jsonl
+label_mapping_path: data/processed/DIVE_random_split/label_mapping.json
+report_path: data/reports/mlsmote_dive_random_split_report.txt
+report_json_path: data/reports/mlsmote_dive_random_split_report.json
+seed: 42
+target_strategy: minimum_positive_ratio
+minimum_positive_ratio: 0.10
+max_duplicate_per_sample: 5
+
+label_names:
+  - Reentrancy
+  - Access Control
+  - Arithmetic
+  - Unchecked Return Values
+  - DoS
+  - Bad Randomness
+  - Front Running
+  - Time manipulation
