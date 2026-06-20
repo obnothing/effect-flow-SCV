@@ -8,7 +8,7 @@
 #SBATCH --output=logs/slurm_evmbert_dive_train_mlm_%j.out
 #SBATCH --error=logs/slurm_evmbert_dive_train_mlm_%j.err
 
-set -euo pipefail
+set -eo pipefail
 
 cd "$SLURM_SUBMIT_DIR"
 source ~/.bashrc
