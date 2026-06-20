@@ -9,7 +9,12 @@
   "threshold_source": "checkpoint_best_threshold_by_macro_f1",
   "threshold_mode": "global",
   "threshold_file": null,
-  "loss": 0.23494361507619727,
+  "model_type": "codebert",
+  "hf_model_path": null,
+  "is_transductive_pretraining": null,
+  "fp16": false,
+  "bf16": false,
+  "loss": 0.23494320792667395,
   "detection_accuracy": 0.9010628134702651,
   "detection_precision": 0.7940393826503459,
   "detection_recall": 0.5401882693700217,
@@ -46,16 +51,16 @@
     652
   ],
   "per_label_mean_pred_prob": [
-    0.016327442601323128,
-    0.07654736191034317,
-    0.10583068430423737,
-    0.013954848982393742,
-    0.0019777037668973207,
-    0.015238718129694462,
-    0.03940055891871452,
-    0.006037915591150522,
-    0.018061980605125427,
-    0.040086694061756134
+    0.016327429562807083,
+    0.07654780894517899,
+    0.10582956671714783,
+    0.01395484246313572,
+    0.0019777044653892517,
+    0.015238684602081776,
+    0.03940064460039139,
+    0.006037858780473471,
+    0.018061794340610504,
+    0.04008682444691658
   ],
   "per_label": [
     {
@@ -67,7 +72,7 @@
       "support": 89,
       "predicted_positive_count": 267,
       "true_positive_count": 89,
-      "mean_pred_prob": 0.016327442601323128
+      "mean_pred_prob": 0.016327429562807083
     },
     {
       "label_id": 1,
@@ -78,7 +83,7 @@
       "support": 1496,
       "predicted_positive_count": 1126,
       "true_positive_count": 1496,
-      "mean_pred_prob": 0.07654736191034317
+      "mean_pred_prob": 0.07654780894517899
     },
     {
       "label_id": 2,
@@ -89,7 +94,7 @@
       "support": 1817,
       "predicted_positive_count": 1730,
       "true_positive_count": 1817,
-      "mean_pred_prob": 0.10583068430423737
+      "mean_pred_prob": 0.10582956671714783
     },
     {
       "label_id": 3,
@@ -100,7 +105,7 @@
       "support": 78,
       "predicted_positive_count": 233,
       "true_positive_count": 78,
-      "mean_pred_prob": 0.013954848982393742
+      "mean_pred_prob": 0.01395484246313572
     },
     {
       "label_id": 4,
@@ -111,7 +116,7 @@
       "support": 17,
       "predicted_positive_count": 14,
       "true_positive_count": 17,
-      "mean_pred_prob": 0.0019777037668973207
+      "mean_pred_prob": 0.0019777044653892517
     },
     {
       "label_id": 5,
@@ -122,7 +127,7 @@
       "support": 84,
       "predicted_positive_count": 225,
       "true_positive_count": 84,
-      "mean_pred_prob": 0.015238718129694462
+      "mean_pred_prob": 0.015238684602081776
     },
     {
       "label_id": 6,
@@ -133,7 +138,7 @@
       "support": 616,
       "predicted_positive_count": 528,
       "true_positive_count": 616,
-      "mean_pred_prob": 0.03940055891871452
+      "mean_pred_prob": 0.03940064460039139
     },
     {
       "label_id": 7,
@@ -144,7 +149,7 @@
       "support": 64,
       "predicted_positive_count": 34,
       "true_positive_count": 64,
-      "mean_pred_prob": 0.006037915591150522
+      "mean_pred_prob": 0.006037858780473471
     },
     {
       "label_id": 8,
@@ -155,7 +160,7 @@
       "support": 191,
       "predicted_positive_count": 155,
       "true_positive_count": 191,
-      "mean_pred_prob": 0.018061980605125427
+      "mean_pred_prob": 0.018061794340610504
     },
     {
       "label_id": 9,
@@ -166,16 +171,23 @@
       "support": 652,
       "predicted_positive_count": 519,
       "true_positive_count": 652,
-      "mean_pred_prob": 0.040086694061756134
+      "mean_pred_prob": 0.04008682444691658
     }
   ],
   "per_label_thresholds": null,
   "global_threshold_baseline": null,
+  "micro_f1_change_over_global_threshold": null,
   "macro_f1_improvement_over_global_threshold": null,
+  "reference_baseline_name": "CodeBERT-base weighted BCE global threshold baseline",
   "baseline_micro_f1": 0.5535,
   "baseline_macro_f1": 0.39,
+  "baseline_detection_f1": null,
+  "micro_f1_change_over_reference_baseline": 0.0069428787116255775,
+  "macro_f1_change_over_reference_baseline": 0.031497631173756035,
+  "detection_f1_change_over_reference_baseline": null,
   "micro_f1_improvement_over_unweighted_baseline": 0.0069428787116255775,
   "macro_f1_improvement_over_unweighted_baseline": 0.031497631173756035,
+  "detection_f1_improvement_over_baseline": null,
   "small_label_f1_changes": [
     {
       "label_name": "Reentrancy",
@@ -202,5 +214,6 @@
       "diff": 0.09905393877551022
     }
   ],
-  "warnings": []
+  "warnings": [],
+  "prediction_path": "results/train_mlsmote_codebert_weighted/test_predictions.jsonl"
 }

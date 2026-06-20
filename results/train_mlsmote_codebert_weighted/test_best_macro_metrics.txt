@@ -7,9 +7,12 @@ threshold: 0.5
 threshold_source: checkpoint_best_threshold_by_macro_f1
 threshold_mode: global
 threshold_file: None
+model_type: codebert
+hf_model_path: None
+is_transductive_pretraining: None
 evaluated_samples: 16748
 expected_samples: 16748
-loss: 0.23494361507619727
+loss: 0.23494320792667395
 detection_accuracy: 0.9010628134702651
 detection_precision: 0.7940393826503459
 detection_recall: 0.5401882693700217
@@ -21,17 +24,24 @@ recognition_macro_precision: 0.43378054665723453
 recognition_macro_recall: 0.48474003668296345
 recognition_macro_f1: 0.42149763117375605
 predicted_positive_total: 4831
+micro_f1_change_over_global_threshold: None
 macro_f1_improvement_over_global_threshold: None
+reference_baseline_name: CodeBERT-base weighted BCE global threshold baseline
 baseline_micro_f1: 0.5535
 baseline_macro_f1: 0.39
+baseline_detection_f1: None
+micro_f1_change_over_reference_baseline: 0.0069428787116255775
+macro_f1_change_over_reference_baseline: 0.031497631173756035
+detection_f1_change_over_reference_baseline: None
 micro_f1_improvement_over_unweighted_baseline: 0.0069428787116255775
 macro_f1_improvement_over_unweighted_baseline: 0.031497631173756035
+detection_f1_improvement_over_baseline: None
 
 Per-label metrics:
 id | label | precision | recall | f1 | support | predicted | true | mean_prob
 0 | Reentrancy | 0.209738 | 0.629213 | 0.314607 | 89 | 267 | 89 | 0.016327
-1 | Contract contains unknown address | 0.739787 | 0.556818 | 0.635393 | 1496 | 1126 | 1496 | 0.076547
-2 | Integer overflow or underflow | 0.665318 | 0.633462 | 0.648999 | 1817 | 1730 | 1817 | 0.105831
+1 | Contract contains unknown address | 0.739787 | 0.556818 | 0.635393 | 1496 | 1126 | 1496 | 0.076548
+2 | Integer overflow or underflow | 0.665318 | 0.633462 | 0.648999 | 1817 | 1730 | 1817 | 0.105830
 3 | Timestamp dependence | 0.244635 | 0.730769 | 0.366559 | 78 | 233 | 78 | 0.013955
 4 | DoS with failed call | 0.214286 | 0.176471 | 0.193548 | 17 | 14 | 17 | 0.001978
 5 | Assert violation | 0.222222 | 0.595238 | 0.323625 | 84 | 225 | 84 | 0.015239

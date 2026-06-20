@@ -193,5 +193,6 @@
     "Reentrancy: predicted positives may be too many (272 vs support 89).",
     "Timestamp dependence: predicted positives may be too many (236 vs support 78).",
     "EVM-BERT uses full BJUT unlabeled transductive pretraining; this result is not a strict inductive baseline."
-  ]
+  ],
+  "prediction_path": "results/train_evm_bert_weighted/test_predictions.jsonl"
 }
