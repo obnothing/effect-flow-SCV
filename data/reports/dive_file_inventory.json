@@ -1,0 +1,140 @@
+{
+  "project_root": "C:\\Users\\oyjt\\Desktop\\correlascan\\reproduc_corre_scan",
+  "search_terms": [
+    "DIVE",
+    "dive",
+    "Runtime_Opcode",
+    "labels",
+    "Labels",
+    "opcode"
+  ],
+  "file_count": 18,
+  "files": [
+    {
+      "path": "DIVE/DIVE_Raw_Data/Raw/PRE/Creation_Opcode.jsonl",
+      "size_bytes": 1214093649,
+      "modified_time": 1780048614.2933383,
+      "inferred_role": "creation_opcode_jsonl",
+      "exists": true
+    },
+    {
+      "path": "DIVE/DIVE_Raw_Data/Raw/DIVE_Samples.csv",
+      "size_bytes": 1024415,
+      "modified_time": 1780048608.8570843,
+      "inferred_role": "dive_related",
+      "exists": true
+    },
+    {
+      "path": "scripts/audit_dive_dataset.py",
+      "size_bytes": 6317,
+      "modified_time": 1781769595.1096985,
+      "inferred_role": "dive_related",
+      "exists": true
+    },
+    {
+      "path": "scripts/build_dive_splits.py",
+      "size_bytes": 7783,
+      "modified_time": 1781769624.9739487,
+      "inferred_role": "dive_related",
+      "exists": true
+    },
+    {
+      "path": "scripts/check_dive_evm_tokenizer_compatibility.py",
+      "size_bytes": 4709,
+      "modified_time": 1781769647.7586591,
+      "inferred_role": "dive_related",
+      "exists": true
+    },
+    {
+      "path": "scripts/dive_common.py",
+      "size_bytes": 5162,
+      "modified_time": 1781769569.146042,
+      "inferred_role": "dive_related",
+      "exists": true
+    },
+    {
+      "path": "scripts/find_dive_files.py",
+      "size_bytes": 2652,
+      "modified_time": 1781769544.4494364,
+      "inferred_role": "dive_related",
+      "exists": true
+    },
+    {
+      "path": "scripts/stage12a_dive_audit_and_split.slurm",
+      "size_bytes": 542,
+      "modified_time": 1781769671.8264635,
+      "inferred_role": "dive_related",
+      "exists": true
+    },
+    {
+      "path": "scripts/write_dive_stage12_plan.py",
+      "size_bytes": 3054,
+      "modified_time": 1781769665.0827005,
+      "inferred_role": "dive_related",
+      "exists": true
+    },
+    {
+      "path": "DIVE/DIVE_Labels/Labels/DIVE_Labels.csv",
+      "size_bytes": 502606,
+      "modified_time": 1780048579.7903748,
+      "inferred_role": "label_csv",
+      "exists": true
+    },
+    {
+      "path": "scripts/check_bjut_sc01_labels.py",
+      "size_bytes": 10336,
+      "modified_time": 1780739010.9627903,
+      "inferred_role": "label_related",
+      "exists": true
+    },
+    {
+      "path": "data/reports/evm_opcode_length_report.json",
+      "size_bytes": 1892,
+      "modified_time": 1780908191.3207004,
+      "inferred_role": "opcode_related",
+      "exists": true
+    },
+    {
+      "path": "data/reports/evm_opcode_length_report.txt",
+      "size_bytes": 1523,
+      "modified_time": 1780908191.3207004,
+      "inferred_role": "opcode_related",
+      "exists": true
+    },
+    {
+      "path": "data/reports/huggingface_model_search_opcode_report.md",
+      "size_bytes": 2326,
+      "modified_time": 1781746356.0174842,
+      "inferred_role": "opcode_related",
+      "exists": true
+    },
+    {
+      "path": "data/reports/opcode_length_report.txt",
+      "size_bytes": 3554,
+      "modified_time": 1780882496.9164042,
+      "inferred_role": "opcode_related",
+      "exists": true
+    },
+    {
+      "path": "scripts/analyze_opcode_lengths.py",
+      "size_bytes": 7565,
+      "modified_time": 1780815986.8089614,
+      "inferred_role": "opcode_related",
+      "exists": true
+    },
+    {
+      "path": "src/evm_opcode.py",
+      "size_bytes": 5403,
+      "modified_time": 1780820151.1308026,
+      "inferred_role": "opcode_related",
+      "exists": true
+    },
+    {
+      "path": "DIVE/DIVE_Raw_Data/Raw/POST/Runtime_Opcode.jsonl",
+      "size_bytes": 793083306,
+      "modified_time": 1780048611.239993,
+      "inferred_role": "runtime_opcode_jsonl",
+      "exists": true
+    }
+  ]
+}

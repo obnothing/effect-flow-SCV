@@ -1,0 +1,184 @@
+{
+  "paper_pdf": "C:\\Users\\oyjt\\Desktop\\correlascan\\A_vulnerability_type_correlation-aware_smart_contract_multi-vulnerability_detection_model.pdf",
+  "main_findings": {
+    "average_f1_explicitly_defined": false,
+    "average_f1_best_supported_interpretation": "arithmetic average across 10 vulnerability-type rows",
+    "threshold_explicitly_defined": false,
+    "split_seed_explicitly_defined": false,
+    "mlsmote_train_only_explicitly_stated": true,
+    "metric_reproduction_risk": "high"
+  },
+  "audit_items": [
+    {
+      "paper_metric_name": "Precision",
+      "paper_definition_quote_or_paraphrase": "Explicit formula: correctly identified positives divided by predicted positives, TP/(TP+FP).",
+      "is_definition_explicit": true,
+      "ambiguity_level": "low",
+      "possible_interpretations": [
+        "standard binary precision per vulnerability type",
+        "micro precision if TP/FP pooled globally, but pooling is not stated"
+      ],
+      "reproduction_risk": "low for formula, medium for aggregation across labels"
+    },
+    {
+      "paper_metric_name": "Recall",
+      "paper_definition_quote_or_paraphrase": "Explicit formula: correctly identified positives divided by actual positives, TP/(TP+FN).",
+      "is_definition_explicit": true,
+      "ambiguity_level": "low",
+      "possible_interpretations": [
+        "standard binary recall per vulnerability type",
+        "micro recall if TP/FN pooled globally, but pooling is not stated"
+      ],
+      "reproduction_risk": "low for formula, medium for aggregation across labels"
+    },
+    {
+      "paper_metric_name": "F1",
+      "paper_definition_quote_or_paraphrase": "Explicit harmonic mean formula: 2*Precision*Recall/(Precision+Recall).",
+      "is_definition_explicit": true,
+      "ambiguity_level": "low",
+      "possible_interpretations": [
+        "per-label binary F1",
+        "micro-F1 after global pooling",
+        "F1 from averaged precision and recall"
+      ],
+      "reproduction_risk": "medium because the formula is clear but aggregation is not fully specified"
+    },
+    {
+      "paper_metric_name": "Average F1 on BJUT SC01",
+      "paper_definition_quote_or_paraphrase": "The paper states that Pre, Rec and F1 were calculated as averages in 10 vulnerabilities.",
+      "is_definition_explicit": true,
+      "ambiguity_level": "medium",
+      "possible_interpretations": [
+        "arithmetic mean of ten per-vulnerability F1 values",
+        "arithmetic mean of per-vulnerability precision and recall, followed by F1 from those averages",
+        "table-level average across the ten vulnerability rows"
+      ],
+      "reproduction_risk": "high because threshold, split seed, and duplicate control are not stated"
+    },
+    {
+      "paper_metric_name": "Recognition task F1",
+      "paper_definition_quote_or_paraphrase": "The paper reports per-vulnerability Pre/Rec/F1 rows for the recognition target types, but does not define a multi-label averaging implementation.",
+      "is_definition_explicit": false,
+      "ambiguity_level": "high",
+      "possible_interpretations": [
+        "mean of one-vs-rest per-label F1",
+        "micro-F1 over all label decisions",
+        "weighted-F1 by label support"
+      ],
+      "reproduction_risk": "high"
+    },
+    {
+      "paper_metric_name": "Binary detection F1",
+      "paper_definition_quote_or_paraphrase": "The paper separately reports detection after removing the recognition branch, suggesting detection and recognition are separate evaluations.",
+      "is_definition_explicit": true,
+      "ambiguity_level": "medium",
+      "possible_interpretations": [
+        "binary vulnerable/non-vulnerable F1",
+        "average over detection and recognition not indicated"
+      ],
+      "reproduction_risk": "medium"
+    },
+    {
+      "paper_metric_name": "Micro-F1",
+      "paper_definition_quote_or_paraphrase": "not explicitly specified",
+      "is_definition_explicit": false,
+      "ambiguity_level": "high",
+      "possible_interpretations": [
+        "not used",
+        "implicitly pooled TP/FP/FN over all labels"
+      ],
+      "reproduction_risk": "high"
+    },
+    {
+      "paper_metric_name": "Macro-F1",
+      "paper_definition_quote_or_paraphrase": "not explicitly specified using the term macro-F1; tables imply per-vulnerability F1 followed by a 10-vulnerability average.",
+      "is_definition_explicit": false,
+      "ambiguity_level": "medium",
+      "possible_interpretations": [
+        "arithmetic mean of per-label F1",
+        "not the same as strict sklearn macro-F1 if thresholding/split differs"
+      ],
+      "reproduction_risk": "high"
+    },
+    {
+      "paper_metric_name": "Weighted-F1",
+      "paper_definition_quote_or_paraphrase": "not explicitly specified",
+      "is_definition_explicit": false,
+      "ambiguity_level": "high",
+      "possible_interpretations": [
+        "not used",
+        "support-weighted per-label F1"
+      ],
+      "reproduction_risk": "medium"
+    },
+    {
+      "paper_metric_name": "Samples average F1",
+      "paper_definition_quote_or_paraphrase": "not explicitly specified",
+      "is_definition_explicit": false,
+      "ambiguity_level": "high",
+      "possible_interpretations": [
+        "not used in the paper"
+      ],
+      "reproduction_risk": "medium"
+    },
+    {
+      "paper_metric_name": "Decision threshold",
+      "paper_definition_quote_or_paraphrase": "not explicitly specified",
+      "is_definition_explicit": false,
+      "ambiguity_level": "high",
+      "possible_interpretations": [
+        "fixed 0.5",
+        "validation-selected global threshold",
+        "per-label thresholds",
+        "argmax-like per-type binary decisions"
+      ],
+      "reproduction_risk": "high"
+    },
+    {
+      "paper_metric_name": "Train/test split and seed",
+      "paper_definition_quote_or_paraphrase": "The paper mentions applying MLSMOTE after dividing train and test, but does not state split ratio, validation split, seed, or duplicate grouping.",
+      "is_definition_explicit": false,
+      "ambiguity_level": "high",
+      "possible_interpretations": [
+        "random split",
+        "tool-provided split",
+        "custom split with no duplicate filtering"
+      ],
+      "reproduction_risk": "very high"
+    },
+    {
+      "paper_metric_name": "MLSMOTE scope",
+      "paper_definition_quote_or_paraphrase": "The paper states MLSMOTE is applied only to the training set while the test set remains unchanged.",
+      "is_definition_explicit": true,
+      "ambiguity_level": "medium",
+      "possible_interpretations": [
+        "MLSMOTE in feature/vector space",
+        "synthetic contract/opcode-level generation is unclear"
+      ],
+      "reproduction_risk": "medium"
+    },
+    {
+      "paper_metric_name": "Detection-recognition average",
+      "paper_definition_quote_or_paraphrase": "not explicitly specified; the joint loss averages detection and recognition losses, but metric averaging is not stated.",
+      "is_definition_explicit": false,
+      "ambiguity_level": "high",
+      "possible_interpretations": [
+        "not used",
+        "average of detection F1 and recognition F1",
+        "separate task tables only"
+      ],
+      "reproduction_risk": "medium"
+    }
+  ],
+  "why_our_results_may_differ_from_the_paper": [
+    "The paper does not state the exact BERT backbone name or tokenizer implementation.",
+    "The paper does not state max sequence length or truncation/chunking policy.",
+    "The paper does not state threshold selection for multi-label outputs.",
+    "The paper does not state train/test split ratio, validation use, random seed, or opcode-hash duplicate control.",
+    "Random split has opcode-hash overlap and raises our score, but remains non-strict.",
+    "Average F1 likely means averaging ten per-vulnerability rows, not strict multi-label micro-F1.",
+    "BJUT label mapping is uncertain, especially the Unchecked call return value mapping.",
+    "Small support labels heavily affect macro-style averages.",
+    "Opcode-only input can miss source-level semantics and control/data-flow evidence."
+  ]
+}

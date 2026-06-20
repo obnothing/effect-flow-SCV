@@ -66,6 +66,11 @@ def parse_args():
         default=None,
         help="Global threshold baseline for comparison and support=0 fallback.",
     )
+    parser.add_argument(
+        "--save_predictions",
+        action="store_true",
+        help="Save per-sample probabilities and predictions to test_predictions.jsonl.",
+    )
     return parser.parse_args()
 
 
@@ -336,6 +341,77 @@ def write_text_report(path, report):
         for warning in report["warnings"]:
             lines.append(f"- {warning}")
     path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def dataset_records(dataset):
+    if hasattr(dataset, "samples"):
+        return [
+            {
+                "id": item.get("id", str(idx)),
+                "address": item.get("address"),
+            }
+            for idx, item in enumerate(dataset.samples)
+        ]
+    if hasattr(dataset, "offsets") and hasattr(dataset, "_read_item"):
+        records = []
+        for idx in range(len(dataset)):
+            item = dataset._read_item(idx)
+            records.append(
+                {
+                    "id": item.get("id", str(idx)),
+                    "address": item.get("address"),
+                }
+            )
+        return records
+    return [{"id": str(idx), "address": None} for idx in range(len(dataset))]
+
+
+def prediction_thresholds_for_export(report, num_labels):
+    thresholds = report.get("threshold")
+    if report.get("threshold_mode") == "per_label":
+        rows = report.get("per_label_thresholds") or []
+        if rows and "best_threshold" in rows[0]:
+            thresholds = [row["best_threshold"] for row in rows]
+        elif rows and "threshold" in rows[0]:
+            thresholds = [row["threshold"] for row in rows]
+    if thresholds is None:
+        thresholds = 0.5
+    values = np.asarray(thresholds, dtype=float)
+    if values.ndim == 0:
+        values = np.full(num_labels, float(values))
+    return values
+
+
+def write_prediction_jsonl(path, dataset, predictions, report):
+    records = dataset_records(dataset)
+    num_labels = predictions["multi_labels"].shape[1]
+    thresholds = prediction_thresholds_for_export(report, num_labels)
+    multi_probs = predictions["recognition_probs"]
+    multi_preds = (multi_probs >= thresholds.reshape(1, -1)).astype(int)
+    binary_probs = sigmoid(predictions["detection_logits"]).reshape(-1)
+    binary_preds = (binary_probs >= 0.5).astype(int)
+    ensure_dir(path.parent)
+    with path.open("w", encoding="utf-8") as f:
+        for idx, record in enumerate(records):
+            item = {
+                "id": record.get("id", str(idx)),
+                "address": record.get("address"),
+                "binary_true": int(predictions["binary_labels"][idx]),
+                "binary_prob": float(binary_probs[idx]),
+                "binary_pred": int(binary_preds[idx]),
+                "multi_true": [
+                    int(value) for value in predictions["multi_labels"][idx].tolist()
+                ],
+                "multi_prob": [
+                    float(value) for value in multi_probs[idx].tolist()
+                ],
+                "multi_pred": [
+                    int(value) for value in multi_preds[idx].tolist()
+                ],
+                "threshold_mode": report.get("threshold_mode"),
+                "thresholds": [float(value) for value in thresholds.tolist()],
+            }
+            f.write(json.dumps(item, ensure_ascii=False) + "\n")
 
 
 def resolve_output_paths(config, args):
@@ -611,6 +687,15 @@ def main():
     json_path, txt_path = resolve_output_paths(config, args)
     json_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     write_text_report(txt_path, report)
+    if args.save_predictions:
+        prediction_path = json_path.with_name("test_predictions.jsonl")
+        if args.output_prefix:
+            prediction_path = json_path.with_name(f"{json_path.stem}_predictions.jsonl")
+        write_prediction_jsonl(prediction_path, dataset, predictions, report)
+        report["prediction_path"] = str(prediction_path)
+        json_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+        write_text_report(txt_path, report)
+        print(f"[OK] wrote {prediction_path}")
     print(f"[OK] wrote {json_path}")
     print(f"[OK] wrote {txt_path}")
 

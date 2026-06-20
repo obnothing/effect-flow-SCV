@@ -1,0 +1,36 @@
+Paper metric audit
+
+average_f1_explicitly_defined: False
+average_f1_best_supported_interpretation: arithmetic average across 10 vulnerability-type rows
+threshold_explicitly_defined: False
+split_seed_explicitly_defined: False
+mlsmote_train_only_explicitly_stated: True
+metric_reproduction_risk: high
+
+paper_metric_name | explicit | ambiguity | definition/paraphrase | reproduction_risk
+--------------------------------------------------------------------------------------------------------------------------------------------
+Precision | True | low | Explicit formula: correctly identified positives divided by predicted positives, TP/(TP+FP). | low for formula, medium for aggregation across labels
+Recall | True | low | Explicit formula: correctly identified positives divided by actual positives, TP/(TP+FN). | low for formula, medium for aggregation across labels
+F1 | True | low | Explicit harmonic mean formula: 2*Precision*Recall/(Precision+Recall). | medium because the formula is clear but aggregation is not fully specified
+Average F1 on BJUT SC01 | True | medium | The paper states that Pre, Rec and F1 were calculated as averages in 10 vulnerabilities. | high because threshold, split seed, and duplicate control are not stated
+Recognition task F1 | False | high | The paper reports per-vulnerability Pre/Rec/F1 rows for the recognition target types, but does not define a multi-label averaging implementation. | high
+Binary detection F1 | True | medium | The paper separately reports detection after removing the recognition branch, suggesting detection and recognition are separate evaluations. | medium
+Micro-F1 | False | high | not explicitly specified | high
+Macro-F1 | False | medium | not explicitly specified using the term macro-F1; tables imply per-vulnerability F1 followed by a 10-vulnerability average. | high
+Weighted-F1 | False | high | not explicitly specified | medium
+Samples average F1 | False | high | not explicitly specified | medium
+Decision threshold | False | high | not explicitly specified | high
+Train/test split and seed | False | high | The paper mentions applying MLSMOTE after dividing train and test, but does not state split ratio, validation split, seed, or duplicate grouping. | very high
+MLSMOTE scope | True | medium | The paper states MLSMOTE is applied only to the training set while the test set remains unchanged. | medium
+Detection-recognition average | False | high | not explicitly specified; the joint loss averages detection and recognition losses, but metric averaging is not stated. | medium
+
+Why our results may differ from the paper
+- The paper does not state the exact BERT backbone name or tokenizer implementation.
+- The paper does not state max sequence length or truncation/chunking policy.
+- The paper does not state threshold selection for multi-label outputs.
+- The paper does not state train/test split ratio, validation use, random seed, or opcode-hash duplicate control.
+- Random split has opcode-hash overlap and raises our score, but remains non-strict.
+- Average F1 likely means averaging ten per-vulnerability rows, not strict multi-label micro-F1.
+- BJUT label mapping is uncertain, especially the Unchecked call return value mapping.
+- Small support labels heavily affect macro-style averages.
+- Opcode-only input can miss source-level semantics and control/data-flow evidence.

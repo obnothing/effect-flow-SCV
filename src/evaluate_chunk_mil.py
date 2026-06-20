@@ -35,6 +35,11 @@ def parse_args():
     parser.add_argument("--threshold_file", default=None)
     parser.add_argument("--global_threshold_file", default=None)
     parser.add_argument("--output_prefix", default=None)
+    parser.add_argument(
+        "--save_predictions",
+        action="store_true",
+        help="Save per-sample probabilities and predictions to test_predictions.jsonl.",
+    )
     return parser.parse_args()
 
 
@@ -429,6 +434,59 @@ def write_report(prefix, report):
     print(f"[OK] wrote {json_path}")
 
 
+def threshold_array_for_export(thresholds, num_labels):
+    values = np.asarray(thresholds, dtype=float)
+    if values.ndim == 0:
+        values = np.full(num_labels, float(values))
+    if values.shape[0] != num_labels:
+        raise ValueError(
+            f"threshold count {values.shape[0]} does not match num_labels {num_labels}"
+        )
+    return values
+
+
+def write_prediction_jsonl(path, predictions, thresholds, threshold_mode):
+    num_labels = predictions["multi_labels"].shape[1]
+    thresholds = threshold_array_for_export(thresholds, num_labels)
+    multi_probs = sigmoid(predictions["recognition_logits"])
+    multi_preds = (multi_probs >= thresholds.reshape(1, -1)).astype(int)
+    binary_probs = sigmoid(predictions["detection_logits"]).reshape(-1)
+    binary_preds = (binary_probs >= 0.5).astype(int)
+    ensure_dir(path.parent)
+    with path.open("w", encoding="utf-8") as f:
+        for idx, contract_id in enumerate(predictions["ids"]):
+            chunk_mask = predictions["chunk_mask"][idx].bool()
+            real_count = int(chunk_mask.sum().item())
+            chunk_scores = predictions.get("chunk_scores", predictions["chunk_logits"])
+            top_chunk_indices = []
+            top_chunk_scores = []
+            if real_count > 0:
+                sample_scores = chunk_scores[idx].detach().cpu()
+                label_scores = sample_scores.max(dim=1).values
+                label_scores[~chunk_mask] = -1e9
+                k = min(2, real_count)
+                scores, indices = torch.topk(label_scores, k=k)
+                top_chunk_indices = [int(value) for value in indices.tolist()]
+                top_chunk_scores = [float(value) for value in scores.tolist()]
+            record = {
+                "id": contract_id,
+                "binary_true": int(predictions["binary_labels"][idx]),
+                "binary_prob": float(binary_probs[idx]),
+                "binary_pred": int(binary_preds[idx]),
+                "multi_true": [
+                    int(value) for value in predictions["multi_labels"][idx].tolist()
+                ],
+                "multi_prob": [float(value) for value in multi_probs[idx].tolist()],
+                "multi_pred": [int(value) for value in multi_preds[idx].tolist()],
+                "threshold_mode": threshold_mode,
+                "thresholds": [float(value) for value in thresholds.tolist()],
+                "num_chunks_kept": real_count,
+                "top_chunk_indices": top_chunk_indices,
+                "top_chunk_scores": top_chunk_scores,
+            }
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
 def add_comparison_fields(result, baseline, config):
     comparisons = config.get("baseline_comparison", {})
     result["macro_f1_change_over_threshold_0_5"] = (
@@ -584,6 +642,7 @@ def write_threshold_calibration_report(
     }
     prefix = result_dir / "test_threshold_calibration_metrics"
     write_report(prefix, report)
+    return report
 
 
 def main():
@@ -634,7 +693,7 @@ def main():
             predictions,
             per_label_thresholds,
         )
-        write_threshold_calibration_report(
+        report = write_threshold_calibration_report(
             result_dir,
             config,
             args,
@@ -646,6 +705,48 @@ def main():
             per_label_thresholds,
             per_label_metrics,
         )
+        if args.save_predictions:
+            fixed_prediction_path = result_dir / "test_predictions_threshold_0_5.jsonl"
+            write_prediction_jsonl(
+                fixed_prediction_path,
+                predictions,
+                0.5,
+                "global_fixed_0_5",
+            )
+            best_global_prediction_path = (
+                result_dir / "test_predictions_best_global.jsonl"
+            )
+            write_prediction_jsonl(
+                best_global_prediction_path,
+                predictions,
+                best_global_threshold,
+                "global_validation_best_macro",
+            )
+            default_prediction_path = result_dir / "test_predictions.jsonl"
+            write_prediction_jsonl(
+                default_prediction_path,
+                predictions,
+                best_global_threshold,
+                "global_validation_best_macro",
+            )
+            per_label_prediction_path = (
+                result_dir / "test_predictions_per_label.jsonl"
+            )
+            write_prediction_jsonl(
+                per_label_prediction_path,
+                predictions,
+                per_label_thresholds,
+                "per_label_validation_selected",
+            )
+            report["fixed_threshold_prediction_path"] = str(fixed_prediction_path)
+            report["best_global_prediction_path"] = str(best_global_prediction_path)
+            report["prediction_path"] = str(default_prediction_path)
+            report["per_label_prediction_path"] = str(per_label_prediction_path)
+            write_report(result_dir / "test_threshold_calibration_metrics", report)
+            print(f"[OK] wrote {fixed_prediction_path}")
+            print(f"[OK] wrote {best_global_prediction_path}")
+            print(f"[OK] wrote {default_prediction_path}")
+            print(f"[OK] wrote {per_label_prediction_path}")
         return
 
     metrics = compute_metrics(
@@ -700,6 +801,12 @@ def main():
     }
     prefix = result_dir / f"{args.split}_best_macro_metrics"
     write_report(prefix, report)
+    if args.save_predictions:
+        prediction_path = result_dir / f"{args.split}_predictions.jsonl"
+        write_prediction_jsonl(prediction_path, predictions, threshold, "global")
+        report["prediction_path"] = str(prediction_path)
+        write_report(prefix, report)
+        print(f"[OK] wrote {prediction_path}")
 
 
 if __name__ == "__main__":

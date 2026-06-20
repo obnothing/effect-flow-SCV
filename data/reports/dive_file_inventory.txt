@@ -1,0 +1,22 @@
+DIVE file inventory
+
+path | size_bytes | inferred_role | exists
+------------------------------------------------------------------------------------------------------------------------
+DIVE/DIVE_Raw_Data/Raw/PRE/Creation_Opcode.jsonl | 1214093649 | creation_opcode_jsonl | True
+DIVE/DIVE_Raw_Data/Raw/DIVE_Samples.csv | 1024415 | dive_related | True
+scripts/audit_dive_dataset.py | 6317 | dive_related | True
+scripts/build_dive_splits.py | 7783 | dive_related | True
+scripts/check_dive_evm_tokenizer_compatibility.py | 4709 | dive_related | True
+scripts/dive_common.py | 5162 | dive_related | True
+scripts/find_dive_files.py | 2652 | dive_related | True
+scripts/stage12a_dive_audit_and_split.slurm | 542 | dive_related | True
+scripts/write_dive_stage12_plan.py | 3054 | dive_related | True
+DIVE/DIVE_Labels/Labels/DIVE_Labels.csv | 502606 | label_csv | True
+scripts/check_bjut_sc01_labels.py | 10336 | label_related | True
+data/reports/evm_opcode_length_report.json | 1892 | opcode_related | True
+data/reports/evm_opcode_length_report.txt | 1523 | opcode_related | True
+data/reports/huggingface_model_search_opcode_report.md | 2326 | opcode_related | True
+data/reports/opcode_length_report.txt | 3554 | opcode_related | True
+scripts/analyze_opcode_lengths.py | 7565 | opcode_related | True
+src/evm_opcode.py | 5403 | opcode_related | True
+DIVE/DIVE_Raw_Data/Raw/POST/Runtime_Opcode.jsonl | 793083306 | runtime_opcode_jsonl | True

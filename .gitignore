@@ -16,6 +16,15 @@ results/*
 *.pt
 *.pth
 *.json
+!data/reports/paper_metric_audit.json
+!data/reports/metric_recomputation_summary.json
+!data/reports/metric_recomputation_summary_completed.json
+!data/reports/stage11b_prediction_artifact_report.json
+!data/reports/dive_file_inventory.json
+!data/reports/dive_dataset_audit.json
+!data/reports/dive_split_report.json
+!data/reports/dive_evm_tokenizer_compatibility.json
+!data/reports/dive_stage12_plan.json
 output.log
 
 # Large datasets
@@ -23,6 +32,7 @@ data/raw/BJUT_SC01/BJUT_SC01.zip
 data/raw/BJUT_SC01/extracted/
 data/processed/BJUT_SC01/*.jsonl
 data/processed/BJUT_SC01_random_split/
+data/processed/DIVE/*.jsonl
 
 # Local model weights and caches
 models/

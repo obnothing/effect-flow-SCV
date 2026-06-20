@@ -1,0 +1,69 @@
+DIVE split report
+
+status: ok
+opcode_jsonl: DIVE/DIVE_Raw_Data/Raw/POST/Runtime_Opcode.jsonl
+label_csv: DIVE/DIVE_Labels/Labels/DIVE_Labels.csv
+output_dir: data/processed/DIVE
+split_seed: 42
+ratios:
+{
+  "train": 0.7,
+  "valid": 0.1,
+  "test": 0.2
+}
+split_method: iterative_stratification_on_opcode_hash_groups
+fallback_warning:
+[]
+total_aligned_samples: 22330
+unique_opcode_hash_groups: 20277
+train_samples: 15616
+valid_samples: 2250
+test_samples: 4464
+label_names:
+[
+  "Reentrancy",
+  "Access Control",
+  "Arithmetic",
+  "Unchecked Return Values",
+  "DoS",
+  "Bad Randomness",
+  "Front Running",
+  "Time manipulation"
+]
+label_distribution:
+{
+  "train": {
+    "Reentrancy": 7979,
+    "Access Control": 11767,
+    "Arithmetic": 6664,
+    "Unchecked Return Values": 4118,
+    "DoS": 2608,
+    "Bad Randomness": 446,
+    "Front Running": 432,
+    "Time manipulation": 4433
+  },
+  "valid": {
+    "Reentrancy": 1142,
+    "Access Control": 1629,
+    "Arithmetic": 996,
+    "Unchecked Return Values": 562,
+    "DoS": 411,
+    "Bad Randomness": 62,
+    "Front Running": 58,
+    "Time manipulation": 629
+  },
+  "test": {
+    "Reentrancy": 2279,
+    "Access Control": 3327,
+    "Arithmetic": 1882,
+    "Unchecked Return Values": 1231,
+    "DoS": 762,
+    "Bad Randomness": 126,
+    "Front Running": 116,
+    "Time manipulation": 1260
+  }
+}
+train_valid_opcode_hash_overlap: 0
+train_test_opcode_hash_overlap: 0
+valid_test_opcode_hash_overlap: 0
+leakage_status: ok

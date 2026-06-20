@@ -1,0 +1,8 @@
+Stage 11B prediction artifact report
+
+experiment | exists | pred_samples | test_samples | count_match | samples_f1 | subset_accuracy | hamming_loss | warnings
+------------------------------------------------------------------------------------------------------------------------------------------------------
+codebert_weighted | False | 0 | 14839 | False |  |  |  | prediction file missing; prediction sample count does not match test jsonl
+evm_bert_first512_weighted | False | 0 | 14839 | False |  |  |  | prediction file missing; prediction sample count does not match test jsonl
+strict_grouped_stride256_mil | False | 0 | 14839 | False |  |  |  | prediction file missing; prediction sample count does not match test jsonl
+random_split_stride256_mil | False | 0 | None | False |  |  |  | prediction file missing; prediction sample count does not match test jsonl

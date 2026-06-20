@@ -1,0 +1,34 @@
+Metric recomputation summary
+
+experiment_name | split_type | leakage_status | source | detection_f1 | micro_f1 | macro_f1 | weighted_f1 | samples_f1 | paper_label_mean | det_rec_avg | predicted_positive_total
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+strict_grouped_stride256_mil_threshold_0_5 | opcode_hash_grouped | ok | aggregate_report | 0.696776 | 0.611958 | 0.471711 | NA | NA | 0.471711 | 0.584244 | 6838
+  unavailable: hamming_loss, macro_f1_excluding_support_lt_100, macro_f1_excluding_support_lt_20, macro_f1_excluding_support_lt_50, recognition_samples_f1, recognition_weighted_f1, subset_accuracy
+  note: Loaded from aggregate report; raw y_prob/y_pred were not available.
+  note: Per-label F1 at this threshold is missing in the aggregate report.
+  note: Prediction file not found: results/train_evm_bert_chunk_mil_mean_stride256_labelattn_weighted/test_predictions_threshold_0_5.jsonl
+random_split_stride256_mil_best_global_0_55 | random | warning | aggregate_report | 0.766939 | 0.658829 | 0.544747 | NA | NA | 0.544747 | 0.655843 | 7147
+  unavailable: hamming_loss, macro_f1_excluding_support_lt_100, macro_f1_excluding_support_lt_20, macro_f1_excluding_support_lt_50, recognition_samples_f1, recognition_weighted_f1, subset_accuracy
+  note: Loaded from aggregate report; raw y_prob/y_pred were not available.
+  note: Per-label F1 at this threshold is missing in the aggregate report.
+  note: Prediction file not found: results/train_evm_bert_chunk_mil_mean_stride256_labelattn_weighted_random_split/test_predictions_best_global.jsonl
+evm_bert_first512_weighted | opcode_hash_grouped | ok_transductive_pretraining | aggregate_report | 0.689495 | 0.565903 | 0.432564 | 0.578437 | NA | 0.432564 | 0.561030 | 5806
+  unavailable: hamming_loss, recognition_samples_f1, subset_accuracy
+  note: Loaded from aggregate report; raw y_prob/y_pred were not available.
+  note: Prediction file not found: results/train_evm_bert_weighted/test_predictions.jsonl
+codebert_weighted | opcode_hash_grouped | ok | aggregate_report | 0.642965 | 0.560443 | 0.421498 | 0.571161 | NA | 0.421498 | 0.532231 | 4831
+  unavailable: hamming_loss, recognition_samples_f1, subset_accuracy
+  note: Loaded from aggregate report; raw y_prob/y_pred were not available.
+  note: Prediction file not found: results/train_mlsmote_codebert_weighted/test_predictions.jsonl
+
+Why our results may differ from the paper
+
+- The paper defines Precision/Recall/F1 formulas and states that Pre, Rec and F1 are averages over 10 vulnerabilities, but it does not explicitly specify whether this is the mean of per-label F1 or F1 computed from averaged precision/recall in every table.
+- The paper does not explicitly specify the decision threshold used for multi-label recognition.
+- The paper does not explicitly specify the BJUT SC01 train/test split ratio, validation split, random seed, or opcode-hash duplicate control.
+- Random split contains opcode-hash overlap and can inflate test scores; our random split reaches higher F1 than the strict grouped split but remains non-strict.
+- Average F1 in the paper is probably not strict multi-label micro-F1; Table XI explicitly says Pre, Rec and F1 are averages in 10 vulnerabilities.
+- BJUT label mapping is uncertain, especially the Unchecked call return value / Overpowered role compatibility mapping.
+- Small labels have low support, so macro-F1 is very sensitive to false positives and false negatives.
+- Opcode-only representation may miss source-level semantics and data/control-flow evidence needed by some vulnerability types.
+- Several fields, including samples-F1, subset accuracy, and hamming loss, require raw per-sample predictions; rerun evaluation with --save_predictions to compute them exactly.

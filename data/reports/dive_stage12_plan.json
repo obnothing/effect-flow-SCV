@@ -1,0 +1,30 @@
+{
+  "status": "ok",
+  "dive_suitable_for_bjut_evm_tokenizer": true,
+  "can_reuse_bjut_full_corpus_evm_bert_as_external_domain_pretraining": true,
+  "dive_uses_bjut_labels": false,
+  "dive_num_labels": 8,
+  "dive_label_head_required": "reinitialize downstream classification head to 8 labels",
+  "aligned_samples": 22330,
+  "strict_split_ready": true,
+  "tokenizer_compatibility_warning": [
+    "DIVE contains opcode-like tokens outside the BJUT vocab."
+  ],
+  "recommended_stage12b_models": [
+    "EVM-BERT first-512 weighted baseline with num_labels=8",
+    "EVM-BERT stride=256 masked_mean label-attention MIL with num_labels=8"
+  ],
+  "important_caveats": [
+    "Do not merge BJUT 10 labels with DIVE 8 labels.",
+    "BJUT-pretrained EVM-BERT is external-domain pretraining for DIVE if DIVE was not used in MLM.",
+    "If later using DIVE full corpus for MLM, mark that experiment as DIVE transductive pretraining.",
+    "Do not use DIVE test for threshold selection."
+  ],
+  "next_stage_training_recommendation": "Proceed to Stage 12B DIVE first-512 baseline",
+  "source_reports": [
+    "data/reports/dive_file_inventory.txt",
+    "data/reports/dive_dataset_audit.txt",
+    "data/reports/dive_split_report.txt",
+    "data/reports/dive_evm_tokenizer_compatibility.txt"
+  ]
+}
