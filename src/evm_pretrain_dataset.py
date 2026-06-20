@@ -23,6 +23,9 @@ class EVMMLMDataset(Dataset):
         corpus_path,
         tokenizer,
         max_len=512,
+        chunk_content_size=None,
+        chunk_stride=None,
+        max_chunks_per_contract=16,
         mlm_probability=0.15,
         debug_num_samples=None,
         seed=42,
@@ -31,9 +34,21 @@ class EVMMLMDataset(Dataset):
         self.tokenizer = tokenizer
         validate_evm_tokenizer(self.tokenizer)
         self.max_len = int(max_len)
+        self.chunk_content_size = int(
+            chunk_content_size if chunk_content_size is not None else self.max_len - 2
+        )
+        self.chunk_stride = int(
+            chunk_stride if chunk_stride is not None else self.chunk_content_size
+        )
+        self.max_chunks_per_contract = int(max_chunks_per_contract)
+        if self.chunk_content_size != self.max_len - 2:
+            raise ValueError("chunk_content_size must equal max_len - 2.")
+        if self.chunk_stride <= 0 or self.max_chunks_per_contract <= 0:
+            raise ValueError("chunk_stride and max_chunks_per_contract must be positive.")
         self.mlm_probability = float(mlm_probability)
         self.debug_num_samples = debug_num_samples
         self.seed = int(seed)
+        self.epoch = 0
         self.offsets = self._build_offsets()
         self._file = None
         self.special_token_ids = {
@@ -58,6 +73,10 @@ class EVMMLMDataset(Dataset):
         if not self.corpus_path.exists():
             raise FileNotFoundError(f"Pretrain corpus not found: {self.corpus_path}")
         offsets = []
+        contract_count = 0
+        chunk_counts = []
+        coverage_ratios = []
+        truncated_contract_count = 0
         rng = random.Random(self.seed)
         limit = (
             int(self.debug_num_samples)
@@ -73,15 +92,62 @@ class EVMMLMDataset(Dataset):
                     break
                 if not line.strip():
                     continue
-                item_no += 1
-                if limit is None:
-                    offsets.append(offset)
-                elif len(offsets) < limit:
-                    offsets.append(offset)
+                item = json.loads(line.decode("utf-8"))
+                contract_count += 1
+                if "token_ids" in item:
+                    refs = [(offset, None)]
+                    chunk_counts.append(1)
+                    coverage_ratios.append(float(item.get("covered_token_ratio", 1.0)))
+                elif "opcode" in item:
+                    token_count = len(
+                        self.tokenizer.tokenize(
+                            str(item.get("opcode", "")), add_special_tokens=False
+                        )
+                    )
+                    starts = list(range(0, token_count, self.chunk_stride))
+                    if not starts:
+                        starts = [0]
+                    selected = starts[: self.max_chunks_per_contract]
+                    refs = [(offset, start) for start in selected]
+                    chunk_counts.append(len(selected))
+                    covered = min(
+                        token_count,
+                        (selected[-1] + self.chunk_content_size) if token_count else 0,
+                    )
+                    coverage_ratios.append(
+                        float(covered / token_count) if token_count else 0.0
+                    )
+                    if len(starts) > len(selected):
+                        truncated_contract_count += 1
                 else:
-                    replace_idx = rng.randint(0, item_no - 1)
-                    if replace_idx < limit:
-                        offsets[replace_idx] = offset
+                    raise ValueError(
+                        f"Corpus item missing token_ids or opcode at byte offset {offset}."
+                    )
+
+                for ref in refs:
+                    item_no += 1
+                    if limit is None:
+                        offsets.append(ref)
+                    elif len(offsets) < limit:
+                        offsets.append(ref)
+                    else:
+                        replace_idx = rng.randint(0, item_no - 1)
+                        if replace_idx < limit:
+                            offsets[replace_idx] = ref
+        self.corpus_summary = {
+            "original_contract_samples": contract_count,
+            "generated_mlm_chunks": item_no,
+            "average_chunks_per_contract": (
+                float(sum(chunk_counts) / contract_count) if contract_count else 0.0
+            ),
+            "max_chunks_per_contract": max(chunk_counts) if chunk_counts else 0,
+            "truncated_contract_count": truncated_contract_count,
+            "covered_token_ratio_mean": (
+                float(sum(coverage_ratios) / len(coverage_ratios))
+                if coverage_ratios
+                else 0.0
+            ),
+        }
         return sorted(offsets)
 
     def _get_file(self):
@@ -89,16 +155,27 @@ class EVMMLMDataset(Dataset):
             self._file = self.corpus_path.open("rb")
         return self._file
 
+    def set_epoch(self, epoch):
+        self.epoch = int(epoch)
+
     def _read_item(self, idx):
         f = self._get_file()
-        f.seek(self.offsets[idx])
-        return json.loads(f.readline().decode("utf-8"))
+        offset, chunk_start = self.offsets[idx]
+        f.seek(offset)
+        return json.loads(f.readline().decode("utf-8")), chunk_start
 
-    def _normalize_token_ids(self, item):
+    def _normalize_token_ids(self, item, chunk_start):
         if "token_ids" in item:
             input_ids = [int(x) for x in item["token_ids"]]
         elif "opcode" in item:
-            input_ids = self.tokenizer.encode(item["opcode"], add_special_tokens=True)
+            tokens = self.tokenizer.tokenize(
+                str(item["opcode"]), add_special_tokens=False
+            )
+            start = int(chunk_start or 0)
+            content = tokens[start : start + self.chunk_content_size]
+            input_ids = [self.tokenizer.vocab["[CLS]"]]
+            input_ids.extend(self.tokenizer.convert_tokens_to_ids(content))
+            input_ids.append(self.tokenizer.vocab["[SEP]"])
         else:
             raise ValueError(
                 f"Corpus item missing token_ids or opcode: {item.get('id', '<no-id>')}"
@@ -127,7 +204,7 @@ class EVMMLMDataset(Dataset):
             special_mask |= input_ids == token_id
 
         generator = torch.Generator()
-        generator.manual_seed(self.seed + int(idx))
+        generator.manual_seed(self.seed + self.epoch * max(1, len(self)) + int(idx))
         probability_matrix = torch.full(input_ids.shape, self.mlm_probability)
         probability_matrix.masked_fill_(special_mask, value=0.0)
         masked_indices = torch.bernoulli(probability_matrix, generator=generator).bool()
@@ -170,8 +247,8 @@ class EVMMLMDataset(Dataset):
         return len(self.offsets)
 
     def __getitem__(self, idx):
-        item = self._read_item(idx)
-        original_input_ids = self._normalize_token_ids(item)
+        item, chunk_start = self._read_item(idx)
+        original_input_ids = self._normalize_token_ids(item, chunk_start)
         attention_mask = self._make_attention_mask(item, original_input_ids)
         input_ids, labels = self._mask_tokens(original_input_ids, idx)
         return {
@@ -189,6 +266,9 @@ def build_evm_mlm_dataset(config):
         corpus_path=config["pretrain_corpus_path"],
         tokenizer=tokenizer,
         max_len=config.get("max_len", 512),
+        chunk_content_size=config.get("chunk_content_size"),
+        chunk_stride=config.get("chunk_stride"),
+        max_chunks_per_contract=config.get("max_chunks_per_contract", 16),
         mlm_probability=config.get("mlm_probability", 0.15),
         debug_num_samples=config.get("debug_num_samples"),
         seed=config.get("seed", 42),

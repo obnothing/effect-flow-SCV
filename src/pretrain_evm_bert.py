@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -67,6 +68,7 @@ def load_config(path):
         "result_dir",
         "report_dir",
         "log_dir",
+        "base_hf_model_path",
     ]:
         if key in config:
             config[key] = str(resolve_project_path(config[key]))
@@ -115,6 +117,15 @@ def unwrap_model(model):
 
 def count_parameters(model):
     return sum(param.numel() for param in unwrap_model(model).parameters())
+
+
+def encoder_checksum(model):
+    encoder = unwrap_model(model).bert
+    digest = hashlib.sha256()
+    for name, tensor in sorted(encoder.state_dict().items()):
+        digest.update(name.encode("utf-8"))
+        digest.update(tensor.detach().cpu().contiguous().numpy().tobytes())
+    return digest.hexdigest()
 
 
 def cuda_memory_mb():
@@ -167,12 +178,24 @@ def write_report(config, report):
         "EVM-BERT-base MLM pretraining report",
         "",
         f"experiment_name: {report['experiment_name']}",
+        f"base_hf_model_path: {report.get('base_hf_model_path')}",
+        f"continued_from: {report.get('continued_from')}",
+        f"continued_pretraining: {report.get('continued_pretraining')}",
+        f"loaded_from_base_hf_model: {report.get('loaded_from_base_hf_model')}",
+        f"is_dive_transductive: {report.get('is_dive_transductive')}",
         f"is_transductive_pretraining: {report['is_transductive_pretraining']}",
         f"use_labels: {report['use_labels']}",
         f"transductive_warning: {report['transductive_warning']}",
         f"corpus_path: {report['corpus_path']}",
         f"total samples: {report['total_samples']}",
+        f"corpus_samples: {report.get('corpus_samples')}",
+        f"generated_mlm_chunks: {report.get('generated_mlm_chunks')}",
+        f"mean_chunks_per_contract: {report.get('mean_chunks_per_contract')}",
+        f"max_chunks_per_contract: {report.get('max_chunks_per_contract')}",
+        f"truncated_contract_count: {report.get('truncated_contract_count')}",
+        f"coverage_ratio: {report.get('coverage_ratio')}",
         f"vocab_size: {report['vocab_size']}",
+        f"model_config_vocab_size: {report.get('model_config_vocab_size')}",
         f"model_scale: {report['model_scale']}",
         f"parameter_count: {report['parameter_count']}",
         f"hidden_size: {report['hidden_size']}",
@@ -194,6 +217,7 @@ def write_report(config, report):
         f"final_mlm_loss: {report['final_mlm_loss']}",
         f"best_mlm_loss: {report['best_mlm_loss']}",
         f"best_epoch: {report['best_epoch']}",
+        f"epoch_mlm_losses: {report.get('epoch_mlm_losses')}",
         f"checkpoint_saved: {report['checkpoint_saved']}",
         f"hf_model_saved: {report['hf_model_saved']}",
         f"best_mlm_loss_path: {report['best_mlm_loss_path']}",
@@ -202,6 +226,9 @@ def write_report(config, report):
         f"cuda_device_name: {report['cuda_device_name']}",
         f"max_memory_allocated_mb: {report['max_memory_allocated_mb']}",
         f"max_memory_reserved_mb: {report['max_memory_reserved_mb']}",
+        f"encoder_checksum_before: {report.get('encoder_checksum_before')}",
+        f"encoder_checksum_after: {report.get('encoder_checksum_after')}",
+        f"encoder_checksum_changed: {report.get('encoder_checksum_changed')}",
     ]
     txt_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     json_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -233,6 +260,20 @@ def main():
     dataset, tokenizer = build_evm_mlm_dataset(config)
     vocab_size = load_evm_vocab_size(config["vocab_path"])
     model = build_evm_bert_mlm_model(config, vocab_size)
+    continued_pretraining = bool(config.get("base_hf_model_path"))
+    if continued_pretraining:
+        expected = {
+            "hidden_size": 768,
+            "num_hidden_layers": 12,
+            "num_attention_heads": 12,
+        }
+        for key, expected_value in expected.items():
+            actual = int(getattr(model.config, key))
+            if actual != expected_value:
+                raise ValueError(
+                    f"Continued MLM requires BERT-base {key}={expected_value}, got {actual}."
+                )
+    checksum_before = encoder_checksum(model) if is_main_process(rank) else None
 
     if distributed:
         device = torch.device(f"cuda:{local_rank}")
@@ -295,7 +336,18 @@ def main():
     main_print(rank, f"[INFO] corpus: {project_relative(config['pretrain_corpus_path'])}")
     main_print(rank, "[INFO] tokenizer: EVM opcode-aware vocab")
     main_print(rank, f"[INFO] vocab_size: {vocab_size}")
-    main_print(rank, "[INFO] model: BertForMaskedLM from scratch")
+    main_print(
+        rank,
+        "[INFO] model: BertForMaskedLM continued from existing HF model"
+        if continued_pretraining
+        else "[INFO] model: BertForMaskedLM from scratch",
+    )
+    if continued_pretraining:
+        main_print(
+            rank,
+            f"[INFO] base_hf_model_path: {project_relative(config['base_hf_model_path'])}",
+        )
+        main_print(rank, f"[INFO] encoder_checksum_before: {checksum_before}")
     main_print(rank, f"[INFO] parameters: {count_parameters(model)}")
     main_print(rank, f"[INFO] device: {device}")
     main_print(rank, f"[INFO] distributed: {distributed}")
@@ -308,14 +360,28 @@ def main():
         rank,
         f"[INFO] global_effective_batch_size: {batch_size * grad_accum_steps * world_size}",
     )
-    main_print(rank, f"[INFO] {TRANSDUCTIVE_WARNING}")
+    is_dive_transductive = bool(config.get("is_dive_transductive", False))
+    if "is_dive_transductive" in config:
+        setting_warning = (
+            "This model continues MLM pretraining on DIVE train/valid/test opcode "
+            "inputs without labels. It is a DIVE transductive model."
+            if is_dive_transductive
+            else "This model continues MLM pretraining on DIVE train opcode inputs "
+            "without labels and is suitable for strict DIVE downstream evaluation."
+        )
+    else:
+        setting_warning = TRANSDUCTIVE_WARNING
+    main_print(rank, f"[INFO] {setting_warning}")
 
     best_loss = None
     best_epoch = None
     global_step = 0
     history = []
+    best_encoder_checksum = checksum_before
 
     for epoch in range(1, epochs + 1):
+        if hasattr(dataset, "set_epoch"):
+            dataset.set_epoch(epoch)
         if sampler is not None:
             sampler.set_epoch(epoch)
         model.train()
@@ -451,6 +517,7 @@ def main():
                 hf_model_dir = checkpoint_dir / "hf_model"
                 unwrap_model(model).save_pretrained(hf_model_dir)
                 shutil.copy2(config["vocab_path"], hf_model_dir / "evm_vocab.json")
+                best_encoder_checksum = encoder_checksum(model)
 
         if is_main_process(rank):
             write_history(result_dir, history)
@@ -460,18 +527,37 @@ def main():
     final_loss = history[-1]["train_mlm_loss"]
     max_allocated, max_reserved = cuda_memory_mb()
     bert_config = unwrap_model(model).config
+    corpus_summary = getattr(dataset, "corpus_summary", {})
     report = {
         "experiment_name": config["experiment_name"],
+        "base_hf_model_path": project_relative(config["base_hf_model_path"])
+        if config.get("base_hf_model_path")
+        else None,
+        "continued_from": config.get("continued_from"),
+        "continued_pretraining": continued_pretraining,
+        "is_dive_transductive": is_dive_transductive,
         "is_transductive_pretraining": bool(
-            config.get("is_transductive_pretraining", True)
+            config.get("is_transductive_pretraining", is_dive_transductive)
         ),
         "use_labels": False,
-        "transductive_warning": TRANSDUCTIVE_WARNING,
+        "loaded_from_base_hf_model": continued_pretraining,
+        "transductive_warning": setting_warning,
         "corpus_path": project_relative(config["pretrain_corpus_path"]),
         "total_samples": len(dataset),
+        "corpus_samples": corpus_summary.get("original_contract_samples"),
+        "generated_mlm_chunks": corpus_summary.get("generated_mlm_chunks", len(dataset)),
+        "mean_chunks_per_contract": corpus_summary.get("average_chunks_per_contract"),
+        "max_chunks_per_contract": corpus_summary.get("max_chunks_per_contract"),
+        "truncated_contract_count": corpus_summary.get("truncated_contract_count"),
+        "coverage_ratio": corpus_summary.get("covered_token_ratio_mean"),
         "vocab_size": vocab_size,
-        "model_scale": "BERT-base architecture from scratch with EVM vocab",
+        "model_scale": (
+            "BERT-base continued from BJUT EVM-BERT with fixed EVM vocab"
+            if continued_pretraining
+            else "BERT-base architecture from scratch with EVM vocab"
+        ),
         "parameter_count": count_parameters(model),
+        "model_config_vocab_size": int(bert_config.vocab_size),
         "hidden_size": bert_config.hidden_size,
         "num_hidden_layers": bert_config.num_hidden_layers,
         "num_attention_heads": bert_config.num_attention_heads,
@@ -491,6 +577,7 @@ def main():
         "final_mlm_loss": final_loss,
         "best_mlm_loss": best_loss,
         "best_epoch": best_epoch,
+        "epoch_mlm_losses": [row["train_mlm_loss"] for row in history],
         "checkpoint_saved": (checkpoint_dir / "best_mlm_loss.pt").exists()
         and (checkpoint_dir / "last.pt").exists(),
         "hf_model_saved": (checkpoint_dir / "hf_model" / "config.json").exists(),
@@ -503,6 +590,9 @@ def main():
         else "CPU",
         "max_memory_allocated_mb": max_allocated,
         "max_memory_reserved_mb": max_reserved,
+        "encoder_checksum_before": checksum_before,
+        "encoder_checksum_after": best_encoder_checksum,
+        "encoder_checksum_changed": checksum_before != best_encoder_checksum,
     }
     if is_main_process(rank):
         write_report(config, report)

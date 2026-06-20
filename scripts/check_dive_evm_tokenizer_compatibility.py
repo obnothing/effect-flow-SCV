@@ -5,7 +5,14 @@ from collections import Counter
 
 sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[1] / "src"))
 
-from dive_common import PROJECT_ROOT, REPORT_DIR, resolve, summarize_values, write_json_txt  # noqa: E402
+from dive_common import (  # noqa: E402
+    PROJECT_ROOT,
+    REPORT_DIR,
+    chunk_coverage,
+    resolve,
+    summarize_values,
+    write_json_txt,
+)
 from evm_tokenizer import (  # noqa: E402
     EVMOpcodeTokenizer,
     MNEMONIC_TOKENS,
@@ -21,6 +28,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Check BJUT EVM tokenizer compatibility on DIVE.")
     parser.add_argument("--vocab_path", default="data/processed/BJUT_SC01/evm_vocab.json")
     parser.add_argument("--data_dir", default="data/processed/DIVE")
+    parser.add_argument("--max_unk_ratio", type=float, default=0.01)
+    parser.add_argument("--max_chunks_per_contract", type=int, default=16)
     return parser.parse_args()
 
 
@@ -49,6 +58,7 @@ def main():
     raw_operand_count = 0
     raw_mnemonic_count = 0
     split_samples = {}
+    chunk_rows = []
 
     for split in ["train", "valid", "test"]:
         path = data_dir / f"{split}.jsonl"
@@ -77,6 +87,15 @@ def main():
             token_lengths.append(len(ids))
             unk_count += sum(1 for value in ids if value == tokenizer.unk_token_id)
             total_tokens += len(ids)
+            for stride in [510, 256]:
+                row = chunk_coverage(
+                    len(ids) - 2,
+                    chunk_content_size=510,
+                    stride=stride,
+                    max_chunks=args.max_chunks_per_contract,
+                )
+                row["stride"] = stride
+                chunk_rows.append(row)
         split_samples[split] = count
 
     unk_ratio = float(unk_count / total_tokens) if total_tokens else 0.0
@@ -88,11 +107,31 @@ def main():
         for token in NORMALIZED_OPERAND_TOKENS
     }
     warnings = []
-    if unk_ratio > 0.01:
+    if unk_ratio > args.max_unk_ratio:
         warnings.append(f"UNK ratio is high: {unk_ratio:.6f}")
     if sum(mnemonic_oov.values()) > 0:
         warnings.append("DIVE contains opcode-like tokens outside the BJUT vocab.")
-    can_reuse = all(special_present.values()) and unk_ratio <= 0.01
+    can_reuse = all(special_present.values()) and unk_ratio <= args.max_unk_ratio
+    chunk_statistics = {}
+    for stride in [510, 256]:
+        rows = [row for row in chunk_rows if row["stride"] == stride]
+        chunk_statistics[str(stride)] = {
+            "chunk_content_size": 510,
+            "chunk_stride": stride,
+            "max_chunks_per_contract": args.max_chunks_per_contract,
+            "generated_chunks": int(sum(row["chunks_kept"] for row in rows)),
+            "mean_chunks_per_contract": (
+                float(sum(row["chunks_kept"] for row in rows) / len(rows))
+                if rows
+                else 0.0
+            ),
+            "truncated_contract_count": int(sum(row["truncated"] for row in rows)),
+            "covered_token_ratio_mean": (
+                float(sum(row["coverage_ratio"] for row in rows) / len(rows))
+                if rows
+                else 0.0
+            ),
+        }
     report = {
         "status": "ok" if can_reuse else "warning",
         "vocab_path": vocab_path.relative_to(PROJECT_ROOT).as_posix(),
@@ -111,7 +150,9 @@ def main():
         "unk_count": unk_count,
         "total_tokenized_tokens": total_tokens,
         "unk_ratio": unk_ratio,
+        "max_allowed_unk_ratio": args.max_unk_ratio,
         "token_length_statistics": summarize_values(token_lengths),
+        "chunk_statistics": chunk_statistics,
         "can_reuse_bjut_evm_bert": can_reuse,
         "warnings": warnings,
     }
@@ -121,6 +162,11 @@ def main():
         REPORT_DIR / "dive_evm_tokenizer_compatibility.txt",
         "DIVE EVM tokenizer compatibility report",
     )
+    if not can_reuse:
+        raise SystemExit(
+            "DIVE tokenizer compatibility failed; continued MLM is blocked. "
+            "Inspect data/reports/dive_evm_tokenizer_compatibility.txt."
+        )
 
 
 if __name__ == "__main__":

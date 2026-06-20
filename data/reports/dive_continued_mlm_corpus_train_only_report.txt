@@ -1,0 +1,29 @@
+DIVE continued MLM corpus report
+
+mode: train_only
+corpus_path: data/processed/DIVE/pretrain_corpus_dive_train_only.jsonl
+vocab_path: data/processed/BJUT_SC01/evm_vocab.json
+use_labels: False
+is_dive_transductive: False
+setting_note: This corpus uses only DIVE train opcode inputs without labels. It is suitable for strict DIVE downstream evaluation.
+source_splits: ["train"]
+split_contract_samples: {"train": 15616}
+split_generated_mlm_chunks: {"train": 158462}
+original_contract_samples: 15616
+generated_mlm_chunks: 158462
+average_chunks_per_contract: 10.147412909836065
+max_chunks_per_contract: 16
+max_chunks_per_contract_limit: 16
+truncated_contract_count: 3494
+empty_opcode_count: 0
+unique_opcode_hash_count: 14193
+duplicate_opcode_sample_count: 1423
+covered_token_ratio_mean: 0.9539713453809032
+covered_token_ratio_p50: 1.0
+covered_token_ratio_p90: 1.0
+token_count_mean: 5534.948834528688
+token_count_p50: 5218.0
+token_count_p90: 9951.5
+max_len: 512
+chunk_content_size: 510
+chunk_stride: 510

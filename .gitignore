@@ -25,6 +25,10 @@ results/*
 !data/reports/dive_split_report.json
 !data/reports/dive_evm_tokenizer_compatibility.json
 !data/reports/dive_stage12_plan.json
+!data/reports/dive_continued_mlm_corpus_train_only_report.json
+!data/reports/dive_continued_mlm_corpus_full_report.json
+!data/reports/continue_pretrain_evm_bert_dive_train_only_report.json
+!data/reports/continue_pretrain_evm_bert_dive_full_transductive_report.json
 output.log
 
 # Large datasets

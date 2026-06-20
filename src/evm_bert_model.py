@@ -33,5 +33,17 @@ def build_bert_config(config, vocab_size):
 
 
 def build_evm_bert_mlm_model(config, vocab_size):
+    base_hf_model_path = config.get("base_hf_model_path")
+    if base_hf_model_path:
+        model = BertForMaskedLM.from_pretrained(
+            base_hf_model_path,
+            local_files_only=True,
+        )
+        if int(model.config.vocab_size) != int(vocab_size):
+            raise ValueError(
+                "Continued MLM model/vocab mismatch: "
+                f"model vocab_size={model.config.vocab_size}, EVM vocab_size={vocab_size}."
+            )
+        return model
     bert_config = build_bert_config(config, vocab_size)
     return BertForMaskedLM(bert_config)

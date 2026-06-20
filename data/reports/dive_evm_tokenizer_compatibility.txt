@@ -1131,6 +1131,7 @@ normalized_operand_ratios:
 unk_count: 397877
 total_tokenized_tokens: 123171068
 unk_ratio: 0.003230279695228428
+max_allowed_unk_ratio: 0.01
 token_length_statistics:
 {
   "count": 22330,
@@ -1141,6 +1142,27 @@ token_length_statistics:
   "p95": 12051.55,
   "p99": 15198.399999999965,
   "max": 30984
+}
+chunk_statistics:
+{
+  "510": {
+    "chunk_content_size": 510,
+    "chunk_stride": 510,
+    "max_chunks_per_contract": 16,
+    "generated_chunks": 226031,
+    "mean_chunks_per_contract": 10.12230183609494,
+    "truncated_contract_count": 4996,
+    "covered_token_ratio_mean": 0.9542994366354252
+  },
+  "256": {
+    "chunk_content_size": 510,
+    "chunk_stride": 256,
+    "max_chunks_per_contract": 16,
+    "generated_chunks": 292118,
+    "mean_chunks_per_contract": 13.081862964621585,
+    "truncated_contract_count": 12519,
+    "covered_token_ratio_mean": 0.7835817869421737
+  }
 }
 can_reuse_bjut_evm_bert: True
 warnings:
