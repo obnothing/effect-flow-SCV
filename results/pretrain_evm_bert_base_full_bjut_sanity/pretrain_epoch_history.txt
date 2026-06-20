@@ -1,3 +1,0 @@
-EVM-BERT MLM pretraining epoch history
-
-epoch 1/1 train_mlm_loss=4.229485 global_step=128 lr=0 max_memory_allocated_mb=3422.64 max_memory_reserved_mb=3528.00
