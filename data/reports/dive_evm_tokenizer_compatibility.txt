@@ -1152,7 +1152,7 @@ chunk_statistics:
     "generated_chunks": 226031,
     "mean_chunks_per_contract": 10.12230183609494,
     "truncated_contract_count": 4996,
-    "covered_token_ratio_mean": 0.9542994366354252
+    "covered_token_ratio_mean": 0.9542994366354269
   },
   "256": {
     "chunk_content_size": 510,
@@ -1161,7 +1161,7 @@ chunk_statistics:
     "generated_chunks": 292118,
     "mean_chunks_per_contract": 13.081862964621585,
     "truncated_contract_count": 12519,
-    "covered_token_ratio_mean": 0.7835817869421737
+    "covered_token_ratio_mean": 0.7835817869421726
   }
 }
 can_reuse_bjut_evm_bert: True
