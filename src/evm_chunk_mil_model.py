@@ -36,6 +36,7 @@ class ChunkContextEncoder(nn.Module):
         self.transformer = nn.TransformerEncoder(
             encoder_layer,
             num_layers=num_layers,
+            enable_nested_tensor=False,
         )
         nn.init.normal_(self.position_embedding, mean=0.0, std=0.02)
 
@@ -191,7 +192,7 @@ class EVMChunkMILClassifier(nn.Module):
                     multi_labels.float(),
                     pos_weight=self.recognition_pos_weight,
                 )
-            loss = (detection_loss + recognition_loss) / 2
+            loss = ((detection_loss + recognition_loss) / 2).reshape(1)
         return {
             "loss": loss,
             "detection_logits": detection_logits,
