@@ -1,12 +1,12 @@
-experiment_name: sanity_continued_dive_evm_bert_bjut_random_stride256_context_mil
+experiment_name: train_continued_dive_evm_bert_dive_random_stride256_context_mil
 model_type: evm_chunk_mil
-feature_dir: data/features/continued_dive_evm_bert_bjut_random_stride256
-checkpoint_dir: checkpoints/sanity_continued_dive_evm_bert_bjut_random_stride256_context_mil
-result_dir: results/sanity_continued_dive_evm_bert_bjut_random_stride256_context_mil
+feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256
+checkpoint_dir: checkpoints/train_continued_dive_evm_bert_dive_random_stride256_context_mil
+result_dir: results/train_continued_dive_evm_bert_dive_random_stride256_context_mil
 report_dir: data/reports
 log_dir: logs
 
-num_labels: 10
+num_labels: 8
 feature_dim: 768
 hidden_dim: 512
 attn_dim: 256
@@ -26,10 +26,10 @@ batch_size: 512
 gradient_accumulation_steps: 1
 use_data_parallel: true
 data_parallel_device_ids: [0, 1]
-epochs: 1
+epochs: 30
 learning_rate: 0.0003
 weight_decay: 0.01
-early_stopping_patience: 1
+early_stopping_patience: 5
 gradient_clip_norm: 1.0
 use_pos_weight: true
 pos_weight_source: train_mlsmote
@@ -39,23 +39,24 @@ threshold: 0.5
 thresholds: [0.1, 0.2, 0.3, 0.4, 0.5]
 seed: 42
 num_workers: 4
-debug_num_train_samples: 512
-debug_num_valid_samples: 128
 
 is_transductive_pretraining: true
 encoder_frozen: true
-data_dir: data/processed/BJUT_SC01_random_split
+data_dir: data/processed/DIVE_random_split
 split_policy: random_sample_split
 leakage_status: warning
 
+baseline_comparison:
+  random_stride256_labelattn_micro_f1: 0.810336
+  random_stride256_labelattn_macro_f1: 0.712614
+  random_stride256_labelattn_detection_f1: 0.945033
+
 label_names:
   - Reentrancy
-  - Contract contains unknown address
-  - Integer overflow or underflow
-  - Timestamp dependence
-  - DoS with failed call
-  - Assert violation
-  - Unchecked call return value
-  - Unsafe send
-  - Multiplication after division
-  - Extra gas consumption
+  - Access Control
+  - Arithmetic
+  - Unchecked Return Values
+  - DoS
+  - Bad Randomness
+  - Front Running
+  - Time manipulation

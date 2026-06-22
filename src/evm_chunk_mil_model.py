@@ -110,7 +110,7 @@ class EVMChunkMILClassifier(nn.Module):
             nn.Linear(hidden_dim // 2, 1),
         )
         self.detection_loss_fn = nn.BCEWithLogitsLoss()
-        self.recognition_pos_weight = None
+        self.register_buffer("recognition_pos_weight", None, persistent=False)
         nn.init.xavier_uniform_(self.label_attn)
         nn.init.xavier_uniform_(self.label_out)
 

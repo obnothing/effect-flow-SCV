@@ -88,6 +88,16 @@ def load_model(config, checkpoint, device):
         model.set_recognition_pos_weight(pos_weight.to(device))
     state = torch.load(checkpoint, map_location="cpu")
     model.load_state_dict(state["model_state_dict"])
+    if config.get("use_data_parallel", False) and torch.cuda.device_count() >= 2:
+        device_ids = [
+            int(device_id)
+            for device_id in config.get(
+                "data_parallel_device_ids",
+                list(range(torch.cuda.device_count())),
+            )
+        ]
+        model = torch.nn.DataParallel(model, device_ids=device_ids)
+        print(f"[INFO] evaluation DataParallel enabled: devices={device_ids}")
     model.eval()
     return model, state
 
@@ -112,7 +122,7 @@ def collect_predictions(model, loader, device):
             "multi_labels": batch["multi_labels"].to(device),
         }
         outputs = model(**inputs)
-        losses.append(float(outputs["loss"].detach().cpu().item()))
+        losses.append(float(outputs["loss"].mean().detach().cpu().item()))
         ids.extend(batch["id"])
         metadata.extend(batch["metadata"])
         detection_logits.append(outputs["detection_logits"].detach().cpu())

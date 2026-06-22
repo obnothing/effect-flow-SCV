@@ -1,12 +1,12 @@
-experiment_name: sanity_continued_dive_evm_bert_bjut_random_stride256_context_mil
+experiment_name: sanity_continued_dive_evm_bert_dive_random_stride256_context_mil
 model_type: evm_chunk_mil
-feature_dir: data/features/continued_dive_evm_bert_bjut_random_stride256
-checkpoint_dir: checkpoints/sanity_continued_dive_evm_bert_bjut_random_stride256_context_mil
-result_dir: results/sanity_continued_dive_evm_bert_bjut_random_stride256_context_mil
+feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256
+checkpoint_dir: checkpoints/sanity_continued_dive_evm_bert_dive_random_stride256_context_mil
+result_dir: results/sanity_continued_dive_evm_bert_dive_random_stride256_context_mil
 report_dir: data/reports
 log_dir: logs
 
-num_labels: 10
+num_labels: 8
 feature_dim: 768
 hidden_dim: 512
 attn_dim: 256
@@ -44,18 +44,16 @@ debug_num_valid_samples: 128
 
 is_transductive_pretraining: true
 encoder_frozen: true
-data_dir: data/processed/BJUT_SC01_random_split
+data_dir: data/processed/DIVE_random_split
 split_policy: random_sample_split
 leakage_status: warning
 
 label_names:
   - Reentrancy
-  - Contract contains unknown address
-  - Integer overflow or underflow
-  - Timestamp dependence
-  - DoS with failed call
-  - Assert violation
-  - Unchecked call return value
-  - Unsafe send
-  - Multiplication after division
-  - Extra gas consumption
+  - Access Control
+  - Arithmetic
+  - Unchecked Return Values
+  - DoS
+  - Bad Randomness
+  - Front Running
+  - Time manipulation

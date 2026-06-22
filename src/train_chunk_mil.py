@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import torch.nn as nn
 import yaml
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -141,7 +142,8 @@ def train_one_epoch(model, loader, optimizer, config, device):
     for step, batch in enumerate(tqdm(loader, desc="train", leave=False), start=1):
         model_inputs = move_batch(batch, device)
         outputs = model(**model_inputs)
-        loss = outputs["loss"] / grad_accum
+        batch_loss = outputs["loss"].mean()
+        loss = batch_loss / grad_accum
         loss.backward()
         if step % grad_accum == 0:
             if config.get("gradient_clip_norm"):
@@ -151,7 +153,7 @@ def train_one_epoch(model, loader, optimizer, config, device):
                 )
             optimizer.step()
             optimizer.zero_grad(set_to_none=True)
-        total_loss += float(outputs["loss"].detach().cpu().item())
+        total_loss += float(batch_loss.detach().cpu().item())
         steps += 1
     if steps % grad_accum != 0:
         if config.get("gradient_clip_norm"):
@@ -175,7 +177,7 @@ def evaluate(model, loader, config, device):
     for batch in tqdm(loader, desc="valid", leave=False):
         model_inputs = move_batch(batch, device)
         outputs = model(**model_inputs)
-        losses.append(float(outputs["loss"].detach().cpu().item()))
+        losses.append(float(outputs["loss"].mean().detach().cpu().item()))
         detection_logits.append(outputs["detection_logits"].detach().cpu())
         recognition_logits.append(outputs["recognition_logits"].detach().cpu())
         binary_labels.append(model_inputs["binary_label"].detach().cpu())
@@ -204,9 +206,10 @@ def checkpoint_payload(model, optimizer, epoch, config, valid_loss, metrics):
         metrics.get("threshold_scan", {}),
         "macro_f1",
     )
+    unwrapped_model = model.module if isinstance(model, nn.DataParallel) else model
     return {
         "epoch": epoch,
-        "model_state_dict": model.state_dict(),
+        "model_state_dict": unwrapped_model.state_dict(),
         "optimizer_state_dict": optimizer.state_dict(),
         "config": config,
         "valid_loss": valid_loss,
@@ -308,6 +311,31 @@ def main():
     if config.get("use_pos_weight", False):
         pos_weight, pos_weight_rows = compute_pos_weight_from_feature_cache(config)
         model.set_recognition_pos_weight(pos_weight.to(device))
+    use_data_parallel = bool(config.get("use_data_parallel", False))
+    available_gpus = torch.cuda.device_count() if torch.cuda.is_available() else 0
+    if use_data_parallel:
+        requested_devices = [
+            int(device_id)
+            for device_id in config.get(
+                "data_parallel_device_ids",
+                list(range(available_gpus)),
+            )
+        ]
+        if len(requested_devices) < 2 or available_gpus < 2:
+            raise RuntimeError(
+                "use_data_parallel=true requires at least two visible CUDA devices"
+            )
+        if max(requested_devices) >= available_gpus:
+            raise ValueError(
+                f"data_parallel_device_ids={requested_devices} but only "
+                f"{available_gpus} CUDA devices are visible"
+            )
+        model = nn.DataParallel(model, device_ids=requested_devices)
+        print(
+            f"[INFO] DataParallel enabled: devices={requested_devices} "
+            f"total_batch_size={config['batch_size']} "
+            f"approx_batch_per_gpu={int(config['batch_size']) // len(requested_devices)}"
+        )
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=float(config["learning_rate"]),
@@ -413,6 +441,14 @@ def main():
         "chunk_context_num_layers": int(config.get("chunk_context_num_layers", 0)),
         "chunk_context_num_heads": int(config.get("chunk_context_num_heads", 0)),
         "chunk_context_dropout": float(config.get("chunk_context_dropout", 0.0)),
+        "use_data_parallel": use_data_parallel,
+        "visible_cuda_devices": available_gpus,
+        "total_batch_size": int(config["batch_size"]),
+        "approx_batch_per_gpu": (
+            int(config["batch_size"]) // len(requested_devices)
+            if use_data_parallel
+            else int(config["batch_size"])
+        ),
         "recognition_aggregation": config["recognition_aggregation"],
         "top_k": int(config.get("top_k", 2)),
         "use_pos_weight": config.get("use_pos_weight", False),

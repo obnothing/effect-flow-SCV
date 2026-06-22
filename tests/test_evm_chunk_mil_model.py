@@ -68,6 +68,22 @@ class ChunkContextMILTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "at least one valid chunk"):
             model(torch.randn(1, 5, 12), torch.zeros(1, 5, dtype=torch.bool))
 
+    def test_weighted_loss_backpropagates_through_context_encoder(self):
+        model = EVMChunkMILClassifier(self.config)
+        model.set_recognition_pos_weight(torch.tensor([1.0, 2.0, 3.0]))
+        outputs = model(
+            torch.randn(2, 5, 12),
+            torch.tensor(
+                [[True, True, True, False, False], [True, True, False, False, False]]
+            ),
+            binary_label=torch.tensor([1.0, 0.0]),
+            multi_labels=torch.tensor([[1.0, 0.0, 1.0], [0.0, 1.0, 0.0]]),
+        )
+        outputs["loss"].backward()
+        self.assertIsNotNone(
+            model.chunk_context_encoder.input_projection.weight.grad
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,8 +1,8 @@
-experiment_name: train_evm_bert_chunk_context_labelattn_weighted
+experiment_name: train_continued_dive_evm_bert_bjut_random_stride256_context_mil
 model_type: evm_chunk_mil
-feature_dir: data/features/evm_bert_chunks_mean_stride256
-checkpoint_dir: checkpoints/train_evm_bert_chunk_context_labelattn_weighted
-result_dir: results/train_evm_bert_chunk_context_labelattn_weighted
+feature_dir: data/features/continued_dive_evm_bert_bjut_random_stride256
+checkpoint_dir: checkpoints/train_continued_dive_evm_bert_bjut_random_stride256_context_mil
+result_dir: results/train_continued_dive_evm_bert_bjut_random_stride256_context_mil
 report_dir: data/reports
 log_dir: logs
 
@@ -22,8 +22,10 @@ chunk_context_num_layers: 2
 chunk_context_num_heads: 8
 chunk_context_dropout: 0.1
 
-batch_size: 64
+batch_size: 512
 gradient_accumulation_steps: 1
+use_data_parallel: true
+data_parallel_device_ids: [0, 1]
 epochs: 30
 learning_rate: 0.0003
 weight_decay: 0.01
@@ -40,13 +42,14 @@ num_workers: 4
 
 is_transductive_pretraining: true
 encoder_frozen: true
-data_dir: data/processed/BJUT_SC01
-split_policy: opcode_hash_grouped_split
+data_dir: data/processed/BJUT_SC01_random_split
+split_policy: random_sample_split
+leakage_status: warning
 
 baseline_comparison:
-  stride256_labelattn_micro_f1: 0.6120
-  stride256_labelattn_macro_f1: 0.4717
-  stride256_labelattn_detection_f1: 0.6968
+  random_stride256_labelattn_micro_f1: 0.655448
+  random_stride256_labelattn_macro_f1: 0.546136
+  random_stride256_labelattn_detection_f1: 0.782955
 
 label_names:
   - Reentrancy
