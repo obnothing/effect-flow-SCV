@@ -574,7 +574,14 @@ def write_threshold_calibration_report(
         "split": args.split,
         "checkpoint": args.checkpoint,
         "checkpoint_epoch": checkpoint.get("epoch"),
-        "model": "masked_mean_label_gated_attention_MIL",
+        "model": (
+            "chunk_context_transformer_label_gated_attention_MIL"
+            if config.get("use_chunk_context", False)
+            else "masked_mean_label_gated_attention_MIL"
+        ),
+        "use_chunk_context": bool(config.get("use_chunk_context", False)),
+        "chunk_context_num_layers": int(config.get("chunk_context_num_layers", 0)),
+        "chunk_context_num_heads": int(config.get("chunk_context_num_heads", 0)),
         "feature_pooling": config.get("feature_pooling"),
         "recognition_aggregation": config.get("recognition_aggregation"),
         "feature_dir": config["feature_dir"],

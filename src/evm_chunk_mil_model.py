@@ -3,6 +3,69 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+class ChunkContextEncoder(nn.Module):
+    def __init__(
+        self,
+        feature_dim=768,
+        hidden_dim=512,
+        max_chunks=32,
+        num_layers=2,
+        num_heads=8,
+        dropout=0.1,
+    ):
+        super().__init__()
+        if hidden_dim % num_heads != 0:
+            raise ValueError(
+                f"hidden_dim ({hidden_dim}) must be divisible by num_heads ({num_heads})"
+            )
+        self.max_chunks = int(max_chunks)
+        self.input_norm = nn.LayerNorm(feature_dim)
+        self.input_projection = nn.Linear(feature_dim, hidden_dim)
+        self.activation = nn.ReLU()
+        self.dropout = nn.Dropout(dropout)
+        self.position_embedding = nn.Parameter(
+            torch.empty(self.max_chunks, hidden_dim)
+        )
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=hidden_dim,
+            nhead=num_heads,
+            dim_feedforward=hidden_dim * 4,
+            dropout=dropout,
+            batch_first=True,
+        )
+        self.transformer = nn.TransformerEncoder(
+            encoder_layer,
+            num_layers=num_layers,
+        )
+        nn.init.normal_(self.position_embedding, mean=0.0, std=0.02)
+
+    def forward(self, chunk_features, chunk_mask):
+        if chunk_features.ndim != 3:
+            raise ValueError(
+                f"chunk_features must be [B, C, H], got {tuple(chunk_features.shape)}"
+            )
+        chunk_mask = chunk_mask.bool()
+        if chunk_mask.shape != chunk_features.shape[:2]:
+            raise ValueError(
+                "chunk_mask shape must match the first two chunk_features dimensions"
+            )
+        if chunk_features.shape[1] > self.max_chunks:
+            raise ValueError(
+                f"received {chunk_features.shape[1]} chunks, max_chunks={self.max_chunks}"
+            )
+        if (~chunk_mask).all(dim=1).any():
+            raise ValueError("each sample must contain at least one valid chunk")
+
+        h = self.input_norm(chunk_features)
+        h = self.input_projection(h)
+        h = self.activation(h)
+        h = self.dropout(h)
+        positions = self.position_embedding[: h.shape[1]].unsqueeze(0)
+        h = h + positions.type_as(h)
+        h = self.transformer(h, src_key_padding_mask=~chunk_mask)
+        return h.masked_fill(~chunk_mask.unsqueeze(-1), 0.0)
+
+
 class EVMChunkMILClassifier(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -13,13 +76,26 @@ class EVMChunkMILClassifier(nn.Module):
         dropout = float(config.get("dropout", 0.1))
         self.recognition_aggregation = config.get("recognition_aggregation", "topk_mean")
         self.top_k = int(config.get("top_k", 2))
+        self.use_chunk_context = bool(config.get("use_chunk_context", False))
 
-        self.chunk_projection = nn.Sequential(
-            nn.LayerNorm(feature_dim),
-            nn.Linear(feature_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Dropout(dropout),
-        )
+        if self.use_chunk_context:
+            self.chunk_context_encoder = ChunkContextEncoder(
+                feature_dim=feature_dim,
+                hidden_dim=hidden_dim,
+                max_chunks=int(config.get("max_chunks", 32)),
+                num_layers=int(config.get("chunk_context_num_layers", 2)),
+                num_heads=int(config.get("chunk_context_num_heads", 8)),
+                dropout=float(config.get("chunk_context_dropout", dropout)),
+            )
+            self.chunk_projection = None
+        else:
+            self.chunk_context_encoder = None
+            self.chunk_projection = nn.Sequential(
+                nn.LayerNorm(feature_dim),
+                nn.Linear(feature_dim, hidden_dim),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+            )
         self.chunk_classifier = nn.Linear(hidden_dim, self.num_labels)
         self.attn_v = nn.Linear(hidden_dim, attn_dim)
         self.attn_u = nn.Linear(hidden_dim, attn_dim)
@@ -81,7 +157,10 @@ class EVMChunkMILClassifier(nn.Module):
 
     def forward(self, chunk_features, chunk_mask, binary_label=None, multi_labels=None):
         chunk_mask = chunk_mask.bool()
-        h = self.chunk_projection(chunk_features)
+        if self.use_chunk_context:
+            h = self.chunk_context_encoder(chunk_features, chunk_mask)
+        else:
+            h = self.chunk_projection(chunk_features)
         chunk_logits = self.chunk_classifier(h)
         chunk_scores = None
         if self.recognition_aggregation == "label_gated_attention":
