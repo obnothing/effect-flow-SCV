@@ -1,13 +1,26 @@
 {
-  "experiment_name": "extract_evm_bert_chunk_features_mean_stride256_random_split",
-  "output_dir": "data/features/evm_bert_chunks_mean_stride256_random_split",
+  "experiment_name": "extract_continued_dive_evm_bert_bjut_random_stride256",
+  "output_dir": "data/features/continued_dive_evm_bert_bjut_random_stride256",
   "pooling": "masked_mean",
   "max_len": 512,
   "chunk_content_size": 510,
   "chunk_stride": 256,
   "max_chunks_per_contract": 32,
-  "hf_model_path": "checkpoints/pretrain_evm_bert_base_full_bjut/hf_model",
+  "hf_model_path": "checkpoints/continue_pretrain_evm_bert_dive_train_only/hf_model",
   "is_transductive_pretraining": true,
+  "num_labels": 10,
+  "label_names": [
+    "Reentrancy",
+    "Contract contains unknown address",
+    "Integer overflow or underflow",
+    "Timestamp dependence",
+    "DoS with failed call",
+    "Assert violation",
+    "Unchecked call return value",
+    "Unsafe send",
+    "Multiplication after division",
+    "Extra gas consumption"
+  ],
   "splits": {
     "train": {
       "split": "train",
@@ -30,9 +43,22 @@
       "nan_count": 0,
       "inf_count": 0,
       "empty_content_fallback_to_cls_count": 0,
-      "hf_model_path": "checkpoints/pretrain_evm_bert_base_full_bjut/hf_model",
+      "hf_model_path": "checkpoints/continue_pretrain_evm_bert_dive_train_only/hf_model",
       "is_transductive_pretraining": true,
-      "disk_size_bytes": 5994388639
+      "num_labels": 10,
+      "label_names": [
+        "Reentrancy",
+        "Contract contains unknown address",
+        "Integer overflow or underflow",
+        "Timestamp dependence",
+        "DoS with failed call",
+        "Assert violation",
+        "Unchecked call return value",
+        "Unsafe send",
+        "Multiplication after division",
+        "Extra gas consumption"
+      ],
+      "disk_size_bytes": 5994389023
     },
     "valid": {
       "split": "valid",
@@ -55,9 +81,22 @@
       "nan_count": 0,
       "inf_count": 0,
       "empty_content_fallback_to_cls_count": 0,
-      "hf_model_path": "checkpoints/pretrain_evm_bert_base_full_bjut/hf_model",
+      "hf_model_path": "checkpoints/continue_pretrain_evm_bert_dive_train_only/hf_model",
       "is_transductive_pretraining": true,
-      "disk_size_bytes": 732166611
+      "num_labels": 10,
+      "label_names": [
+        "Reentrancy",
+        "Contract contains unknown address",
+        "Integer overflow or underflow",
+        "Timestamp dependence",
+        "DoS with failed call",
+        "Assert violation",
+        "Unchecked call return value",
+        "Unsafe send",
+        "Multiplication after division",
+        "Extra gas consumption"
+      ],
+      "disk_size_bytes": 732166995
     },
     "test": {
       "split": "test",
@@ -80,9 +119,22 @@
       "nan_count": 0,
       "inf_count": 0,
       "empty_content_fallback_to_cls_count": 0,
-      "hf_model_path": "checkpoints/pretrain_evm_bert_base_full_bjut/hf_model",
+      "hf_model_path": "checkpoints/continue_pretrain_evm_bert_dive_train_only/hf_model",
       "is_transductive_pretraining": true,
-      "disk_size_bytes": 732216013
+      "num_labels": 10,
+      "label_names": [
+        "Reentrancy",
+        "Contract contains unknown address",
+        "Integer overflow or underflow",
+        "Timestamp dependence",
+        "DoS with failed call",
+        "Assert violation",
+        "Unchecked call return value",
+        "Unsafe send",
+        "Multiplication after division",
+        "Extra gas consumption"
+      ],
+      "disk_size_bytes": 732216397
     }
   }
 }

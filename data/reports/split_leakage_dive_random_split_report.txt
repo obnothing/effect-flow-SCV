@@ -1,0 +1,13 @@
+BJUT SC01 split leakage report
+
+data_dir: data/processed/DIVE_random_split
+train_samples: 17864
+valid_samples: 2233
+test_samples: 2233
+train_valid_opcode_hash_overlap: 118
+train_test_opcode_hash_overlap: 132
+valid_test_opcode_hash_overlap: 51
+train_valid_address_overlap: 0
+train_test_address_overlap: 0
+valid_test_address_overlap: 0
+leakage_status: warning

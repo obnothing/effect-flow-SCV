@@ -11,38 +11,38 @@ split_samples: {'train': 118707, 'valid': 14838, 'test': 14839}
 label_names: ['Reentrancy', 'Contract contains unknown address', 'Integer overflow or underflow', 'Timestamp dependence', 'DoS with failed call', 'Assert violation', 'Unchecked call return value', 'Unsafe send', 'Multiplication after division', 'Extra gas consumption']
 label_counts:
 - train:
-  Reentrancy: 1147
-  Contract contains unknown address: 14727
-  Integer overflow or underflow: 14635
-  Timestamp dependence: 638
-  DoS with failed call: 425
-  Assert violation: 686
-  Unchecked call return value: 5779
-  Unsafe send: 1005
-  Multiplication after division: 1548
-  Extra gas consumption: 4518
+  Reentrancy: 1136
+  Contract contains unknown address: 14687
+  Integer overflow or underflow: 14639
+  Timestamp dependence: 622
+  DoS with failed call: 407
+  Assert violation: 663
+  Unchecked call return value: 5785
+  Unsafe send: 1026
+  Multiplication after division: 1533
+  Extra gas consumption: 4451
 - valid:
-  Reentrancy: 133
-  Contract contains unknown address: 1856
-  Integer overflow or underflow: 1769
-  Timestamp dependence: 69
+  Reentrancy: 128
+  Contract contains unknown address: 1847
+  Integer overflow or underflow: 1784
+  Timestamp dependence: 73
   DoS with failed call: 48
-  Assert violation: 78
-  Unchecked call return value: 718
-  Unsafe send: 127
-  Multiplication after division: 186
-  Extra gas consumption: 535
-- test:
-  Reentrancy: 142
-  Contract contains unknown address: 1850
-  Integer overflow or underflow: 1859
-  Timestamp dependence: 70
-  DoS with failed call: 48
-  Assert violation: 90
-  Unchecked call return value: 717
-  Unsafe send: 129
+  Assert violation: 97
+  Unchecked call return value: 688
+  Unsafe send: 112
   Multiplication after division: 203
-  Extra gas consumption: 544
-opcode_duplicate_stats_all_samples: {'unique_opcode_hashes': 61768, 'duplicate_opcode_hash_groups': 3036, 'duplicate_opcode_hash_samples': 89652}
-opcode_hash_overlap: {'train_valid': 867, 'train_test': 892, 'valid_test': 383}
+  Extra gas consumption: 568
+- test:
+  Reentrancy: 158
+  Contract contains unknown address: 1899
+  Integer overflow or underflow: 1840
+  Timestamp dependence: 82
+  DoS with failed call: 66
+  Assert violation: 94
+  Unchecked call return value: 741
+  Unsafe send: 123
+  Multiplication after division: 201
+  Extra gas consumption: 578
+opcode_duplicate_stats_all_samples: {'unique_opcode_hashes': 62841, 'duplicate_opcode_hash_groups': 3009, 'duplicate_opcode_hash_samples': 88552}
+opcode_hash_overlap: {'train_valid': 824, 'train_test': 848, 'valid_test': 355}
 leakage_status: warning

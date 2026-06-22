@@ -26,29 +26,29 @@ BJUT SC01 random split vs DIVE random split structure report
           "binary_label",
           "multi_labels"
         ],
-        "safe_samples": 93003,
-        "safe_ratio": 0.7834668553665749,
-        "vulnerable_samples": 25704,
-        "average_labels_per_sample": 0.3799944400919912,
+        "safe_samples": 93070,
+        "safe_ratio": 0.7840312702704979,
+        "vulnerable_samples": 25637,
+        "average_labels_per_sample": 0.37865500770805427,
         "label_counts": {
-          "Reentrancy": 1147,
-          "Contract contains unknown address": 14727,
-          "Integer overflow or underflow": 14635,
-          "Timestamp dependence": 638,
-          "DoS with failed call": 425,
-          "Assert violation": 686,
-          "Unchecked call return value": 5779,
-          "Unsafe send": 1005,
-          "Multiplication after division": 1548,
-          "Extra gas consumption": 4518
+          "Reentrancy": 1136,
+          "Contract contains unknown address": 14687,
+          "Integer overflow or underflow": 14639,
+          "Timestamp dependence": 622,
+          "DoS with failed call": 407,
+          "Assert violation": 663,
+          "Unchecked call return value": 5785,
+          "Unsafe send": 1026,
+          "Multiplication after division": 1533,
+          "Extra gas consumption": 4451
         },
         "raw_opcode_length": {
-          "mean": 1934.905565804881,
-          "p50": 1133.0,
-          "p90": 4081.4000000000087,
-          "max": 18544
+          "mean": 2421.452222699588,
+          "p50": 1434.0,
+          "p90": 5140.0,
+          "max": 22447
         },
-        "unique_opcode_hashes": 49951
+        "unique_opcode_hashes": 50840
       },
       "valid": {
         "samples": 14838,
@@ -58,29 +58,29 @@ BJUT SC01 random split vs DIVE random split structure report
           "binary_label",
           "multi_labels"
         ],
-        "safe_samples": 11666,
-        "safe_ratio": 0.7862245585658445,
-        "vulnerable_samples": 3172,
-        "average_labels_per_sample": 0.37195039762771265,
+        "safe_samples": 11649,
+        "safe_ratio": 0.7850788515972503,
+        "vulnerable_samples": 3189,
+        "average_labels_per_sample": 0.3739048389270791,
         "label_counts": {
-          "Reentrancy": 133,
-          "Contract contains unknown address": 1856,
-          "Integer overflow or underflow": 1769,
-          "Timestamp dependence": 69,
+          "Reentrancy": 128,
+          "Contract contains unknown address": 1847,
+          "Integer overflow or underflow": 1784,
+          "Timestamp dependence": 73,
           "DoS with failed call": 48,
-          "Assert violation": 78,
-          "Unchecked call return value": 718,
-          "Unsafe send": 127,
-          "Multiplication after division": 186,
-          "Extra gas consumption": 535
+          "Assert violation": 97,
+          "Unchecked call return value": 688,
+          "Unsafe send": 112,
+          "Multiplication after division": 203,
+          "Extra gas consumption": 568
         },
         "raw_opcode_length": {
-          "mean": 1939.4584175764928,
-          "p50": 1147.0,
-          "p90": 4074.0,
-          "max": 18059
+          "mean": 2380.8553039493195,
+          "p50": 1361.0,
+          "p90": 5140.0,
+          "max": 21489
         },
-        "unique_opcode_hashes": 6774
+        "unique_opcode_hashes": 6793
       },
       "test": {
         "samples": 14839,
@@ -90,40 +90,40 @@ BJUT SC01 random split vs DIVE random split structure report
           "binary_label",
           "multi_labels"
         ],
-        "safe_samples": 11619,
-        "safe_ratio": 0.7830042455691084,
-        "vulnerable_samples": 3220,
-        "average_labels_per_sample": 0.380888200013478,
+        "safe_samples": 11569,
+        "safe_ratio": 0.7796347462767033,
+        "vulnerable_samples": 3270,
+        "average_labels_per_sample": 0.3896488981737314,
         "label_counts": {
-          "Reentrancy": 142,
-          "Contract contains unknown address": 1850,
-          "Integer overflow or underflow": 1859,
-          "Timestamp dependence": 70,
-          "DoS with failed call": 48,
-          "Assert violation": 90,
-          "Unchecked call return value": 717,
-          "Unsafe send": 129,
-          "Multiplication after division": 203,
-          "Extra gas consumption": 544
+          "Reentrancy": 158,
+          "Contract contains unknown address": 1899,
+          "Integer overflow or underflow": 1840,
+          "Timestamp dependence": 82,
+          "DoS with failed call": 66,
+          "Assert violation": 94,
+          "Unchecked call return value": 741,
+          "Unsafe send": 123,
+          "Multiplication after division": 201,
+          "Extra gas consumption": 578
         },
         "raw_opcode_length": {
-          "mean": 1921.2753554821754,
-          "p50": 1162.0,
-          "p90": 4073.2000000000007,
-          "max": 18535
+          "mean": 2410.6762585079855,
+          "p50": 1417.0,
+          "p90": 5140.0,
+          "max": 22449
         },
-        "unique_opcode_hashes": 6846
+        "unique_opcode_hashes": 6919
       }
     },
     "total_samples": 148384,
     "opcode_hash_overlap": {
-      "train_valid": 867,
-      "train_test": 892,
-      "valid_test": 383
+      "train_valid": 824,
+      "train_test": 848,
+      "valid_test": 355
     },
-    "unique_opcode_hashes": 61768,
-    "duplicate_opcode_hash_groups": 3036,
-    "duplicate_opcode_samples": 89652
+    "unique_opcode_hashes": 62841,
+    "duplicate_opcode_hash_groups": 3009,
+    "duplicate_opcode_samples": 88552
   },
   "dive": {
     "data_dir": "data/processed/DIVE_random_split",
