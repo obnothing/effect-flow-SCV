@@ -29,6 +29,8 @@ class ChunkContextMILTest(unittest.TestCase):
 
     def test_context_shapes_and_padding_mask(self):
         model = EVMChunkMILClassifier(self.config).eval()
+        if hasattr(torch.backends, "mha"):
+            self.assertFalse(torch.backends.mha.get_fastpath_enabled())
         features = torch.randn(2, 5, 12)
         mask = torch.tensor(
             [[True, True, True, False, False], [True, True, False, False, False]]

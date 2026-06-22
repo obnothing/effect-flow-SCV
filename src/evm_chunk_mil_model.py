@@ -38,6 +38,14 @@ class ChunkContextEncoder(nn.Module):
             num_layers=num_layers,
             enable_nested_tensor=False,
         )
+        # PyTorch 2.0.x can fail in the fused eval-only Transformer path on
+        # some CUDA 11.8/A10 combinations. The regular path is stable and uses
+        # the same model parameters and masks.
+        if hasattr(torch.backends, "mha") and hasattr(
+            torch.backends.mha,
+            "set_fastpath_enabled",
+        ):
+            torch.backends.mha.set_fastpath_enabled(False)
         nn.init.normal_(self.position_embedding, mean=0.0, std=0.02)
 
     def forward(self, chunk_features, chunk_mask):
@@ -63,7 +71,8 @@ class ChunkContextEncoder(nn.Module):
         h = self.dropout(h)
         positions = self.position_embedding[: h.shape[1]].unsqueeze(0)
         h = h + positions.type_as(h)
-        h = self.transformer(h, src_key_padding_mask=~chunk_mask)
+        padding_mask = (~chunk_mask).contiguous().bool()
+        h = self.transformer(h, src_key_padding_mask=padding_mask)
         return h.masked_fill(~chunk_mask.unsqueeze(-1), 0.0)
 
 
