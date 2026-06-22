@@ -23,8 +23,9 @@ fi
 
 check_cache() {
   local feature_dir="$1"
-  local num_labels="$2"
-  local report_path="$3"
+  local data_dir="$2"
+  local num_labels="$3"
+  local report_path="$4"
   for split in train valid test; do
     if [[ ! -f "$feature_dir/$split.pt" ]]; then
       echo "[ERROR] missing feature cache: $feature_dir/$split.pt"
@@ -33,6 +34,7 @@ check_cache() {
   done
   python scripts/check_evm_bert_chunk_features.py \
     --feature_dir "$feature_dir" \
+    --data_dir "$data_dir" \
     --expected_max_chunks 32 \
     --expected_feature_dim 768 \
     --expected_num_labels "$num_labels" \
@@ -42,6 +44,7 @@ check_cache() {
 echo "[BJUT 1/4] check random-split feature cache"
 check_cache \
   data/features/continued_dive_evm_bert_bjut_random_stride256 \
+  data/processed/BJUT_SC01_random_split \
   10 \
   data/reports/check_bjut_random_chunk_context_features.txt
 
@@ -78,6 +81,7 @@ echo "[INFO] BJUT complete; its Python processes have exited and released both G
 echo "[DIVE 1/4] check random-split feature cache"
 check_cache \
   data/features/continued_dive_evm_bert_dive_random_stride256 \
+  data/processed/DIVE_random_split \
   8 \
   data/reports/check_dive_random_chunk_context_features.txt
 
