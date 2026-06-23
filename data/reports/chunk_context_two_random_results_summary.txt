@@ -1,0 +1,15 @@
+Two-dataset random-split chunk-context MIL summary
+
+DIVE-continued EVM-BERT stride256 masked-mean cache + two-layer chunk Transformer + label-wise gated-attention MIL + weighted BCE
+
+dataset | mode | detection_f1 | micro_f1 | macro_f1 | predicted_positive_total
+BJUT_SC01_random | threshold_0_5 | 0.7877447883765002 | 0.6778446764728299 | 0.5619361043270122 | 7339
+BJUT_SC01_random | validation_best_global | 0.7877447883765002 | 0.6836906769453144 | 0.5708808844510426 | 6671
+BJUT_SC01_random | validation_per_label | 0.7877447883765002 | 0.6869712351945855 | 0.5756921140219362 | 6629
+BJUT_SC01_random best macro mode=validation_per_label micro_change=+0.031523 macro_change=+0.029556
+DIVE_random | threshold_0_5 | 0.9499017681728881 | 0.8132576078664068 | 0.7152268080947803 | 6312
+DIVE_random | validation_best_global | 0.9499017681728881 | 0.8113725164186549 | 0.7099552222959944 | 6544
+DIVE_random | validation_per_label | 0.9499017681728881 | 0.8098995100074744 | 0.7058635898436649 | 6556
+DIVE_random best macro mode=threshold_0_5 micro_change=+0.002922 macro_change=+0.002613
+
+warning: Both experiments use prior random splits and are non-strict/transductive. Compare each dataset only with its own no-context random-split baseline.

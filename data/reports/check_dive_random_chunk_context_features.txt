@@ -1,0 +1,70 @@
+EVM-BERT chunk feature cache check
+
+status: ok
+feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256
+expected_max_chunks: 32
+expected_feature_dim: 768
+expected_num_labels: 8
+train:
+  split: train
+  path: data/features/continued_dive_evm_bert_dive_random_stride256/train.pt
+  exists: True
+  samples: 20134
+  expected_samples: 20134
+  feature_shape: [20134, 32, 768]
+  chunk_mask_shape: [20134, 32]
+  binary_label_shape: [20134]
+  multi_label_shape: [20134, 8]
+  id_count: 20134
+  dtype: torch.float16
+  has_nan: False
+  has_inf: False
+  min_real_chunks: 1
+  max_real_chunks: 32
+  mean_real_chunks: 19.4186954498291
+  sample_count_matches_jsonl: True
+  disk_size_bytes: 992604307
+  source_report: {'pooling': 'masked_mean', 'max_chunks_per_contract': 32, 'generated_chunks': 390976, 'mean_chunks_per_contract': 19.418694745207112, 'truncated_contract_count': 4246, 'mean_coverage_ratio': 0.960508538623102, 'p50_coverage_ratio': 1.0, 'p90_coverage_ratio': 1.0, 'p95_coverage_ratio': 1.0, 'hf_model_path': 'checkpoints/continue_pretrain_evm_bert_dive_train_only/hf_model', 'is_transductive_pretraining': True}
+  num_labels: 8
+valid:
+  split: valid
+  path: data/features/continued_dive_evm_bert_dive_random_stride256/valid.pt
+  exists: True
+  samples: 2233
+  expected_samples: 2233
+  feature_shape: [2233, 32, 768]
+  chunk_mask_shape: [2233, 32]
+  binary_label_shape: [2233]
+  multi_label_shape: [2233, 8]
+  id_count: 2233
+  dtype: torch.float16
+  has_nan: False
+  has_inf: False
+  min_real_chunks: 1
+  max_real_chunks: 32
+  mean_real_chunks: 19.798925399780273
+  sample_count_matches_jsonl: True
+  disk_size_bytes: 110084755
+  source_report: {'pooling': 'masked_mean', 'max_chunks_per_contract': 32, 'generated_chunks': 44211, 'mean_chunks_per_contract': 19.798925212718316, 'truncated_contract_count': 510, 'mean_coverage_ratio': 0.9598828740754564, 'p50_coverage_ratio': 1.0, 'p90_coverage_ratio': 1.0, 'p95_coverage_ratio': 1.0, 'hf_model_path': 'checkpoints/continue_pretrain_evm_bert_dive_train_only/hf_model', 'is_transductive_pretraining': True}
+  num_labels: 8
+test:
+  split: test
+  path: data/features/continued_dive_evm_bert_dive_random_stride256/test.pt
+  exists: True
+  samples: 2233
+  expected_samples: 2233
+  feature_shape: [2233, 32, 768]
+  chunk_mask_shape: [2233, 32]
+  binary_label_shape: [2233]
+  multi_label_shape: [2233, 8]
+  id_count: 2233
+  dtype: torch.float16
+  has_nan: False
+  has_inf: False
+  min_real_chunks: 1
+  max_real_chunks: 32
+  mean_real_chunks: 20.17957878112793
+  sample_count_matches_jsonl: True
+  disk_size_bytes: 110084749
+  source_report: {'pooling': 'masked_mean', 'max_chunks_per_contract': 32, 'generated_chunks': 45061, 'mean_chunks_per_contract': 20.179579041648008, 'truncated_contract_count': 523, 'mean_coverage_ratio': 0.9600438840504535, 'p50_coverage_ratio': 1.0, 'p90_coverage_ratio': 1.0, 'p95_coverage_ratio': 1.0, 'hf_model_path': 'checkpoints/continue_pretrain_evm_bert_dive_train_only/hf_model', 'is_transductive_pretraining': True}
+  num_labels: 8

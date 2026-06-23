@@ -1,0 +1,48 @@
+EVM chunk MIL training report
+
+experiment_name: train_continued_dive_evm_bert_dive_random_stride256_context_mil
+model_type: evm_chunk_mil
+encoder_frozen: True
+feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256
+feature_pooling: masked_mean
+max_chunks: 32
+feature_dim: 768
+hidden_dim: 512
+use_chunk_context: True
+chunk_context_num_layers: 2
+chunk_context_num_heads: 8
+chunk_context_dropout: 0.1
+use_data_parallel: True
+visible_cuda_devices: 2
+total_batch_size: 512
+approx_batch_per_gpu: 256
+recognition_aggregation: label_gated_attention
+top_k: 2
+use_pos_weight: True
+pos_weight_rows: [{'label_id': 0, 'label_name': 'Reentrancy', 'positive_count': 10780, 'negative_count': 9354, 'raw_ratio': 0.8677179962894248, 'sqrt_ratio': 0.9315138196985726, 'final_pos_weight': 1.0}, {'label_id': 1, 'label_name': 'Access Control', 'positive_count': 15449, 'negative_count': 4685, 'raw_ratio': 0.3032558741666127, 'sqrt_ratio': 0.5506867296082344, 'final_pos_weight': 1.0}, {'label_id': 2, 'label_name': 'Arithmetic', 'positive_count': 8723, 'negative_count': 11411, 'raw_ratio': 1.3081508655279148, 'sqrt_ratio': 1.1437442308173251, 'final_pos_weight': 1.1437442308173251}, {'label_id': 3, 'label_name': 'Unchecked Return Values', 'positive_count': 5298, 'negative_count': 14836, 'raw_ratio': 2.8003020007550017, 'sqrt_ratio': 1.673410290620624, 'final_pos_weight': 1.673410290620624}, {'label_id': 4, 'label_name': 'DoS', 'positive_count': 4003, 'negative_count': 16131, 'raw_ratio': 4.029727704221834, 'sqrt_ratio': 2.007418168748563, 'final_pos_weight': 2.007418168748563}, {'label_id': 5, 'label_name': 'Bad Randomness', 'positive_count': 1787, 'negative_count': 18347, 'raw_ratio': 10.266927811975378, 'sqrt_ratio': 3.2042047081881924, 'final_pos_weight': 3.2042047081881924}, {'label_id': 6, 'label_name': 'Front Running', 'positive_count': 1787, 'negative_count': 18347, 'raw_ratio': 10.266927811975378, 'sqrt_ratio': 3.2042047081881924, 'final_pos_weight': 3.2042047081881924}, {'label_id': 7, 'label_name': 'Time manipulation', 'positive_count': 5919, 'negative_count': 14215, 'raw_ratio': 2.401588106099003, 'sqrt_ratio': 1.5497058127589904, 'final_pos_weight': 1.5497058127589904}]
+best_loss_epoch: 8
+best_loss_value: 0.32283971905708314
+best_micro_f1_epoch: 14
+best_micro_f1_value: 0.8191190253045924
+best_macro_f1_epoch: 9
+best_macro_f1_value: 0.7437483410268471
+best_macro_f1_threshold: 0.4
+valid_loss_at_best_macro: 0.3315888524055481
+valid_micro_f1: 0.8133458166652482
+valid_macro_f1: 0.7423135516877853
+detection_f1: 0.9399205561072492
+predicted_positive_total: 6294
+baseline_comparison: {'random_stride256_labelattn_micro_f1': 0.810336, 'random_stride256_labelattn_macro_f1': 0.712614, 'random_stride256_labelattn_detection_f1': 0.945033}
+improves_evm_bert_first512_macro_f1: False
+is_transductive_pretraining: True
+train_samples: 20134
+valid_samples: 2233
+per_label_table:
+- Reentrancy: precision=0.763623 recall=0.925067 f1=0.836628 support=1121
+- Access Control: precision=0.835389 recall=0.935736 f1=0.882720 support=1665
+- Arithmetic: precision=0.747899 recall=0.827479 f1=0.785679 support=968
+- Unchecked Return Values: precision=0.721763 recall=0.900344 f1=0.801223 support=582
+- DoS: precision=0.605081 recall=0.710027 f1=0.653367 support=369
+- Bad Randomness: precision=0.622642 recall=0.622642 f1=0.622642 support=53
+- Front Running: precision=0.555556 recall=0.606061 f1=0.579710 support=66
+- Time manipulation: precision=0.730447 recall=0.828843 f1=0.776540 support=631
