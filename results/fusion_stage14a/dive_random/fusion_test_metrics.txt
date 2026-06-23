@@ -1,0 +1,63 @@
+Stage 14A validation-selected late fusion report
+
+experiment_name: fusion_stage14a_dive_random
+split_policy: random_sample_split
+strict_grouped_split: False
+test_leakage: True
+models: ['chunk_mil', 'chunk_context']
+selected_recognition: ['chunk_mil', 'chunk_context']
+recognition_fusion_type: logit
+recognition_weights: [0.75, 0.25]
+threshold_mode: per_label
+thresholds: [0.4, 0.4, 0.35000000000000003, 0.6500000000000001, 0.55, 0.8500000000000001, 0.3, 0.5]
+selected_detection: ['chunk_mil', 'chunk_context']
+detection_fusion_type: logit
+detection_weights: [0.2, 0.8]
+detection_threshold: 0.2
+
+test_micro_precision: 0.759645
+test_micro_recall: 0.890246
+test_micro_f1: 0.819777
+test_macro_precision: 0.688162
+test_macro_recall: 0.774933
+test_macro_f1: 0.720318
+test_weighted_f1: 0.819167
+test_samples_f1: 0.734187
+test_subset_accuracy: 0.495746
+test_hamming_loss: 0.120186
+test_detection_precision: 0.908669
+test_detection_recall: 0.992908
+test_detection_f1: 0.948923
+predicted_positive_total: 6428
+true_positive_total: 5485
+strongest_individual_selected_on_validation: chunk_mil
+fusion_micro_f1_delta: +0.007330
+fusion_macro_f1_delta: +0.010342
+fusion_detection_f1_delta: +0.002760
+recommend_as_current_best: False
+recommend_as_random_upper_bound: True
+
+Individual model test metrics (model and thresholds selected on validation):
+model | threshold_mode | micro_f1 | macro_f1 | detection_f1
+chunk_mil | per_label | 0.812447 | 0.709977 | 0.946163
+chunk_context | per_label | 0.809900 | 0.705864 | 0.949136
+
+Paired bootstrap versus strongest validation-selected individual:
+micro_f1: delta=+0.007330 95%CI=[+0.003887, +0.010533] crosses_zero=False
+macro_f1: delta=+0.010342 95%CI=[+0.000811, +0.020070] crosses_zero=False
+detection_f1: delta=+0.002760 95%CI=[-0.000331, +0.005955] crosses_zero=True
+
+reference_baselines: {'random_no_context': {'micro_f1': 0.810336, 'macro_f1': 0.712614, 'detection_f1': 0.945033}, 'random_chunk_context': {'micro_f1': 0.813258, 'macro_f1': 0.715227, 'detection_f1': 0.949902}}
+
+Per-label metrics:
+label | precision | recall | f1 | support | predicted
+Reentrancy | 0.767291 | 0.935031 | 0.842897 | 1139 | 1388
+Access Control | 0.826991 | 0.969661 | 0.892662 | 1681 | 1971
+Arithmetic | 0.706032 | 0.875659 | 0.781750 | 949 | 1177
+Unchecked Return Values | 0.796825 | 0.864028 | 0.829067 | 581 | 630
+DoS | 0.625866 | 0.724599 | 0.671623 | 374 | 433
+Bad Randomness | 0.651163 | 0.388889 | 0.486957 | 72 | 43
+Front Running | 0.387500 | 0.620000 | 0.476923 | 50 | 80
+Time manipulation | 0.743626 | 0.821596 | 0.780669 | 639 | 706
+
+warning: Paper-style upper bound only. The random split has opcode-hash overlap and approximately 70 percent of test opcode hashes appeared in DIVE continued-MLM data.

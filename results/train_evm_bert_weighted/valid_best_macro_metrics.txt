@@ -1,0 +1,57 @@
+Strict evaluation report
+
+split: valid
+checkpoint: checkpoints/train_evm_bert_weighted/best_macro_f1.pt
+checkpoint_epoch: 7
+threshold: 0.5
+threshold_source: cli
+threshold_mode: global
+threshold_file: None
+model_type: evm_bert
+hf_model_path: checkpoints/pretrain_evm_bert_base_full_bjut/hf_model
+is_transductive_pretraining: True
+evaluated_samples: 26791
+expected_samples: 26791
+loss: 0.13091392244856143
+detection_accuracy: 0.9388973909148595
+detection_precision: 0.7063655030800822
+detection_recall: 0.6510219530658592
+detection_f1: 0.677565491431948
+recognition_micro_precision: 0.5134502923976608
+recognition_micro_recall: 0.6426181514010874
+recognition_micro_f1: 0.5708182409213337
+recognition_macro_precision: 0.4252140456672467
+recognition_macro_recall: 0.569603048529785
+recognition_macro_f1: 0.4460559158471442
+predicted_positive_total: 5985
+micro_f1_change_over_global_threshold: None
+macro_f1_improvement_over_global_threshold: None
+reference_baseline_name: CodeBERT-base weighted BCE global threshold baseline
+baseline_micro_f1: 0.5604
+baseline_macro_f1: 0.4215
+baseline_detection_f1: 0.643
+micro_f1_change_over_reference_baseline: 0.010418240921333699
+macro_f1_change_over_reference_baseline: 0.024555915847144227
+detection_f1_change_over_reference_baseline: 0.03456549143194798
+micro_f1_improvement_over_unweighted_baseline: 0.010418240921333699
+macro_f1_improvement_over_unweighted_baseline: 0.024555915847144227
+detection_f1_improvement_over_baseline: 0.03456549143194798
+
+Per-label metrics:
+id | label | precision | recall | f1 | support | predicted | true | mean_prob
+0 | Reentrancy | 0.234657 | 0.755814 | 0.358127 | 86 | 277 | 86 | 0.010246
+1 | Contract contains unknown address | 0.635417 | 0.670330 | 0.652406 | 1365 | 1440 | 1365 | 0.056519
+2 | Integer overflow or underflow | 0.624110 | 0.679026 | 0.650411 | 1807 | 1966 | 1807 | 0.073853
+3 | Timestamp dependence | 0.231405 | 0.727273 | 0.351097 | 77 | 242 | 77 | 0.008072
+4 | DoS with failed call | 0.300000 | 0.176471 | 0.222222 | 17 | 10 | 17 | 0.000684
+5 | Assert violation | 0.218638 | 0.726190 | 0.336088 | 84 | 279 | 84 | 0.009552
+6 | Unchecked call return value | 0.458556 | 0.628205 | 0.530139 | 546 | 748 | 546 | 0.034668
+7 | Unsafe send | 0.666667 | 0.317460 | 0.430108 | 63 | 30 | 63 | 0.002304
+8 | Multiplication after division | 0.528090 | 0.482051 | 0.504021 | 195 | 178 | 195 | 0.010696
+9 | Extra gas consumption | 0.354601 | 0.533210 | 0.425940 | 542 | 815 | 542 | 0.033630
+
+Warnings:
+- Reentrancy: predicted positives may be too many (277 vs support 86).
+- Timestamp dependence: predicted positives may be too many (242 vs support 77).
+- Assert violation: predicted positives may be too many (279 vs support 84).
+- EVM-BERT uses full BJUT unlabeled transductive pretraining; this result is not a strict inductive baseline.

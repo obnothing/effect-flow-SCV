@@ -1,0 +1,8 @@
+Stage 14A paired bootstrap report
+
+strongest_individual: first512
+bootstrap_samples: 1000
+seed: 42
+micro_f1: delta=+0.049369 95%CI=[+0.039661, +0.058882] crosses_zero=False
+macro_f1: delta=+0.036148 95%CI=[+0.019530, +0.057029] crosses_zero=False
+detection_f1: delta=+0.020651 95%CI=[+0.011298, +0.029292] crosses_zero=False
