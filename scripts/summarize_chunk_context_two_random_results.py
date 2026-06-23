@@ -9,16 +9,22 @@ EXPERIMENTS = {
             "results/train_continued_dive_evm_bert_bjut_random_stride256_context_mil/"
             "test_threshold_calibration_metrics.json"
         ),
-        "baseline_micro_f1": 0.6554483583875552,
-        "baseline_macro_f1": 0.5461364844497139,
+        "baselines": {
+            "threshold_0_5": {"micro_f1": 0.6522934452322384, "macro_f1": 0.5409677739563126},
+            "validation_best_global": {"micro_f1": 0.6554483583875552, "macro_f1": 0.5461364844497139},
+            "validation_per_label": {"micro_f1": 0.6515302600291477, "macro_f1": 0.5360547820854075},
+        },
     },
     "DIVE_random": {
         "path": Path(
             "results/train_continued_dive_evm_bert_dive_random_stride256_context_mil/"
             "test_threshold_calibration_metrics.json"
         ),
-        "baseline_micro_f1": 0.8103360054579566,
-        "baseline_macro_f1": 0.7126141168953797,
+        "baselines": {
+            "threshold_0_5": {"micro_f1": 0.8103360054579566, "macro_f1": 0.7126141168953797},
+            "validation_best_global": {"micro_f1": 0.810144172311968, "macro_f1": 0.7107865287628011},
+            "validation_per_label": {"micro_f1": 0.812446862778439, "macro_f1": 0.709976621068362},
+        },
     },
 }
 
@@ -48,25 +54,25 @@ def main():
             "validation_best_global": best_global,
             "validation_per_label": per_label,
         }
-        best_mode, best_metrics = max(
-            modes.items(),
-            key=lambda item: item[1]["recognition_macro_f1"],
-        )
+        matched_comparisons = {}
+        for mode, metrics in modes.items():
+            baseline = spec["baselines"][mode]
+            matched_comparisons[mode] = {
+                "baseline_micro_f1": baseline["micro_f1"],
+                "baseline_macro_f1": baseline["macro_f1"],
+                "micro_f1_change": (
+                    metrics["recognition_micro_f1"] - baseline["micro_f1"]
+                ),
+                "macro_f1_change": (
+                    metrics["recognition_macro_f1"] - baseline["macro_f1"]
+                ),
+            }
         rows[dataset_name] = {
             "result_path": spec["path"].as_posix(),
             "evaluated_samples": result.get("evaluated_samples"),
             "checkpoint_epoch": result.get("checkpoint_epoch"),
             "modes": modes,
-            "best_test_macro_mode": best_mode,
-            "best_test_metrics": best_metrics,
-            "baseline_micro_f1": spec["baseline_micro_f1"],
-            "baseline_macro_f1": spec["baseline_macro_f1"],
-            "micro_f1_change": (
-                best_metrics["recognition_micro_f1"] - spec["baseline_micro_f1"]
-            ),
-            "macro_f1_change": (
-                best_metrics["recognition_macro_f1"] - spec["baseline_macro_f1"]
-            ),
+            "matched_baseline_comparisons": matched_comparisons,
             "warnings": result.get("warnings", []),
         }
 
@@ -80,6 +86,10 @@ def main():
         "comparison_warning": (
             "Both experiments use prior random splits and are non-strict/transductive. "
             "Compare each dataset only with its own no-context random-split baseline."
+        ),
+        "reporting_rule": (
+            "Do not select a threshold mode by test performance. Report fixed, global, "
+            "and per-label modes separately against their matched no-context baselines."
         ),
     }
     report_dir = PROJECT_ROOT / "data/reports"
@@ -100,12 +110,19 @@ def main():
                 f"{metrics['recognition_macro_f1']} | "
                 f"{metrics['predicted_positive_total']}"
             )
-        lines.append(
-            f"{dataset_name} best macro mode={row['best_test_macro_mode']} "
-            f"micro_change={row['micro_f1_change']:+.6f} "
-            f"macro_change={row['macro_f1_change']:+.6f}"
-        )
-    lines.extend(["", f"warning: {report['comparison_warning']}"])
+            comparison = row["matched_baseline_comparisons"][mode]
+            lines.append(
+                f"{dataset_name} | {mode} | matched_delta | "
+                f"micro={comparison['micro_f1_change']:+.6f} | "
+                f"macro={comparison['macro_f1_change']:+.6f}"
+            )
+    lines.extend(
+        [
+            "",
+            f"warning: {report['comparison_warning']}",
+            f"reporting_rule: {report['reporting_rule']}",
+        ]
+    )
     txt_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"[OK] wrote {txt_path.relative_to(PROJECT_ROOT)}")
     print(f"[OK] wrote {json_path.relative_to(PROJECT_ROOT)}")

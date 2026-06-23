@@ -421,7 +421,7 @@ def write_report(prefix, report):
     json_path = prefix.with_suffix(".json")
     txt_path = prefix.with_suffix(".txt")
     json_path.write_text(json.dumps(report, indent=2, default=json_default), encoding="utf-8")
-    lines = ["EVM chunk MIL strict evaluation report", ""]
+    lines = ["EVM chunk MIL evaluation report", ""]
     for key, value in report.items():
         if key == "per_label":
             lines.append("Per-label metrics:")
