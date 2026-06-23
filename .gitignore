@@ -33,6 +33,17 @@ results/*
 !data/reports/bjut_vs_dive_random_structure_report.json
 !data/reports/mlsmote_dive_random_split_report.json
 !data/reports/stage12c_two_random_full_results_summary.json
+!data/reports/stage16a_input_inventory.json
+!data/reports/effect_flow_corpus_build_BJUT.json
+!data/reports/effect_flow_corpus_build_DIVE.json
+!data/reports/effect_flow_annotation_audit_BJUT.json
+!data/reports/effect_flow_annotation_audit_DIVE.json
+!data/reports/label_pattern_relevance_BJUT_train.json
+!data/reports/label_pattern_relevance_DIVE_train.json
+!data/reports/label_pattern_relevance_BJUT_all_splits_diagnostic.json
+!data/reports/label_pattern_relevance_DIVE_all_splits_diagnostic.json
+!data/reports/usable_efpp_patterns_recommendation.json
+!data/reports/stage16a_effect_flow_summary.json
 output.log
 
 # Large datasets
@@ -42,6 +53,8 @@ data/processed/BJUT_SC01/*.jsonl
 data/processed/BJUT_SC01_random_split/
 data/processed/DIVE/*.jsonl
 data/processed/DIVE_random_split/
+data/processed/effect_flow_pretrain/
+data/processed/effect_flow_pretrain_debug/
 
 # Local model weights and caches
 models/

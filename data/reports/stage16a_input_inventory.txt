@@ -1,0 +1,172 @@
+Stage 16A effect-flow input inventory
+
+status: ok
+
+dataset_name: BJUT
+split_name: train
+file_path: data/processed/BJUT_SC01/train.jsonl
+exists: True
+sample_count: 118707
+fields: ['id', 'opcode', 'binary_label', 'multi_labels']
+id_field: id
+opcode_field: opcode
+label_fields: ['binary_label', 'multi_labels']
+split_type_inferred: opcode_hash_grouped_strict
+selected_for_stage16a: True
+warnings: []
+
+dataset_name: BJUT
+split_name: train
+file_path: data/processed/BJUT_SC01_random_split/train.jsonl
+exists: True
+sample_count: 118707
+fields: ['id', 'opcode', 'binary_label', 'multi_labels']
+id_field: id
+opcode_field: opcode
+label_fields: ['binary_label', 'multi_labels']
+split_type_inferred: random_sample_split
+selected_for_stage16a: False
+warnings: []
+
+dataset_name: BJUT
+split_name: train_mlsmote
+file_path: data/processed/BJUT_SC01/train_mlsmote.jsonl
+exists: True
+sample_count: 121506
+fields: ['id', 'opcode', 'binary_label', 'multi_labels']
+id_field: id
+opcode_field: opcode
+label_fields: ['binary_label', 'multi_labels']
+split_type_inferred: oversampled_from_strict_train
+selected_for_stage16a: False
+warnings: ['oversampled file: excluded from semantic pretraining audit']
+
+dataset_name: BJUT
+split_name: valid
+file_path: data/processed/BJUT_SC01/valid.jsonl
+exists: True
+sample_count: 14838
+fields: ['id', 'opcode', 'binary_label', 'multi_labels']
+id_field: id
+opcode_field: opcode
+label_fields: ['binary_label', 'multi_labels']
+split_type_inferred: opcode_hash_grouped_strict
+selected_for_stage16a: True
+warnings: []
+
+dataset_name: BJUT
+split_name: valid
+file_path: data/processed/BJUT_SC01_random_split/valid.jsonl
+exists: True
+sample_count: 14838
+fields: ['id', 'opcode', 'binary_label', 'multi_labels']
+id_field: id
+opcode_field: opcode
+label_fields: ['binary_label', 'multi_labels']
+split_type_inferred: random_sample_split
+selected_for_stage16a: False
+warnings: []
+
+dataset_name: BJUT
+split_name: test
+file_path: data/processed/BJUT_SC01/test.jsonl
+exists: True
+sample_count: 14839
+fields: ['id', 'opcode', 'binary_label', 'multi_labels']
+id_field: id
+opcode_field: opcode
+label_fields: ['binary_label', 'multi_labels']
+split_type_inferred: opcode_hash_grouped_strict
+selected_for_stage16a: True
+warnings: []
+
+dataset_name: BJUT
+split_name: test
+file_path: data/processed/BJUT_SC01_random_split/test.jsonl
+exists: True
+sample_count: 14839
+fields: ['id', 'opcode', 'binary_label', 'multi_labels']
+id_field: id
+opcode_field: opcode
+label_fields: ['binary_label', 'multi_labels']
+split_type_inferred: random_sample_split
+selected_for_stage16a: False
+warnings: []
+
+dataset_name: DIVE
+split_name: train
+file_path: data/processed/DIVE/train.jsonl
+exists: True
+sample_count: 15616
+fields: ['id', 'opcode', 'binary_label', 'multi_labels']
+id_field: id
+opcode_field: opcode
+label_fields: ['binary_label', 'multi_labels']
+split_type_inferred: opcode_hash_grouped_strict
+selected_for_stage16a: True
+warnings: []
+
+dataset_name: DIVE
+split_name: train
+file_path: data/processed/DIVE_random_split/train.jsonl
+exists: True
+sample_count: 17864
+fields: ['id', 'opcode', 'binary_label', 'multi_labels']
+id_field: id
+opcode_field: opcode
+label_fields: ['binary_label', 'multi_labels']
+split_type_inferred: random_sample_split
+selected_for_stage16a: False
+warnings: []
+
+dataset_name: DIVE
+split_name: valid
+file_path: data/processed/DIVE/valid.jsonl
+exists: True
+sample_count: 2250
+fields: ['id', 'opcode', 'binary_label', 'multi_labels']
+id_field: id
+opcode_field: opcode
+label_fields: ['binary_label', 'multi_labels']
+split_type_inferred: opcode_hash_grouped_strict
+selected_for_stage16a: True
+warnings: []
+
+dataset_name: DIVE
+split_name: valid
+file_path: data/processed/DIVE_random_split/valid.jsonl
+exists: True
+sample_count: 2233
+fields: ['id', 'opcode', 'binary_label', 'multi_labels']
+id_field: id
+opcode_field: opcode
+label_fields: ['binary_label', 'multi_labels']
+split_type_inferred: random_sample_split
+selected_for_stage16a: False
+warnings: []
+
+dataset_name: DIVE
+split_name: test
+file_path: data/processed/DIVE/test.jsonl
+exists: True
+sample_count: 4464
+fields: ['id', 'opcode', 'binary_label', 'multi_labels']
+id_field: id
+opcode_field: opcode
+label_fields: ['binary_label', 'multi_labels']
+split_type_inferred: opcode_hash_grouped_strict
+selected_for_stage16a: True
+warnings: []
+
+dataset_name: DIVE
+split_name: test
+file_path: data/processed/DIVE_random_split/test.jsonl
+exists: True
+sample_count: 2233
+fields: ['id', 'opcode', 'binary_label', 'multi_labels']
+id_field: id
+opcode_field: opcode
+label_fields: ['binary_label', 'multi_labels']
+split_type_inferred: random_sample_split
+selected_for_stage16a: False
+warnings: []
