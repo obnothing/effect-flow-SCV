@@ -1,0 +1,40 @@
+experiment_name: fusion_stage14a_dive_random
+output_dir: results/fusion_stage14a/dive_random
+summary_path: data/reports/stage14a_fusion_dive_random_summary
+split_policy: random_sample_split
+strict_grouped_split: false
+test_leakage: true
+warning: Paper-style upper bound only. The random split has opcode-hash overlap and approximately 70 percent of test opcode hashes appeared in DIVE continued-MLM data.
+seed: 42
+bootstrap_samples: 1000
+max_models_per_fusion: 2
+fusion_types: [logit, probability]
+current_best_macro_f1: 0.715227
+
+models:
+  - name: chunk_mil
+    valid_path: results/train_continued_dive_evm_bert_dive_random_stride256_mil/valid_predictions.jsonl
+    test_path: results/train_continued_dive_evm_bert_dive_random_stride256_mil/test_predictions.jsonl
+  - name: chunk_context
+    valid_path: results/train_continued_dive_evm_bert_dive_random_stride256_context_mil/valid_predictions.jsonl
+    test_path: results/train_continued_dive_evm_bert_dive_random_stride256_context_mil/test_predictions.jsonl
+
+reference_baselines:
+  random_no_context:
+    micro_f1: 0.810336
+    macro_f1: 0.712614
+    detection_f1: 0.945033
+  random_chunk_context:
+    micro_f1: 0.813258
+    macro_f1: 0.715227
+    detection_f1: 0.949902
+
+label_names:
+  - Reentrancy
+  - Access Control
+  - Arithmetic
+  - Unchecked Return Values
+  - DoS
+  - Bad Randomness
+  - Front Running
+  - Time manipulation

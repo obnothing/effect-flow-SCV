@@ -535,7 +535,7 @@ def main():
         dataset,
         batch_size=config["batch_size"],
         shuffle=False,
-        num_workers=int(config.get("num_workers", 0)),
+        num_workers=min(int(config.get("num_workers", 0)), 4),
     )
 
     device = get_device()
@@ -688,7 +688,7 @@ def main():
     json_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     write_text_report(txt_path, report)
     if args.save_predictions:
-        prediction_path = json_path.with_name("test_predictions.jsonl")
+        prediction_path = json_path.with_name(f"{args.split}_predictions.jsonl")
         if args.output_prefix:
             prediction_path = json_path.with_name(f"{json_path.stem}_predictions.jsonl")
         write_prediction_jsonl(prediction_path, dataset, predictions, report)

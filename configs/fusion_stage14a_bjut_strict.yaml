@@ -1,0 +1,52 @@
+experiment_name: fusion_stage14a_bjut_strict
+output_dir: results/fusion_stage14a/bjut_strict
+summary_path: data/reports/stage14a_fusion_summary
+split_policy: opcode_hash_grouped_split
+strict_grouped_split: true
+test_leakage: false
+warning: EVM-BERT encoders used BJUT full-corpus unlabeled MLM, so encoder pretraining is transductive even though the supervised split is opcode-hash grouped.
+seed: 42
+bootstrap_samples: 1000
+max_models_per_fusion: 3
+fusion_types: [logit, probability]
+current_best_macro_f1: 0.4717
+
+models:
+  - name: first512
+    valid_path: results/train_evm_bert_weighted/valid_predictions.jsonl
+    test_path: results/train_evm_bert_weighted/test_predictions.jsonl
+  - name: chunk_mil
+    valid_path: results/train_evm_bert_chunk_mil_mean_stride256_labelattn_weighted/valid_predictions.jsonl
+    test_path: results/train_evm_bert_chunk_mil_mean_stride256_labelattn_weighted/test_predictions.jsonl
+  - name: codebert
+    valid_path: results/train_mlsmote_codebert_weighted/valid_predictions.jsonl
+    test_path: results/train_mlsmote_codebert_weighted/test_predictions.jsonl
+
+reference_baselines:
+  codebert_weighted:
+    micro_f1: 0.5604
+    macro_f1: 0.4215
+    detection_f1: 0.6430
+  evm_bert_first512_weighted:
+    micro_f1: 0.5659
+    macro_f1: 0.4326
+    detection_f1: 0.6895
+  non_context_chunk_mil_calibrated:
+    micro_f1: 0.5918
+    macro_f1: 0.4421
+  strict_grouped_stride256_best:
+    micro_f1: 0.6120
+    macro_f1: 0.4717
+    detection_f1: 0.6968
+
+label_names:
+  - Reentrancy
+  - Contract contains unknown address
+  - Integer overflow or underflow
+  - Timestamp dependence
+  - DoS with failed call
+  - Assert violation
+  - Unchecked call return value
+  - Unsafe send
+  - Multiplication after division
+  - Extra gas consumption
