@@ -49,6 +49,14 @@ class ChunkContextEncoder(nn.Module):
         nn.init.normal_(self.position_embedding, mean=0.0, std=0.02)
 
     def forward(self, chunk_features, chunk_mask):
+        # DataParallel executes replicas in worker threads. In PyTorch 2.0.x
+        # the MHA fastpath flag is thread-local, so disable it in every replica
+        # before entering the Transformer rather than only during __init__.
+        if hasattr(torch.backends, "mha") and hasattr(
+            torch.backends.mha,
+            "set_fastpath_enabled",
+        ):
+            torch.backends.mha.set_fastpath_enabled(False)
         if chunk_features.ndim != 3:
             raise ValueError(
                 f"chunk_features must be [B, C, H], got {tuple(chunk_features.shape)}"

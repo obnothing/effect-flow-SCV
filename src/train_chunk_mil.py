@@ -168,7 +168,8 @@ def train_one_epoch(model, loader, optimizer, config, device):
 
 @torch.no_grad()
 def evaluate(model, loader, config, device):
-    model.eval()
+    evaluation_model = model.module if isinstance(model, nn.DataParallel) else model
+    evaluation_model.eval()
     losses = []
     detection_logits = []
     recognition_logits = []
@@ -176,7 +177,7 @@ def evaluate(model, loader, config, device):
     multi_labels = []
     for batch in tqdm(loader, desc="valid", leave=False):
         model_inputs = move_batch(batch, device)
-        outputs = model(**model_inputs)
+        outputs = evaluation_model(**model_inputs)
         losses.append(float(outputs["loss"].mean().detach().cpu().item()))
         detection_logits.append(outputs["detection_logits"].detach().cpu())
         recognition_logits.append(outputs["recognition_logits"].detach().cpu())

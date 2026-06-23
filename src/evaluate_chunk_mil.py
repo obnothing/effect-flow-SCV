@@ -89,15 +89,10 @@ def load_model(config, checkpoint, device):
     state = torch.load(checkpoint, map_location="cpu")
     model.load_state_dict(state["model_state_dict"])
     if config.get("use_data_parallel", False) and torch.cuda.device_count() >= 2:
-        device_ids = [
-            int(device_id)
-            for device_id in config.get(
-                "data_parallel_device_ids",
-                list(range(torch.cuda.device_count())),
-            )
-        ]
-        model = torch.nn.DataParallel(model, device_ids=device_ids)
-        print(f"[INFO] evaluation DataParallel enabled: devices={device_ids}")
+        print(
+            "[INFO] evaluation uses one GPU; DataParallel is limited to training "
+            "for PyTorch 2.0.x Transformer stability"
+        )
     model.eval()
     return model, state
 
