@@ -1,0 +1,3011 @@
+{
+  "dataset": "BJUT",
+  "annotation_semantics": "weak rule-based signals, not vulnerability labels",
+  "total_contracts": 148384,
+  "contracts_with_chunks": 148384,
+  "total_chunks": 1405356,
+  "mean_chunks_per_contract": 9.471075048522751,
+  "max_chunks_per_contract": 32,
+  "token_coverage_ratio_mean": 0.9902737803380665,
+  "token_coverage_ratio_p50": 1.0,
+  "token_coverage_ratio_p90": 1.0,
+  "split_contract_counts": {
+    "train": 104845,
+    "valid": 26791,
+    "test": 16748
+  },
+  "split_contracts_with_chunks": {
+    "train": 104845,
+    "valid": 26791,
+    "test": 16748
+  },
+  "split_chunk_counts": {
+    "train": 1048925,
+    "valid": 225663,
+    "test": 130768
+  },
+  "active_etp_tokens": 517705689,
+  "etp_primary_distribution": [
+    {
+      "effect_type_id": 0,
+      "effect_type": "Normal",
+      "token_count": 365055043,
+      "token_ratio": 0.7051401032604839,
+      "chunk_count_containing_effect": 1405199,
+      "chunk_ratio": 0.9998882845343101
+    },
+    {
+      "effect_type_id": 1,
+      "effect_type": "ExternalCall",
+      "token_count": 841442,
+      "token_ratio": 0.0016253288651807726,
+      "chunk_count_containing_effect": 508022,
+      "chunk_ratio": 0.36148990006802545
+    },
+    {
+      "effect_type_id": 2,
+      "effect_type": "StateRead",
+      "token_count": 9508971,
+      "token_ratio": 0.01836752271037918,
+      "chunk_count_containing_effect": 1087255,
+      "chunk_ratio": 0.7736509468063608
+    },
+    {
+      "effect_type_id": 3,
+      "effect_type": "StateWrite",
+      "token_count": 2763539,
+      "token_ratio": 0.005338050283623597,
+      "chunk_count_containing_effect": 840228,
+      "chunk_ratio": 0.5978755560868563
+    },
+    {
+      "effect_type_id": 4,
+      "effect_type": "AuthSource",
+      "token_count": 2391230,
+      "token_ratio": 0.004618898441349753,
+      "chunk_count_containing_effect": 872886,
+      "chunk_ratio": 0.6211137960772929
+    },
+    {
+      "effect_type_id": 5,
+      "effect_type": "ControlGuard",
+      "token_count": 36080604,
+      "token_ratio": 0.06969327316007146,
+      "chunk_count_containing_effect": 1356315,
+      "chunk_ratio": 0.9651042155866556
+    },
+    {
+      "effect_type_id": 6,
+      "effect_type": "ReturnCheck",
+      "token_count": 3510952,
+      "token_ratio": 0.00678175278850374,
+      "chunk_count_containing_effect": 460001,
+      "chunk_ratio": 0.32731991039992714
+    },
+    {
+      "effect_type_id": 7,
+      "effect_type": "EnvDependency",
+      "token_count": 503470,
+      "token_ratio": 0.0009725023516208647,
+      "chunk_count_containing_effect": 333172,
+      "chunk_ratio": 0.23707302633638735
+    },
+    {
+      "effect_type_id": 8,
+      "effect_type": "Arithmetic",
+      "token_count": 43681726,
+      "token_ratio": 0.0843755958803072,
+      "chunk_count_containing_effect": 1357298,
+      "chunk_ratio": 0.9658036824832996
+    },
+    {
+      "effect_type_id": 9,
+      "effect_type": "AddressLiteral",
+      "token_count": 6817201,
+      "token_ratio": 0.013168101384336921,
+      "chunk_count_containing_effect": 780323,
+      "chunk_ratio": 0.5552493460731658
+    },
+    {
+      "effect_type_id": 10,
+      "effect_type": "CreateContract",
+      "token_count": 68124,
+      "token_ratio": 0.00013158827775601283,
+      "chunk_count_containing_effect": 54765,
+      "chunk_ratio": 0.038968773748431
+    },
+    {
+      "effect_type_id": 11,
+      "effect_type": "Destructive",
+      "token_count": 25709,
+      "token_ratio": 4.965948906155443e-05,
+      "chunk_count_containing_effect": 23204,
+      "chunk_ratio": 0.01651111889087178
+    },
+    {
+      "effect_type_id": 12,
+      "effect_type": "RevertOrAssert",
+      "token_count": 8805422,
+      "token_ratio": 0.017008547881728994,
+      "chunk_count_containing_effect": 1205572,
+      "chunk_ratio": 0.8578410025644748
+    },
+    {
+      "effect_type_id": 13,
+      "effect_type": "GasOrValue",
+      "token_count": 4255312,
+      "token_ratio": 0.008219558120405356,
+      "chunk_count_containing_effect": 868070,
+      "chunk_ratio": 0.6176869063781704
+    },
+    {
+      "effect_type_id": 14,
+      "effect_type": "HashOrCrypto",
+      "token_count": 4490683,
+      "token_ratio": 0.008674200603578841,
+      "chunk_count_containing_effect": 908242,
+      "chunk_ratio": 0.6462718343252528
+    },
+    {
+      "effect_type_id": 15,
+      "effect_type": "StorageOrMemoryHeavy",
+      "token_count": 28906261,
+      "token_ratio": 0.05583531650161179,
+      "chunk_count_containing_effect": 1342764,
+      "chunk_ratio": 0.9554618189270192
+    }
+  ],
+  "etp_multihot_distribution": [
+    {
+      "effect_type_id": 0,
+      "effect_type": "Normal",
+      "token_count": 365055043,
+      "token_ratio_per_active_token": 0.7051401032604839,
+      "chunk_count_containing_effect": 1405199,
+      "chunk_ratio": 0.9998882845343101
+    },
+    {
+      "effect_type_id": 1,
+      "effect_type": "ExternalCall",
+      "token_count": 841442,
+      "token_ratio_per_active_token": 0.0016253288651807726,
+      "chunk_count_containing_effect": 508022,
+      "chunk_ratio": 0.36148990006802545
+    },
+    {
+      "effect_type_id": 2,
+      "effect_type": "StateRead",
+      "token_count": 9508971,
+      "token_ratio_per_active_token": 0.01836752271037918,
+      "chunk_count_containing_effect": 1087255,
+      "chunk_ratio": 0.7736509468063608
+    },
+    {
+      "effect_type_id": 3,
+      "effect_type": "StateWrite",
+      "token_count": 2763539,
+      "token_ratio_per_active_token": 0.005338050283623597,
+      "chunk_count_containing_effect": 840228,
+      "chunk_ratio": 0.5978755560868563
+    },
+    {
+      "effect_type_id": 4,
+      "effect_type": "AuthSource",
+      "token_count": 2391230,
+      "token_ratio_per_active_token": 0.004618898441349753,
+      "chunk_count_containing_effect": 872886,
+      "chunk_ratio": 0.6211137960772929
+    },
+    {
+      "effect_type_id": 5,
+      "effect_type": "ControlGuard",
+      "token_count": 38289720,
+      "token_ratio_per_active_token": 0.07396040030767365,
+      "chunk_count_containing_effect": 1357008,
+      "chunk_ratio": 0.9655973290753375
+    },
+    {
+      "effect_type_id": 6,
+      "effect_type": "ReturnCheck",
+      "token_count": 4413338,
+      "token_ratio_per_active_token": 0.008524801047724241,
+      "chunk_count_containing_effect": 460339,
+      "chunk_ratio": 0.32756041885472437
+    },
+    {
+      "effect_type_id": 7,
+      "effect_type": "EnvDependency",
+      "token_count": 503470,
+      "token_ratio_per_active_token": 0.0009725023516208647,
+      "chunk_count_containing_effect": 333172,
+      "chunk_ratio": 0.23707302633638735
+    },
+    {
+      "effect_type_id": 8,
+      "effect_type": "Arithmetic",
+      "token_count": 43681726,
+      "token_ratio_per_active_token": 0.0843755958803072,
+      "chunk_count_containing_effect": 1357298,
+      "chunk_ratio": 0.9658036824832996
+    },
+    {
+      "effect_type_id": 9,
+      "effect_type": "AddressLiteral",
+      "token_count": 6817201,
+      "token_ratio_per_active_token": 0.013168101384336921,
+      "chunk_count_containing_effect": 780323,
+      "chunk_ratio": 0.5552493460731658
+    },
+    {
+      "effect_type_id": 10,
+      "effect_type": "CreateContract",
+      "token_count": 68124,
+      "token_ratio_per_active_token": 0.00013158827775601283,
+      "chunk_count_containing_effect": 54765,
+      "chunk_ratio": 0.038968773748431
+    },
+    {
+      "effect_type_id": 11,
+      "effect_type": "Destructive",
+      "token_count": 25709,
+      "token_ratio_per_active_token": 4.965948906155443e-05,
+      "chunk_count_containing_effect": 23204,
+      "chunk_ratio": 0.01651111889087178
+    },
+    {
+      "effect_type_id": 12,
+      "effect_type": "RevertOrAssert",
+      "token_count": 8805422,
+      "token_ratio_per_active_token": 0.017008547881728994,
+      "chunk_count_containing_effect": 1205572,
+      "chunk_ratio": 0.8578410025644748
+    },
+    {
+      "effect_type_id": 13,
+      "effect_type": "GasOrValue",
+      "token_count": 4279572,
+      "token_ratio_per_active_token": 0.00826641872193141,
+      "chunk_count_containing_effect": 875525,
+      "chunk_ratio": 0.6229916120897481
+    },
+    {
+      "effect_type_id": 14,
+      "effect_type": "HashOrCrypto",
+      "token_count": 4490683,
+      "token_ratio_per_active_token": 0.008674200603578841,
+      "chunk_count_containing_effect": 908242,
+      "chunk_ratio": 0.6462718343252528
+    },
+    {
+      "effect_type_id": 15,
+      "effect_type": "StorageOrMemoryHeavy",
+      "token_count": 41591562,
+      "token_ratio_per_active_token": 0.08033823634493613,
+      "chunk_count_containing_effect": 1351941,
+      "chunk_ratio": 0.9619918369438064
+    }
+  ],
+  "efpp_pattern_distribution": [
+    {
+      "pattern_id": 0,
+      "pattern_name": "has_external_call",
+      "positive_chunk_count": 508022,
+      "positive_chunk_ratio": 0.36148990006802545,
+      "positive_contract_count": 131615,
+      "positive_contract_ratio": 0.8869891632521026,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 373698,
+          "positive_chunk_ratio": 0.35626760731224827,
+          "positive_contract_count": 91449,
+          "positive_contract_ratio": 0.872230435404645
+        },
+        "valid": {
+          "positive_chunk_count": 77031,
+          "positive_chunk_ratio": 0.34135414312492524,
+          "positive_contract_count": 25211,
+          "positive_contract_ratio": 0.941024971072375
+        },
+        "test": {
+          "positive_chunk_count": 57293,
+          "positive_chunk_ratio": 0.43812706472531504,
+          "positive_contract_count": 14955,
+          "positive_contract_ratio": 0.8929424408884643
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 7,
+          "matched_rule": "CALL-like opcode is present",
+          "local_opcode_snippet": "ADD SWAP1 LOG3 POP POP JUMP STOP UNKNOWN_DD CALLCODE MSTORE UNKNOWN_AD SHL UNKNOWN_E2 UNKNOWN_C8 SWAP12 PUSH10 0xc2b068fc378daa952ba7"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 8,
+          "matched_rule": "CALL-like opcode is present",
+          "local_opcode_snippet": "ADD SWAP1 LOG3 POP POP JUMP STOP UNKNOWN_DD CALLCODE MSTORE UNKNOWN_AD SHL UNKNOWN_E2 UNKNOWN_C8 SWAP12 PUSH10 0xc2b068fc378daa952ba7"
+        },
+        {
+          "contract_id": "0xabc37b3f72d244835a43ed901a70e7fb04d3ac14",
+          "split": "train",
+          "chunk_index": 7,
+          "matched_rule": "CALL-like opcode is present",
+          "local_opcode_snippet": "0x00 DUP1 REVERT JUMPDEST PUSH2 0x02c6 GAS SUB CALL ISZERO ISZERO PUSH2 0x09ac JUMPI PUSH1 0x00 DUP1"
+        }
+      ]
+    },
+    {
+      "pattern_id": 1,
+      "pattern_name": "has_delegatecall",
+      "positive_chunk_count": 47421,
+      "positive_chunk_ratio": 0.03374305158265948,
+      "positive_contract_count": 16087,
+      "positive_contract_ratio": 0.10841465387103731,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 18416,
+          "positive_chunk_ratio": 0.017557022666062874,
+          "positive_contract_count": 6399,
+          "positive_contract_ratio": 0.06103295340741094
+        },
+        "valid": {
+          "positive_chunk_count": 1615,
+          "positive_chunk_ratio": 0.007156689399680054,
+          "positive_contract_count": 554,
+          "positive_contract_ratio": 0.020678586092344443
+        },
+        "test": {
+          "positive_chunk_count": 27390,
+          "positive_chunk_ratio": 0.2094549125168237,
+          "positive_contract_count": 9134,
+          "positive_contract_ratio": 0.5453785526630045
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0x29305d0b0b7046a0b6c2381bc33f771dd8ad13f8",
+          "split": "train",
+          "chunk_index": 8,
+          "matched_rule": "DELEGATECALL is present",
+          "local_opcode_snippet": "0x00 DUP1 REVERT JUMPDEST PUSH2 0x02c6 GAS SUB DELEGATECALL ISZERO ISZERO PUSH2 0x0ba6 JUMPI PUSH1 0x00 DUP1"
+        },
+        {
+          "contract_id": "0x29305d0b0b7046a0b6c2381bc33f771dd8ad13f8",
+          "split": "train",
+          "chunk_index": 9,
+          "matched_rule": "DELEGATECALL is present",
+          "local_opcode_snippet": "0x00 DUP1 REVERT JUMPDEST PUSH2 0x02c6 GAS SUB DELEGATECALL ISZERO ISZERO PUSH2 0x0ba6 JUMPI PUSH1 0x00 DUP1"
+        },
+        {
+          "contract_id": "0x29305d0b0b7046a0b6c2381bc33f771dd8ad13f8",
+          "split": "train",
+          "chunk_index": 10,
+          "matched_rule": "DELEGATECALL is present",
+          "local_opcode_snippet": "0x00 DUP1 REVERT JUMPDEST PUSH2 0x02c6 GAS SUB DELEGATECALL ISZERO ISZERO PUSH2 0x0de9 JUMPI PUSH1 0x00 DUP1"
+        }
+      ]
+    },
+    {
+      "pattern_id": 2,
+      "pattern_name": "has_state_read",
+      "positive_chunk_count": 1087255,
+      "positive_chunk_ratio": 0.7736509468063608,
+      "positive_contract_count": 144901,
+      "positive_contract_ratio": 0.9765271188268277,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 812608,
+          "positive_chunk_ratio": 0.774705531854041,
+          "positive_contract_count": 101594,
+          "positive_contract_ratio": 0.9689923219991415
+        },
+        "valid": {
+          "positive_chunk_count": 178076,
+          "positive_chunk_ratio": 0.7891236046671364,
+          "positive_contract_count": 26680,
+          "positive_contract_ratio": 0.9958568175879959
+        },
+        "test": {
+          "positive_chunk_count": 96571,
+          "positive_chunk_ratio": 0.7384910681512297,
+          "positive_contract_count": 16627,
+          "positive_contract_ratio": 0.9927752567470742
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 1,
+          "matched_rule": "SLOAD is present",
+          "local_opcode_snippet": "CALLDATALOAD AND PUSH2 0x08c7 JUMP JUMPDEST PUSH1 0x03 SLOAD PUSH1 0xff AND DUP2 JUMP JUMPDEST PUSH1 0x04"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 2,
+          "matched_rule": "SLOAD is present",
+          "local_opcode_snippet": "CALLDATALOAD AND PUSH2 0x08c7 JUMP JUMPDEST PUSH1 0x03 SLOAD PUSH1 0xff AND DUP2 JUMP JUMPDEST PUSH1 0x04"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 3,
+          "matched_rule": "SLOAD is present",
+          "local_opcode_snippet": "PUSH2 0x0100 DUP1 DUP4 SLOAD DIV MUL DUP4 MSTORE SWAP2 PUSH1 0x20 ADD"
+        }
+      ]
+    },
+    {
+      "pattern_id": 3,
+      "pattern_name": "has_state_write",
+      "positive_chunk_count": 840228,
+      "positive_chunk_ratio": 0.5978755560868563,
+      "positive_contract_count": 130695,
+      "positive_contract_ratio": 0.8807890338580979,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 633312,
+          "positive_chunk_ratio": 0.6037724336821031,
+          "positive_contract_count": 96558,
+          "positive_contract_ratio": 0.9209595116600696
+        },
+        "valid": {
+          "positive_chunk_count": 144171,
+          "positive_chunk_ratio": 0.6388774411401071,
+          "positive_contract_count": 26542,
+          "positive_contract_ratio": 0.9907058340487477
+        },
+        "test": {
+          "positive_chunk_count": 62745,
+          "positive_chunk_ratio": 0.47981922182797015,
+          "positive_contract_count": 7595,
+          "positive_contract_ratio": 0.45348698352042033
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 2,
+          "matched_rule": "SSTORE is present",
+          "local_opcode_snippet": "SWAP1 DUP4 MSTORE DUP2 DUP5 SHA3 DUP7 SWAP1 SSTORE DUP2 MLOAD DUP7 DUP2 MSTORE SWAP2 MLOAD SWAP4"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 3,
+          "matched_rule": "SSTORE is present",
+          "local_opcode_snippet": "SWAP1 DUP4 MSTORE DUP2 DUP5 SHA3 DUP7 SWAP1 SSTORE DUP2 MLOAD DUP7 DUP2 MSTORE SWAP2 MLOAD SWAP4"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 4,
+          "matched_rule": "SSTORE is present",
+          "local_opcode_snippet": "PUSH1 0x40 DUP1 DUP3 SHA3 SWAP4 SWAP1 SWAP4 SSTORE SWAP1 DUP6 AND DUP2 MSTORE SHA3 SLOAD PUSH2"
+        }
+      ]
+    },
+    {
+      "pattern_id": 4,
+      "pattern_name": "call_before_state_write",
+      "positive_chunk_count": 39034,
+      "positive_chunk_ratio": 0.027775168711700098,
+      "positive_contract_count": 13079,
+      "positive_contract_ratio": 0.08814292646107397,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 31917,
+          "positive_chunk_ratio": 0.030428295636008296,
+          "positive_contract_count": 10795,
+          "positive_contract_ratio": 0.1029615146168153
+        },
+        "valid": {
+          "positive_chunk_count": 3894,
+          "positive_chunk_ratio": 0.01725581951848553,
+          "positive_contract_count": 1206,
+          "positive_contract_ratio": 0.04501511701690866
+        },
+        "test": {
+          "positive_chunk_count": 3223,
+          "positive_chunk_ratio": 0.02464670255720054,
+          "positive_contract_count": 1078,
+          "positive_contract_ratio": 0.06436589443515643
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0xecff8fc2a19f83fc855618704f38725756dbcae3",
+          "split": "train",
+          "chunk_index": 8,
+          "matched_rule": "CALL-like followed by SSTORE",
+          "local_opcode_snippet": "JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x0b90 JUMPI RETURNDATASIZE PUSH1"
+        },
+        {
+          "contract_id": "0xecff8fc2a19f83fc855618704f38725756dbcae3",
+          "split": "train",
+          "chunk_index": 9,
+          "matched_rule": "CALL-like followed by SSTORE",
+          "local_opcode_snippet": "JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x0b90 JUMPI RETURNDATASIZE PUSH1"
+        },
+        {
+          "contract_id": "0x5572a6c464f50395a0f3bca67e75c51dd9321c02",
+          "split": "train",
+          "chunk_index": 6,
+          "matched_rule": "CALL-like followed by SSTORE",
+          "local_opcode_snippet": "0x083b JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST GAS CALL ISZERO ISZERO PUSH2 0x0848 JUMPI PUSH1 0x00 DUP1"
+        }
+      ]
+    },
+    {
+      "pattern_id": 5,
+      "pattern_name": "state_write_before_call",
+      "positive_chunk_count": 60450,
+      "positive_chunk_ratio": 0.0430140121079641,
+      "positive_contract_count": 27575,
+      "positive_contract_ratio": 0.18583540004313134,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 51998,
+          "positive_chunk_ratio": 0.04957265772100007,
+          "positive_contract_count": 24227,
+          "positive_contract_ratio": 0.23107444322571416
+        },
+        "valid": {
+          "positive_chunk_count": 4411,
+          "positive_chunk_ratio": 0.019546846403708185,
+          "positive_contract_count": 1629,
+          "positive_contract_ratio": 0.060804001343734836
+        },
+        "test": {
+          "positive_chunk_count": 4041,
+          "positive_chunk_ratio": 0.030902055548758106,
+          "positive_contract_count": 1719,
+          "positive_contract_ratio": 0.10263912108908527
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0xabc37b3f72d244835a43ed901a70e7fb04d3ac14",
+          "split": "train",
+          "chunk_index": 9,
+          "matched_rule": "SSTORE followed by CALL-like",
+          "local_opcode_snippet": "GT ISZERO PUSH2 0x0b01 JUMPI PUSH1 0x00 DUP2 SSTORE PUSH1 0x01 ADD PUSH2 0x0b0b JUMP JUMPDEST POP"
+        },
+        {
+          "contract_id": "0x033586cf6c915f86b3e6f4e603479d85e9aad785",
+          "split": "train",
+          "chunk_index": 9,
+          "matched_rule": "SSTORE followed by CALL-like",
+          "local_opcode_snippet": "SWAP1 SWAP3 AND SWAP2 SWAP1 SWAP2 OR SWAP1 SSTORE JUMP JUMPDEST PUSH1 0x01 PUSH1 0xa0 PUSH1 0x02"
+        },
+        {
+          "contract_id": "0x033586cf6c915f86b3e6f4e603479d85e9aad785",
+          "split": "train",
+          "chunk_index": 10,
+          "matched_rule": "SSTORE followed by CALL-like",
+          "local_opcode_snippet": "SWAP1 SWAP3 AND SWAP2 SWAP1 SWAP2 OR SWAP1 SSTORE JUMP JUMPDEST PUSH1 0x01 PUSH1 0xa0 PUSH1 0x02"
+        }
+      ]
+    },
+    {
+      "pattern_id": 6,
+      "pattern_name": "call_without_return_check",
+      "positive_chunk_count": 65505,
+      "positive_chunk_ratio": 0.04661096547778641,
+      "positive_contract_count": 30517,
+      "positive_contract_ratio": 0.20566233556178565,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 44765,
+          "positive_chunk_ratio": 0.042677026479490905,
+          "positive_contract_count": 22135,
+          "positive_contract_ratio": 0.21112117888311316
+        },
+        "valid": {
+          "positive_chunk_count": 17412,
+          "positive_chunk_ratio": 0.07715930391778891,
+          "positive_contract_count": 6769,
+          "positive_contract_ratio": 0.25265947519689447
+        },
+        "test": {
+          "positive_chunk_count": 3328,
+          "positive_chunk_ratio": 0.02544965129083568,
+          "positive_contract_count": 1613,
+          "positive_contract_ratio": 0.09631000716503463
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 7,
+          "matched_rule": "no post-call check opcode in the weak-rule window",
+          "local_opcode_snippet": "ADD SWAP1 LOG3 POP POP JUMP STOP UNKNOWN_DD CALLCODE MSTORE UNKNOWN_AD SHL UNKNOWN_E2 UNKNOWN_C8 SWAP12 PUSH10 0xc2b068fc378daa952ba7"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 8,
+          "matched_rule": "no post-call check opcode in the weak-rule window",
+          "local_opcode_snippet": "ADD SWAP1 LOG3 POP POP JUMP STOP UNKNOWN_DD CALLCODE MSTORE UNKNOWN_AD SHL UNKNOWN_E2 UNKNOWN_C8 SWAP12 PUSH10 0xc2b068fc378daa952ba7"
+        },
+        {
+          "contract_id": "0xabc37b3f72d244835a43ed901a70e7fb04d3ac14",
+          "split": "train",
+          "chunk_index": 9,
+          "matched_rule": "no post-call check opcode in the weak-rule window",
+          "local_opcode_snippet": "0x627a7a723058 SHA3 PUSH0 UNKNOWN_BE SWAP10 SWAP4 MSTORE8 SHL STATICCALL UNKNOWN_CE SHR UNKNOWN_28 UNKNOWN_5D UNKNOWN_CA UNKNOWN_B1 UNKNOWN_C6 UNKNOWN_E0"
+        }
+      ]
+    },
+    {
+      "pattern_id": 7,
+      "pattern_name": "call_with_return_check",
+      "positive_chunk_count": 460339,
+      "positive_chunk_ratio": 0.32756041885472437,
+      "positive_contract_count": 125413,
+      "positive_contract_ratio": 0.8451922040112142,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 338383,
+          "positive_chunk_ratio": 0.3225998045618133,
+          "positive_contract_count": 87994,
+          "positive_contract_ratio": 0.839277027993705
+        },
+        "valid": {
+          "positive_chunk_count": 66972,
+          "positive_chunk_ratio": 0.2967788250621502,
+          "positive_contract_count": 22888,
+          "positive_contract_ratio": 0.8543167481616961
+        },
+        "test": {
+          "positive_chunk_count": 54984,
+          "positive_chunk_ratio": 0.4204698397161385,
+          "positive_contract_count": 14531,
+          "positive_contract_ratio": 0.8676259851922618
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0xabc37b3f72d244835a43ed901a70e7fb04d3ac14",
+          "split": "train",
+          "chunk_index": 7,
+          "matched_rule": "post-call check opcode in window",
+          "local_opcode_snippet": "0x00 DUP1 REVERT JUMPDEST PUSH2 0x02c6 GAS SUB CALL ISZERO ISZERO PUSH2 0x09ac JUMPI PUSH1 0x00 DUP1"
+        },
+        {
+          "contract_id": "0xabc37b3f72d244835a43ed901a70e7fb04d3ac14",
+          "split": "train",
+          "chunk_index": 8,
+          "matched_rule": "post-call check opcode in window",
+          "local_opcode_snippet": "0x00 DUP1 REVERT JUMPDEST PUSH2 0x02c6 GAS SUB CALL ISZERO ISZERO PUSH2 0x09ac JUMPI PUSH1 0x00 DUP1"
+        },
+        {
+          "contract_id": "0xd9772b569cd3646ed6fdb33f28eb8d7563ae8298",
+          "split": "train",
+          "chunk_index": 8,
+          "matched_rule": "post-call check opcode in window",
+          "local_opcode_snippet": "JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x0ddb JUMPI RETURNDATASIZE PUSH1"
+        }
+      ]
+    },
+    {
+      "pattern_id": 8,
+      "pattern_name": "state_write_with_auth_guard",
+      "positive_chunk_count": 399314,
+      "positive_chunk_ratio": 0.2841372577482147,
+      "positive_contract_count": 118929,
+      "positive_contract_ratio": 0.8014947703256415,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 296430,
+          "positive_chunk_ratio": 0.28260361798984673,
+          "positive_contract_count": 86581,
+          "positive_contract_ratio": 0.8257999904621107
+        },
+        "valid": {
+          "positive_chunk_count": 76014,
+          "positive_chunk_ratio": 0.3368474229271081,
+          "positive_contract_count": 25759,
+          "positive_contract_ratio": 0.9614796013586652
+        },
+        "test": {
+          "positive_chunk_count": 26870,
+          "positive_chunk_ratio": 0.2054784045026306,
+          "positive_contract_count": 6589,
+          "positive_contract_ratio": 0.39342010986386433
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 3,
+          "matched_rule": "SSTORE with/without preceding auth-source guard",
+          "local_opcode_snippet": "PUSH1 0x40 DUP1 DUP3 SHA3 SWAP4 SWAP1 SWAP4 SSTORE SWAP1 DUP6 AND DUP2 MSTORE SHA3 SLOAD PUSH2"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 4,
+          "matched_rule": "SSTORE with/without preceding auth-source guard",
+          "local_opcode_snippet": "0xffffffff PUSH2 0x0904 AND JUMP JUMPDEST PUSH1 0x01 SSTORE PUSH1 0x01 PUSH1 0xa0 PUSH1 0x02 EXP SUB"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 5,
+          "matched_rule": "SSTORE with/without preceding auth-source guard",
+          "local_opcode_snippet": "PUSH1 0xff NOT AND PUSH1 0x01 OR SWAP1 SSTORE PUSH1 0x40 MLOAD PUSH32 0xae5184fba832cb2b1f702aca6117b8d265eaf03ad33eb133f19dde0f5920fa08 SWAP1 PUSH1 0x00"
+        }
+      ]
+    },
+    {
+      "pattern_id": 9,
+      "pattern_name": "state_write_without_auth_guard",
+      "positive_chunk_count": 702059,
+      "positive_chunk_ratio": 0.4995595422085223,
+      "positive_contract_count": 124388,
+      "positive_contract_ratio": 0.8382844511537632,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 533606,
+          "positive_chunk_ratio": 0.5087170198059918,
+          "positive_contract_count": 93694,
+          "positive_contract_ratio": 0.8936429968048071
+        },
+        "valid": {
+          "positive_chunk_count": 113650,
+          "positive_chunk_ratio": 0.5036270899527171,
+          "positive_contract_count": 23228,
+          "positive_contract_ratio": 0.8670075771714382
+        },
+        "test": {
+          "positive_chunk_count": 54803,
+          "positive_chunk_ratio": 0.41908570904196746,
+          "positive_contract_count": 7466,
+          "positive_contract_ratio": 0.4457845712920946
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 2,
+          "matched_rule": "SSTORE with/without preceding auth-source guard",
+          "local_opcode_snippet": "SWAP1 DUP4 MSTORE DUP2 DUP5 SHA3 DUP7 SWAP1 SSTORE DUP2 MLOAD DUP7 DUP2 MSTORE SWAP2 MLOAD SWAP4"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 3,
+          "matched_rule": "SSTORE with/without preceding auth-source guard",
+          "local_opcode_snippet": "SWAP1 DUP4 MSTORE DUP2 DUP5 SHA3 DUP7 SWAP1 SSTORE DUP2 MLOAD DUP7 DUP2 MSTORE SWAP2 MLOAD SWAP4"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 4,
+          "matched_rule": "SSTORE with/without preceding auth-source guard",
+          "local_opcode_snippet": "PUSH1 0x40 DUP1 DUP3 SHA3 SWAP4 SWAP1 SWAP4 SSTORE SWAP1 DUP6 AND DUP2 MSTORE SHA3 SLOAD PUSH2"
+        }
+      ]
+    },
+    {
+      "pattern_id": 10,
+      "pattern_name": "sensitive_call_with_auth_guard",
+      "positive_chunk_count": 159523,
+      "positive_chunk_ratio": 0.11351074033910269,
+      "positive_contract_count": 67886,
+      "positive_contract_ratio": 0.45750215656674575,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 117669,
+          "positive_chunk_ratio": 0.11218056581738446,
+          "positive_contract_count": 44325,
+          "positive_contract_ratio": 0.42276694167580714
+        },
+        "valid": {
+          "positive_chunk_count": 30850,
+          "positive_chunk_ratio": 0.1367082773870772,
+          "positive_contract_count": 20002,
+          "positive_contract_ratio": 0.7465940054495913
+        },
+        "test": {
+          "positive_chunk_count": 11004,
+          "positive_chunk_ratio": 0.08414902728496268,
+          "positive_contract_count": 3559,
+          "positive_contract_ratio": 0.21250298543109625
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0x033586cf6c915f86b3e6f4e603479d85e9aad785",
+          "split": "train",
+          "chunk_index": 7,
+          "matched_rule": "sensitive opcode with/without preceding auth guard",
+          "local_opcode_snippet": "0x01 PUSH1 0xa0 PUSH1 0x02 EXP SUB AND SELFDESTRUCT JUMPDEST PUSH1 0x00 SLOAD PUSH1 0x01 PUSH1 0xa0"
+        },
+        {
+          "contract_id": "0xecff8fc2a19f83fc855618704f38725756dbcae3",
+          "split": "train",
+          "chunk_index": 7,
+          "matched_rule": "sensitive opcode with/without preceding auth guard",
+          "local_opcode_snippet": "JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x0a56 JUMPI RETURNDATASIZE PUSH1"
+        },
+        {
+          "contract_id": "0xecff8fc2a19f83fc855618704f38725756dbcae3",
+          "split": "train",
+          "chunk_index": 8,
+          "matched_rule": "sensitive opcode with/without preceding auth guard",
+          "local_opcode_snippet": "JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x0a56 JUMPI RETURNDATASIZE PUSH1"
+        }
+      ]
+    },
+    {
+      "pattern_id": 11,
+      "pattern_name": "sensitive_call_without_auth_guard",
+      "positive_chunk_count": 460871,
+      "positive_chunk_ratio": 0.32793897062381344,
+      "positive_contract_count": 129951,
+      "positive_contract_ratio": 0.8757750161742506,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 324029,
+          "positive_chunk_ratio": 0.3089153180637319,
+          "positive_contract_count": 90203,
+          "positive_contract_ratio": 0.8603462253803233
+        },
+        "valid": {
+          "positive_chunk_count": 84194,
+          "positive_chunk_ratio": 0.3730961655211532,
+          "positive_contract_count": 25007,
+          "positive_contract_ratio": 0.9334104736665298
+        },
+        "test": {
+          "positive_chunk_count": 52648,
+          "positive_chunk_ratio": 0.40260614217545576,
+          "positive_contract_count": 14741,
+          "positive_contract_ratio": 0.880164795796513
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 7,
+          "matched_rule": "sensitive opcode with/without preceding auth guard",
+          "local_opcode_snippet": "ADD SWAP1 LOG3 POP POP JUMP STOP UNKNOWN_DD CALLCODE MSTORE UNKNOWN_AD SHL UNKNOWN_E2 UNKNOWN_C8 SWAP12 PUSH10 0xc2b068fc378daa952ba7"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 8,
+          "matched_rule": "sensitive opcode with/without preceding auth guard",
+          "local_opcode_snippet": "ADD SWAP1 LOG3 POP POP JUMP STOP UNKNOWN_DD CALLCODE MSTORE UNKNOWN_AD SHL UNKNOWN_E2 UNKNOWN_C8 SWAP12 PUSH10 0xc2b068fc378daa952ba7"
+        },
+        {
+          "contract_id": "0xabc37b3f72d244835a43ed901a70e7fb04d3ac14",
+          "split": "train",
+          "chunk_index": 7,
+          "matched_rule": "sensitive opcode with/without preceding auth guard",
+          "local_opcode_snippet": "0x00 DUP1 REVERT JUMPDEST PUSH2 0x02c6 GAS SUB CALL ISZERO ISZERO PUSH2 0x09ac JUMPI PUSH1 0x00 DUP1"
+        }
+      ]
+    },
+    {
+      "pattern_id": 12,
+      "pattern_name": "env_used_in_condition",
+      "positive_chunk_count": 194448,
+      "positive_chunk_ratio": 0.1383620947290224,
+      "positive_contract_count": 68548,
+      "positive_contract_ratio": 0.46196355402199696,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 147089,
+          "positive_chunk_ratio": 0.1402283290035036,
+          "positive_contract_count": 49488,
+          "positive_contract_ratio": 0.4720110639515475
+        },
+        "valid": {
+          "positive_chunk_count": 37826,
+          "positive_chunk_ratio": 0.16762163048439488,
+          "positive_contract_count": 16508,
+          "positive_contract_ratio": 0.6161770743906536
+        },
+        "test": {
+          "positive_chunk_count": 9533,
+          "positive_chunk_ratio": 0.0729000978832742,
+          "positive_contract_count": 2552,
+          "positive_contract_ratio": 0.15237640315261525
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0xecff8fc2a19f83fc855618704f38725756dbcae3",
+          "split": "train",
+          "chunk_index": 9,
+          "matched_rule": "environment opcode followed by guard",
+          "local_opcode_snippet": "PUSH1 0x40 SWAP1 SHA3 PUSH1 0x04 ADD SLOAD TIMESTAMP SWAP2 ADD DUP2 GT DUP1 ISZERO PUSH2 0x0cd4"
+        },
+        {
+          "contract_id": "0xecff8fc2a19f83fc855618704f38725756dbcae3",
+          "split": "train",
+          "chunk_index": 10,
+          "matched_rule": "environment opcode followed by guard",
+          "local_opcode_snippet": "PUSH1 0x40 SWAP1 SHA3 PUSH1 0x04 ADD SLOAD TIMESTAMP SWAP2 ADD DUP2 GT DUP1 ISZERO PUSH2 0x0cd4"
+        },
+        {
+          "contract_id": "0xecff8fc2a19f83fc855618704f38725756dbcae3",
+          "split": "train",
+          "chunk_index": 11,
+          "matched_rule": "environment opcode followed by guard",
+          "local_opcode_snippet": "SHA3 PUSH1 0x04 ADD SLOAD SWAP1 SWAP3 SWAP2 TIMESTAMP SWAP2 ADD DUP2 GT DUP1 ISZERO PUSH2 0x0f11"
+        }
+      ]
+    },
+    {
+      "pattern_id": 13,
+      "pattern_name": "env_used_in_arithmetic_or_hash",
+      "positive_chunk_count": 218092,
+      "positive_chunk_ratio": 0.155186301549216,
+      "positive_contract_count": 72516,
+      "positive_contract_ratio": 0.48870498166918264,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 149727,
+          "positive_chunk_ratio": 0.14274328479157233,
+          "positive_contract_count": 51158,
+          "positive_contract_ratio": 0.48793933902427394
+        },
+        "valid": {
+          "positive_chunk_count": 58370,
+          "positive_chunk_ratio": 0.2586600373122754,
+          "positive_contract_count": 18710,
+          "positive_contract_ratio": 0.6983688552125714
+        },
+        "test": {
+          "positive_chunk_count": 9995,
+          "positive_chunk_ratio": 0.07643307231126881,
+          "positive_contract_count": 2648,
+          "positive_contract_ratio": 0.1581084308574158
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0xecff8fc2a19f83fc855618704f38725756dbcae3",
+          "split": "train",
+          "chunk_index": 9,
+          "matched_rule": "environment opcode followed by arithmetic/hash",
+          "local_opcode_snippet": "PUSH1 0x40 SWAP1 SHA3 PUSH1 0x04 ADD SLOAD TIMESTAMP SWAP2 ADD DUP2 GT DUP1 ISZERO PUSH2 0x0cd4"
+        },
+        {
+          "contract_id": "0xecff8fc2a19f83fc855618704f38725756dbcae3",
+          "split": "train",
+          "chunk_index": 10,
+          "matched_rule": "environment opcode followed by arithmetic/hash",
+          "local_opcode_snippet": "PUSH1 0x40 SWAP1 SHA3 PUSH1 0x04 ADD SLOAD TIMESTAMP SWAP2 ADD DUP2 GT DUP1 ISZERO PUSH2 0x0cd4"
+        },
+        {
+          "contract_id": "0xecff8fc2a19f83fc855618704f38725756dbcae3",
+          "split": "train",
+          "chunk_index": 11,
+          "matched_rule": "environment opcode followed by arithmetic/hash",
+          "local_opcode_snippet": "SHA3 PUSH1 0x04 ADD SLOAD SWAP1 SWAP3 SWAP2 TIMESTAMP SWAP2 ADD DUP2 GT DUP1 ISZERO PUSH2 0x0f11"
+        }
+      ]
+    },
+    {
+      "pattern_id": 14,
+      "pattern_name": "arithmetic_chain",
+      "positive_chunk_count": 1329835,
+      "positive_chunk_ratio": 0.9462620147492877,
+      "positive_contract_count": 146504,
+      "positive_contract_ratio": 0.9873301703687729,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 995726,
+          "positive_chunk_ratio": 0.9492823605119527,
+          "positive_contract_count": 103077,
+          "positive_contract_ratio": 0.9831370117792932
+        },
+        "valid": {
+          "positive_chunk_count": 206776,
+          "positive_chunk_ratio": 0.9163044008100575,
+          "positive_contract_count": 26741,
+          "positive_contract_ratio": 0.9981337016162144
+        },
+        "test": {
+          "positive_chunk_count": 127333,
+          "positive_chunk_ratio": 0.9737321057139361,
+          "positive_contract_count": 16686,
+          "positive_contract_ratio": 0.9962980654406496
+        }
+      },
+      "warnings": [
+        "too_frequent_low_discrimination"
+      ],
+      "usable_for_pretraining": false,
+      "examples": [
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 0,
+          "matched_rule": "arithmetic opcode count reaches threshold",
+          "local_opcode_snippet": "JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP PUSH2 0x011d PUSH2 0x0348 JUMP JUMPDEST PUSH1 0x40 DUP1 MLOAD"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 1,
+          "matched_rule": "arithmetic opcode count reaches threshold",
+          "local_opcode_snippet": "AND DUP1 ISZERO PUSH2 0x0184 JUMPI DUP1 DUP3 SUB"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 2,
+          "matched_rule": "arithmetic opcode count reaches threshold",
+          "local_opcode_snippet": "POP PUSH2 0x01cb PUSH1 0x01 PUSH1 0xa0 PUSH1 0x02 EXP SUB PUSH1 0x04 CALLDATALOAD AND PUSH2 0x069d"
+        }
+      ]
+    },
+    {
+      "pattern_id": 15,
+      "pattern_name": "div_before_mul",
+      "positive_chunk_count": 445774,
+      "positive_chunk_ratio": 0.3171964968306963,
+      "positive_contract_count": 77289,
+      "positive_contract_ratio": 0.5208715225361225,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 355646,
+          "positive_chunk_ratio": 0.3390576065972305,
+          "positive_contract_count": 59968,
+          "positive_contract_ratio": 0.5719681434498546
+        },
+        "valid": {
+          "positive_chunk_count": 50004,
+          "positive_chunk_ratio": 0.22158705680594515,
+          "positive_contract_count": 11085,
+          "positive_contract_ratio": 0.4137583516852674
+        },
+        "test": {
+          "positive_chunk_count": 40124,
+          "positive_chunk_ratio": 0.30683347607977485,
+          "positive_contract_count": 6236,
+          "positive_contract_ratio": 0.3723429663243372
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 1,
+          "matched_rule": "DIV/SDIV followed by MUL",
+          "local_opcode_snippet": "NOT ADD SWAP1 SWAP5 AND SWAP4 SWAP1 SWAP4 DIV PUSH1 0x1f DUP2 ADD DUP5 SWAP1 DIV DUP5"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 2,
+          "matched_rule": "DIV/SDIV followed by MUL",
+          "local_opcode_snippet": "NOT ADD SWAP1 SWAP5 AND SWAP4 SWAP1 SWAP4 DIV PUSH1 0x1f DUP2 ADD DUP5 SWAP1 DIV DUP5"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 3,
+          "matched_rule": "DIV/SDIV followed by MUL",
+          "local_opcode_snippet": "PUSH2 0x0100 DUP1 DUP4 SLOAD DIV MUL DUP4 MSTORE SWAP2 PUSH1 0x20 ADD SWAP2"
+        }
+      ]
+    },
+    {
+      "pattern_id": 16,
+      "pattern_name": "arithmetic_followed_by_guard_or_revert",
+      "positive_chunk_count": 1336621,
+      "positive_chunk_ratio": 0.9510906844956011,
+      "positive_contract_count": 147858,
+      "positive_contract_ratio": 0.9964551434116886,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 1002946,
+          "positive_chunk_ratio": 0.9561655981123531,
+          "positive_contract_count": 104364,
+          "positive_contract_ratio": 0.9954122752634842
+        },
+        "valid": {
+          "positive_chunk_count": 205392,
+          "positive_chunk_ratio": 0.910171361720796,
+          "positive_contract_count": 26771,
+          "positive_contract_ratio": 0.9992534806464858
+        },
+        "test": {
+          "positive_chunk_count": 128283,
+          "positive_chunk_ratio": 0.980996879970635,
+          "positive_contract_count": 16723,
+          "positive_contract_ratio": 0.9985072844518749
+        }
+      },
+      "warnings": [
+        "too_frequent_low_discrimination"
+      ],
+      "usable_for_pretraining": false,
+      "examples": [
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 0,
+          "matched_rule": "arithmetic followed by guard/revert",
+          "local_opcode_snippet": "JUMPI PUSH4 0xffffffff PUSH29 0x0100000000000000000000000000000000000000000000000000000000 PUSH1 0x00 CALLDATALOAD DIV AND PUSH4 0x05d2035b DUP2 EQ PUSH2 0x00df JUMPI"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 1,
+          "matched_rule": "arithmetic followed by guard/revert",
+          "local_opcode_snippet": "SUB DUP1 MLOAD PUSH1 0x01 DUP4 PUSH1 0x20 SUB PUSH2 0x0100 EXP SUB NOT AND DUP2 MSTORE"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 2,
+          "matched_rule": "arithmetic followed by guard/revert",
+          "local_opcode_snippet": "PUSH2 0x01cb PUSH1 0x01 PUSH1 0xa0 PUSH1 0x02 EXP SUB PUSH1 0x04 CALLDATALOAD AND PUSH2 0x069d JUMP"
+        }
+      ]
+    },
+    {
+      "pattern_id": 17,
+      "pattern_name": "has_hardcoded_address",
+      "positive_chunk_count": 780323,
+      "positive_chunk_ratio": 0.5552493460731658,
+      "positive_contract_count": 129845,
+      "positive_contract_ratio": 0.875060653439724,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 551939,
+          "positive_chunk_ratio": 0.5261949138403603,
+          "positive_contract_count": 88924,
+          "positive_contract_ratio": 0.8481472650102533
+        },
+        "valid": {
+          "positive_chunk_count": 145720,
+          "positive_chunk_ratio": 0.6457416590225248,
+          "positive_contract_count": 25620,
+          "positive_contract_ratio": 0.9562912918517412
+        },
+        "test": {
+          "positive_chunk_count": 82664,
+          "positive_chunk_ratio": 0.6321424201639545,
+          "positive_contract_count": 15301,
+          "positive_contract_ratio": 0.9136016240745164
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0xabc37b3f72d244835a43ed901a70e7fb04d3ac14",
+          "split": "train",
+          "chunk_index": 9,
+          "matched_rule": "PUSH20 or normalized address operand",
+          "local_opcode_snippet": "SHR UNKNOWN_28 UNKNOWN_5D UNKNOWN_CA UNKNOWN_B1 UNKNOWN_C6 UNKNOWN_E0 PUSH20 0x0fc9bb188779dc5fb0f8d9f6f1b0683b0029"
+        },
+        {
+          "contract_id": "0xabc37b3f72d244835a43ed901a70e7fb04d3ac14",
+          "split": "train",
+          "chunk_index": 10,
+          "matched_rule": "PUSH20 or normalized address operand",
+          "local_opcode_snippet": "SHR UNKNOWN_28 UNKNOWN_5D UNKNOWN_CA UNKNOWN_B1 UNKNOWN_C6 UNKNOWN_E0 PUSH20 0x0fc9bb188779dc5fb0f8d9f6f1b0683b0029"
+        },
+        {
+          "contract_id": "0xd9772b569cd3646ed6fdb33f28eb8d7563ae8298",
+          "split": "train",
+          "chunk_index": 0,
+          "matched_rule": "PUSH20 or normalized address operand",
+          "local_opcode_snippet": "SUB DUP2 ADD SWAP1 DUP1 DUP1 CALLDATALOAD PUSH20 0xffffffffffffffffffffffffffffffffffffffff AND SWAP1 PUSH1 0x20 ADD SWAP1 SWAP3 SWAP2"
+        }
+      ]
+    },
+    {
+      "pattern_id": 18,
+      "pattern_name": "hardcoded_address_near_call",
+      "positive_chunk_count": 558452,
+      "positive_chunk_ratio": 0.3973740461491608,
+      "positive_contract_count": 127756,
+      "positive_contract_ratio": 0.860982316152685,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 392902,
+          "positive_chunk_ratio": 0.3745758753009033,
+          "positive_contract_count": 87477,
+          "positive_contract_ratio": 0.8343459392436454
+        },
+        "valid": {
+          "positive_chunk_count": 101623,
+          "positive_chunk_ratio": 0.45033080301157036,
+          "positive_contract_count": 25477,
+          "positive_contract_ratio": 0.9509536784741145
+        },
+        "test": {
+          "positive_chunk_count": 63927,
+          "positive_chunk_ratio": 0.48885813042946286,
+          "positive_contract_count": 14802,
+          "positive_contract_ratio": 0.8838070217339384
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0xabc37b3f72d244835a43ed901a70e7fb04d3ac14",
+          "split": "train",
+          "chunk_index": 9,
+          "matched_rule": "address literal near call/address-sensitive opcode",
+          "local_opcode_snippet": "SHR UNKNOWN_28 UNKNOWN_5D UNKNOWN_CA UNKNOWN_B1 UNKNOWN_C6 UNKNOWN_E0 PUSH20 0x0fc9bb188779dc5fb0f8d9f6f1b0683b0029"
+        },
+        {
+          "contract_id": "0xabc37b3f72d244835a43ed901a70e7fb04d3ac14",
+          "split": "train",
+          "chunk_index": 10,
+          "matched_rule": "address literal near call/address-sensitive opcode",
+          "local_opcode_snippet": "SHR UNKNOWN_28 UNKNOWN_5D UNKNOWN_CA UNKNOWN_B1 UNKNOWN_C6 UNKNOWN_E0 PUSH20 0x0fc9bb188779dc5fb0f8d9f6f1b0683b0029"
+        },
+        {
+          "contract_id": "0xd9772b569cd3646ed6fdb33f28eb8d7563ae8298",
+          "split": "train",
+          "chunk_index": 4,
+          "matched_rule": "address literal near call/address-sensitive opcode",
+          "local_opcode_snippet": "ADD PUSH1 0x00 SHA3 PUSH1 0x00 DUP6 PUSH20 0xffffffffffffffffffffffffffffffffffffffff AND PUSH20 0xffffffffffffffffffffffffffffffffffffffff AND DUP2 MSTORE PUSH1 0x20"
+        }
+      ]
+    },
+    {
+      "pattern_id": 19,
+      "pattern_name": "value_or_gas_sensitive_call",
+      "positive_chunk_count": 443556,
+      "positive_chunk_ratio": 0.315618249041524,
+      "positive_contract_count": 126528,
+      "positive_contract_ratio": 0.8527064912659047,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 317816,
+          "positive_chunk_ratio": 0.3029921109707558,
+          "positive_contract_count": 87327,
+          "positive_contract_ratio": 0.8329152558538795
+        },
+        "valid": {
+          "positive_chunk_count": 72555,
+          "positive_chunk_ratio": 0.3215192565905798,
+          "positive_contract_count": 24740,
+          "positive_contract_ratio": 0.9234444402971147
+        },
+        "test": {
+          "positive_chunk_count": 53185,
+          "positive_chunk_ratio": 0.4067126514131898,
+          "positive_contract_count": 14461,
+          "positive_contract_ratio": 0.8634463816575113
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 7,
+          "matched_rule": "CALL-like near gas/value opcode",
+          "local_opcode_snippet": "ADD SWAP1 LOG3 POP POP JUMP STOP UNKNOWN_DD CALLCODE MSTORE UNKNOWN_AD SHL UNKNOWN_E2 UNKNOWN_C8 SWAP12 PUSH10 0xc2b068fc378daa952ba7"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 8,
+          "matched_rule": "CALL-like near gas/value opcode",
+          "local_opcode_snippet": "ADD SWAP1 LOG3 POP POP JUMP STOP UNKNOWN_DD CALLCODE MSTORE UNKNOWN_AD SHL UNKNOWN_E2 UNKNOWN_C8 SWAP12 PUSH10 0xc2b068fc378daa952ba7"
+        },
+        {
+          "contract_id": "0xabc37b3f72d244835a43ed901a70e7fb04d3ac14",
+          "split": "train",
+          "chunk_index": 7,
+          "matched_rule": "CALL-like near gas/value opcode",
+          "local_opcode_snippet": "0x00 DUP1 REVERT JUMPDEST PUSH2 0x02c6 GAS SUB CALL ISZERO ISZERO PUSH2 0x09ac JUMPI PUSH1 0x00 DUP1"
+        }
+      ]
+    },
+    {
+      "pattern_id": 20,
+      "pattern_name": "dense_storage_or_call_ops",
+      "positive_chunk_count": 30735,
+      "positive_chunk_ratio": 0.021869903426605074,
+      "positive_contract_count": 8859,
+      "positive_contract_ratio": 0.059703202501617425,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 26039,
+          "positive_chunk_ratio": 0.024824463140834665,
+          "positive_contract_count": 7354,
+          "positive_contract_ratio": 0.07014163765558681
+        },
+        "valid": {
+          "positive_chunk_count": 2691,
+          "positive_chunk_ratio": 0.011924861408383298,
+          "positive_contract_count": 822,
+          "positive_contract_ratio": 0.030681945429435257
+        },
+        "test": {
+          "positive_chunk_count": 2005,
+          "positive_chunk_ratio": 0.015332497247032914,
+          "positive_contract_count": 683,
+          "positive_contract_ratio": 0.04078098877477908
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0xecff8fc2a19f83fc855618704f38725756dbcae3",
+          "split": "train",
+          "chunk_index": 14,
+          "matched_rule": "dense storage/call weak rule",
+          "local_opcode_snippet": "PUSH1 0xff NOT AND PUSH1 0x01 SWAP1 DUP2 OR SWAP1 SWAP2 SSTORE PUSH1 0x05 DUP2 SWAP1 SSTORE"
+        },
+        {
+          "contract_id": "0xecff8fc2a19f83fc855618704f38725756dbcae3",
+          "split": "train",
+          "chunk_index": 15,
+          "matched_rule": "dense storage/call weak rule",
+          "local_opcode_snippet": "PUSH1 0xff NOT AND PUSH1 0x01 SWAP1 DUP2 OR SWAP1 SWAP2 SSTORE PUSH1 0x05 DUP2 SWAP1 SSTORE"
+        },
+        {
+          "contract_id": "0x1133567dbaf440b5a000fb926b7014e32d8c1f26",
+          "split": "train",
+          "chunk_index": 21,
+          "matched_rule": "dense storage/call weak rule",
+          "local_opcode_snippet": "SWAP2 SWAP1 SWAP2 AND SWAP2 SWAP1 SWAP2 OR SWAP9 SWAP1 SWAP9 AND PUSH6 0x010000000000 OR AND PUSH7"
+        }
+      ]
+    },
+    {
+      "pattern_id": 21,
+      "pattern_name": "revert_or_invalid_present",
+      "positive_chunk_count": 1205572,
+      "positive_chunk_ratio": 0.8578410025644748,
+      "positive_contract_count": 140036,
+      "positive_contract_ratio": 0.9437405650204874,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 924777,
+          "positive_chunk_ratio": 0.8816426341254141,
+          "positive_contract_count": 99187,
+          "positive_contract_ratio": 0.9460346225380324
+        },
+        "valid": {
+          "positive_chunk_count": 160942,
+          "positive_chunk_ratio": 0.71319622623115,
+          "positive_contract_count": 24557,
+          "positive_contract_ratio": 0.9166137882124594
+        },
+        "test": {
+          "positive_chunk_count": 119853,
+          "positive_chunk_ratio": 0.916531567355928,
+          "positive_contract_count": 16292,
+          "positive_contract_ratio": 0.9727728684021972
+        }
+      },
+      "warnings": [
+        "too_frequent_low_discrimination"
+      ],
+      "usable_for_pretraining": false,
+      "examples": [
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 0,
+          "matched_rule": "REVERT or INVALID is present",
+          "local_opcode_snippet": "EQ PUSH2 0x0318 JUMPI JUMPDEST PUSH1 0x00 DUP1 REVERT JUMPDEST CALLVALUE DUP1 ISZERO PUSH2 0x00eb JUMPI PUSH1"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 1,
+          "matched_rule": "REVERT or INVALID is present",
+          "local_opcode_snippet": "DUP1 ISZERO PUSH2 0x019e JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP PUSH2 0x00f4 PUSH1 0x01 PUSH1 0xa0"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 2,
+          "matched_rule": "REVERT or INVALID is present",
+          "local_opcode_snippet": "DUP1 ISZERO PUSH2 0x0291 JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP PUSH2 0x01cb PUSH1 0x01 PUSH1 0xa0"
+        }
+      ]
+    },
+    {
+      "pattern_id": 22,
+      "pattern_name": "panic_selector_present",
+      "positive_chunk_count": 0,
+      "positive_chunk_ratio": 0.0,
+      "positive_contract_count": 0,
+      "positive_contract_ratio": 0.0,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 0,
+          "positive_chunk_ratio": 0.0,
+          "positive_contract_count": 0,
+          "positive_contract_ratio": 0.0
+        },
+        "valid": {
+          "positive_chunk_count": 0,
+          "positive_chunk_ratio": 0.0,
+          "positive_contract_count": 0,
+          "positive_contract_ratio": 0.0
+        },
+        "test": {
+          "positive_chunk_count": 0,
+          "positive_chunk_ratio": 0.0,
+          "positive_contract_count": 0,
+          "positive_contract_ratio": 0.0
+        }
+      },
+      "warnings": [
+        "too_sparse"
+      ],
+      "usable_for_pretraining": false,
+      "examples": []
+    },
+    {
+      "pattern_id": 23,
+      "pattern_name": "selfdestruct_present",
+      "positive_chunk_count": 23204,
+      "positive_chunk_ratio": 0.01651111889087178,
+      "positive_contract_count": 11939,
+      "positive_contract_ratio": 0.08046015742937244,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 16338,
+          "positive_chunk_ratio": 0.015575946802678934,
+          "positive_contract_count": 8546,
+          "positive_contract_ratio": 0.08151080165959274
+        },
+        "valid": {
+          "positive_chunk_count": 5278,
+          "positive_chunk_ratio": 0.02338885860774695,
+          "positive_contract_count": 2631,
+          "positive_contract_ratio": 0.09820462095479825
+        },
+        "test": {
+          "positive_chunk_count": 1588,
+          "positive_chunk_ratio": 0.012143643704881928,
+          "positive_contract_count": 762,
+          "positive_contract_ratio": 0.04549796990685455
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0x033586cf6c915f86b3e6f4e603479d85e9aad785",
+          "split": "train",
+          "chunk_index": 7,
+          "matched_rule": "SELFDESTRUCT or SUICIDE is present",
+          "local_opcode_snippet": "0x01 PUSH1 0xa0 PUSH1 0x02 EXP SUB AND SELFDESTRUCT JUMPDEST PUSH1 0x00 SLOAD PUSH1 0x01 PUSH1 0xa0"
+        },
+        {
+          "contract_id": "0x033586cf6c915f86b3e6f4e603479d85e9aad785",
+          "split": "train",
+          "chunk_index": 8,
+          "matched_rule": "SELFDESTRUCT or SUICIDE is present",
+          "local_opcode_snippet": "0x01 PUSH1 0xa0 PUSH1 0x02 EXP SUB AND SELFDESTRUCT JUMPDEST PUSH1 0x00 SLOAD PUSH1 0x01 PUSH1 0xa0"
+        },
+        {
+          "contract_id": "0x5572a6c464f50395a0f3bca67e75c51dd9321c02",
+          "split": "train",
+          "chunk_index": 9,
+          "matched_rule": "SELFDESTRUCT or SUICIDE is present",
+          "local_opcode_snippet": "0x01 PUSH1 0xa0 PUSH1 0x02 EXP SUB AND SELFDESTRUCT JUMPDEST PUSH1 0x09 PUSH1 0x20 MSTORE PUSH1 0x00"
+        }
+      ]
+    },
+    {
+      "pattern_id": 24,
+      "pattern_name": "create_contract_present",
+      "positive_chunk_count": 54765,
+      "positive_chunk_ratio": 0.038968773748431,
+      "positive_contract_count": 27067,
+      "positive_contract_ratio": 0.18241185033426785,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 23610,
+          "positive_chunk_ratio": 0.02250875896751436,
+          "positive_contract_count": 11546,
+          "positive_contract_ratio": 0.11012446945490963
+        },
+        "valid": {
+          "positive_chunk_count": 28522,
+          "positive_chunk_ratio": 0.12639200932363745,
+          "positive_contract_count": 14229,
+          "positive_contract_ratio": 0.5311111940577059
+        },
+        "test": {
+          "positive_chunk_count": 2633,
+          "positive_chunk_ratio": 0.020134895387250704,
+          "positive_contract_count": 1292,
+          "positive_contract_ratio": 0.07714353952710772
+        }
+      },
+      "warnings": [],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 7,
+          "matched_rule": "CREATE or CREATE2 is present",
+          "local_opcode_snippet": "UNKNOWN_E2 UNKNOWN_C8 SWAP12 PUSH10 0xc2b068fc378daa952ba7 CALL PUSH4 0xc4a11628 CREATE2 GAS UNKNOWN_4D CREATE2 UNKNOWN_23 UNKNOWN_B3 UNKNOWN_EF LOG1 PUSH6"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 8,
+          "matched_rule": "CREATE or CREATE2 is present",
+          "local_opcode_snippet": "UNKNOWN_E2 UNKNOWN_C8 SWAP12 PUSH10 0xc2b068fc378daa952ba7 CALL PUSH4 0xc4a11628 CREATE2 GAS UNKNOWN_4D CREATE2 UNKNOWN_23 UNKNOWN_B3 UNKNOWN_EF LOG1 PUSH6"
+        },
+        {
+          "contract_id": "0x0248a296ad4a2c21b793efe777024760677331a3",
+          "split": "train",
+          "chunk_index": 21,
+          "matched_rule": "CREATE or CREATE2 is present",
+          "local_opcode_snippet": "UNKNOWN_E2 UNKNOWN_C8 SWAP12 PUSH10 0xc2b068fc378daa952ba7 CALL PUSH4 0xc4a11628 CREATE2 GAS UNKNOWN_4D CREATE2 UNKNOWN_23 UNKNOWN_B3 UNKNOWN_EF LOG1 PUSH6"
+        }
+      ]
+    },
+    {
+      "pattern_id": 25,
+      "pattern_name": "external_call_near_loop_candidate",
+      "positive_chunk_count": 474336,
+      "positive_chunk_ratio": 0.337520172824537,
+      "positive_contract_count": 129635,
+      "positive_contract_ratio": 0.8736454065128316,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 346529,
+          "positive_chunk_ratio": 0.33036585075196034,
+          "positive_contract_count": 89816,
+          "positive_contract_ratio": 0.8566550622347274
+        },
+        "valid": {
+          "positive_chunk_count": 71856,
+          "positive_chunk_ratio": 0.31842171733957275,
+          "positive_contract_count": 25055,
+          "positive_contract_ratio": 0.935202120114964
+        },
+        "test": {
+          "positive_chunk_count": 55951,
+          "positive_chunk_ratio": 0.4278646151963783,
+          "positive_contract_count": 14764,
+          "positive_contract_ratio": 0.8815380941007882
+        }
+      },
+      "warnings": [
+        "noisy_but_candidate"
+      ],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0xabc37b3f72d244835a43ed901a70e7fb04d3ac14",
+          "split": "train",
+          "chunk_index": 7,
+          "matched_rule": "weak JUMPDEST+JUMPI loop-candidate heuristic",
+          "local_opcode_snippet": "0x00 DUP1 REVERT JUMPDEST PUSH2 0x02c6 GAS SUB CALL ISZERO ISZERO PUSH2 0x09ac JUMPI PUSH1 0x00 DUP1"
+        },
+        {
+          "contract_id": "0xabc37b3f72d244835a43ed901a70e7fb04d3ac14",
+          "split": "train",
+          "chunk_index": 8,
+          "matched_rule": "weak JUMPDEST+JUMPI loop-candidate heuristic",
+          "local_opcode_snippet": "0x00 DUP1 REVERT JUMPDEST PUSH2 0x02c6 GAS SUB CALL ISZERO ISZERO PUSH2 0x09ac JUMPI PUSH1 0x00 DUP1"
+        },
+        {
+          "contract_id": "0xabc37b3f72d244835a43ed901a70e7fb04d3ac14",
+          "split": "train",
+          "chunk_index": 9,
+          "matched_rule": "weak JUMPDEST+JUMPI loop-candidate heuristic",
+          "local_opcode_snippet": "0x627a7a723058 SHA3 PUSH0 UNKNOWN_BE SWAP10 SWAP4 MSTORE8 SHL STATICCALL UNKNOWN_CE SHR UNKNOWN_28 UNKNOWN_5D UNKNOWN_CA UNKNOWN_B1 UNKNOWN_C6 UNKNOWN_E0"
+        }
+      ]
+    },
+    {
+      "pattern_id": 26,
+      "pattern_name": "storage_write_near_loop_candidate",
+      "positive_chunk_count": 599732,
+      "positive_chunk_ratio": 0.42674738642735366,
+      "positive_contract_count": 124986,
+      "positive_contract_ratio": 0.8423145352598663,
+      "per_split": {
+        "train": {
+          "positive_chunk_count": 445088,
+          "positive_chunk_ratio": 0.42432776413947615,
+          "positive_contract_count": 91517,
+          "positive_contract_ratio": 0.8728790118746721
+        },
+        "valid": {
+          "positive_chunk_count": 111037,
+          "positive_chunk_ratio": 0.49204787670109856,
+          "positive_contract_count": 26202,
+          "positive_contract_ratio": 0.9780150050390056
+        },
+        "test": {
+          "positive_chunk_count": 43607,
+          "positive_chunk_ratio": 0.33346843264407194,
+          "positive_contract_count": 7267,
+          "positive_contract_ratio": 0.4339025555290184
+        }
+      },
+      "warnings": [
+        "noisy_but_candidate"
+      ],
+      "usable_for_pretraining": true,
+      "examples": [
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 4,
+          "matched_rule": "weak JUMPDEST+JUMPI loop-candidate heuristic",
+          "local_opcode_snippet": "0xffffffff PUSH2 0x0904 AND JUMP JUMPDEST PUSH1 0x01 SSTORE PUSH1 0x01 PUSH1 0xa0 PUSH1 0x02 EXP SUB"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 5,
+          "matched_rule": "weak JUMPDEST+JUMPI loop-candidate heuristic",
+          "local_opcode_snippet": "CALLER DUP5 MSTORE SWAP1 SWAP2 MSTORE SWAP1 SHA3 SSTORE PUSH2 0x074a DUP3 DUP3 PUSH2 0x0917 JUMP JUMPDEST"
+        },
+        {
+          "contract_id": "0x4a0280d5f91e1b5f0ecbe6ef52df167ef39c0767",
+          "split": "train",
+          "chunk_index": 6,
+          "matched_rule": "weak JUMPDEST+JUMPI loop-candidate heuristic",
+          "local_opcode_snippet": "CALLER DUP5 MSTORE SWAP1 SWAP2 MSTORE SWAP1 SHA3 SSTORE PUSH2 0x074a DUP3 DUP3 PUSH2 0x0917 JUMP JUMPDEST"
+        }
+      ]
+    }
+  ],
+  "efpp_cooccurrence_matrix": {
+    "pattern_names": [
+      "has_external_call",
+      "has_delegatecall",
+      "has_state_read",
+      "has_state_write",
+      "call_before_state_write",
+      "state_write_before_call",
+      "call_without_return_check",
+      "call_with_return_check",
+      "state_write_with_auth_guard",
+      "state_write_without_auth_guard",
+      "sensitive_call_with_auth_guard",
+      "sensitive_call_without_auth_guard",
+      "env_used_in_condition",
+      "env_used_in_arithmetic_or_hash",
+      "arithmetic_chain",
+      "div_before_mul",
+      "arithmetic_followed_by_guard_or_revert",
+      "has_hardcoded_address",
+      "hardcoded_address_near_call",
+      "value_or_gas_sensitive_call",
+      "dense_storage_or_call_ops",
+      "revert_or_invalid_present",
+      "panic_selector_present",
+      "selfdestruct_present",
+      "create_contract_present",
+      "external_call_near_loop_candidate",
+      "storage_write_near_loop_candidate"
+    ],
+    "counts": [
+      [
+        508022,
+        47421,
+        468875,
+        351904,
+        39034,
+        60450,
+        65505,
+        460339,
+        154922,
+        295362,
+        140133,
+        430294,
+        143601,
+        146920,
+        494305,
+        155716,
+        497011,
+        289251,
+        267252,
+        443556,
+        12085,
+        463526,
+        0,
+        10407,
+        15154,
+        474336,
+        243333
+      ],
+      [
+        47421,
+        47421,
+        35065,
+        13672,
+        3679,
+        3314,
+        6687,
+        43081,
+        4926,
+        11914,
+        6500,
+        44207,
+        1944,
+        2451,
+        46427,
+        3538,
+        46717,
+        43505,
+        40155,
+        44596,
+        313,
+        45502,
+        0,
+        1233,
+        1476,
+        45279,
+        11055
+      ],
+      [
+        468875,
+        35065,
+        1087255,
+        831346,
+        38692,
+        59244,
+        51393,
+        431332,
+        399055,
+        693390,
+        154908,
+        405974,
+        192256,
+        210175,
+        1075633,
+        395684,
+        1077457,
+        619824,
+        538260,
+        414109,
+        30731,
+        953207,
+        0,
+        20912,
+        34293,
+        444608,
+        594132
+      ],
+      [
+        351904,
+        13672,
+        831346,
+        840228,
+        39034,
+        60450,
+        42829,
+        317609,
+        399314,
+        702059,
+        123861,
+        296557,
+        173858,
+        194887,
+        831182,
+        293588,
+        832600,
+        513692,
+        489568,
+        305529,
+        29553,
+        727331,
+        0,
+        18237,
+        32515,
+        328543,
+        599732
+      ],
+      [
+        39034,
+        3679,
+        38692,
+        39034,
+        39034,
+        10005,
+        3913,
+        36707,
+        14741,
+        36863,
+        13016,
+        33731,
+        8774,
+        9936,
+        38727,
+        12671,
+        38878,
+        19355,
+        18328,
+        32532,
+        3045,
+        35342,
+        0,
+        799,
+        1022,
+        37886,
+        37789
+      ],
+      [
+        60450,
+        3314,
+        59244,
+        60450,
+        10005,
+        60450,
+        24105,
+        41565,
+        31265,
+        45950,
+        31347,
+        37764,
+        14094,
+        13314,
+        58925,
+        16849,
+        59512,
+        35682,
+        35072,
+        34720,
+        3819,
+        56095,
+        0,
+        1649,
+        4742,
+        45784,
+        52663
+      ],
+      [
+        65505,
+        6687,
+        51393,
+        42829,
+        3913,
+        24105,
+        65505,
+        17822,
+        17185,
+        30792,
+        19969,
+        54097,
+        5867,
+        8901,
+        55381,
+        13227,
+        55994,
+        42087,
+        38518,
+        40922,
+        1241,
+        43937,
+        0,
+        3922,
+        8908,
+        35741,
+        33207
+      ],
+      [
+        460339,
+        43081,
+        431332,
+        317609,
+        36707,
+        41565,
+        17822,
+        460339,
+        142370,
+        269712,
+        128173,
+        393441,
+        140331,
+        139639,
+        456528,
+        146732,
+        458772,
+        261452,
+        242390,
+        419397,
+        11051,
+        436363,
+        0,
+        7070,
+        7879,
+        456161,
+        216925
+      ],
+      [
+        154922,
+        4926,
+        399055,
+        399314,
+        14741,
+        31265,
+        17185,
+        142370,
+        399314,
+        261145,
+        81838,
+        115764,
+        84762,
+        87920,
+        398309,
+        132591,
+        398975,
+        291470,
+        280429,
+        129660,
+        11207,
+        361555,
+        0,
+        7519,
+        20699,
+        145190,
+        364698
+      ],
+      [
+        295362,
+        11914,
+        693390,
+        702059,
+        36863,
+        45950,
+        30792,
+        269712,
+        261145,
+        702059,
+        72769,
+        260322,
+        160036,
+        181410,
+        693379,
+        250310,
+        694539,
+        400554,
+        380845,
+        259655,
+        26492,
+        592684,
+        0,
+        14131,
+        15606,
+        279589,
+        469750
+      ],
+      [
+        140133,
+        6500,
+        154908,
+        123861,
+        13016,
+        31347,
+        19969,
+        128173,
+        81838,
+        72769,
+        159523,
+        62734,
+        22040,
+        21460,
+        157690,
+        58113,
+        158952,
+        106990,
+        102689,
+        113068,
+        3878,
+        156076,
+        0,
+        9339,
+        20115,
+        130559,
+        102781
+      ],
+      [
+        430294,
+        44207,
+        405974,
+        296557,
+        33731,
+        37764,
+        54097,
+        393441,
+        115764,
+        260322,
+        62734,
+        460871,
+        130816,
+        138738,
+        433578,
+        126272,
+        434464,
+        260637,
+        224987,
+        390361,
+        9794,
+        398514,
+        0,
+        16654,
+        38058,
+        405394,
+        197866
+      ],
+      [
+        143601,
+        1944,
+        192256,
+        173858,
+        8774,
+        14094,
+        5867,
+        140331,
+        84762,
+        160036,
+        22040,
+        130816,
+        194448,
+        163034,
+        191681,
+        35511,
+        193120,
+        97307,
+        91683,
+        132915,
+        7827,
+        187887,
+        0,
+        2088,
+        2069,
+        140212,
+        115164
+      ],
+      [
+        146920,
+        2451,
+        210175,
+        194887,
+        9936,
+        13314,
+        8901,
+        139639,
+        87920,
+        181410,
+        21460,
+        138738,
+        163034,
+        218092,
+        213213,
+        37447,
+        213942,
+        113903,
+        105812,
+        133582,
+        10360,
+        189984,
+        0,
+        6319,
+        5212,
+        140305,
+        133659
+      ],
+      [
+        494305,
+        46427,
+        1075633,
+        831182,
+        38727,
+        58925,
+        55381,
+        456528,
+        398309,
+        693379,
+        157690,
+        433578,
+        191681,
+        213213,
+        1329835,
+        445555,
+        1319409,
+        758425,
+        554052,
+        439072,
+        30438,
+        1187362,
+        0,
+        21648,
+        38785,
+        470262,
+        593836
+      ],
+      [
+        155716,
+        3538,
+        395684,
+        293588,
+        12671,
+        16849,
+        13227,
+        146732,
+        132591,
+        250310,
+        58113,
+        126272,
+        35511,
+        37447,
+        445555,
+        445774,
+        445381,
+        268399,
+        203948,
+        131518,
+        7465,
+        375755,
+        0,
+        5165,
+        5823,
+        152618,
+        201728
+      ],
+      [
+        497011,
+        46717,
+        1077457,
+        832600,
+        38878,
+        59512,
+        55994,
+        458772,
+        398975,
+        694539,
+        158952,
+        434464,
+        193120,
+        213942,
+        1319409,
+        445381,
+        1336621,
+        761224,
+        554723,
+        440893,
+        30562,
+        1200716,
+        0,
+        21026,
+        37818,
+        473419,
+        597944
+      ],
+      [
+        289251,
+        43505,
+        619824,
+        513692,
+        19355,
+        35682,
+        42087,
+        261452,
+        291470,
+        400554,
+        106990,
+        260637,
+        97307,
+        113903,
+        758425,
+        268399,
+        761224,
+        780323,
+        558452,
+        258569,
+        8771,
+        696635,
+        0,
+        15330,
+        40312,
+        270643,
+        378230
+      ],
+      [
+        267252,
+        40155,
+        538260,
+        489568,
+        18328,
+        35072,
+        38518,
+        242390,
+        280429,
+        380845,
+        102689,
+        224987,
+        91683,
+        105812,
+        554052,
+        203948,
+        554723,
+        558452,
+        558452,
+        237936,
+        8029,
+        505222,
+        0,
+        12190,
+        25600,
+        249172,
+        357603
+      ],
+      [
+        443556,
+        44596,
+        414109,
+        305529,
+        32532,
+        34720,
+        40922,
+        419397,
+        129660,
+        259655,
+        113068,
+        390361,
+        132915,
+        133582,
+        439072,
+        131518,
+        440893,
+        258569,
+        237936,
+        443556,
+        9552,
+        415724,
+        0,
+        8861,
+        13583,
+        428457,
+        204096
+      ],
+      [
+        12085,
+        313,
+        30731,
+        29553,
+        3045,
+        3819,
+        1241,
+        11051,
+        11207,
+        26492,
+        3878,
+        9794,
+        7827,
+        10360,
+        30438,
+        7465,
+        30562,
+        8771,
+        8029,
+        9552,
+        30735,
+        24682,
+        0,
+        406,
+        349,
+        11624,
+        25288
+      ],
+      [
+        463526,
+        45502,
+        953207,
+        727331,
+        35342,
+        56095,
+        43937,
+        436363,
+        361555,
+        592684,
+        156076,
+        398514,
+        187887,
+        189984,
+        1187362,
+        375755,
+        1200716,
+        696635,
+        505222,
+        415724,
+        24682,
+        1205572,
+        0,
+        15911,
+        35821,
+        446475,
+        511277
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        10407,
+        1233,
+        20912,
+        18237,
+        799,
+        1649,
+        3922,
+        7070,
+        7519,
+        14131,
+        9339,
+        16654,
+        2088,
+        6319,
+        21648,
+        5165,
+        21026,
+        15330,
+        12190,
+        8861,
+        406,
+        15911,
+        0,
+        23204,
+        3520,
+        7733,
+        14971
+      ],
+      [
+        15154,
+        1476,
+        34293,
+        32515,
+        1022,
+        4742,
+        8908,
+        7879,
+        20699,
+        15606,
+        20115,
+        38058,
+        2069,
+        5212,
+        38785,
+        5823,
+        37818,
+        40312,
+        25600,
+        13583,
+        349,
+        35821,
+        0,
+        3520,
+        54765,
+        10792,
+        26530
+      ],
+      [
+        474336,
+        45279,
+        444608,
+        328543,
+        37886,
+        45784,
+        35741,
+        456161,
+        145190,
+        279589,
+        130559,
+        405394,
+        140212,
+        140305,
+        470262,
+        152618,
+        473419,
+        270643,
+        249172,
+        428457,
+        11624,
+        446475,
+        0,
+        7733,
+        10792,
+        474336,
+        225996
+      ],
+      [
+        243333,
+        11055,
+        594132,
+        599732,
+        37789,
+        52663,
+        33207,
+        216925,
+        364698,
+        469750,
+        102781,
+        197866,
+        115164,
+        133659,
+        593836,
+        201728,
+        597944,
+        378230,
+        357603,
+        204096,
+        25288,
+        511277,
+        0,
+        14971,
+        26530,
+        225996,
+        599732
+      ]
+    ]
+  },
+  "top_effect_event_chains_length_3": [
+    {
+      "chain": [
+        "ControlGuard",
+        "ControlGuard",
+        "ControlGuard"
+      ],
+      "count": 12185481
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "StorageOrMemoryHeavy",
+        "Arithmetic"
+      ],
+      "count": 8508789
+    },
+    {
+      "chain": [
+        "ControlGuard",
+        "ControlGuard",
+        "RevertOrAssert"
+      ],
+      "count": 7678724
+    },
+    {
+      "chain": [
+        "StorageOrMemoryHeavy",
+        "Arithmetic",
+        "StorageOrMemoryHeavy"
+      ],
+      "count": 7438645
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "Arithmetic",
+        "Arithmetic"
+      ],
+      "count": 5233485
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "Arithmetic",
+        "StorageOrMemoryHeavy"
+      ],
+      "count": 4230188
+    },
+    {
+      "chain": [
+        "StorageOrMemoryHeavy",
+        "Arithmetic",
+        "Arithmetic"
+      ],
+      "count": 4116424
+    },
+    {
+      "chain": [
+        "StorageOrMemoryHeavy",
+        "StorageOrMemoryHeavy",
+        "Arithmetic"
+      ],
+      "count": 4035093
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "ControlGuard",
+        "ControlGuard"
+      ],
+      "count": 3784176
+    },
+    {
+      "chain": [
+        "GasOrValue",
+        "ControlGuard",
+        "ControlGuard"
+      ],
+      "count": 3314200
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "StorageOrMemoryHeavy",
+        "StorageOrMemoryHeavy"
+      ],
+      "count": 3272140
+    },
+    {
+      "chain": [
+        "StateRead",
+        "Arithmetic",
+        "Arithmetic"
+      ],
+      "count": 2625940
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "Arithmetic",
+        "ControlGuard"
+      ],
+      "count": 2143955
+    },
+    {
+      "chain": [
+        "ControlGuard",
+        "RevertOrAssert",
+        "Arithmetic"
+      ],
+      "count": 2116820
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "GasOrValue",
+        "ControlGuard"
+      ],
+      "count": 2090448
+    },
+    {
+      "chain": [
+        "ReturnCheck",
+        "ReturnCheck",
+        "ReturnCheck"
+      ],
+      "count": 2007107
+    },
+    {
+      "chain": [
+        "AddressLiteral",
+        "StorageOrMemoryHeavy",
+        "Arithmetic"
+      ],
+      "count": 1871304
+    },
+    {
+      "chain": [
+        "AddressLiteral",
+        "AddressLiteral",
+        "StorageOrMemoryHeavy"
+      ],
+      "count": 1796108
+    },
+    {
+      "chain": [
+        "StorageOrMemoryHeavy",
+        "Arithmetic",
+        "HashOrCrypto"
+      ],
+      "count": 1738706
+    },
+    {
+      "chain": [
+        "StorageOrMemoryHeavy",
+        "StorageOrMemoryHeavy",
+        "HashOrCrypto"
+      ],
+      "count": 1733077
+    }
+  ],
+  "top_effect_event_chains_length_4": [
+    {
+      "chain": [
+        "ControlGuard",
+        "ControlGuard",
+        "ControlGuard",
+        "ControlGuard"
+      ],
+      "count": 6716917
+    },
+    {
+      "chain": [
+        "StorageOrMemoryHeavy",
+        "Arithmetic",
+        "StorageOrMemoryHeavy",
+        "Arithmetic"
+      ],
+      "count": 5789424
+    },
+    {
+      "chain": [
+        "ControlGuard",
+        "ControlGuard",
+        "ControlGuard",
+        "RevertOrAssert"
+      ],
+      "count": 3311880
+    },
+    {
+      "chain": [
+        "GasOrValue",
+        "ControlGuard",
+        "ControlGuard",
+        "RevertOrAssert"
+      ],
+      "count": 3216841
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "StorageOrMemoryHeavy",
+        "Arithmetic",
+        "StorageOrMemoryHeavy"
+      ],
+      "count": 2934807
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "ControlGuard",
+        "ControlGuard",
+        "ControlGuard"
+      ],
+      "count": 2578517
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "Arithmetic",
+        "Arithmetic",
+        "Arithmetic"
+      ],
+      "count": 2576933
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "Arithmetic",
+        "ControlGuard",
+        "ControlGuard"
+      ],
+      "count": 2097144
+    },
+    {
+      "chain": [
+        "ControlGuard",
+        "ControlGuard",
+        "RevertOrAssert",
+        "Arithmetic"
+      ],
+      "count": 2093476
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "GasOrValue",
+        "ControlGuard",
+        "ControlGuard"
+      ],
+      "count": 2030497
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "StorageOrMemoryHeavy",
+        "StorageOrMemoryHeavy",
+        "Arithmetic"
+      ],
+      "count": 1913826
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "Arithmetic",
+        "StorageOrMemoryHeavy",
+        "Arithmetic"
+      ],
+      "count": 1911006
+    },
+    {
+      "chain": [
+        "StorageOrMemoryHeavy",
+        "StorageOrMemoryHeavy",
+        "Arithmetic",
+        "StorageOrMemoryHeavy"
+      ],
+      "count": 1877237
+    },
+    {
+      "chain": [
+        "AddressLiteral",
+        "StorageOrMemoryHeavy",
+        "Arithmetic",
+        "StorageOrMemoryHeavy"
+      ],
+      "count": 1790824
+    },
+    {
+      "chain": [
+        "StorageOrMemoryHeavy",
+        "StorageOrMemoryHeavy",
+        "Arithmetic",
+        "Arithmetic"
+      ],
+      "count": 1725277
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "StorageOrMemoryHeavy",
+        "Arithmetic",
+        "HashOrCrypto"
+      ],
+      "count": 1718497
+    },
+    {
+      "chain": [
+        "AddressLiteral",
+        "AddressLiteral",
+        "StorageOrMemoryHeavy",
+        "Arithmetic"
+      ],
+      "count": 1680563
+    },
+    {
+      "chain": [
+        "ControlGuard",
+        "ControlGuard",
+        "RevertOrAssert",
+        "GasOrValue"
+      ],
+      "count": 1678538
+    },
+    {
+      "chain": [
+        "Arithmetic",
+        "Arithmetic",
+        "StorageOrMemoryHeavy",
+        "StorageOrMemoryHeavy"
+      ],
+      "count": 1608142
+    },
+    {
+      "chain": [
+        "ControlGuard",
+        "RevertOrAssert",
+        "Arithmetic",
+        "Arithmetic"
+      ],
+      "count": 1602759
+    }
+  ],
+  "pattern_schema": [
+    {
+      "id": 0,
+      "name": "has_external_call",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 1,
+      "name": "has_delegatecall",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 2,
+      "name": "has_state_read",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 3,
+      "name": "has_state_write",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 4,
+      "name": "call_before_state_write",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 5,
+      "name": "state_write_before_call",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 6,
+      "name": "call_without_return_check",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 7,
+      "name": "call_with_return_check",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 8,
+      "name": "state_write_with_auth_guard",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 9,
+      "name": "state_write_without_auth_guard",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 10,
+      "name": "sensitive_call_with_auth_guard",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 11,
+      "name": "sensitive_call_without_auth_guard",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 12,
+      "name": "env_used_in_condition",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 13,
+      "name": "env_used_in_arithmetic_or_hash",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 14,
+      "name": "arithmetic_chain",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 15,
+      "name": "div_before_mul",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 16,
+      "name": "arithmetic_followed_by_guard_or_revert",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 17,
+      "name": "has_hardcoded_address",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 18,
+      "name": "hardcoded_address_near_call",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 19,
+      "name": "value_or_gas_sensitive_call",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 20,
+      "name": "dense_storage_or_call_ops",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 21,
+      "name": "revert_or_invalid_present",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 22,
+      "name": "panic_selector_present",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 23,
+      "name": "selfdestruct_present",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 24,
+      "name": "create_contract_present",
+      "noise_status": "rule_based"
+    },
+    {
+      "id": 25,
+      "name": "external_call_near_loop_candidate",
+      "noise_status": "noisy_but_candidate"
+    },
+    {
+      "id": 26,
+      "name": "storage_write_near_loop_candidate",
+      "noise_status": "noisy_but_candidate"
+    }
+  ],
+  "usable_for_pretraining": true,
+  "usable_pattern_count": 23,
+  "usable_reason": "23/27 patterns fall in the 0.1%-80% chunk prevalence range"
+}

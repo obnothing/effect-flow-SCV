@@ -1,0 +1,186 @@
+Stage 16A Effect-Flow Annotation + EFPP Relevance Summary
+
+input_files_confirmed: True
+recommend_stage16b: True
+stage16b_recommended_tasks: ['MOM', 'ETP', 'EFPP']
+stage16b_not_recommended_yet: ['EEP', 'complex EOP']
+
+Effect-flow chunks:
+- BJUT: {'contracts': 148384, 'chunks': 1405356, 'mean_chunks_per_contract': 9.471075048522751, 'coverage_ratio_mean': 0.9902737803380665}
+- DIVE: {'contracts': 22330, 'chunks': 441699, 'mean_chunks_per_contract': 19.78051948051948, 'coverage_ratio_mean': 0.9603295907030425}
+
+Rare ETP effect types:
+- BJUT: ['EnvDependency', 'CreateContract', 'Destructive']
+- DIVE: ['EnvDependency', 'CreateContract', 'Destructive']
+
+Recommended EFPP patterns:
+- has_external_call
+- has_delegatecall
+- has_state_read
+- has_state_write
+- call_before_state_write
+- state_write_before_call
+- call_without_return_check
+- call_with_return_check
+- state_write_with_auth_guard
+- state_write_without_auth_guard
+- sensitive_call_with_auth_guard
+- sensitive_call_without_auth_guard
+- env_used_in_condition
+- env_used_in_arithmetic_or_hash
+- div_before_mul
+- has_hardcoded_address
+- hardcoded_address_near_call
+- value_or_gas_sensitive_call
+- dense_storage_or_call_ops
+- panic_selector_present
+- selfdestruct_present
+- create_contract_present
+- external_call_near_loop_candidate
+- storage_write_near_loop_candidate
+
+Too sparse EFPP patterns:
+- BJUT: ['panic_selector_present']
+- DIVE: []
+
+Too frequent EFPP patterns:
+- BJUT: ['arithmetic_chain', 'arithmetic_followed_by_guard_or_revert', 'revert_or_invalid_present']
+- DIVE: ['arithmetic_chain', 'arithmetic_followed_by_guard_or_revert', 'revert_or_invalid_present']
+
+BJUT label-pattern coverage/lift (train only):
+[Reentrancy]
+- value_or_gas_sensitive_call: coverage=0.9984, lift=1.2016, score=0.7879, weak_or_unrelated
+- call_with_return_check: coverage=0.9960, lift=1.1894, score=0.7805, common_but_weak
+- external_call_near_loop_candidate: coverage=0.9952, lift=1.1640, score=0.7682, common_but_weak
+- has_external_call: coverage=0.9992, lift=1.1476, score=0.7637, common_but_weak
+- has_hardcoded_address: coverage=0.9759, lift=1.1528, score=0.7483, common_but_weak
+[Contract contains unknown address]
+- revert_or_invalid_present: coverage=0.9948, lift=1.0611, score=0.7195, common_but_weak
+- has_state_read: coverage=0.9918, lift=1.0277, score=0.7011, common_but_weak
+- arithmetic_chain: coverage=0.9976, lift=1.0173, score=0.7000, common_but_weak
+- has_hardcoded_address: coverage=0.9294, lift=1.1145, score=0.6960, common_but_weak
+- arithmetic_followed_by_guard_or_revert: coverage=0.9986, lift=1.0037, score=0.6940, common_but_weak
+[Integer overflow or underflow]
+- revert_or_invalid_present: coverage=0.9951, lift=1.0609, score=0.7196, common_but_weak
+- state_write_without_auth_guard: coverage=0.9697, lift=1.1003, score=0.7196, common_but_weak
+- has_state_write: coverage=0.9806, lift=1.0761, score=0.7163, common_but_weak
+- arithmetic_chain: coverage=0.9982, lift=1.0179, score=0.7008, common_but_weak
+- has_state_read: coverage=0.9907, lift=1.0261, score=0.6996, common_but_weak
+[Timestamp dependence]
+- env_used_in_condition: coverage=0.9968, lift=2.1259, score=1.1361, strong_candidate
+- env_used_in_arithmetic_or_hash: coverage=0.9743, lift=2.0087, score=1.0732, strong_candidate
+- hardcoded_address_near_call: coverage=0.9695, lift=1.1631, score=0.7480, common_but_weak
+- call_with_return_check: coverage=0.9695, lift=1.1562, score=0.7449, common_but_weak
+- has_hardcoded_address: coverage=0.9727, lift=1.1478, score=0.7436, common_but_weak
+[DoS with failed call]
+- sensitive_call_with_auth_guard: coverage=0.9363, lift=2.2274, score=1.0971, strong_candidate
+- call_without_return_check: coverage=0.5914, lift=2.8249, score=0.7933, strong_candidate
+- call_with_return_check: coverage=0.9959, lift=1.1876, score=0.7796, common_but_weak
+- value_or_gas_sensitive_call: coverage=0.9897, lift=1.1893, score=0.7755, common_but_weak
+- external_call_near_loop_candidate: coverage=0.9959, lift=1.1634, score=0.7685, common_but_weak
+[Assert violation]
+- state_write_without_auth_guard: coverage=0.9796, lift=1.0969, score=0.7253, common_but_weak
+- has_hardcoded_address: coverage=0.9563, lift=1.1284, score=0.7223, common_but_weak
+- has_state_write: coverage=0.9869, lift=1.0721, score=0.7190, common_but_weak
+- revert_or_invalid_present: coverage=0.9956, lift=1.0528, score=0.7161, common_but_weak
+- hardcoded_address_near_call: coverage=0.9446, lift=1.1331, score=0.7156, common_but_weak
+[Unchecked call return value]
+- sensitive_call_with_auth_guard: coverage=0.8108, lift=2.0321, score=0.8994, strong_candidate
+- state_write_with_auth_guard: coverage=0.9668, lift=1.1831, score=0.7548, common_but_weak
+- storage_write_near_loop_candidate: coverage=0.9843, lift=1.1365, score=0.7473, common_but_weak
+- has_state_write: coverage=0.9896, lift=1.0794, score=0.7245, common_but_weak
+- revert_or_invalid_present: coverage=0.9982, lift=1.0587, score=0.7208, common_but_weak
+[Unsafe send]
+- has_delegatecall: coverage=0.5714, lift=10.3049, score=1.3858, strong_candidate
+- selfdestruct_present: coverage=0.6058, lift=7.9947, score=1.3308, strong_candidate
+- call_with_return_check: coverage=0.9762, lift=1.1652, score=0.7541, common_but_weak
+- external_call_near_loop_candidate: coverage=0.9815, lift=1.1475, score=0.7502, common_but_weak
+- has_external_call: coverage=0.9824, lift=1.1278, score=0.7418, common_but_weak
+[Multiplication after division]
+- div_before_mul: coverage=0.9046, lift=1.5954, score=0.8627, strong_candidate
+- sensitive_call_with_auth_guard: coverage=0.7602, lift=1.8199, score=0.7880, strong_candidate
+- storage_write_near_loop_candidate: coverage=0.9639, lift=1.1060, score=0.7179, common_but_weak
+- has_state_write: coverage=0.9839, lift=1.0694, score=0.7155, common_but_weak
+- revert_or_invalid_present: coverage=0.9903, lift=1.0476, score=0.7097, common_but_weak
+[Extra gas consumption]
+- revert_or_invalid_present: coverage=0.9861, lift=1.0443, score=0.7052, common_but_weak
+- arithmetic_chain: coverage=0.9982, lift=1.0160, score=0.6998, common_but_weak
+- arithmetic_followed_by_guard_or_revert: coverage=0.9991, lift=1.0039, score=0.6944, common_but_weak
+- has_state_read: coverage=0.9777, lift=1.0094, score=0.6823, common_but_weak
+- storage_write_near_loop_candidate: coverage=0.9305, lift=1.0691, score=0.6766, common_but_weak
+
+DIVE label-pattern coverage/lift (train only):
+[Reentrancy]
+- call_with_return_check: coverage=0.9828, lift=1.5660, score=0.9262, strong_candidate
+- external_call_near_loop_candidate: coverage=0.9860, lift=1.5351, score=0.9172, strong_candidate
+- has_external_call: coverage=0.9878, lift=1.4854, score=0.8994, weak_or_unrelated
+- sensitive_call_without_auth_guard: coverage=0.9570, lift=1.5491, score=0.8955, strong_candidate
+- value_or_gas_sensitive_call: coverage=0.9534, lift=1.5229, score=0.8823, strong_candidate
+[Access Control]
+- has_state_read: coverage=0.9918, lift=1.0363, score=0.7053, common_but_weak
+- has_state_write: coverage=0.9829, lift=1.0414, score=0.7014, common_but_weak
+- state_write_without_auth_guard: coverage=0.9748, lift=1.0431, score=0.6965, common_but_weak
+- arithmetic_chain: coverage=0.9975, lift=1.0101, score=0.6965, common_but_weak
+- arithmetic_followed_by_guard_or_revert: coverage=0.9986, lift=1.0046, score=0.6944, common_but_weak
+[Arithmetic]
+- has_state_write: coverage=0.9881, lift=1.0269, score=0.6981, common_but_weak
+- state_write_without_auth_guard: coverage=0.9829, lift=1.0330, score=0.6974, common_but_weak
+- has_state_read: coverage=0.9929, lift=1.0173, score=0.6968, common_but_weak
+- revert_or_invalid_present: coverage=0.9983, lift=1.0040, score=0.6940, common_but_weak
+- arithmetic_chain: coverage=0.9974, lift=1.0042, score=0.6935, common_but_weak
+[Unchecked Return Values]
+- value_or_gas_sensitive_call: coverage=0.9189, lift=1.2280, score=0.7361, weak_or_unrelated
+- has_external_call: coverage=0.9320, lift=1.1746, score=0.7240, common_but_weak
+- external_call_near_loop_candidate: coverage=0.9211, lift=1.1795, score=0.7176, common_but_weak
+- sensitive_call_without_auth_guard: coverage=0.9058, lift=1.2076, score=0.7173, weak_or_unrelated
+- call_with_return_check: coverage=0.9123, lift=1.1816, score=0.7117, common_but_weak
+[DoS]
+- sensitive_call_with_auth_guard: coverage=0.6672, lift=2.1773, score=0.7713, strong_candidate
+- has_external_call: coverage=0.9241, lift=1.1393, score=0.7027, common_but_weak
+- external_call_near_loop_candidate: coverage=0.9126, lift=1.1423, score=0.6953, common_but_weak
+- revert_or_invalid_present: coverage=0.9969, lift=1.0010, score=0.6915, common_but_weak
+- arithmetic_followed_by_guard_or_revert: coverage=0.9973, lift=0.9999, score=0.6912, common_but_weak
+[Bad Randomness]
+- env_used_in_arithmetic_or_hash: coverage=0.9462, lift=1.6525, score=0.9230, strong_candidate
+- env_used_in_condition: coverage=0.8027, lift=1.6694, score=0.7881, strong_candidate
+- storage_write_near_loop_candidate: coverage=0.9798, lift=1.0525, score=0.7046, common_but_weak
+- arithmetic_chain: coverage=1.0000, lift=1.0051, score=0.6957, common_but_weak
+- has_external_call: coverage=0.9260, lift=1.1195, score=0.6956, common_but_weak
+[Front Running]
+- sensitive_call_with_auth_guard: coverage=0.8866, lift=2.5195, score=1.1156, strong_candidate
+- external_call_near_loop_candidate: coverage=0.9907, lift=1.2187, score=0.7895, weak_or_unrelated
+- has_external_call: coverage=0.9954, lift=1.2061, score=0.7876, weak_or_unrelated
+- call_with_return_check: coverage=0.9630, lift=1.1966, score=0.7578, common_but_weak
+- arithmetic_followed_by_guard_or_revert: coverage=1.0000, lift=1.0026, score=0.6945, common_but_weak
+[Time manipulation]
+- env_used_in_condition: coverage=0.8622, lift=2.5174, score=1.0844, strong_candidate
+- env_used_in_arithmetic_or_hash: coverage=0.9296, lift=2.0846, score=1.0471, strong_candidate
+- has_external_call: coverage=0.9450, lift=1.2047, score=0.7471, weak_or_unrelated
+- call_with_return_check: coverage=0.9294, lift=1.2206, score=0.7414, weak_or_unrelated
+- external_call_near_loop_candidate: coverage=0.9330, lift=1.2082, score=0.7391, weak_or_unrelated
+
+Effect-flow expected strong-signal labels:
+- Reentrancy
+- Unchecked Return / Unchecked call return value
+- Time manipulation / Timestamp dependence
+- Bad Randomness
+- Access Control
+- Contract contains unknown address
+- Arithmetic / Multiplication after division
+
+Effect-flow expected weak-signal labels:
+- DoS
+- Assert violation
+- Extra gas consumption
+- Front Running
+
+External unlabeled dataset reuse:
+- required: contract id and runtime opcode sequence
+- optional: source dataset name
+- vulnerability labels are not required
+- tokenizer retraining is not required unless OOV/UNK ratio is abnormally high
+
+Warnings:
+- EFPP rules are weak semantic annotations, not vulnerability labels.
+- Only train-split relevance may inform Stage 16B pattern selection; valid/test remain diagnostic.
+- Loop-candidate patterns are noisy because Stage 16A does not build a CFG or perform stack-precise jump analysis.

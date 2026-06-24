@@ -1,0 +1,862 @@
+{
+  "stage": "16A",
+  "input_files_confirmed": true,
+  "selected_inputs": {
+    "BJUT": {
+      "selection_reason": "project provenance identifies this directory as opcode-hash grouped; random and MLSMOTE variants are excluded",
+      "paths": {
+        "train": "data/processed/BJUT_SC01/train.jsonl",
+        "valid": "data/processed/BJUT_SC01/valid.jsonl",
+        "test": "data/processed/BJUT_SC01/test.jsonl"
+      }
+    },
+    "DIVE": {
+      "selection_reason": "project provenance identifies this directory as opcode-hash grouped; random and MLSMOTE variants are excluded",
+      "paths": {
+        "train": "data/processed/DIVE/train.jsonl",
+        "valid": "data/processed/DIVE/valid.jsonl",
+        "test": "data/processed/DIVE/test.jsonl"
+      }
+    }
+  },
+  "effect_flow_chunks": {
+    "BJUT": {
+      "contracts": 148384,
+      "chunks": 1405356,
+      "mean_chunks_per_contract": 9.471075048522751,
+      "coverage_ratio_mean": 0.9902737803380665
+    },
+    "DIVE": {
+      "contracts": 22330,
+      "chunks": 441699,
+      "mean_chunks_per_contract": 19.78051948051948,
+      "coverage_ratio_mean": 0.9603295907030425
+    }
+  },
+  "etp_distribution_reasonable": {
+    "BJUT": true,
+    "DIVE": true
+  },
+  "rare_etp_effect_types": {
+    "BJUT": [
+      "EnvDependency",
+      "CreateContract",
+      "Destructive"
+    ],
+    "DIVE": [
+      "EnvDependency",
+      "CreateContract",
+      "Destructive"
+    ]
+  },
+  "usable_efpp_patterns_by_distribution": {
+    "BJUT": [
+      "has_external_call",
+      "has_delegatecall",
+      "has_state_read",
+      "has_state_write",
+      "call_before_state_write",
+      "state_write_before_call",
+      "call_without_return_check",
+      "call_with_return_check",
+      "state_write_with_auth_guard",
+      "state_write_without_auth_guard",
+      "sensitive_call_with_auth_guard",
+      "sensitive_call_without_auth_guard",
+      "env_used_in_condition",
+      "env_used_in_arithmetic_or_hash",
+      "div_before_mul",
+      "has_hardcoded_address",
+      "hardcoded_address_near_call",
+      "value_or_gas_sensitive_call",
+      "dense_storage_or_call_ops",
+      "selfdestruct_present",
+      "create_contract_present",
+      "external_call_near_loop_candidate",
+      "storage_write_near_loop_candidate"
+    ],
+    "DIVE": [
+      "has_external_call",
+      "has_delegatecall",
+      "has_state_read",
+      "has_state_write",
+      "call_before_state_write",
+      "state_write_before_call",
+      "call_without_return_check",
+      "call_with_return_check",
+      "state_write_with_auth_guard",
+      "state_write_without_auth_guard",
+      "sensitive_call_with_auth_guard",
+      "sensitive_call_without_auth_guard",
+      "env_used_in_condition",
+      "env_used_in_arithmetic_or_hash",
+      "div_before_mul",
+      "has_hardcoded_address",
+      "hardcoded_address_near_call",
+      "value_or_gas_sensitive_call",
+      "dense_storage_or_call_ops",
+      "panic_selector_present",
+      "selfdestruct_present",
+      "create_contract_present",
+      "external_call_near_loop_candidate",
+      "storage_write_near_loop_candidate"
+    ]
+  },
+  "too_sparse_efpp_patterns": {
+    "BJUT": [
+      "panic_selector_present"
+    ],
+    "DIVE": []
+  },
+  "too_frequent_efpp_patterns": {
+    "BJUT": [
+      "arithmetic_chain",
+      "arithmetic_followed_by_guard_or_revert",
+      "revert_or_invalid_present"
+    ],
+    "DIVE": [
+      "arithmetic_chain",
+      "arithmetic_followed_by_guard_or_revert",
+      "revert_or_invalid_present"
+    ]
+  },
+  "recommended_efpp_patterns": [
+    "has_external_call",
+    "has_delegatecall",
+    "has_state_read",
+    "has_state_write",
+    "call_before_state_write",
+    "state_write_before_call",
+    "call_without_return_check",
+    "call_with_return_check",
+    "state_write_with_auth_guard",
+    "state_write_without_auth_guard",
+    "sensitive_call_with_auth_guard",
+    "sensitive_call_without_auth_guard",
+    "env_used_in_condition",
+    "env_used_in_arithmetic_or_hash",
+    "div_before_mul",
+    "has_hardcoded_address",
+    "hardcoded_address_near_call",
+    "value_or_gas_sensitive_call",
+    "dense_storage_or_call_ops",
+    "panic_selector_present",
+    "selfdestruct_present",
+    "create_contract_present",
+    "external_call_near_loop_candidate",
+    "storage_write_near_loop_candidate"
+  ],
+  "BJUT_label_top_patterns": {
+    "Reentrancy": [
+      {
+        "pattern": "value_or_gas_sensitive_call",
+        "coverage": 0.9983961507618284,
+        "lift": 1.2015502012804524,
+        "balanced_score": 0.7878960526996764,
+        "interpretation": "weak_or_unrelated"
+      },
+      {
+        "pattern": "call_with_return_check",
+        "coverage": 0.9959903769045709,
+        "lift": 1.1893974901622988,
+        "balanced_score": 0.7804843408681575,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "external_call_near_loop_candidate",
+        "coverage": 0.9951884522854851,
+        "lift": 1.1639800539641172,
+        "balanced_score": 0.7682348735965276,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_external_call",
+        "coverage": 0.9991980753809142,
+        "lift": 1.1475773778401157,
+        "balanced_score": 0.7637274624286393,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_hardcoded_address",
+        "coverage": 0.9759422614274258,
+        "lift": 1.152766214775998,
+        "balanced_score": 0.748307268387508,
+        "interpretation": "common_but_weak"
+      }
+    ],
+    "Contract contains unknown address": [
+      {
+        "pattern": "revert_or_invalid_present",
+        "coverage": 0.9947983560236322,
+        "lift": 1.0610857584268987,
+        "balanced_score": 0.7194709110321017,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_state_read",
+        "coverage": 0.9917801181608015,
+        "lift": 1.0277328669595964,
+        "balanced_score": 0.701107569301115,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "arithmetic_chain",
+        "coverage": 0.997559722578988,
+        "lift": 1.0172732156059765,
+        "balanced_score": 0.7000342495796079,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_hardcoded_address",
+        "coverage": 0.9294246082712561,
+        "lift": 1.1144581409813143,
+        "balanced_score": 0.6959518283370505,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "arithmetic_followed_by_guard_or_revert",
+        "coverage": 0.9985872078088878,
+        "lift": 1.003748010479461,
+        "balanced_score": 0.6940375140162869,
+        "interpretation": "common_but_weak"
+      }
+    ],
+    "Integer overflow or underflow": [
+      {
+        "pattern": "revert_or_invalid_present",
+        "coverage": 0.9951499419359245,
+        "lift": 1.060855075837247,
+        "balanced_score": 0.7196138032850588,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "state_write_without_auth_guard",
+        "coverage": 0.9696700594302889,
+        "lift": 1.1002661339258184,
+        "balanced_score": 0.7195573080853263,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_state_write",
+        "coverage": 0.9805997677436984,
+        "lift": 1.0760675723402804,
+        "balanced_score": 0.7163041194402703,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "arithmetic_chain",
+        "coverage": 0.998223922399071,
+        "lift": 1.017880574515403,
+        "balanced_score": 0.7008008487930956,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_state_read",
+        "coverage": 0.990709747933602,
+        "lift": 1.0261446478063003,
+        "balanced_score": 0.6995746287603264,
+        "interpretation": "common_but_weak"
+      }
+    ],
+    "Timestamp dependence": [
+      {
+        "pattern": "env_used_in_condition",
+        "coverage": 0.9967845659163987,
+        "lift": 2.1258876527278554,
+        "balanced_score": 1.1360536026861123,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "env_used_in_arithmetic_or_hash",
+        "coverage": 0.9742765273311897,
+        "lift": 2.0086647908695716,
+        "balanced_score": 1.0731620770076973,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "hardcoded_address_near_call",
+        "coverage": 0.9694533762057878,
+        "lift": 1.163056141403594,
+        "balanced_score": 0.7479547065775879,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "call_with_return_check",
+        "coverage": 0.9694533762057878,
+        "lift": 1.1561755698904443,
+        "balanced_score": 0.7448660096185222,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_hardcoded_address",
+        "coverage": 0.9726688102893891,
+        "lift": 1.1478216625504252,
+        "balanced_score": 0.7435607069637468,
+        "interpretation": "common_but_weak"
+      }
+    ],
+    "DoS with failed call": [
+      {
+        "pattern": "sensitive_call_with_auth_guard",
+        "coverage": 0.9363449691991786,
+        "lift": 2.22742912525218,
+        "balanced_score": 1.0971021828288845,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "call_without_return_check",
+        "coverage": 0.5913757700205339,
+        "lift": 2.824863487334777,
+        "balanced_score": 0.7933440652815364,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "call_with_return_check",
+        "coverage": 0.9958932238193019,
+        "lift": 1.1876427001946623,
+        "balanced_score": 0.7796096861927784,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "value_or_gas_sensitive_call",
+        "coverage": 0.9897330595482546,
+        "lift": 1.18932077411868,
+        "balanced_score": 0.7755462612207555,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "external_call_near_loop_candidate",
+        "coverage": 0.9958932238193019,
+        "lift": 1.1634194742176256,
+        "balanced_score": 0.7685209014890757,
+        "interpretation": "common_but_weak"
+      }
+    ],
+    "Assert violation": [
+      {
+        "pattern": "state_write_without_auth_guard",
+        "coverage": 0.9795918367346939,
+        "lift": 1.0968728485997825,
+        "balanced_score": 0.7253359495584969,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_hardcoded_address",
+        "coverage": 0.956268221574344,
+        "lift": 1.1284264024443977,
+        "balanced_score": 0.7223486896396516,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_state_write",
+        "coverage": 0.9868804664723032,
+        "lift": 1.0720839635307164,
+        "balanced_score": 0.7189965467801103,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "revert_or_invalid_present",
+        "coverage": 0.9956268221574344,
+        "lift": 1.0527845992964369,
+        "balanced_score": 0.7160520352453997,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "hardcoded_address_near_call",
+        "coverage": 0.9446064139941691,
+        "lift": 1.1331382311810416,
+        "balanced_score": 0.715628381503173,
+        "interpretation": "common_but_weak"
+      }
+    ],
+    "Unchecked call return value": [
+      {
+        "pattern": "sensitive_call_with_auth_guard",
+        "coverage": 0.8108063450099141,
+        "lift": 2.032117084645706,
+        "balanced_score": 0.8993959246466583,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "state_write_with_auth_guard",
+        "coverage": 0.966787838730998,
+        "lift": 1.1831025758918803,
+        "balanced_score": 0.7548167675303985,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "storage_write_near_loop_candidate",
+        "coverage": 0.9843027098479842,
+        "lift": 1.1365383077841504,
+        "balanced_score": 0.7472697289552783,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_state_write",
+        "coverage": 0.9895902181097158,
+        "lift": 1.079448668062065,
+        "balanced_score": 0.7244817647272694,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "revert_or_invalid_present",
+        "coverage": 0.9981824190350297,
+        "lift": 1.0586974827016478,
+        "balanced_score": 0.720761065835289,
+        "interpretation": "common_but_weak"
+      }
+    ],
+    "Unsafe send": [
+      {
+        "pattern": "has_delegatecall",
+        "coverage": 0.5714285714285714,
+        "lift": 10.304891074844127,
+        "balanced_score": 1.3858488403157267,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "selfdestruct_present",
+        "coverage": 0.6058201058201058,
+        "lift": 7.994682401668023,
+        "balanced_score": 1.330764774834146,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "call_with_return_check",
+        "coverage": 0.9761904761904762,
+        "lift": 1.1652110266920308,
+        "balanced_score": 0.7541245469838019,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "external_call_near_loop_candidate",
+        "coverage": 0.9814814814814815,
+        "lift": 1.1475420890604144,
+        "balanced_score": 0.750169826118419,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_external_call",
+        "coverage": 0.982363315696649,
+        "lift": 1.1278229018012418,
+        "balanced_score": 0.7417818964098443,
+        "interpretation": "common_but_weak"
+      }
+    ],
+    "Multiplication after division": [
+      {
+        "pattern": "div_before_mul",
+        "coverage": 0.9045776918117344,
+        "lift": 1.5954486143259847,
+        "balanced_score": 0.8627494567878841,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "sensitive_call_with_auth_guard",
+        "coverage": 0.7601547388781431,
+        "lift": 1.8198540675306847,
+        "balanced_score": 0.7880411177210831,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "storage_write_near_loop_candidate",
+        "coverage": 0.9638942617666022,
+        "lift": 1.106001798170663,
+        "balanced_score": 0.7179000289991916,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_state_write",
+        "coverage": 0.9838813668600903,
+        "lift": 1.0694191631076497,
+        "balanced_score": 0.7155454047610891,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "revert_or_invalid_present",
+        "coverage": 0.9903288201160542,
+        "lift": 1.0475573741699287,
+        "balanced_score": 0.7097167304790211,
+        "interpretation": "common_but_weak"
+      }
+    ],
+    "Extra gas consumption": [
+      {
+        "pattern": "revert_or_invalid_present",
+        "coverage": 0.9861458096752215,
+        "lift": 1.0443403175222583,
+        "balanced_score": 0.7051683670502621,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "arithmetic_chain",
+        "coverage": 0.9981830570065864,
+        "lift": 1.0159857178802167,
+        "balanced_score": 0.6998343920480464,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "arithmetic_followed_by_guard_or_revert",
+        "coverage": 0.9990915285032932,
+        "lift": 1.0038588636615593,
+        "balanced_score": 0.6944432978263377,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_state_read",
+        "coverage": 0.9777424483306836,
+        "lift": 1.0094297093734186,
+        "balanced_score": 0.6823185014417076,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "storage_write_near_loop_candidate",
+        "coverage": 0.9305019305019305,
+        "lift": 1.0691086124854143,
+        "balanced_score": 0.6765846027158792,
+        "interpretation": "common_but_weak"
+      }
+    ]
+  },
+  "DIVE_label_top_patterns": {
+    "Reentrancy": [
+      {
+        "pattern": "call_with_return_check",
+        "coverage": 0.9828299285624765,
+        "lift": 1.5660071279849015,
+        "balanced_score": 0.9261708093025524,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "external_call_near_loop_candidate",
+        "coverage": 0.9859631532773531,
+        "lift": 1.5351275436450855,
+        "balanced_score": 0.9171862571277587,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "has_external_call",
+        "coverage": 0.987843088106279,
+        "lift": 1.485362800525232,
+        "balanced_score": 0.8993507658247709,
+        "interpretation": "weak_or_unrelated"
+      },
+      {
+        "pattern": "sensitive_call_without_auth_guard",
+        "coverage": 0.9570121569118937,
+        "lift": 1.5491101827757805,
+        "balanced_score": 0.8955187190396551,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "value_or_gas_sensitive_call",
+        "coverage": 0.953377616242637,
+        "lift": 1.5228916241884582,
+        "balanced_score": 0.8822610932883017,
+        "interpretation": "strong_candidate"
+      }
+    ],
+    "Access Control": [
+      {
+        "pattern": "has_state_read",
+        "coverage": 0.9918415908897765,
+        "lift": 1.0362644634459146,
+        "balanced_score": 0.7053154006105055,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_state_write",
+        "coverage": 0.9829183309254695,
+        "lift": 1.0413577362323512,
+        "balanced_score": 0.7014254057209958,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "state_write_without_auth_guard",
+        "coverage": 0.9748449052434776,
+        "lift": 1.043140961991144,
+        "balanced_score": 0.6965152898378255,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "arithmetic_chain",
+        "coverage": 0.9975354805812866,
+        "lift": 1.0101326137220132,
+        "balanced_score": 0.6964799676951282,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "arithmetic_followed_by_guard_or_revert",
+        "coverage": 0.9985552817200646,
+        "lift": 1.0045580970571168,
+        "balanced_score": 0.6944189447572903,
+        "interpretation": "common_but_weak"
+      }
+    ],
+    "Arithmetic": [
+      {
+        "pattern": "has_state_write",
+        "coverage": 0.9881452581032413,
+        "lift": 1.0269185454539373,
+        "balanced_score": 0.6981411089744236,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "state_write_without_auth_guard",
+        "coverage": 0.9828931572629052,
+        "lift": 1.032972475207505,
+        "balanced_score": 0.6973617078128211,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_state_read",
+        "coverage": 0.9929471788715486,
+        "lift": 1.0172651802767343,
+        "balanced_score": 0.6967934570482263,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "revert_or_invalid_present",
+        "coverage": 0.9983493397358943,
+        "lift": 1.003956783791926,
+        "balanced_score": 0.6939762050811018,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "arithmetic_chain",
+        "coverage": 0.9974489795918368,
+        "lift": 1.0041794045553445,
+        "balanced_score": 0.6934611445324577,
+        "interpretation": "common_but_weak"
+      }
+    ],
+    "Unchecked Return Values": [
+      {
+        "pattern": "value_or_gas_sensitive_call",
+        "coverage": 0.9188926663428849,
+        "lift": 1.227966977871977,
+        "balanced_score": 0.736115267124321,
+        "interpretation": "weak_or_unrelated"
+      },
+      {
+        "pattern": "has_external_call",
+        "coverage": 0.9320058280718796,
+        "lift": 1.1746358666195849,
+        "balanced_score": 0.7240391966459432,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "external_call_near_loop_candidate",
+        "coverage": 0.9210781932977173,
+        "lift": 1.1794806845458463,
+        "balanced_score": 0.717599705881535,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "sensitive_call_without_auth_guard",
+        "coverage": 0.9057795046138902,
+        "lift": 1.2076359860912003,
+        "balanced_score": 0.7173069464244503,
+        "interpretation": "weak_or_unrelated"
+      },
+      {
+        "pattern": "call_with_return_check",
+        "coverage": 0.9123360854783875,
+        "lift": 1.1815769667527032,
+        "balanced_score": 0.7116659338172292,
+        "interpretation": "common_but_weak"
+      }
+    ],
+    "DoS": [
+      {
+        "pattern": "sensitive_call_with_auth_guard",
+        "coverage": 0.6671779141104295,
+        "lift": 2.1772830674230974,
+        "balanced_score": 0.7712753157588689,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "has_external_call",
+        "coverage": 0.924079754601227,
+        "lift": 1.1392692112456413,
+        "balanced_score": 0.7027296458373803,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "external_call_near_loop_candidate",
+        "coverage": 0.9125766871165644,
+        "lift": 1.1423015344507572,
+        "balanced_score": 0.6952745966716215,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "revert_or_invalid_present",
+        "coverage": 0.9969325153374233,
+        "lift": 1.0010110505217447,
+        "balanced_score": 0.6915248094415345,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "arithmetic_followed_by_guard_or_revert",
+        "coverage": 0.9973159509202454,
+        "lift": 0.9998524770381928,
+        "balanced_score": 0.6912131732931504,
+        "interpretation": "common_but_weak"
+      }
+    ],
+    "Bad Randomness": [
+      {
+        "pattern": "env_used_in_arithmetic_or_hash",
+        "coverage": 0.9461883408071748,
+        "lift": 1.6525071528948703,
+        "balanced_score": 0.9230117300564786,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "env_used_in_condition",
+        "coverage": 0.8026905829596412,
+        "lift": 1.6694291394979104,
+        "balanced_score": 0.7881335035769655,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "storage_write_near_loop_candidate",
+        "coverage": 0.9798206278026906,
+        "lift": 1.0525335592527132,
+        "balanced_score": 0.7045644323385324,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "arithmetic_chain",
+        "coverage": 1.0,
+        "lift": 1.0051017027761213,
+        "balanced_score": 0.6956947840487039,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "has_external_call",
+        "coverage": 0.9260089686098655,
+        "lift": 1.1195055828667246,
+        "balanced_score": 0.6956020523285603,
+        "interpretation": "common_but_weak"
+      }
+    ],
+    "Front Running": [
+      {
+        "pattern": "sensitive_call_with_auth_guard",
+        "coverage": 0.8865740740740741,
+        "lift": 2.51950977741732,
+        "balanced_score": 1.115595406820889,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "external_call_near_loop_candidate",
+        "coverage": 0.9907407407407407,
+        "lift": 1.2186817407167374,
+        "balanced_score": 0.789534383011505,
+        "interpretation": "weak_or_unrelated"
+      },
+      {
+        "pattern": "has_external_call",
+        "coverage": 0.9953703703703703,
+        "lift": 1.20610515551063,
+        "balanced_score": 0.7875654923378916,
+        "interpretation": "weak_or_unrelated"
+      },
+      {
+        "pattern": "call_with_return_check",
+        "coverage": 0.9629629629629629,
+        "lift": 1.1966306268622333,
+        "balanced_score": 0.7577792956008526,
+        "interpretation": "common_but_weak"
+      },
+      {
+        "pattern": "arithmetic_followed_by_guard_or_revert",
+        "coverage": 1.0,
+        "lift": 1.0026413100898046,
+        "balanced_score": 0.694466964307012,
+        "interpretation": "common_but_weak"
+      }
+    ],
+    "Time manipulation": [
+      {
+        "pattern": "env_used_in_condition",
+        "coverage": 0.8621700879765396,
+        "lift": 2.5174015910813687,
+        "balanced_score": 1.0843707466386319,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "env_used_in_arithmetic_or_hash",
+        "coverage": 0.9296187683284457,
+        "lift": 2.084605311052137,
+        "balanced_score": 1.047144622930559,
+        "interpretation": "strong_candidate"
+      },
+      {
+        "pattern": "has_external_call",
+        "coverage": 0.9449582675389127,
+        "lift": 1.204681749417198,
+        "balanced_score": 0.7470680999773537,
+        "interpretation": "weak_or_unrelated"
+      },
+      {
+        "pattern": "call_with_return_check",
+        "coverage": 0.9293931874577036,
+        "lift": 1.2205994146024075,
+        "balanced_score": 0.7414486632051724,
+        "interpretation": "weak_or_unrelated"
+      },
+      {
+        "pattern": "external_call_near_loop_candidate",
+        "coverage": 0.9330024813895782,
+        "lift": 1.2081712308220995,
+        "balanced_score": 0.7390916080031832,
+        "interpretation": "weak_or_unrelated"
+      }
+    ]
+  },
+  "effect_flow_expected_strong_signal_labels": [
+    "Reentrancy",
+    "Unchecked Return / Unchecked call return value",
+    "Time manipulation / Timestamp dependence",
+    "Bad Randomness",
+    "Access Control",
+    "Contract contains unknown address",
+    "Arithmetic / Multiplication after division"
+  ],
+  "effect_flow_expected_weak_signal_labels": [
+    "DoS",
+    "Assert violation",
+    "Extra gas consumption",
+    "Front Running"
+  ],
+  "recommend_stage16b": true,
+  "stage16b_recommended_tasks": [
+    "MOM",
+    "ETP",
+    "EFPP"
+  ],
+  "stage16b_not_recommended_yet": [
+    "EEP",
+    "complex EOP"
+  ],
+  "external_unlabeled_dataset_schema_reusable": true,
+  "external_dataset_minimum_format": {
+    "required": [
+      "contract id",
+      "runtime opcode sequence"
+    ],
+    "optional": [
+      "source dataset name"
+    ],
+    "vulnerability_labels_required": false
+  },
+  "tokenizer_retraining_required": false,
+  "tokenizer_retraining_condition": "only if external-data OOV/UNK ratio is abnormally high",
+  "warnings": [
+    "EFPP rules are weak semantic annotations, not vulnerability labels.",
+    "Only train-split relevance may inform Stage 16B pattern selection; valid/test remain diagnostic.",
+    "Loop-candidate patterns are noisy because Stage 16A does not build a CFG or perform stack-precise jump analysis."
+  ]
+}

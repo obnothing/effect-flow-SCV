@@ -1,0 +1,264 @@
+Effect-flow annotation audit: DIVE
+
+annotation_semantics: weak rule-based signals, not vulnerability labels
+total_contracts: 22330
+total_chunks: 441699
+mean_chunks_per_contract: 19.780519
+max_chunks_per_contract: 32
+token_coverage_ratio_mean: 0.960330
+token_coverage_ratio_p50: 1.000000
+token_coverage_ratio_p90: 1.000000
+usable_for_pretraining: True
+usable_reason: 24/27 patterns fall in the 0.1%-80% chunk prevalence range
+
+ETP primary effect type distribution:
+effect_type | token_count | token_ratio | chunks | chunk_ratio
+Normal | 128659736 | 0.746425 | 441679 | 0.999955
+ExternalCall | 180357 | 0.001046 | 103299 | 0.233867
+StateRead | 2705626 | 0.015697 | 327879 | 0.742313
+StateWrite | 836260 | 0.004852 | 257433 | 0.582825
+AuthSource | 610282 | 0.003541 | 186221 | 0.421602
+ControlGuard | 10850901 | 0.062952 | 434021 | 0.982617
+ReturnCheck | 844782 | 0.004901 | 98766 | 0.223605
+EnvDependency | 123487 | 0.000716 | 75791 | 0.171590
+Arithmetic | 11780581 | 0.068346 | 438251 | 0.992194
+AddressLiteral | 1852153 | 0.010745 | 175652 | 0.397674
+CreateContract | 5055 | 0.000029 | 3183 | 0.007206
+Destructive | 2613 | 0.000015 | 2160 | 0.004890
+RevertOrAssert | 2155982 | 0.012508 | 356473 | 0.807050
+GasOrValue | 1202928 | 0.006979 | 225591 | 0.510735
+HashOrCrypto | 1223037 | 0.007096 | 294857 | 0.667552
+StorageOrMemoryHeavy | 9334123 | 0.054152 | 437197 | 0.989808
+
+ETP multi-hot effect type distribution:
+effect_type | token_count | token_ratio_per_active_token | chunks | chunk_ratio
+Normal | 128659736 | 0.746425 | 441679 | 0.999955
+ExternalCall | 180357 | 0.001046 | 103299 | 0.233867
+StateRead | 2705626 | 0.015697 | 327879 | 0.742313
+StateWrite | 836260 | 0.004852 | 257433 | 0.582825
+AuthSource | 610282 | 0.003541 | 186221 | 0.421602
+ControlGuard | 11329877 | 0.065731 | 436187 | 0.987521
+ReturnCheck | 1031094 | 0.005982 | 98817 | 0.223720
+EnvDependency | 123487 | 0.000716 | 75791 | 0.171590
+Arithmetic | 11780581 | 0.068346 | 438251 | 0.992194
+AddressLiteral | 1852153 | 0.010745 | 175652 | 0.397674
+CreateContract | 5055 | 0.000029 | 3183 | 0.007206
+Destructive | 2613 | 0.000015 | 2160 | 0.004890
+RevertOrAssert | 2155982 | 0.012508 | 356473 | 0.807050
+GasOrValue | 1216344 | 0.007057 | 226502 | 0.512797
+HashOrCrypto | 1223037 | 0.007096 | 294857 | 0.667552
+StorageOrMemoryHeavy | 12986329 | 0.075341 | 438682 | 0.993170
+
+EFPP pattern distribution:
+pattern | chunk_count | chunk_ratio | contract_count | contract_ratio | usable | warnings
+has_external_call | 103299 | 0.233867 | 18431 | 0.825392 | True | []
+has_delegatecall | 1822 | 0.004125 | 685 | 0.030676 | True | []
+has_state_read | 327879 | 0.742313 | 21966 | 0.983699 | True | []
+has_state_write | 257433 | 0.582825 | 21736 | 0.973399 | True | []
+call_before_state_write | 14283 | 0.032337 | 6869 | 0.307613 | True | []
+state_write_before_call | 15954 | 0.036120 | 6955 | 0.311464 | True | []
+call_without_return_check | 5199 | 0.011770 | 2833 | 0.126870 | True | []
+call_with_return_check | 98817 | 0.223720 | 17934 | 0.803135 | True | []
+state_write_with_auth_guard | 87175 | 0.197363 | 17221 | 0.771205 | True | []
+state_write_without_auth_guard | 226280 | 0.512295 | 21565 | 0.965741 | True | []
+sensitive_call_with_auth_guard | 22985 | 0.052038 | 8036 | 0.359875 | True | []
+sensitive_call_without_auth_guard | 91656 | 0.207508 | 17620 | 0.789073 | True | []
+env_used_in_condition | 49069 | 0.111091 | 10867 | 0.486655 | True | []
+env_used_in_arithmetic_or_hash | 65930 | 0.149265 | 12941 | 0.579534 | True | []
+arithmetic_chain | 405301 | 0.917595 | 22227 | 0.995387 | False | ['too_frequent_low_discrimination']
+div_before_mul | 95523 | 0.216263 | 19153 | 0.857725 | True | []
+arithmetic_followed_by_guard_or_revert | 430048 | 0.973622 | 22280 | 0.997761 | False | ['too_frequent_low_discrimination']
+has_hardcoded_address | 175652 | 0.397674 | 18677 | 0.836408 | True | []
+hardcoded_address_near_call | 117701 | 0.266473 | 16350 | 0.732199 | True | []
+value_or_gas_sensitive_call | 92277 | 0.208914 | 17634 | 0.789700 | True | []
+dense_storage_or_call_ops | 14086 | 0.031890 | 4900 | 0.219436 | True | []
+revert_or_invalid_present | 356425 | 0.806941 | 22247 | 0.996283 | False | ['too_frequent_low_discrimination']
+panic_selector_present | 26945 | 0.061003 | 6759 | 0.302687 | True | []
+selfdestruct_present | 2160 | 0.004890 | 1062 | 0.047559 | True | []
+create_contract_present | 3183 | 0.007206 | 1588 | 0.071115 | True | []
+external_call_near_loop_candidate | 100076 | 0.226571 | 18154 | 0.812987 | True | ['noisy_but_candidate']
+storage_write_near_loop_candidate | 191948 | 0.434567 | 20817 | 0.932244 | True | ['noisy_but_candidate']
+
+Top effect event chains length 3:
+ControlGuard -> ControlGuard -> ControlGuard: 3545512
+Arithmetic -> StorageOrMemoryHeavy -> Arithmetic: 2948931
+StorageOrMemoryHeavy -> Arithmetic -> StorageOrMemoryHeavy: 2753816
+ControlGuard -> ControlGuard -> RevertOrAssert: 1592096
+StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> Arithmetic: 1508222
+Arithmetic -> ControlGuard -> ControlGuard: 1091440
+Arithmetic -> Arithmetic -> Arithmetic: 1012055
+Arithmetic -> Arithmetic -> StorageOrMemoryHeavy: 987790
+GasOrValue -> ControlGuard -> ControlGuard: 976909
+Arithmetic -> StorageOrMemoryHeavy -> StorageOrMemoryHeavy: 916159
+StorageOrMemoryHeavy -> Arithmetic -> Arithmetic: 898108
+ControlGuard -> ControlGuard -> StorageOrMemoryHeavy: 695293
+ControlGuard -> StorageOrMemoryHeavy -> StorageOrMemoryHeavy: 634542
+StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> HashOrCrypto: 618741
+ControlGuard -> ControlGuard -> Arithmetic: 611837
+Arithmetic -> Arithmetic -> ControlGuard: 575596
+StateRead -> Arithmetic -> Arithmetic: 542905
+ReturnCheck -> ReturnCheck -> ReturnCheck: 509344
+StorageOrMemoryHeavy -> HashOrCrypto -> StateRead: 479534
+Arithmetic -> GasOrValue -> ControlGuard: 477591
+
+Top effect event chains length 4:
+StorageOrMemoryHeavy -> Arithmetic -> StorageOrMemoryHeavy -> Arithmetic: 2263885
+ControlGuard -> ControlGuard -> ControlGuard -> ControlGuard: 2001413
+Arithmetic -> StorageOrMemoryHeavy -> Arithmetic -> StorageOrMemoryHeavy: 1243284
+GasOrValue -> ControlGuard -> ControlGuard -> RevertOrAssert: 927884
+StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> Arithmetic -> StorageOrMemoryHeavy: 868952
+Arithmetic -> ControlGuard -> ControlGuard -> ControlGuard: 752398
+ControlGuard -> StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> Arithmetic: 599359
+ControlGuard -> ControlGuard -> ControlGuard -> RevertOrAssert: 532123
+ControlGuard -> ControlGuard -> StorageOrMemoryHeavy -> StorageOrMemoryHeavy: 477921
+Arithmetic -> Arithmetic -> ControlGuard -> ControlGuard: 477606
+Arithmetic -> Arithmetic -> StorageOrMemoryHeavy -> Arithmetic: 476668
+Arithmetic -> GasOrValue -> ControlGuard -> ControlGuard: 471329
+Arithmetic -> Arithmetic -> Arithmetic -> Arithmetic: 448930
+ControlGuard -> ControlGuard -> RevertOrAssert -> Arithmetic: 444801
+Arithmetic -> StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> Arithmetic: 428119
+Arithmetic -> StorageOrMemoryHeavy -> Arithmetic -> HashOrCrypto: 426762
+Arithmetic -> StorageOrMemoryHeavy -> Arithmetic -> Arithmetic: 424576
+AddressLiteral -> StorageOrMemoryHeavy -> Arithmetic -> StorageOrMemoryHeavy: 410239
+AddressLiteral -> AddressLiteral -> StorageOrMemoryHeavy -> Arithmetic: 404270
+StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> HashOrCrypto -> StateRead: 402766
+
+EFPP co-occurrence matrix (chunk counts):
+pattern | has_external_call | has_delegatecall | has_state_read | has_state_write | call_before_state_write | state_write_before_call | call_without_return_check | call_with_return_check | state_write_with_auth_guard | state_write_without_auth_guard | sensitive_call_with_auth_guard | sensitive_call_without_auth_guard | env_used_in_condition | env_used_in_arithmetic_or_hash | arithmetic_chain | div_before_mul | arithmetic_followed_by_guard_or_revert | has_hardcoded_address | hardcoded_address_near_call | value_or_gas_sensitive_call | dense_storage_or_call_ops | revert_or_invalid_present | panic_selector_present | selfdestruct_present | create_contract_present | external_call_near_loop_candidate | storage_write_near_loop_candidate
+has_external_call | 103299 | 1822 | 93343 | 78938 | 14283 | 15954 | 5199 | 98817 | 24827 | 69154 | 22237 | 89698 | 22816 | 33020 | 101972 | 23394 | 102759 | 47156 | 40859 | 92277 | 5431 | 97872 | 2933 | 865 | 1708 | 100076 | 59196
+has_delegatecall | 1822 | 1822 | 972 | 633 | 161 | 78 | 807 | 1064 | 234 | 542 | 402 | 1617 | 238 | 490 | 1691 | 380 | 1751 | 1167 | 930 | 1469 | 5 | 1588 | 506 | 80 | 124 | 1367 | 506
+has_state_read | 93343 | 972 | 327879 | 253992 | 14146 | 15753 | 2355 | 91566 | 87059 | 222941 | 22014 | 80593 | 43987 | 55101 | 300999 | 77435 | 325030 | 139715 | 113039 | 83803 | 14086 | 256553 | 5171 | 1317 | 1383 | 91714 | 189832
+has_state_write | 78938 | 633 | 253992 | 257433 | 14283 | 15954 | 2123 | 77285 | 87175 | 226280 | 18240 | 67898 | 39214 | 50029 | 249368 | 58672 | 255578 | 119909 | 109803 | 70035 | 13725 | 194857 | 4479 | 1125 | 1338 | 77429 | 191948
+call_before_state_write | 14283 | 161 | 14146 | 14283 | 14283 | 4641 | 367 | 14068 | 2222 | 13897 | 2108 | 13159 | 6877 | 9408 | 14090 | 3847 | 14270 | 5517 | 4945 | 13106 | 2444 | 14012 | 227 | 109 | 64 | 14177 | 13883
+state_write_before_call | 15954 | 78 | 15753 | 15954 | 4641 | 15954 | 900 | 15304 | 4174 | 15177 | 3552 | 13534 | 5056 | 7110 | 15810 | 4849 | 15880 | 5607 | 5412 | 13095 | 453 | 13718 | 134 | 108 | 471 | 15431 | 12851
+call_without_return_check | 5199 | 807 | 2355 | 2123 | 367 | 900 | 5199 | 717 | 645 | 1958 | 1048 | 4550 | 962 | 1948 | 4539 | 1345 | 4729 | 2396 | 2255 | 3729 | 69 | 3950 | 1612 | 194 | 1374 | 2746 | 1504
+call_with_return_check | 98817 | 1064 | 91566 | 77285 | 14068 | 15304 | 717 | 98817 | 24354 | 67604 | 21481 | 85805 | 22033 | 31301 | 98133 | 22304 | 98745 | 45085 | 38905 | 89172 | 5384 | 94580 | 1358 | 684 | 440 | 98020 | 58092
+state_write_with_auth_guard | 24827 | 234 | 87059 | 87175 | 2222 | 4174 | 645 | 24354 | 87175 | 56022 | 10283 | 18569 | 10052 | 11791 | 86423 | 21696 | 87073 | 37422 | 35002 | 22123 | 2897 | 70107 | 523 | 677 | 432 | 24362 | 75899
+state_write_without_auth_guard | 69154 | 542 | 222941 | 226280 | 13897 | 15177 | 1958 | 67604 | 56022 | 226280 | 13902 | 60238 | 36764 | 47136 | 218583 | 49412 | 224442 | 108231 | 99414 | 60966 | 12946 | 168266 | 4192 | 855 | 1237 | 67734 | 165822
+sensitive_call_with_auth_guard | 22237 | 402 | 22014 | 18240 | 2108 | 3552 | 1048 | 21481 | 10283 | 13902 | 22985 | 8650 | 3149 | 3844 | 22798 | 8308 | 22933 | 11952 | 10934 | 18752 | 632 | 22484 | 571 | 1062 | 550 | 21629 | 14040
+sensitive_call_without_auth_guard | 89698 | 1617 | 80593 | 67898 | 13159 | 13534 | 4550 | 85805 | 18569 | 60238 | 8650 | 91656 | 21174 | 31482 | 90173 | 18862 | 91007 | 41462 | 34916 | 81763 | 4994 | 86127 | 3503 | 1403 | 2892 | 86960 | 50673
+env_used_in_condition | 22816 | 238 | 43987 | 39214 | 6877 | 5056 | 962 | 22033 | 10052 | 36764 | 3149 | 21174 | 49069 | 43408 | 46904 | 7356 | 48834 | 14662 | 9894 | 21509 | 3158 | 37749 | 3340 | 402 | 506 | 22248 | 33762
+env_used_in_arithmetic_or_hash | 33020 | 490 | 55101 | 50029 | 9408 | 7110 | 1948 | 31301 | 11791 | 47136 | 3844 | 31482 | 43408 | 65930 | 63332 | 11862 | 65246 | 27151 | 17909 | 31275 | 4214 | 52706 | 7228 | 633 | 1049 | 31897 | 41019
+arithmetic_chain | 101972 | 1691 | 300999 | 249368 | 14090 | 15810 | 4539 | 98133 | 86423 | 218583 | 22798 | 90173 | 46904 | 63332 | 405301 | 95393 | 399421 | 170378 | 114268 | 91522 | 11252 | 328340 | 26073 | 2002 | 2732 | 99202 | 185978
+div_before_mul | 23394 | 380 | 77435 | 58672 | 3847 | 4849 | 1345 | 22304 | 21696 | 49412 | 8308 | 18862 | 7356 | 11862 | 95393 | 95523 | 95326 | 55515 | 40130 | 19005 | 1213 | 84747 | 9609 | 601 | 563 | 22806 | 39402
+arithmetic_followed_by_guard_or_revert | 102759 | 1751 | 325030 | 255578 | 14270 | 15880 | 4729 | 98745 | 87073 | 224442 | 22933 | 91007 | 48834 | 65246 | 399421 | 95326 | 430048 | 173715 | 116689 | 91845 | 13967 | 352047 | 26864 | 2097 | 2801 | 99983 | 191362
+has_hardcoded_address | 47156 | 1167 | 139715 | 119909 | 5517 | 5607 | 2396 | 45085 | 37422 | 108231 | 11952 | 41462 | 14662 | 27151 | 170378 | 55515 | 173715 | 175652 | 117701 | 42053 | 3936 | 158399 | 6521 | 1308 | 1414 | 45694 | 78966
+hardcoded_address_near_call | 40859 | 930 | 113039 | 109803 | 4945 | 5412 | 2255 | 38905 | 35002 | 99414 | 10934 | 34916 | 9894 | 17909 | 114268 | 40130 | 116689 | 117701 | 117701 | 36088 | 3316 | 106562 | 1942 | 910 | 796 | 39496 | 71743
+value_or_gas_sensitive_call | 92277 | 1469 | 83803 | 70035 | 13106 | 13095 | 3729 | 89172 | 22123 | 60966 | 18752 | 81763 | 21509 | 31275 | 91522 | 19005 | 91845 | 42053 | 36088 | 92277 | 4040 | 87707 | 2344 | 672 | 1570 | 90038 | 52083
+dense_storage_or_call_ops | 5431 | 5 | 14086 | 13725 | 2444 | 453 | 69 | 5384 | 2897 | 12946 | 632 | 4994 | 3158 | 4214 | 11252 | 1213 | 13967 | 3936 | 3316 | 4040 | 14086 | 9043 | 72 | 53 | 35 | 5382 | 13279
+revert_or_invalid_present | 97872 | 1588 | 256553 | 194857 | 14012 | 13718 | 3950 | 94580 | 70107 | 168266 | 22484 | 86127 | 37749 | 52706 | 328340 | 84747 | 352047 | 158399 | 106562 | 87707 | 9043 | 356425 | 26897 | 1895 | 2411 | 95793 | 139300
+panic_selector_present | 2933 | 506 | 5171 | 4479 | 227 | 134 | 1612 | 1358 | 523 | 4192 | 571 | 3503 | 3340 | 7228 | 26073 | 9609 | 26864 | 6521 | 1942 | 2344 | 72 | 26897 | 26945 | 449 | 1014 | 2180 | 2986
+selfdestruct_present | 865 | 80 | 1317 | 1125 | 109 | 108 | 194 | 684 | 677 | 855 | 1062 | 1403 | 402 | 633 | 2002 | 601 | 2097 | 1308 | 910 | 672 | 53 | 1895 | 449 | 2160 | 133 | 763 | 917
+create_contract_present | 1708 | 124 | 1383 | 1338 | 64 | 471 | 1374 | 440 | 432 | 1237 | 550 | 2892 | 506 | 1049 | 2732 | 563 | 2801 | 1414 | 796 | 1570 | 35 | 2411 | 1014 | 133 | 3183 | 912 | 899
+external_call_near_loop_candidate | 100076 | 1367 | 91714 | 77429 | 14177 | 15431 | 2746 | 98020 | 24362 | 67734 | 21629 | 86960 | 22248 | 31897 | 99202 | 22806 | 99983 | 45694 | 39496 | 90038 | 5382 | 95793 | 2180 | 763 | 912 | 100076 | 58258
+storage_write_near_loop_candidate | 59196 | 506 | 189832 | 191948 | 13883 | 12851 | 1504 | 58092 | 75899 | 165822 | 14040 | 50673 | 33762 | 41019 | 185978 | 39402 | 191362 | 78966 | 71743 | 52083 | 13279 | 139300 | 2986 | 917 | 899 | 58258 | 191948
+
+Examples by EFPP pattern:
+[has_external_call]
+- 1 | train | chunk=0 | CALL-like opcode is present | CALLDATACOPY PUSH1 0x00 DUP1 CALLDATASIZE DUP4 DUP6 GAS DELEGATECALL RETURNDATASIZE DUP1 PUSH1 0x00 DUP5 RETURNDATACOPY DUP2 DUP1
+- 2 | train | chunk=0 | CALL-like opcode is present | PUSH1 0x00 DUP2 DUP2 DUP2 DUP6 DUP9 DUP9 CALL SWAP4 POP POP POP POP ISZERO DUP1 ISZERO
+- 2 | train | chunk=1 | CALL-like opcode is present | JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x01db JUMPI RETURNDATASIZE PUSH1
+[has_delegatecall]
+- 1 | train | chunk=0 | DELEGATECALL is present | CALLDATACOPY PUSH1 0x00 DUP1 CALLDATASIZE DUP4 DUP6 GAS DELEGATECALL RETURNDATASIZE DUP1 PUSH1 0x00 DUP5 RETURNDATACOPY DUP2 DUP1
+- 7 | train | chunk=0 | DELEGATECALL is present | CALLDATACOPY PUSH1 0x00 DUP1 CALLDATASIZE DUP4 DUP6 GAS DELEGATECALL RETURNDATASIZE DUP1 PUSH1 0x00 DUP5 RETURNDATACOPY DUP2 DUP1
+- 8 | train | chunk=0 | DELEGATECALL is present | CALLDATACOPY PUSH1 0x00 DUP1 CALLDATASIZE DUP4 DUP6 GAS DELEGATECALL RETURNDATASIZE DUP1 PUSH1 0x00 DUP5 RETURNDATACOPY DUP2 DUP1
+[has_state_read]
+- 1 | train | chunk=0 | SLOAD is present | DUP2 SWAP1 SUB PUSH1 0x1c ADD SWAP1 SHA3 SLOAD SWAP1 JUMP JUMPDEST PUSH1 0x40 DUP1 MLOAD PUSH32
+- 1 | train | chunk=1 | SLOAD is present | DUP2 SWAP1 SUB PUSH1 0x1c ADD SWAP1 SHA3 SLOAD SWAP1 JUMP JUMPDEST PUSH1 0x40 DUP1 MLOAD PUSH32
+- 2 | train | chunk=0 | SLOAD is present | 0x011f JUMP JUMPDEST STOP JUMPDEST PUSH1 0x00 DUP1 SLOAD PUSH1 0x40 DUP1 MLOAD PUSH32 0x7338c25c00000000000000000000000000000000000000000000000000000000 DUP2 MSTORE
+[has_state_write]
+- 1 | train | chunk=2 | SSTORE is present | DUP2 SWAP1 SUB PUSH1 0x13 ADD SWAP1 SHA3 SSTORE JUMP JUMPDEST PUSH1 0x40 DUP1 MLOAD PUSH32 0x747275655553442e70656e64696e672e70726f78792e6f776e65720000000000
+- 1 | train | chunk=3 | SSTORE is present | DUP2 SWAP1 SUB PUSH1 0x13 ADD SWAP1 SHA3 SSTORE JUMP JUMPDEST PUSH1 0x40 DUP1 MLOAD PUSH32 0x747275655553442e70656e64696e672e70726f78792e6f776e65720000000000
+- 4 | train | chunk=3 | SSTORE is present | PUSH1 0x20 ADD PUSH1 0x00 SHA3 DUP2 SWAP1 SSTORE POP DUP6 DUP2 SUB DUP3 PUSH1 0x00 DUP7
+[call_before_state_write]
+- 4 | train | chunk=8 | CALL-like followed by SSTORE | DUP2 PUSH1 0x00 DUP7 PUSH2 0x646e GAS SUB CALL SWAP2 POP POP POP JUMPDEST DUP1 DUP1 PUSH1
+- 4 | train | chunk=9 | CALL-like followed by SSTORE | DUP2 PUSH1 0x00 DUP7 PUSH2 0x646e GAS SUB CALL SWAP2 POP POP POP JUMPDEST DUP1 DUP1 PUSH1
+- 6 | train | chunk=9 | CALL-like followed by SSTORE | 0x00 DUP1 REVERT JUMPDEST PUSH2 0x02c6 GAS SUB CALL ISZERO ISZERO PUSH2 0x0cc9 JUMPI PUSH1 0x00 DUP1
+[state_write_before_call]
+- 6 | train | chunk=8 | SSTORE followed by CALL-like | AND PUSH1 0xf7 SWAP1 SWAP2 AND OR SWAP1 SSTORE PUSH16 0x3ffc15cd9ea076d7ec40b8f516367ca1 PUSH1 0x00 PUSH7 0xb1a2bc2ec50000 PUSH1 0x40
+- 6 | train | chunk=9 | SSTORE followed by CALL-like | AND PUSH1 0xf7 SWAP1 SWAP2 AND OR SWAP1 SSTORE PUSH16 0x3ffc15cd9ea076d7ec40b8f516367ca1 PUSH1 0x00 PUSH7 0xb1a2bc2ec50000 PUSH1 0x40
+- 6 | train | chunk=13 | SSTORE followed by CALL-like | PUSH1 0xff NOT SWAP1 SWAP2 AND OR SWAP1 SSTORE PUSH1 0x00 DUP1 DUP3 SSTORE PUSH1 0x01 PUSH1
+[call_without_return_check]
+- 4 | train | chunk=8 | no post-call check opcode in the weak-rule window | DUP2 PUSH1 0x00 DUP7 PUSH2 0x646e GAS SUB CALL SWAP2 POP POP POP JUMPDEST DUP1 DUP1 PUSH1
+- 4 | train | chunk=9 | no post-call check opcode in the weak-rule window | DUP2 PUSH1 0x00 DUP7 PUSH2 0x646e GAS SUB CALL SWAP2 POP POP POP JUMPDEST DUP1 DUP1 PUSH1
+- 11 | train | chunk=10 | no post-call check opcode in the weak-rule window | 0x00 DUP1 REVERT JUMPDEST PUSH2 0x02c6 GAS SUB CALL
+[call_with_return_check]
+- 1 | train | chunk=0 | post-call check opcode in window | CALLDATACOPY PUSH1 0x00 DUP1 CALLDATASIZE DUP4 DUP6 GAS DELEGATECALL RETURNDATASIZE DUP1 PUSH1 0x00 DUP5 RETURNDATACOPY DUP2 DUP1
+- 2 | train | chunk=0 | post-call check opcode in window | PUSH1 0x00 DUP2 DUP2 DUP2 DUP6 DUP9 DUP9 CALL SWAP4 POP POP POP POP ISZERO DUP1 ISZERO
+- 2 | train | chunk=1 | post-call check opcode in window | JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x01db JUMPI RETURNDATASIZE PUSH1
+[state_write_with_auth_guard]
+- 5 | train | chunk=1 | SSTORE with/without preceding auth-source guard | PUSH1 0x00 DUP1 REVERT JUMPDEST DUP1 PUSH1 0x00 SSTORE PUSH1 0x00 PUSH1 0x01 JUMPDEST DUP3 DUP3 LT
+- 6 | train | chunk=3 | SSTORE with/without preceding auth-source guard | JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST TIMESTAMP DUP2 SSTORE PUSH1 0x01 DUP2 ADD DUP1 SLOAD PUSH1 0xff
+- 6 | train | chunk=4 | SSTORE with/without preceding auth-source guard | JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST TIMESTAMP DUP2 SSTORE PUSH1 0x01 DUP2 ADD DUP1 SLOAD PUSH1 0xff
+[state_write_without_auth_guard]
+- 1 | train | chunk=2 | SSTORE with/without preceding auth-source guard | DUP2 SWAP1 SUB PUSH1 0x13 ADD SWAP1 SHA3 SSTORE JUMP JUMPDEST PUSH1 0x40 DUP1 MLOAD PUSH32 0x747275655553442e70656e64696e672e70726f78792e6f776e65720000000000
+- 1 | train | chunk=3 | SSTORE with/without preceding auth-source guard | DUP2 SWAP1 SUB PUSH1 0x13 ADD SWAP1 SHA3 SSTORE JUMP JUMPDEST PUSH1 0x40 DUP1 MLOAD PUSH32 0x747275655553442e70656e64696e672e70726f78792e6f776e65720000000000
+- 4 | train | chunk=3 | SSTORE with/without preceding auth-source guard | PUSH1 0x20 ADD PUSH1 0x00 SHA3 DUP2 SWAP1 SSTORE POP DUP6 DUP2 SUB DUP3 PUSH1 0x00 DUP7
+[sensitive_call_with_auth_guard]
+- 2 | train | chunk=0 | sensitive opcode with/without preceding auth guard | PUSH1 0x00 DUP2 DUP2 DUP2 DUP6 DUP9 DUP9 CALL SWAP4 POP POP POP POP ISZERO DUP1 ISZERO
+- 2 | train | chunk=1 | sensitive opcode with/without preceding auth guard | JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x0338 JUMPI RETURNDATASIZE PUSH1
+- 6 | train | chunk=4 | sensitive opcode with/without preceding auth guard | 0x00 DUP1 REVERT JUMPDEST PUSH2 0x02c6 GAS SUB CALL ISZERO ISZERO PUSH2 0x0624 JUMPI PUSH1 0x00 DUP1
+[sensitive_call_without_auth_guard]
+- 1 | train | chunk=0 | sensitive opcode with/without preceding auth guard | CALLDATACOPY PUSH1 0x00 DUP1 CALLDATASIZE DUP4 DUP6 GAS DELEGATECALL RETURNDATASIZE DUP1 PUSH1 0x00 DUP5 RETURNDATACOPY DUP2 DUP1
+- 2 | train | chunk=1 | sensitive opcode with/without preceding auth guard | JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x01db JUMPI RETURNDATASIZE PUSH1
+- 4 | train | chunk=8 | sensitive opcode with/without preceding auth guard | DUP2 PUSH1 0x00 DUP7 PUSH2 0x646e GAS SUB CALL SWAP2 POP POP POP JUMPDEST DUP1 DUP1 PUSH1
+[env_used_in_condition]
+- 6 | train | chunk=7 | environment opcode followed by guard | DUP2 SWAP1 MSTORE PUSH1 0x40 SWAP1 SHA3 SLOAD TIMESTAMP PUSH3 0x093a80 SWAP1 SWAP2 ADD GT ISZERO SWAP1
+- 6 | train | chunk=8 | environment opcode followed by guard | DUP2 SWAP1 MSTORE PUSH1 0x40 SWAP1 SHA3 SLOAD TIMESTAMP PUSH3 0x093a80 SWAP1 SWAP2 ADD GT ISZERO SWAP1
+- 6 | train | chunk=13 | environment opcode followed by guard | JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST DUP1 SLOAD TIMESTAMP PUSH3 0x093a80 SWAP1 SWAP2 ADD GT ISZERO PUSH2
+[env_used_in_arithmetic_or_hash]
+- 6 | train | chunk=3 | environment opcode followed by arithmetic/hash | PUSH2 0x059c JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST TIMESTAMP DUP2 SSTORE PUSH1 0x01 DUP2 ADD DUP1 SLOAD
+- 6 | train | chunk=4 | environment opcode followed by arithmetic/hash | PUSH2 0x059c JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST TIMESTAMP DUP2 SSTORE PUSH1 0x01 DUP2 ADD DUP1 SLOAD
+- 6 | train | chunk=7 | environment opcode followed by arithmetic/hash | DUP2 SWAP1 MSTORE PUSH1 0x40 SWAP1 SHA3 SLOAD TIMESTAMP PUSH3 0x093a80 SWAP1 SWAP2 ADD GT ISZERO SWAP1
+[arithmetic_chain]
+- 1 | train | chunk=0 | arithmetic opcode count reaches threshold | 0xf1739cae EQ PUSH2 0x019b JUMPI JUMPDEST PUSH1 0x00 PUSH2 0x0081 PUSH2 0x01bc JUMP JUMPDEST SWAP1 POP PUSH1
+- 1 | train | chunk=1 | arithmetic opcode count reaches threshold | 0x01a7 JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP PUSH2 0x016f PUSH1 0x01 PUSH1 0xa0 PUSH1 0x02 EXP
+- 1 | train | chunk=2 | arithmetic opcode count reaches threshold | 0x02 EXP SUB AND EQ ISZERO ISZERO PUSH2 0x034e
+[div_before_mul]
+- 6 | train | chunk=16 | DIV/SDIV followed by MUL | DUP1 SLOAD PUSH2 0x10e0 TIMESTAMP DUP3 SWAP1 SUB DIV PUSH1 0x28 DUP2 GT ISZERO PUSH2 0x15a1 JUMPI
+- 6 | train | chunk=17 | DIV/SDIV followed by MUL | DUP1 SLOAD PUSH2 0x10e0 TIMESTAMP DUP3 SWAP1 SUB DIV PUSH1 0x28 DUP2 GT ISZERO PUSH2 0x15a1 JUMPI
+- 9 | train | chunk=0 | DIV/SDIV followed by MUL | ADD CALLDATALOAD PUSH1 0x1f DUP2 ADD DUP5 SWAP1 DIV DUP5 MUL DUP6 ADD DUP5 ADD SWAP1 SWAP6
+[arithmetic_followed_by_guard_or_revert]
+- 1 | train | chunk=0 | arithmetic followed by guard/revert | JUMPI PUSH4 0xffffffff PUSH29 0x0100000000000000000000000000000000000000000000000000000000 PUSH1 0x00 CALLDATALOAD DIV AND PUSH4 0x025313a2 DUP2 EQ PUSH2 0x0108 JUMPI
+- 1 | train | chunk=1 | arithmetic followed by guard/revert | EXP SUB PUSH1 0x04 CALLDATALOAD AND PUSH2 0x025e JUMP
+- 1 | train | chunk=2 | arithmetic followed by guard/revert | 0x02 EXP SUB AND EQ ISZERO ISZERO PUSH2 0x034e JUMPI
+[has_hardcoded_address]
+- 2 | train | chunk=0 | PUSH20 or normalized address operand | PUSH2 0x011f JUMP JUMPDEST PUSH1 0x40 MLOAD PUSH20 0xffffffffffffffffffffffffffffffffffffffff CALLER AND SWAP1 CALLVALUE DUP1 ISZERO PUSH2 0x08fc
+- 2 | train | chunk=1 | PUSH20 or normalized address operand | 0x40 DUP1 MLOAD PUSH32 0xfdac9ff700000000000000000000000000000000000000000000000000000000 DUP2 MSTORE PUSH20 0xffffffffffffffffffffffffffffffffffffffff DUP6 DUP2 AND PUSH1 0x04 DUP4 ADD MSTORE
+- 4 | train | chunk=0 | PUSH20 or normalized address operand | PUSH2 0x01a2 PUSH1 0x04 DUP1 DUP1 CALLDATALOAD PUSH20 0xffffffffffffffffffffffffffffffffffffffff AND SWAP1 PUSH1 0x20 ADD SWAP1 SWAP2 SWAP1
+[hardcoded_address_near_call]
+- 2 | train | chunk=0 | address literal near call/address-sensitive opcode | PUSH2 0x011f JUMP JUMPDEST PUSH1 0x40 MLOAD PUSH20 0xffffffffffffffffffffffffffffffffffffffff CALLER AND SWAP1 CALLVALUE DUP1 ISZERO PUSH2 0x08fc
+- 2 | train | chunk=1 | address literal near call/address-sensitive opcode | JUMPDEST POP POP PUSH1 0x40 DUP1 MLOAD PUSH20 0xffffffffffffffffffffffffffffffffffffffff CALLER AND DUP2 MSTORE SWAP1 MLOAD PUSH32 0xbaf467ef98505027c660d9e64f28bd131b53031f16041638e719d143d136b119
+- 4 | train | chunk=3 | address literal near call/address-sensitive opcode | DUP6 DUP4 SUB PUSH1 0x00 DUP1 DUP10 PUSH20 0xffffffffffffffffffffffffffffffffffffffff AND PUSH20 0xffffffffffffffffffffffffffffffffffffffff AND DUP2 MSTORE PUSH1 0x20
+[value_or_gas_sensitive_call]
+- 1 | train | chunk=0 | CALL-like near gas/value opcode | CALLDATACOPY PUSH1 0x00 DUP1 CALLDATASIZE DUP4 DUP6 GAS DELEGATECALL RETURNDATASIZE DUP1 PUSH1 0x00 DUP5 RETURNDATACOPY DUP2 DUP1
+- 2 | train | chunk=0 | CALL-like near gas/value opcode | PUSH1 0x00 DUP2 DUP2 DUP2 DUP6 DUP9 DUP9 CALL SWAP4 POP POP POP POP ISZERO DUP1 ISZERO
+- 2 | train | chunk=1 | CALL-like near gas/value opcode | JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x01db JUMPI RETURNDATASIZE PUSH1
+[dense_storage_or_call_ops]
+- 36 | train | chunk=22 | dense storage/call weak rule | PUSH32 0x536166654d6174683a206469766973696f6e206279207a65726f000000000000 DUP2 MSTORE POP PUSH2 0x2b82 JUMP JUMPDEST SWAP1 POP SWAP3 SWAP2 POP POP JUMP JUMPDEST
+- 50 | train | chunk=16 | dense storage/call weak rule | 0x20 SWAP1 SWAP2 ADD DUP2 SWAP1 MSTORE PUSH1 0x17 SWAP2 SWAP1 SWAP2 SSTORE PUSH1 0x18 SSTORE JUMP
+- 50 | train | chunk=17 | dense storage/call weak rule | 0x20 SWAP1 SWAP2 ADD DUP2 SWAP1 MSTORE PUSH1 0x17 SWAP2 SWAP1 SWAP2 SSTORE PUSH1 0x18 SSTORE JUMP
+[revert_or_invalid_present]
+- 1 | train | chunk=0 | REVERT or INVALID is present | SWAP1 DUP2 SWAP1 SUB PUSH1 0x64 ADD SWAP1 REVERT JUMPDEST PUSH1 0x40 MLOAD CALLDATASIZE PUSH1 0x00 DUP3
+- 1 | train | chunk=1 | REVERT or INVALID is present | DUP1 ISZERO PUSH2 0x017d JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP PUSH2 0x011d PUSH2 0x01bc JUMP JUMPDEST
+- 1 | train | chunk=2 | REVERT or INVALID is present | SWAP1 DUP2 SWAP1 SUB PUSH1 0x64 ADD SWAP1 REVERT JUMPDEST PUSH2 0x0356 PUSH2 0x0228 JUMP JUMPDEST PUSH1
+[panic_selector_present]
+- 20 | train | chunk=17 | Solidity panic selector 0x4e487b71 | SWAP1 SWAP2 ADD CALLDATALOAD SWAP1 JUMP JUMPDEST PUSH4 0x4e487b71 PUSH1 0xe0 SHL PUSH1 0x00 MSTORE PUSH1 0x41
+- 20 | train | chunk=18 | Solidity panic selector 0x4e487b71 | SWAP1 SWAP2 ADD CALLDATALOAD SWAP1 JUMP JUMPDEST PUSH4 0x4e487b71 PUSH1 0xe0 SHL PUSH1 0x00 MSTORE PUSH1 0x41
+- 20 | train | chunk=19 | Solidity panic selector 0x4e487b71 | SWAP3 POP SWAP3 SWAP1 POP JUMP JUMPDEST PUSH4 0x4e487b71 PUSH1 0xe0 SHL PUSH1 0x00 MSTORE PUSH1 0x11
+[selfdestruct_present]
+- 18 | train | chunk=5 | SELFDESTRUCT or SUICIDE is present | 0x01 PUSH1 0xa0 PUSH1 0x02 EXP SUB AND SELFDESTRUCT JUMPDEST PUSH1 0x03 SLOAD PUSH1 0x01 PUSH1 0xa0
+- 18 | train | chunk=6 | SELFDESTRUCT or SUICIDE is present | 0x01 PUSH1 0xa0 PUSH1 0x02 EXP SUB AND SELFDESTRUCT JUMPDEST PUSH1 0x03 SLOAD PUSH1 0x01 PUSH1 0xa0
+- 18 | train | chunk=7 | SELFDESTRUCT or SUICIDE is present | 0x01 PUSH1 0xa0 PUSH1 0x02 EXP SUB AND SELFDESTRUCT JUMPDEST PUSH1 0x00 DUP3 DUP3 ADD DUP4 DUP2
+[create_contract_present]
+- 4 | train | chunk=9 | CREATE or CREATE2 is present | PUSH1 0x1f PUSH1 0x01 DUP3 ADD PUSH1 0x00 CREATE SWAP2 POP POP JUMPDEST SWAP1 JUMP JUMPDEST PUSH1
+- 4 | train | chunk=10 | CREATE or CREATE2 is present | PUSH1 0x1f PUSH1 0x01 DUP3 ADD PUSH1 0x00 CREATE SWAP2 POP POP JUMPDEST SWAP1 JUMP JUMPDEST PUSH1
+- 5 | train | chunk=1 | CREATE or CREATE2 is present | 0x0c MSTORE DUP7 PUSH1 0x23 PUSH1 0x1d DUP4 CREATE2 SWAP4 POP POP DUP2 PUSH1 0x01 PUSH1 0x01
+[external_call_near_loop_candidate]
+- 1 | train | chunk=0 | weak JUMPDEST+JUMPI loop-candidate heuristic | CALLDATACOPY PUSH1 0x00 DUP1 CALLDATASIZE DUP4 DUP6 GAS DELEGATECALL RETURNDATASIZE DUP1 PUSH1 0x00 DUP5 RETURNDATACOPY DUP2 DUP1
+- 2 | train | chunk=0 | weak JUMPDEST+JUMPI loop-candidate heuristic | PUSH1 0x00 DUP2 DUP2 DUP2 DUP6 DUP9 DUP9 CALL SWAP4 POP POP POP POP ISZERO DUP1 ISZERO
+- 2 | train | chunk=1 | weak JUMPDEST+JUMPI loop-candidate heuristic | JUMPI PUSH1 0x00 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0x01db JUMPI RETURNDATASIZE PUSH1
+[storage_write_near_loop_candidate]
+- 4 | train | chunk=3 | weak JUMPDEST+JUMPI loop-candidate heuristic | PUSH1 0x20 ADD PUSH1 0x00 SHA3 DUP2 SWAP1 SSTORE POP DUP6 DUP2 SUB DUP3 PUSH1 0x00 DUP7
+- 4 | train | chunk=4 | weak JUMPDEST+JUMPI loop-candidate heuristic | PUSH1 0x20 ADD PUSH1 0x00 SHA3 DUP2 SWAP1 SSTORE POP DUP6 DUP2 SUB DUP3 PUSH1 0x00 DUP7
+- 4 | train | chunk=5 | weak JUMPDEST+JUMPI loop-candidate heuristic | PUSH1 0x20 ADD PUSH1 0x00 SHA3 DUP2 SWAP1 SSTORE POP DUP6 SWAP5 POP JUMPDEST POP POP POP

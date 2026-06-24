@@ -1,0 +1,518 @@
+{
+  "selection_source": "annotation prevalence plus train-only label relevance audit",
+  "valid_test_used_for_prior_selection": false,
+  "warning": "EFPP patterns are weak semantic annotations, not vulnerability labels.",
+  "patterns": [
+    {
+      "pattern_name": "has_external_call",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": false,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.36148990006802545,
+        "DIVE": 0.23386740744262496
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "has_delegatecall",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": true,
+      "use_in_label_prior_DIVE": false,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset; train-only relevance audit finds a strong/high-precision candidate",
+      "related_BJUT_labels": [
+        "Extra gas consumption",
+        "Reentrancy",
+        "Unchecked call return value",
+        "Unsafe send"
+      ],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.03374305158265948,
+        "DIVE": 0.004124981039123929
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "has_state_read",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": false,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.7736509468063608,
+        "DIVE": 0.7423132042408971
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "has_state_write",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": false,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.5978755560868563,
+        "DIVE": 0.5828245026590506
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "call_before_state_write",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": true,
+      "use_in_label_prior_DIVE": true,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset; train-only relevance audit finds a strong/high-precision candidate",
+      "related_BJUT_labels": [
+        "Extra gas consumption",
+        "Multiplication after division",
+        "Unchecked call return value"
+      ],
+      "related_DIVE_labels": [
+        "Reentrancy"
+      ],
+      "positive_chunk_ratio": {
+        "BJUT": 0.027775168711700098,
+        "DIVE": 0.032336500648631764
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "state_write_before_call",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": true,
+      "use_in_label_prior_DIVE": true,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset; train-only relevance audit finds a strong/high-precision candidate",
+      "related_BJUT_labels": [
+        "DoS with failed call",
+        "Unchecked call return value"
+      ],
+      "related_DIVE_labels": [
+        "Reentrancy",
+        "Time manipulation"
+      ],
+      "positive_chunk_ratio": {
+        "BJUT": 0.0430140121079641,
+        "DIVE": 0.03611961992216419
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "call_without_return_check",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": true,
+      "use_in_label_prior_DIVE": false,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset; train-only relevance audit finds a strong/high-precision candidate",
+      "related_BJUT_labels": [
+        "DoS with failed call",
+        "Unchecked call return value"
+      ],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.04661096547778641,
+        "DIVE": 0.01177045906827953
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "call_with_return_check",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": true,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset; train-only relevance audit finds a strong/high-precision candidate",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [
+        "Reentrancy"
+      ],
+      "positive_chunk_ratio": {
+        "BJUT": 0.32756041885472437,
+        "DIVE": 0.2237202257646044
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "state_write_with_auth_guard",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": false,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.2841372577482147,
+        "DIVE": 0.19736291003602
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "state_write_without_auth_guard",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": false,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.4995595422085223,
+        "DIVE": 0.5122945716426798
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "sensitive_call_with_auth_guard",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": true,
+      "use_in_label_prior_DIVE": true,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset; train-only relevance audit finds a strong/high-precision candidate",
+      "related_BJUT_labels": [
+        "DoS with failed call",
+        "Extra gas consumption",
+        "Multiplication after division",
+        "Unchecked call return value"
+      ],
+      "related_DIVE_labels": [
+        "Access Control",
+        "Bad Randomness",
+        "DoS",
+        "Front Running",
+        "Reentrancy"
+      ],
+      "positive_chunk_ratio": {
+        "BJUT": 0.11351074033910269,
+        "DIVE": 0.052037699881593576
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "sensitive_call_without_auth_guard",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": true,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset; train-only relevance audit finds a strong/high-precision candidate",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [
+        "Reentrancy"
+      ],
+      "positive_chunk_ratio": {
+        "BJUT": 0.32793897062381344,
+        "DIVE": 0.20750782772883797
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "env_used_in_condition",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": true,
+      "use_in_label_prior_DIVE": true,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset; train-only relevance audit finds a strong/high-precision candidate",
+      "related_BJUT_labels": [
+        "Assert violation",
+        "Timestamp dependence"
+      ],
+      "related_DIVE_labels": [
+        "Bad Randomness",
+        "Reentrancy",
+        "Time manipulation"
+      ],
+      "positive_chunk_ratio": {
+        "BJUT": 0.1383620947290224,
+        "DIVE": 0.11109148990602197
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "env_used_in_arithmetic_or_hash",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": true,
+      "use_in_label_prior_DIVE": true,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset; train-only relevance audit finds a strong/high-precision candidate",
+      "related_BJUT_labels": [
+        "Assert violation",
+        "Timestamp dependence"
+      ],
+      "related_DIVE_labels": [
+        "Bad Randomness",
+        "Reentrancy",
+        "Time manipulation"
+      ],
+      "positive_chunk_ratio": {
+        "BJUT": 0.155186301549216,
+        "DIVE": 0.14926454440693776
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "arithmetic_chain",
+      "use_in_pretraining": false,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": false,
+      "reason": "too sparse/frequent and no strong train-only relevance",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.9462620147492877,
+        "DIVE": 0.9175954665960303
+      },
+      "distribution_warning": [
+        "BJUT:too_frequent",
+        "DIVE:too_frequent"
+      ],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "div_before_mul",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": true,
+      "use_in_label_prior_DIVE": false,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset; train-only relevance audit finds a strong/high-precision candidate",
+      "related_BJUT_labels": [
+        "Multiplication after division"
+      ],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.3171964968306963,
+        "DIVE": 0.216262658507264
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "arithmetic_followed_by_guard_or_revert",
+      "use_in_pretraining": false,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": false,
+      "reason": "too sparse/frequent and no strong train-only relevance",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.9510906844956011,
+        "DIVE": 0.9736223084045923
+      },
+      "distribution_warning": [
+        "BJUT:too_frequent",
+        "DIVE:too_frequent"
+      ],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "has_hardcoded_address",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": false,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.5552493460731658,
+        "DIVE": 0.39767352880581575
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "hardcoded_address_near_call",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": false,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.3973740461491608,
+        "DIVE": 0.26647332233036525
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "value_or_gas_sensitive_call",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": true,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset; train-only relevance audit finds a strong/high-precision candidate",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [
+        "Reentrancy"
+      ],
+      "positive_chunk_ratio": {
+        "BJUT": 0.315618249041524,
+        "DIVE": 0.20891376253964805
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "dense_storage_or_call_ops",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": true,
+      "use_in_label_prior_DIVE": true,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset; train-only relevance audit finds a strong/high-precision candidate",
+      "related_BJUT_labels": [
+        "Extra gas consumption",
+        "Multiplication after division"
+      ],
+      "related_DIVE_labels": [
+        "Arithmetic",
+        "Reentrancy"
+      ],
+      "positive_chunk_ratio": {
+        "BJUT": 0.021869903426605074,
+        "DIVE": 0.031890495563721
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "revert_or_invalid_present",
+      "use_in_pretraining": false,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": false,
+      "reason": "too sparse/frequent and no strong train-only relevance",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.8578410025644748,
+        "DIVE": 0.8069409258341087
+      },
+      "distribution_warning": [
+        "BJUT:too_frequent",
+        "DIVE:too_frequent"
+      ],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "panic_selector_present",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": false,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.0,
+        "DIVE": 0.06100308128386073
+      },
+      "distribution_warning": [
+        "BJUT:too_sparse"
+      ],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "selfdestruct_present",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": true,
+      "use_in_label_prior_DIVE": false,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset; train-only relevance audit finds a strong/high-precision candidate",
+      "related_BJUT_labels": [
+        "Extra gas consumption",
+        "Unsafe send"
+      ],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.01651111889087178,
+        "DIVE": 0.004890208037600266
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "create_contract_present",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": false,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.038968773748431,
+        "DIVE": 0.007206264899852615
+      },
+      "distribution_warning": [],
+      "noise_warning": null
+    },
+    {
+      "pattern_name": "external_call_near_loop_candidate",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": true,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset; train-only relevance audit finds a strong/high-precision candidate",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [
+        "Reentrancy"
+      ],
+      "positive_chunk_ratio": {
+        "BJUT": 0.337520172824537,
+        "DIVE": 0.22657058313466863
+      },
+      "distribution_warning": [],
+      "noise_warning": "noisy_but_candidate: weak loop heuristic without CFG/backward-jump proof"
+    },
+    {
+      "pattern_name": "storage_write_near_loop_candidate",
+      "use_in_pretraining": true,
+      "use_in_label_prior_BJUT": false,
+      "use_in_label_prior_DIVE": false,
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset",
+      "related_BJUT_labels": [],
+      "related_DIVE_labels": [],
+      "positive_chunk_ratio": {
+        "BJUT": 0.42674738642735366,
+        "DIVE": 0.43456743166726663
+      },
+      "distribution_warning": [],
+      "noise_warning": "noisy_but_candidate: weak loop heuristic without CFG/backward-jump proof"
+    }
+  ],
+  "recommended_pattern_names": [
+    "has_external_call",
+    "has_delegatecall",
+    "has_state_read",
+    "has_state_write",
+    "call_before_state_write",
+    "state_write_before_call",
+    "call_without_return_check",
+    "call_with_return_check",
+    "state_write_with_auth_guard",
+    "state_write_without_auth_guard",
+    "sensitive_call_with_auth_guard",
+    "sensitive_call_without_auth_guard",
+    "env_used_in_condition",
+    "env_used_in_arithmetic_or_hash",
+    "div_before_mul",
+    "has_hardcoded_address",
+    "hardcoded_address_near_call",
+    "value_or_gas_sensitive_call",
+    "dense_storage_or_call_ops",
+    "panic_selector_present",
+    "selfdestruct_present",
+    "create_contract_present",
+    "external_call_near_loop_candidate",
+    "storage_write_near_loop_candidate"
+  ],
+  "excluded_pattern_names": [
+    "arithmetic_chain",
+    "arithmetic_followed_by_guard_or_revert",
+    "revert_or_invalid_present"
+  ]
+}

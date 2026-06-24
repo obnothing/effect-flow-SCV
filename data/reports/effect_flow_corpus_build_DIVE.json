@@ -1,0 +1,55 @@
+{
+  "dataset": "DIVE",
+  "input_policy": "strict opcode-hash grouped splits only",
+  "vulnerability_labels_written": false,
+  "max_len": 512,
+  "chunk_content_size": 510,
+  "chunk_stride": 256,
+  "max_chunks_per_contract": 32,
+  "num_workers": 4,
+  "effect_type_count": 16,
+  "efpp_pattern_count": 27,
+  "splits": {
+    "train": {
+      "input_path": "data/processed/DIVE/train.jsonl",
+      "output_path": "data/processed/effect_flow_pretrain/DIVE/train_effect_flow_chunks.jsonl",
+      "contracts": 15616,
+      "chunks": 309716,
+      "empty_contracts": 0,
+      "truncated_contracts": 3474,
+      "mean_chunks_per_contract": 19.833247950819672,
+      "max_chunks_per_contract": 32,
+      "coverage_ratio_mean": 0.9600053645221034,
+      "coverage_ratio_p50": 1.0,
+      "coverage_ratio_p90": 1.0
+    },
+    "valid": {
+      "input_path": "data/processed/DIVE/valid.jsonl",
+      "output_path": "data/processed/effect_flow_pretrain/DIVE/valid_effect_flow_chunks.jsonl",
+      "contracts": 2250,
+      "chunks": 43953,
+      "empty_contracts": 0,
+      "truncated_contracts": 493,
+      "mean_chunks_per_contract": 19.534666666666666,
+      "max_chunks_per_contract": 32,
+      "coverage_ratio_mean": 0.9632332023522073,
+      "coverage_ratio_p50": 1.0,
+      "coverage_ratio_p90": 1.0
+    },
+    "test": {
+      "input_path": "data/processed/DIVE/test.jsonl",
+      "output_path": "data/processed/effect_flow_pretrain/DIVE/test_effect_flow_chunks.jsonl",
+      "contracts": 4464,
+      "chunks": 88030,
+      "empty_contracts": 0,
+      "truncated_contracts": 997,
+      "mean_chunks_per_contract": 19.719982078853047,
+      "max_chunks_per_contract": 32,
+      "coverage_ratio_mean": 0.9600002873497546,
+      "coverage_ratio_p50": 1.0,
+      "coverage_ratio_p90": 1.0
+    }
+  },
+  "total_contracts": 22330,
+  "total_chunks": 441699
+}

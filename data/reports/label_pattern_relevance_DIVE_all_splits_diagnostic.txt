@@ -1,0 +1,506 @@
+All-splits diagnostic: DIVE
+valid/test labels are diagnostic only and must not define training priors.
+
+Label-pattern relevance audit: DIVE / train
+
+IMPORTANT: label-pattern relevance is for analysis only.
+Vulnerability labels are not stored in the effect-flow pretraining corpus.
+is_training_prior_source: True
+aligned_contracts: 15616
+contracts_missing_pattern_chunks: 0
+
+[Reentrancy] support=7979
+top by lift:
+- dense_storage_or_call_ops: coverage=0.3208, negative_rate=0.1138, lift=2.8196, precision_like=0.7466, balanced_score=0.4300, interpretation=strong_candidate, warnings=[]
+- call_before_state_write: coverage=0.4340, negative_rate=0.1824, lift=2.3794, precision_like=0.7131, balanced_score=0.5285, interpretation=strong_candidate, warnings=[]
+- state_write_before_call: coverage=0.4122, negative_rate=0.2071, lift=1.9899, precision_like=0.6752, balanced_score=0.4515, interpretation=strong_candidate, warnings=[]
+- env_used_in_condition: coverage=0.6294, negative_rate=0.3444, lift=1.8277, precision_like=0.6563, balanced_score=0.6542, interpretation=strong_candidate, warnings=[]
+- env_used_in_arithmetic_or_hash: coverage=0.7211, negative_rate=0.4392, lift=1.6420, precision_like=0.6318, balanced_score=0.7006, interpretation=strong_candidate, warnings=[]
+top by coverage:
+- arithmetic_followed_by_guard_or_revert: coverage=0.9991, negative_rate=0.9957, lift=1.0035, precision_like=0.5118, balanced_score=0.6943, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9989, negative_rate=0.9911, lift=1.0078, precision_like=0.5129, balanced_score=0.6963, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9962, negative_rate=0.9959, lift=1.0003, precision_like=0.5110, balanced_score=0.6907, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9951, negative_rate=0.9709, lift=1.0249, precision_like=0.5171, balanced_score=0.7021, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9893, negative_rate=0.9565, lift=1.0343, precision_like=0.5194, balanced_score=0.7026, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- call_with_return_check: coverage=0.9828, negative_rate=0.6276, lift=1.5660, precision_like=0.6207, balanced_score=0.9262, interpretation=strong_candidate, warnings=[]
+- external_call_near_loop_candidate: coverage=0.9860, negative_rate=0.6423, lift=1.5351, precision_like=0.6160, balanced_score=0.9172, interpretation=strong_candidate, warnings=[]
+- has_external_call: coverage=0.9878, negative_rate=0.6651, lift=1.4854, precision_like=0.6081, balanced_score=0.8994, interpretation=weak_or_unrelated, warnings=[]
+- sensitive_call_without_auth_guard: coverage=0.9570, negative_rate=0.6178, lift=1.5491, precision_like=0.6181, balanced_score=0.8955, interpretation=strong_candidate, warnings=[]
+- value_or_gas_sensitive_call: coverage=0.9534, negative_rate=0.6260, lift=1.5229, precision_like=0.6141, balanced_score=0.8823, interpretation=strong_candidate, warnings=[]
+
+[Access Control] support=11767
+top by lift:
+- sensitive_call_with_auth_guard: coverage=0.4128, negative_rate=0.2255, lift=1.8307, precision_like=0.8484, balanced_score=0.4296, interpretation=strong_candidate, warnings=[]
+- selfdestruct_present: coverage=0.0495, negative_rate=0.0385, lift=1.2885, precision_like=0.7975, balanced_score=0.0410, interpretation=weak_or_unrelated, warnings=[]
+- state_write_with_auth_guard: coverage=0.8019, negative_rate=0.7015, lift=1.1432, precision_like=0.7775, balanced_score=0.6113, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- env_used_in_condition: coverage=0.5022, negative_rate=0.4528, lift=1.1089, precision_like=0.7722, balanced_score=0.3747, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- create_contract_present: coverage=0.0716, negative_rate=0.0655, lift=1.0929, precision_like=0.7697, balanced_score=0.0528, interpretation=weak_or_unrelated, warnings=[]
+top by coverage:
+- arithmetic_followed_by_guard_or_revert: coverage=0.9986, negative_rate=0.9940, lift=1.0046, precision_like=0.7544, balanced_score=0.6944, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9975, negative_rate=0.9875, lift=1.0101, precision_like=0.7554, balanced_score=0.6965, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9949, negative_rate=0.9997, lift=0.9952, precision_like=0.7526, balanced_score=0.6872, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9918, negative_rate=0.9571, lift=1.0363, precision_like=0.7601, balanced_score=0.7053, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9829, negative_rate=0.9439, lift=1.0414, precision_like=0.7610, balanced_score=0.7014, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- has_state_read: coverage=0.9918, negative_rate=0.9571, lift=1.0363, precision_like=0.7601, balanced_score=0.7053, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9829, negative_rate=0.9439, lift=1.0414, precision_like=0.7610, balanced_score=0.7014, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- state_write_without_auth_guard: coverage=0.9748, negative_rate=0.9345, lift=1.0431, precision_like=0.7613, balanced_score=0.6965, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9975, negative_rate=0.9875, lift=1.0101, precision_like=0.7554, balanced_score=0.6965, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=0.9986, negative_rate=0.9940, lift=1.0046, precision_like=0.7544, balanced_score=0.6944, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+
+[Arithmetic] support=6664
+top by lift:
+- dense_storage_or_call_ops: coverage=0.3490, negative_rate=0.1232, lift=2.8328, precision_like=0.6783, balanced_score=0.4690, interpretation=strong_candidate, warnings=[]
+- env_used_in_arithmetic_or_hash: coverage=0.6841, negative_rate=0.5082, lift=1.3463, precision_like=0.5005, balanced_score=0.5834, interpretation=weak_or_unrelated, warnings=[]
+- env_used_in_condition: coverage=0.5584, negative_rate=0.4391, lift=1.2716, precision_like=0.4863, balanced_score=0.4581, interpretation=weak_or_unrelated, warnings=[]
+- has_delegatecall: coverage=0.0329, negative_rate=0.0278, lift=1.1815, precision_like=0.4679, balanced_score=0.0256, interpretation=weak_or_unrelated, warnings=[]
+- call_without_return_check: coverage=0.1385, negative_rate=0.1194, lift=1.1599, precision_like=0.4634, balanced_score=0.1067, interpretation=weak_or_unrelated, warnings=[]
+top by coverage:
+- revert_or_invalid_present: coverage=0.9983, negative_rate=0.9944, lift=1.0040, precision_like=0.4277, balanced_score=0.6940, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=0.9976, negative_rate=0.9973, lift=1.0003, precision_like=0.4268, balanced_score=0.6916, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9974, negative_rate=0.9933, lift=1.0042, precision_like=0.4278, balanced_score=0.6935, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9929, negative_rate=0.9761, lift=1.0173, precision_like=0.4309, balanced_score=0.6968, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9881, negative_rate=0.9622, lift=1.0269, precision_like=0.4333, balanced_score=0.6981, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- has_state_write: coverage=0.9881, negative_rate=0.9622, lift=1.0269, precision_like=0.4333, balanced_score=0.6981, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- state_write_without_auth_guard: coverage=0.9829, negative_rate=0.9515, lift=1.0330, precision_like=0.4347, balanced_score=0.6974, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9929, negative_rate=0.9761, lift=1.0173, precision_like=0.4309, balanced_score=0.6968, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9983, negative_rate=0.9944, lift=1.0040, precision_like=0.4277, balanced_score=0.6940, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9974, negative_rate=0.9933, lift=1.0042, precision_like=0.4278, balanced_score=0.6935, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+
+[Unchecked Return Values] support=4118
+top by lift:
+- has_delegatecall: coverage=0.0415, negative_rate=0.0258, lift=1.6076, precision_like=0.3654, balanced_score=0.0398, interpretation=weak_or_unrelated, warnings=[]
+- dense_storage_or_call_ops: coverage=0.2834, negative_rate=0.1967, lift=1.4405, precision_like=0.3403, balanced_score=0.2528, interpretation=weak_or_unrelated, warnings=[]
+- sensitive_call_with_auth_guard: coverage=0.4548, negative_rate=0.3351, lift=1.3573, precision_like=0.3271, balanced_score=0.3900, interpretation=weak_or_unrelated, warnings=[]
+- env_used_in_condition: coverage=0.5964, negative_rate=0.4519, lift=1.3198, precision_like=0.3210, balanced_score=0.5019, interpretation=weak_or_unrelated, warnings=[]
+- state_write_before_call: coverage=0.3788, negative_rate=0.2880, lift=1.3155, precision_like=0.3203, balanced_score=0.3181, interpretation=weak_or_unrelated, warnings=[]
+top by coverage:
+- arithmetic_followed_by_guard_or_revert: coverage=0.9959, negative_rate=0.9980, lift=0.9979, precision_like=0.2633, balanced_score=0.6892, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9956, negative_rate=0.9949, lift=1.0008, precision_like=0.2639, balanced_score=0.6905, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9956, negative_rate=0.9963, lift=0.9994, precision_like=0.2636, balanced_score=0.6898, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9842, negative_rate=0.9830, lift=1.0013, precision_like=0.2640, balanced_score=0.6828, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9735, negative_rate=0.9732, lift=1.0003, precision_like=0.2638, balanced_score=0.6750, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- value_or_gas_sensitive_call: coverage=0.9189, negative_rate=0.7483, lift=1.2280, precision_like=0.3055, balanced_score=0.7361, interpretation=weak_or_unrelated, warnings=[]
+- has_external_call: coverage=0.9320, negative_rate=0.7934, lift=1.1746, precision_like=0.2961, balanced_score=0.7240, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- external_call_near_loop_candidate: coverage=0.9211, negative_rate=0.7809, lift=1.1795, precision_like=0.2970, balanced_score=0.7176, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- sensitive_call_without_auth_guard: coverage=0.9058, negative_rate=0.7500, lift=1.2076, precision_like=0.3019, balanced_score=0.7173, interpretation=weak_or_unrelated, warnings=[]
+- call_with_return_check: coverage=0.9123, negative_rate=0.7721, lift=1.1816, precision_like=0.2973, balanced_score=0.7117, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+
+[DoS] support=2608
+top by lift:
+- sensitive_call_with_auth_guard: coverage=0.6672, negative_rate=0.3064, lift=2.1773, precision_like=0.3039, balanced_score=0.7713, interpretation=strong_candidate, warnings=[]
+- create_contract_present: coverage=0.0859, negative_rate=0.0669, lift=1.2842, precision_like=0.2048, balanced_score=0.0709, interpretation=weak_or_unrelated, warnings=[]
+- call_without_return_check: coverage=0.1469, negative_rate=0.1237, lift=1.1873, precision_like=0.1923, balanced_score=0.1149, interpretation=weak_or_unrelated, warnings=[]
+- sensitive_call_without_auth_guard: coverage=0.8919, negative_rate=0.7709, lift=1.1569, precision_like=0.1883, balanced_score=0.6856, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- call_with_return_check: coverage=0.9038, negative_rate=0.7901, lift=1.1438, precision_like=0.1865, balanced_score=0.6892, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by coverage:
+- arithmetic_followed_by_guard_or_revert: coverage=0.9973, negative_rate=0.9975, lift=0.9999, precision_like=0.1670, balanced_score=0.6912, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9969, negative_rate=0.9959, lift=1.0010, precision_like=0.1671, balanced_score=0.6915, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9962, negative_rate=0.9948, lift=1.0013, precision_like=0.1672, balanced_score=0.6911, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9781, negative_rate=0.9843, lift=0.9937, precision_like=0.1661, balanced_score=0.6749, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9628, negative_rate=0.9754, lift=0.9871, precision_like=0.1652, balanced_score=0.6611, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- sensitive_call_with_auth_guard: coverage=0.6672, negative_rate=0.3064, lift=2.1773, precision_like=0.3039, balanced_score=0.7713, interpretation=strong_candidate, warnings=[]
+- has_external_call: coverage=0.9241, negative_rate=0.8111, lift=1.1393, precision_like=0.1859, balanced_score=0.7027, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- external_call_near_loop_candidate: coverage=0.9126, negative_rate=0.7989, lift=1.1423, precision_like=0.1863, balanced_score=0.6953, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9969, negative_rate=0.9959, lift=1.0010, precision_like=0.1671, balanced_score=0.6915, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=0.9973, negative_rate=0.9975, lift=0.9999, precision_like=0.1670, balanced_score=0.6912, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+
+[Bad Randomness] support=446
+top by lift:
+- selfdestruct_present: coverage=0.0852, negative_rate=0.0457, lift=1.8651, precision_like=0.0520, balanced_score=0.0897, interpretation=weak_or_unrelated, warnings=[]
+- sensitive_call_with_auth_guard: coverage=0.6256, negative_rate=0.3591, lift=1.7422, precision_like=0.0487, balanced_score=0.6310, interpretation=strong_candidate, warnings=[]
+- env_used_in_condition: coverage=0.8027, negative_rate=0.4808, lift=1.6694, precision_like=0.0468, balanced_score=0.7881, interpretation=strong_candidate, warnings=[]
+- env_used_in_arithmetic_or_hash: coverage=0.9462, negative_rate=0.5726, lift=1.6525, precision_like=0.0463, balanced_score=0.9230, interpretation=strong_candidate, warnings=[]
+- call_without_return_check: coverage=0.1839, negative_rate=0.1259, lift=1.4603, precision_like=0.0412, balanced_score=0.1655, interpretation=weak_or_unrelated, warnings=[]
+top by coverage:
+- arithmetic_chain: coverage=1.0000, negative_rate=0.9949, lift=1.0051, precision_like=0.0287, balanced_score=0.6957, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=1.0000, negative_rate=0.9974, lift=1.0026, precision_like=0.0286, balanced_score=0.6945, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9955, negative_rate=0.9961, lift=0.9994, precision_like=0.0285, balanced_score=0.6897, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9910, negative_rate=0.9831, lift=1.0081, precision_like=0.0288, balanced_score=0.6909, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9865, negative_rate=0.9729, lift=1.0140, precision_like=0.0289, balanced_score=0.6907, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- env_used_in_arithmetic_or_hash: coverage=0.9462, negative_rate=0.5726, lift=1.6525, precision_like=0.0463, balanced_score=0.9230, interpretation=strong_candidate, warnings=[]
+- env_used_in_condition: coverage=0.8027, negative_rate=0.4808, lift=1.6694, precision_like=0.0468, balanced_score=0.7881, interpretation=strong_candidate, warnings=[]
+- storage_write_near_loop_candidate: coverage=0.9798, negative_rate=0.9309, lift=1.0525, precision_like=0.0300, balanced_score=0.7046, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=1.0000, negative_rate=0.9949, lift=1.0051, precision_like=0.0287, balanced_score=0.6957, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_external_call: coverage=0.9260, negative_rate=0.8272, lift=1.1195, precision_like=0.0319, balanced_score=0.6956, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+
+[Front Running] support=432
+top by lift:
+- sensitive_call_with_auth_guard: coverage=0.8866, negative_rate=0.3519, lift=2.5195, precision_like=0.0669, balanced_score=1.1156, interpretation=strong_candidate, warnings=[]
+- selfdestruct_present: coverage=0.0903, negative_rate=0.0456, lift=1.9809, precision_like=0.0534, balanced_score=0.0986, interpretation=weak_or_unrelated, warnings=[]
+- call_without_return_check: coverage=0.1574, negative_rate=0.1267, lift=1.2422, precision_like=0.0341, balanced_score=0.1271, interpretation=weak_or_unrelated, warnings=[]
+- external_call_near_loop_candidate: coverage=0.9907, negative_rate=0.8130, lift=1.2187, precision_like=0.0335, balanced_score=0.7895, interpretation=weak_or_unrelated, warnings=[]
+- has_external_call: coverage=0.9954, negative_rate=0.8253, lift=1.2061, precision_like=0.0332, balanced_score=0.7876, interpretation=weak_or_unrelated, warnings=[]
+top by coverage:
+- arithmetic_followed_by_guard_or_revert: coverage=1.0000, negative_rate=0.9974, lift=1.0026, precision_like=0.0277, balanced_score=0.6945, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9977, negative_rate=0.9960, lift=1.0016, precision_like=0.0277, balanced_score=0.6924, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_external_call: coverage=0.9954, negative_rate=0.8253, lift=1.2061, precision_like=0.0332, balanced_score=0.7876, interpretation=weak_or_unrelated, warnings=[]
+- external_call_near_loop_candidate: coverage=0.9907, negative_rate=0.8130, lift=1.2187, precision_like=0.0335, balanced_score=0.7895, interpretation=weak_or_unrelated, warnings=[]
+- has_state_read: coverage=0.9884, negative_rate=0.9831, lift=1.0054, precision_like=0.0278, balanced_score=0.6878, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- sensitive_call_with_auth_guard: coverage=0.8866, negative_rate=0.3519, lift=2.5195, precision_like=0.0669, balanced_score=1.1156, interpretation=strong_candidate, warnings=[]
+- external_call_near_loop_candidate: coverage=0.9907, negative_rate=0.8130, lift=1.2187, precision_like=0.0335, balanced_score=0.7895, interpretation=weak_or_unrelated, warnings=[]
+- has_external_call: coverage=0.9954, negative_rate=0.8253, lift=1.2061, precision_like=0.0332, balanced_score=0.7876, interpretation=weak_or_unrelated, warnings=[]
+- call_with_return_check: coverage=0.9630, negative_rate=0.8047, lift=1.1966, precision_like=0.0329, balanced_score=0.7578, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=1.0000, negative_rate=0.9974, lift=1.0026, precision_like=0.0277, balanced_score=0.6945, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+
+[Time manipulation] support=4433
+top by lift:
+- env_used_in_condition: coverage=0.8622, negative_rate=0.3425, lift=2.5174, precision_like=0.4995, balanced_score=1.0844, interpretation=strong_candidate, warnings=[]
+- state_write_before_call: coverage=0.5150, negative_rate=0.2314, lift=2.2254, precision_like=0.4687, balanced_score=0.6031, interpretation=strong_candidate, warnings=[]
+- env_used_in_arithmetic_or_hash: coverage=0.9296, negative_rate=0.4459, lift=2.0846, precision_like=0.4525, balanced_score=1.0471, interpretation=strong_candidate, warnings=[]
+- dense_storage_or_call_ops: coverage=0.2942, negative_rate=0.1900, lift=1.5480, precision_like=0.3803, balanced_score=0.2751, interpretation=weak_or_unrelated, warnings=[]
+- sensitive_call_with_auth_guard: coverage=0.4679, negative_rate=0.3266, lift=1.4326, precision_like=0.3622, balanced_score=0.4159, interpretation=weak_or_unrelated, warnings=[]
+top by coverage:
+- arithmetic_followed_by_guard_or_revert: coverage=0.9973, negative_rate=0.9975, lift=0.9998, precision_like=0.2838, balanced_score=0.6912, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9971, negative_rate=0.9943, lift=1.0028, precision_like=0.2844, balanced_score=0.6925, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9950, negative_rate=0.9965, lift=0.9985, precision_like=0.2836, balanced_score=0.6890, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9840, negative_rate=0.9830, lift=1.0010, precision_like=0.2841, balanced_score=0.6825, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9804, negative_rate=0.9705, lift=1.0102, precision_like=0.2859, balanced_score=0.6845, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- env_used_in_condition: coverage=0.8622, negative_rate=0.3425, lift=2.5174, precision_like=0.4995, balanced_score=1.0844, interpretation=strong_candidate, warnings=[]
+- env_used_in_arithmetic_or_hash: coverage=0.9296, negative_rate=0.4459, lift=2.0846, precision_like=0.4525, balanced_score=1.0471, interpretation=strong_candidate, warnings=[]
+- has_external_call: coverage=0.9450, negative_rate=0.7844, lift=1.2047, precision_like=0.3232, balanced_score=0.7471, interpretation=weak_or_unrelated, warnings=[]
+- call_with_return_check: coverage=0.9294, negative_rate=0.7614, lift=1.2206, precision_like=0.3261, balanced_score=0.7414, interpretation=weak_or_unrelated, warnings=[]
+- external_call_near_loop_candidate: coverage=0.9330, negative_rate=0.7722, lift=1.2082, precision_like=0.3238, balanced_score=0.7391, interpretation=weak_or_unrelated, warnings=[]
+
+Label-pattern relevance audit: DIVE / valid
+
+IMPORTANT: label-pattern relevance is for analysis only.
+Vulnerability labels are not stored in the effect-flow pretraining corpus.
+is_training_prior_source: False
+aligned_contracts: 2250
+contracts_missing_pattern_chunks: 0
+
+[Reentrancy] support=1142
+top by lift:
+- dense_storage_or_call_ops: coverage=0.3074, negative_rate=0.1047, lift=2.9358, precision_like=0.7516, balanced_score=0.4211, interpretation=strong_candidate, warnings=[]
+- call_before_state_write: coverage=0.4203, negative_rate=0.1823, lift=2.3055, precision_like=0.7038, balanced_score=0.5025, interpretation=strong_candidate, warnings=[]
+- state_write_before_call: coverage=0.4413, negative_rate=0.2022, lift=2.1830, precision_like=0.6923, balanced_score=0.5110, interpretation=strong_candidate, warnings=[]
+- env_used_in_condition: coverage=0.6130, negative_rate=0.3123, lift=1.9629, precision_like=0.6692, balanced_score=0.6658, interpretation=strong_candidate, warnings=[]
+- sensitive_call_with_auth_guard: coverage=0.4352, negative_rate=0.2473, lift=1.7599, precision_like=0.6446, balanced_score=0.4418, interpretation=strong_candidate, warnings=[]
+top by coverage:
+- arithmetic_chain: coverage=1.0000, negative_rate=0.9937, lift=1.0064, precision_like=0.5091, balanced_score=0.6963, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=1.0000, negative_rate=0.9955, lift=1.0045, precision_like=0.5087, balanced_score=0.6954, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9982, negative_rate=0.9639, lift=1.0356, precision_like=0.5163, balanced_score=0.7096, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9982, negative_rate=0.9973, lift=1.0010, precision_like=0.5078, balanced_score=0.6924, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9930, negative_rate=0.9477, lift=1.0478, precision_like=0.5192, balanced_score=0.7118, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- call_with_return_check: coverage=0.9860, negative_rate=0.5839, lift=1.6885, precision_like=0.6351, balanced_score=0.9751, interpretation=strong_candidate, warnings=[]
+- external_call_near_loop_candidate: coverage=0.9860, negative_rate=0.6128, lift=1.6089, precision_like=0.6238, balanced_score=0.9455, interpretation=strong_candidate, warnings=[]
+- value_or_gas_sensitive_call: coverage=0.9615, negative_rate=0.5957, lift=1.6141, precision_like=0.6246, balanced_score=0.9239, interpretation=strong_candidate, warnings=[]
+- has_external_call: coverage=0.9886, negative_rate=0.6417, lift=1.5406, precision_like=0.6136, balanced_score=0.9218, interpretation=strong_candidate, warnings=[]
+- sensitive_call_without_auth_guard: coverage=0.9571, negative_rate=0.6173, lift=1.5504, precision_like=0.6151, balanced_score=0.8961, interpretation=strong_candidate, warnings=[]
+
+[Access Control] support=1629
+top by lift:
+- sensitive_call_with_auth_guard: coverage=0.4033, negative_rate=0.1836, lift=2.1970, precision_like=0.8521, balanced_score=0.4687, interpretation=strong_candidate, warnings=[]
+- env_used_in_condition: coverage=0.5040, negative_rate=0.3623, lift=1.3910, precision_like=0.7849, balanced_score=0.4393, interpretation=weak_or_unrelated, warnings=[]
+- selfdestruct_present: coverage=0.0626, negative_rate=0.0451, lift=1.3887, precision_like=0.7846, balanced_score=0.0545, interpretation=weak_or_unrelated, warnings=[]
+- create_contract_present: coverage=0.0749, negative_rate=0.0548, lift=1.3679, precision_like=0.7821, balanced_score=0.0646, interpretation=weak_or_unrelated, warnings=[]
+- dense_storage_or_call_ops: coverage=0.2222, negative_rate=0.1691, lift=1.3143, precision_like=0.7752, balanced_score=0.1865, interpretation=weak_or_unrelated, warnings=[]
+top by coverage:
+- arithmetic_chain: coverage=0.9988, negative_rate=0.9919, lift=1.0069, precision_like=0.7254, balanced_score=0.6957, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=0.9988, negative_rate=0.9952, lift=1.0036, precision_like=0.7247, balanced_score=0.6941, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9975, negative_rate=0.9984, lift=0.9992, precision_like=0.7238, balanced_score=0.6910, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9957, negative_rate=0.9436, lift=1.0552, precision_like=0.7346, balanced_score=0.7173, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9847, negative_rate=0.9340, lift=1.0543, precision_like=0.7344, balanced_score=0.7089, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- has_state_read: coverage=0.9957, negative_rate=0.9436, lift=1.0552, precision_like=0.7346, balanced_score=0.7173, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9847, negative_rate=0.9340, lift=1.0543, precision_like=0.7344, balanced_score=0.7089, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- state_write_without_auth_guard: coverage=0.9767, negative_rate=0.9291, lift=1.0512, precision_like=0.7339, balanced_score=0.7016, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9988, negative_rate=0.9919, lift=1.0069, precision_like=0.7254, balanced_score=0.6957, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=0.9988, negative_rate=0.9952, lift=1.0036, precision_like=0.7247, balanced_score=0.6941, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+
+[Arithmetic] support=996
+top by lift:
+- dense_storage_or_call_ops: coverage=0.3313, negative_rate=0.1093, lift=3.0327, precision_like=0.7066, balanced_score=0.4620, interpretation=strong_candidate, warnings=[]
+- env_used_in_arithmetic_or_hash: coverage=0.6717, negative_rate=0.4761, lift=1.4109, precision_like=0.5284, balanced_score=0.5911, interpretation=weak_or_unrelated, warnings=[]
+- env_used_in_condition: coverage=0.5331, negative_rate=0.4107, lift=1.2982, precision_like=0.5076, balanced_score=0.4436, interpretation=weak_or_unrelated, warnings=[]
+- panic_selector_present: coverage=0.3474, negative_rate=0.2982, lift=1.1648, precision_like=0.4806, balanced_score=0.2683, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- selfdestruct_present: coverage=0.0622, negative_rate=0.0542, lift=1.1479, precision_like=0.4769, balanced_score=0.0476, interpretation=weak_or_unrelated, warnings=[]
+top by coverage:
+- arithmetic_chain: coverage=0.9990, negative_rate=0.9952, lift=1.0038, precision_like=0.4436, balanced_score=0.6943, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9990, negative_rate=0.9968, lift=1.0022, precision_like=0.4432, balanced_score=0.6935, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=0.9980, negative_rate=0.9976, lift=1.0004, precision_like=0.4428, balanced_score=0.6919, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9930, negative_rate=0.9721, lift=1.0215, precision_like=0.4479, balanced_score=0.6989, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9859, negative_rate=0.9585, lift=1.0286, precision_like=0.4496, balanced_score=0.6974, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- has_state_read: coverage=0.9930, negative_rate=0.9721, lift=1.0215, precision_like=0.4479, balanced_score=0.6989, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9859, negative_rate=0.9585, lift=1.0286, precision_like=0.4496, balanced_score=0.6974, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9990, negative_rate=0.9952, lift=1.0038, precision_like=0.4436, balanced_score=0.6943, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- state_write_without_auth_guard: coverage=0.9799, negative_rate=0.9506, lift=1.0309, precision_like=0.4502, balanced_score=0.6942, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9990, negative_rate=0.9968, lift=1.0022, precision_like=0.4432, balanced_score=0.6935, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+
+[Unchecked Return Values] support=562
+top by lift:
+- dense_storage_or_call_ops: coverage=0.3132, negative_rate=0.1724, lift=1.8166, precision_like=0.3769, balanced_score=0.3243, interpretation=strong_candidate, warnings=[]
+- env_used_in_condition: coverage=0.6228, negative_rate=0.4123, lift=1.5104, precision_like=0.3346, balanced_score=0.5732, interpretation=strong_candidate, warnings=[]
+- env_used_in_arithmetic_or_hash: coverage=0.7473, negative_rate=0.5012, lift=1.4911, precision_like=0.3318, balanced_score=0.6821, interpretation=weak_or_unrelated, warnings=[]
+- sensitive_call_with_auth_guard: coverage=0.4520, negative_rate=0.3063, lift=1.4756, precision_like=0.3294, balanced_score=0.4097, interpretation=weak_or_unrelated, warnings=[]
+- state_write_before_call: coverage=0.4128, negative_rate=0.2938, lift=1.4049, precision_like=0.3187, balanced_score=0.3622, interpretation=weak_or_unrelated, warnings=[]
+top by coverage:
+- revert_or_invalid_present: coverage=1.0000, negative_rate=0.9970, lift=1.0030, precision_like=0.2503, balanced_score=0.6946, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9982, negative_rate=0.9964, lift=1.0018, precision_like=0.2501, balanced_score=0.6928, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=0.9964, negative_rate=0.9982, lift=0.9982, precision_like=0.2494, balanced_score=0.6898, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9840, negative_rate=0.9805, lift=1.0036, precision_like=0.2505, balanced_score=0.6838, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9715, negative_rate=0.9704, lift=1.0012, precision_like=0.2500, balanced_score=0.6740, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- value_or_gas_sensitive_call: coverage=0.9146, negative_rate=0.7370, lift=1.2410, precision_like=0.2924, balanced_score=0.7380, interpretation=weak_or_unrelated, warnings=[]
+- has_external_call: coverage=0.9253, negative_rate=0.7820, lift=1.1832, precision_like=0.2826, balanced_score=0.7224, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- sensitive_call_without_auth_guard: coverage=0.9093, negative_rate=0.7500, lift=1.2123, precision_like=0.2876, balanced_score=0.7220, interpretation=weak_or_unrelated, warnings=[]
+- call_with_return_check: coverage=0.9057, negative_rate=0.7488, lift=1.2095, precision_like=0.2871, balanced_score=0.7180, interpretation=weak_or_unrelated, warnings=[]
+- external_call_near_loop_candidate: coverage=0.9093, negative_rate=0.7666, lift=1.1861, precision_like=0.2831, balanced_score=0.7111, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+
+[DoS] support=411
+top by lift:
+- sensitive_call_with_auth_guard: coverage=0.6813, negative_rate=0.2670, lift=2.5516, precision_like=0.3632, balanced_score=0.8634, interpretation=strong_candidate, warnings=[]
+- selfdestruct_present: coverage=0.0754, negative_rate=0.0538, lift=1.4011, precision_like=0.2385, balanced_score=0.0661, interpretation=weak_or_unrelated, warnings=[]
+- has_delegatecall: coverage=0.0414, negative_rate=0.0305, lift=1.3583, precision_like=0.2329, balanced_score=0.0355, interpretation=weak_or_unrelated, warnings=[]
+- create_contract_present: coverage=0.0803, negative_rate=0.0669, lift=1.2005, precision_like=0.2115, balanced_score=0.0633, interpretation=weak_or_unrelated, warnings=[]
+- call_with_return_check: coverage=0.8978, negative_rate=0.7635, lift=1.1760, precision_like=0.2081, balanced_score=0.6980, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by coverage:
+- arithmetic_chain: coverage=0.9976, negative_rate=0.9967, lift=1.0008, precision_like=0.1828, balanced_score=0.6919, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=0.9951, negative_rate=0.9984, lift=0.9968, precision_like=0.1822, balanced_score=0.6882, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9951, negative_rate=0.9984, lift=0.9968, precision_like=0.1822, balanced_score=0.6882, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9805, negative_rate=0.9815, lift=0.9990, precision_like=0.1825, balanced_score=0.6792, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9635, negative_rate=0.9723, lift=0.9910, precision_like=0.1813, balanced_score=0.6635, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- sensitive_call_with_auth_guard: coverage=0.6813, negative_rate=0.2670, lift=2.5516, precision_like=0.3632, balanced_score=0.8634, interpretation=strong_candidate, warnings=[]
+- has_external_call: coverage=0.9221, negative_rate=0.7945, lift=1.1607, precision_like=0.2060, balanced_score=0.7105, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- external_call_near_loop_candidate: coverage=0.9100, negative_rate=0.7781, lift=1.1694, precision_like=0.2072, balanced_score=0.7047, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- call_with_return_check: coverage=0.8978, negative_rate=0.7635, lift=1.1760, precision_like=0.2081, balanced_score=0.6980, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9976, negative_rate=0.9967, lift=1.0008, precision_like=0.1828, balanced_score=0.6919, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+
+[Bad Randomness] support=62
+top by lift:
+- selfdestruct_present: coverage=0.1129, negative_rate=0.0562, lift=2.0084, precision_like=0.0538, balanced_score=0.1244, interpretation=high_precision_low_coverage, warnings=[]
+- env_used_in_condition: coverage=0.7581, negative_rate=0.4566, lift=1.6603, precision_like=0.0449, balanced_score=0.7417, interpretation=strong_candidate, warnings=[]
+- env_used_in_arithmetic_or_hash: coverage=0.9032, negative_rate=0.5530, lift=1.6333, precision_like=0.0442, balanced_score=0.8745, interpretation=strong_candidate, warnings=[]
+- sensitive_call_with_auth_guard: coverage=0.5161, negative_rate=0.3378, lift=1.5281, precision_like=0.0415, balanced_score=0.4787, interpretation=strong_candidate, warnings=[]
+- call_without_return_check: coverage=0.1613, negative_rate=0.1225, lift=1.3168, precision_like=0.0360, balanced_score=0.1355, interpretation=weak_or_unrelated, warnings=[]
+top by coverage:
+- has_state_read: coverage=1.0000, negative_rate=0.9808, lift=1.0196, precision_like=0.0281, balanced_score=0.7029, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=1.0000, negative_rate=0.9698, lift=1.0311, precision_like=0.0284, balanced_score=0.7086, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=1.0000, negative_rate=0.9968, lift=1.0032, precision_like=0.0276, balanced_score=0.6948, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=1.0000, negative_rate=0.9977, lift=1.0023, precision_like=0.0276, balanced_score=0.6943, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=1.0000, negative_rate=0.9977, lift=1.0023, precision_like=0.0276, balanced_score=0.6943, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- env_used_in_arithmetic_or_hash: coverage=0.9032, negative_rate=0.5530, lift=1.6333, precision_like=0.0442, balanced_score=0.8745, interpretation=strong_candidate, warnings=[]
+- env_used_in_condition: coverage=0.7581, negative_rate=0.4566, lift=1.6603, precision_like=0.0449, balanced_score=0.7417, interpretation=strong_candidate, warnings=[]
+- has_state_write: coverage=1.0000, negative_rate=0.9698, lift=1.0311, precision_like=0.0284, balanced_score=0.7086, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=1.0000, negative_rate=0.9808, lift=1.0196, precision_like=0.0281, balanced_score=0.7029, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=1.0000, negative_rate=0.9968, lift=1.0032, precision_like=0.0276, balanced_score=0.6948, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+
+[Front Running] support=58
+top by lift:
+- sensitive_call_with_auth_guard: coverage=0.8793, negative_rate=0.3285, lift=2.6770, precision_like=0.0661, balanced_score=1.1450, interpretation=strong_candidate, warnings=[]
+- selfdestruct_present: coverage=0.1034, negative_rate=0.0566, lift=1.8287, precision_like=0.0462, balanced_score=0.1076, interpretation=weak_or_unrelated, warnings=[]
+- state_write_before_call: coverage=0.4310, negative_rate=0.3207, lift=1.3440, precision_like=0.0343, balanced_score=0.3672, interpretation=weak_or_unrelated, warnings=[]
+- call_before_state_write: coverage=0.3793, negative_rate=0.3011, lift=1.2598, precision_like=0.0323, balanced_score=0.3092, interpretation=weak_or_unrelated, warnings=[]
+- call_with_return_check: coverage=0.9828, negative_rate=0.7828, lift=1.2554, precision_like=0.0321, balanced_score=0.7993, interpretation=weak_or_unrelated, warnings=[]
+top by coverage:
+- has_external_call: coverage=1.0000, negative_rate=0.8130, lift=1.2301, precision_like=0.0315, balanced_score=0.8020, interpretation=weak_or_unrelated, warnings=[]
+- has_state_read: coverage=1.0000, negative_rate=0.9808, lift=1.0195, precision_like=0.0263, balanced_score=0.7029, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=1.0000, negative_rate=0.9977, lift=1.0023, precision_like=0.0258, balanced_score=0.6943, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=1.0000, negative_rate=0.9977, lift=1.0023, precision_like=0.0258, balanced_score=0.6943, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- external_call_near_loop_candidate: coverage=1.0000, negative_rate=0.7970, lift=1.2547, precision_like=0.0321, balanced_score=0.8130, interpretation=weak_or_unrelated, warnings=[]
+top by balanced score:
+- sensitive_call_with_auth_guard: coverage=0.8793, negative_rate=0.3285, lift=2.6770, precision_like=0.0661, balanced_score=1.1450, interpretation=strong_candidate, warnings=[]
+- external_call_near_loop_candidate: coverage=1.0000, negative_rate=0.7970, lift=1.2547, precision_like=0.0321, balanced_score=0.8130, interpretation=weak_or_unrelated, warnings=[]
+- has_external_call: coverage=1.0000, negative_rate=0.8130, lift=1.2301, precision_like=0.0315, balanced_score=0.8020, interpretation=weak_or_unrelated, warnings=[]
+- call_with_return_check: coverage=0.9828, negative_rate=0.7828, lift=1.2554, precision_like=0.0321, balanced_score=0.7993, interpretation=weak_or_unrelated, warnings=[]
+- hardcoded_address_near_call: coverage=0.8966, negative_rate=0.7276, lift=1.2321, precision_like=0.0316, balanced_score=0.7199, interpretation=weak_or_unrelated, warnings=[]
+
+[Time manipulation] support=629
+top by lift:
+- env_used_in_condition: coverage=0.8203, negative_rate=0.3270, lift=2.5090, precision_like=0.4933, balanced_score=1.0298, interpretation=strong_candidate, warnings=[]
+- env_used_in_arithmetic_or_hash: coverage=0.9285, negative_rate=0.4207, lift=2.2068, precision_like=0.4613, balanced_score=1.0819, interpretation=strong_candidate, warnings=[]
+- state_write_before_call: coverage=0.5183, negative_rate=0.2480, lift=2.0899, precision_like=0.4478, balanced_score=0.5847, interpretation=strong_candidate, warnings=[]
+- dense_storage_or_call_ops: coverage=0.3148, negative_rate=0.1659, lift=1.8969, precision_like=0.4240, balanced_score=0.3348, interpretation=strong_candidate, warnings=[]
+- sensitive_call_with_auth_guard: coverage=0.4642, negative_rate=0.2955, lift=1.5710, precision_like=0.3787, balanced_score=0.4384, interpretation=strong_candidate, warnings=[]
+top by coverage:
+- arithmetic_chain: coverage=1.0000, negative_rate=0.9957, lift=1.0043, precision_like=0.2804, balanced_score=0.6953, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=0.9984, negative_rate=0.9975, lift=1.0009, precision_like=0.2797, balanced_score=0.6925, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9984, negative_rate=0.9975, lift=1.0009, precision_like=0.2797, balanced_score=0.6925, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9873, negative_rate=0.9790, lift=1.0084, precision_like=0.2812, balanced_score=0.6885, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9825, negative_rate=0.9661, lift=1.0170, precision_like=0.2830, balanced_score=0.6894, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- env_used_in_arithmetic_or_hash: coverage=0.9285, negative_rate=0.4207, lift=2.2068, precision_like=0.4613, balanced_score=1.0819, interpretation=strong_candidate, warnings=[]
+- env_used_in_condition: coverage=0.8203, negative_rate=0.3270, lift=2.5090, precision_like=0.4933, balanced_score=1.0298, interpretation=strong_candidate, warnings=[]
+- call_with_return_check: coverage=0.9285, negative_rate=0.7335, lift=1.2658, precision_like=0.3294, balanced_score=0.7594, interpretation=weak_or_unrelated, warnings=[]
+- has_external_call: coverage=0.9396, negative_rate=0.7705, lift=1.2194, precision_like=0.3212, balanced_score=0.7491, interpretation=weak_or_unrelated, warnings=[]
+- external_call_near_loop_candidate: coverage=0.9285, negative_rate=0.7532, lift=1.2326, precision_like=0.3235, balanced_score=0.7457, interpretation=weak_or_unrelated, warnings=[]
+
+Label-pattern relevance audit: DIVE / test
+
+IMPORTANT: label-pattern relevance is for analysis only.
+Vulnerability labels are not stored in the effect-flow pretraining corpus.
+is_training_prior_source: False
+aligned_contracts: 4464
+contracts_missing_pattern_chunks: 0
+
+[Reentrancy] support=2279
+top by lift:
+- dense_storage_or_call_ops: coverage=0.3282, negative_rate=0.1172, lift=2.8014, precision_like=0.7450, balanced_score=0.4383, interpretation=strong_candidate, warnings=[]
+- call_before_state_write: coverage=0.4208, negative_rate=0.1703, lift=2.4716, precision_like=0.7205, balanced_score=0.5237, interpretation=strong_candidate, warnings=[]
+- state_write_before_call: coverage=0.4041, negative_rate=0.1991, lift=2.0299, precision_like=0.6792, balanced_score=0.4480, interpretation=strong_candidate, warnings=[]
+- env_used_in_condition: coverage=0.6165, negative_rate=0.3497, lift=1.7632, precision_like=0.6478, balanced_score=0.6266, interpretation=strong_candidate, warnings=[]
+- sensitive_call_with_auth_guard: coverage=0.4300, negative_rate=0.2558, lift=1.6808, precision_like=0.6368, balanced_score=0.4240, interpretation=strong_candidate, warnings=[]
+top by coverage:
+- arithmetic_followed_by_guard_or_revert: coverage=0.9991, negative_rate=0.9986, lift=1.0005, precision_like=0.5107, balanced_score=0.6928, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9987, negative_rate=0.9927, lift=1.0061, precision_like=0.5120, balanced_score=0.6953, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9956, negative_rate=0.9968, lift=0.9988, precision_like=0.5102, balanced_score=0.6895, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9952, negative_rate=0.9771, lift=1.0185, precision_like=0.5151, balanced_score=0.6990, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9895, negative_rate=0.9602, lift=1.0305, precision_like=0.5180, balanced_score=0.7008, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- call_with_return_check: coverage=0.9794, negative_rate=0.5922, lift=1.6537, precision_like=0.6330, balanced_score=0.9558, interpretation=strong_candidate, warnings=[]
+- external_call_near_loop_candidate: coverage=0.9842, negative_rate=0.6105, lift=1.6121, precision_like=0.6271, balanced_score=0.9450, interpretation=strong_candidate, warnings=[]
+- has_external_call: coverage=0.9846, negative_rate=0.6343, lift=1.5523, precision_like=0.6182, balanced_score=0.9226, interpretation=strong_candidate, warnings=[]
+- sensitive_call_without_auth_guard: coverage=0.9557, negative_rate=0.6000, lift=1.5928, precision_like=0.6242, balanced_score=0.9105, interpretation=strong_candidate, warnings=[]
+- value_or_gas_sensitive_call: coverage=0.9552, negative_rate=0.6000, lift=1.5921, precision_like=0.6241, balanced_score=0.9098, interpretation=strong_candidate, warnings=[]
+
+[Access Control] support=3327
+top by lift:
+- sensitive_call_with_auth_guard: coverage=0.3931, negative_rate=0.2032, lift=1.9351, precision_like=0.8499, balanced_score=0.4233, interpretation=strong_candidate, warnings=[]
+- selfdestruct_present: coverage=0.0478, negative_rate=0.0369, lift=1.2938, precision_like=0.7910, balanced_score=0.0397, interpretation=weak_or_unrelated, warnings=[]
+- create_contract_present: coverage=0.0794, negative_rate=0.0651, lift=1.2192, precision_like=0.7811, balanced_score=0.0633, interpretation=weak_or_unrelated, warnings=[]
+- state_write_with_auth_guard: coverage=0.7959, negative_rate=0.6825, lift=1.1662, precision_like=0.7734, balanced_score=0.6152, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- env_used_in_condition: coverage=0.5011, negative_rate=0.4415, lift=1.1349, precision_like=0.7686, balanced_score=0.3800, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by coverage:
+- arithmetic_followed_by_guard_or_revert: coverage=0.9994, negative_rate=0.9974, lift=1.0020, precision_like=0.7457, balanced_score=0.6938, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9982, negative_rate=0.9886, lift=1.0097, precision_like=0.7471, balanced_score=0.6967, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9949, negative_rate=1.0000, lift=0.9949, precision_like=0.7443, balanced_score=0.6871, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9934, negative_rate=0.9657, lift=1.0287, precision_like=0.7506, balanced_score=0.7027, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9832, negative_rate=0.9516, lift=1.0331, precision_like=0.7514, balanced_score=0.6976, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- has_state_read: coverage=0.9934, negative_rate=0.9657, lift=1.0287, precision_like=0.7506, balanced_score=0.7027, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9832, negative_rate=0.9516, lift=1.0331, precision_like=0.7514, balanced_score=0.6976, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9982, negative_rate=0.9886, lift=1.0097, precision_like=0.7471, balanced_score=0.6967, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- state_write_without_auth_guard: coverage=0.9784, negative_rate=0.9446, lift=1.0357, precision_like=0.7519, balanced_score=0.6955, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=0.9994, negative_rate=0.9974, lift=1.0020, precision_like=0.7457, balanced_score=0.6938, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+
+[Arithmetic] support=1882
+top by lift:
+- dense_storage_or_call_ops: coverage=0.3597, negative_rate=0.1266, lift=2.8404, precision_like=0.6743, balanced_score=0.4840, interpretation=strong_candidate, warnings=[]
+- env_used_in_arithmetic_or_hash: coverage=0.6971, negative_rate=0.4861, lift=1.4343, precision_like=0.5111, balanced_score=0.6202, interpretation=weak_or_unrelated, warnings=[]
+- env_used_in_condition: coverage=0.5584, negative_rate=0.4330, lift=1.2897, precision_like=0.4846, balanced_score=0.4626, interpretation=weak_or_unrelated, warnings=[]
+- panic_selector_present: coverage=0.3130, negative_rate=0.2773, lift=1.1286, precision_like=0.4513, balanced_score=0.2364, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- sensitive_call_without_auth_guard: coverage=0.8273, negative_rate=0.7483, lift=1.1057, precision_like=0.4463, balanced_score=0.6160, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by coverage:
+- arithmetic_followed_by_guard_or_revert: coverage=0.9989, negative_rate=0.9988, lift=1.0001, precision_like=0.4216, balanced_score=0.6925, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9989, negative_rate=0.9942, lift=1.0048, precision_like=0.4228, balanced_score=0.6948, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9984, negative_rate=0.9938, lift=1.0046, precision_like=0.4227, balanced_score=0.6944, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9926, negative_rate=0.9818, lift=1.0110, precision_like=0.4243, balanced_score=0.6934, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9883, negative_rate=0.9655, lift=1.0236, precision_like=0.4273, balanced_score=0.6966, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- has_state_write: coverage=0.9883, negative_rate=0.9655, lift=1.0236, precision_like=0.4273, balanced_score=0.6966, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9989, negative_rate=0.9942, lift=1.0048, precision_like=0.4228, balanced_score=0.6948, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9984, negative_rate=0.9938, lift=1.0046, precision_like=0.4227, balanced_score=0.6944, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- state_write_without_auth_guard: coverage=0.9835, negative_rate=0.9597, lift=1.0248, precision_like=0.4276, balanced_score=0.6939, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9926, negative_rate=0.9818, lift=1.0110, precision_like=0.4243, balanced_score=0.6934, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+
+[Unchecked Return Values] support=1231
+top by lift:
+- has_delegatecall: coverage=0.0471, negative_rate=0.0266, lift=1.7712, precision_like=0.4028, balanced_score=0.0480, interpretation=weak_or_unrelated, warnings=[]
+- dense_storage_or_call_ops: coverage=0.2957, negative_rate=0.1980, lift=1.4937, precision_like=0.3625, balanced_score=0.2702, interpretation=weak_or_unrelated, warnings=[]
+- sensitive_call_with_auth_guard: coverage=0.4281, negative_rate=0.3130, lift=1.3677, precision_like=0.3424, balanced_score=0.3690, interpretation=weak_or_unrelated, warnings=[]
+- value_or_gas_sensitive_call: coverage=0.9277, negative_rate=0.7256, lift=1.2785, precision_like=0.3274, balanced_score=0.7640, interpretation=weak_or_unrelated, warnings=[]
+- env_used_in_condition: coverage=0.5670, negative_rate=0.4550, lift=1.2462, precision_like=0.3218, balanced_score=0.4589, interpretation=weak_or_unrelated, warnings=[]
+top by coverage:
+- arithmetic_followed_by_guard_or_revert: coverage=0.9984, negative_rate=0.9991, lift=0.9993, precision_like=0.2756, balanced_score=0.6917, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9976, negative_rate=0.9951, lift=1.0025, precision_like=0.2763, balanced_score=0.6927, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9943, negative_rate=0.9969, lift=0.9974, precision_like=0.2752, balanced_score=0.6879, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9870, negative_rate=0.9861, lift=1.0009, precision_like=0.2759, balanced_score=0.6846, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9740, negative_rate=0.9756, lift=0.9984, precision_like=0.2754, balanced_score=0.6743, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- value_or_gas_sensitive_call: coverage=0.9277, negative_rate=0.7256, lift=1.2785, precision_like=0.3274, balanced_score=0.7640, interpretation=weak_or_unrelated, warnings=[]
+- has_external_call: coverage=0.9342, negative_rate=0.7671, lift=1.2179, precision_like=0.3168, balanced_score=0.7441, interpretation=weak_or_unrelated, warnings=[]
+- external_call_near_loop_candidate: coverage=0.9253, negative_rate=0.7541, lift=1.2270, precision_like=0.3184, balanced_score=0.7408, interpretation=weak_or_unrelated, warnings=[]
+- call_with_return_check: coverage=0.9155, negative_rate=0.7420, lift=1.2338, precision_like=0.3196, balanced_score=0.7358, interpretation=weak_or_unrelated, warnings=[]
+- sensitive_call_without_auth_guard: coverage=0.9025, negative_rate=0.7355, lift=1.2270, precision_like=0.3184, balanced_score=0.7226, interpretation=weak_or_unrelated, warnings=[]
+
+[DoS] support=762
+top by lift:
+- sensitive_call_with_auth_guard: coverage=0.6404, negative_rate=0.2839, lift=2.2558, precision_like=0.3171, balanced_score=0.7560, interpretation=strong_candidate, warnings=[]
+- create_contract_present: coverage=0.1050, negative_rate=0.0697, lift=1.5064, precision_like=0.2367, balanced_score=0.0965, interpretation=weak_or_unrelated, warnings=[]
+- selfdestruct_present: coverage=0.0577, negative_rate=0.0424, lift=1.3616, precision_like=0.2189, balanced_score=0.0496, interpretation=weak_or_unrelated, warnings=[]
+- call_without_return_check: coverage=0.1522, negative_rate=0.1207, lift=1.2608, precision_like=0.2060, balanced_score=0.1242, interpretation=weak_or_unrelated, warnings=[]
+- has_delegatecall: coverage=0.0381, negative_rate=0.0311, lift=1.2251, precision_like=0.2014, balanced_score=0.0304, interpretation=weak_or_unrelated, warnings=[]
+top by coverage:
+- arithmetic_followed_by_guard_or_revert: coverage=0.9987, negative_rate=0.9989, lift=0.9998, precision_like=0.1707, balanced_score=0.6921, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9974, negative_rate=0.9954, lift=1.0020, precision_like=0.1710, balanced_score=0.6923, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9895, negative_rate=0.9976, lift=0.9919, precision_like=0.1696, balanced_score=0.6819, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9803, negative_rate=0.9876, lift=0.9926, precision_like=0.1697, balanced_score=0.6759, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9567, negative_rate=0.9789, lift=0.9773, precision_like=0.1675, balanced_score=0.6522, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- sensitive_call_with_auth_guard: coverage=0.6404, negative_rate=0.2839, lift=2.2558, precision_like=0.3171, balanced_score=0.7560, interpretation=strong_candidate, warnings=[]
+- arithmetic_chain: coverage=0.9974, negative_rate=0.9954, lift=1.0020, precision_like=0.1710, balanced_score=0.6923, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=0.9987, negative_rate=0.9989, lift=0.9998, precision_like=0.1707, balanced_score=0.6921, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_external_call: coverage=0.9068, negative_rate=0.7939, lift=1.1422, precision_like=0.1904, balanced_score=0.6909, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- external_call_near_loop_candidate: coverage=0.8990, negative_rate=0.7812, lift=1.1507, precision_like=0.1915, balanced_score=0.6884, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+
+[Bad Randomness] support=126
+top by lift:
+- selfdestruct_present: coverage=0.1032, negative_rate=0.0433, lift=2.3807, precision_like=0.0647, balanced_score=0.1257, interpretation=high_precision_low_coverage, warnings=[]
+- call_without_return_check: coverage=0.2381, negative_rate=0.1229, lift=1.9378, precision_like=0.0533, balanced_score=0.2566, interpretation=weak_or_unrelated, warnings=[]
+- sensitive_call_with_auth_guard: coverage=0.6270, negative_rate=0.3366, lift=1.8629, precision_like=0.0513, balanced_score=0.6595, interpretation=strong_candidate, warnings=[]
+- env_used_in_condition: coverage=0.8413, negative_rate=0.4756, lift=1.7690, precision_like=0.0489, balanced_score=0.8568, interpretation=strong_candidate, warnings=[]
+- state_write_before_call: coverage=0.5079, negative_rate=0.2978, lift=1.7054, precision_like=0.0472, balanced_score=0.5055, interpretation=strong_candidate, warnings=[]
+top by coverage:
+- has_state_read: coverage=1.0000, negative_rate=0.9859, lift=1.0143, precision_like=0.0286, balanced_score=0.7003, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=1.0000, negative_rate=0.9956, lift=1.0044, precision_like=0.0283, balanced_score=0.6953, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=1.0000, negative_rate=0.9988, lift=1.0012, precision_like=0.0283, balanced_score=0.6937, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9921, negative_rate=0.9746, lift=1.0179, precision_like=0.0287, balanced_score=0.6965, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- state_write_without_auth_guard: coverage=0.9921, negative_rate=0.9691, lift=1.0237, precision_like=0.0289, balanced_score=0.6993, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- env_used_in_arithmetic_or_hash: coverage=0.9444, negative_rate=0.5643, lift=1.6736, precision_like=0.0464, balanced_score=0.9288, interpretation=strong_candidate, warnings=[]
+- env_used_in_condition: coverage=0.8413, negative_rate=0.4756, lift=1.7690, precision_like=0.0489, balanced_score=0.8568, interpretation=strong_candidate, warnings=[]
+- external_call_near_loop_candidate: coverage=0.9603, negative_rate=0.7967, lift=1.2054, precision_like=0.0338, balanced_score=0.7595, interpretation=weak_or_unrelated, warnings=[]
+- has_external_call: coverage=0.9603, negative_rate=0.8089, lift=1.1872, precision_like=0.0333, balanced_score=0.7516, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- call_with_return_check: coverage=0.9444, negative_rate=0.7854, lift=1.2025, precision_like=0.0337, balanced_score=0.7457, interpretation=weak_or_unrelated, warnings=[]
+
+[Front Running] support=116
+top by lift:
+- sensitive_call_with_auth_guard: coverage=0.8534, negative_rate=0.3312, lift=2.5769, precision_like=0.0643, balanced_score=1.0877, interpretation=strong_candidate, warnings=[]
+- selfdestruct_present: coverage=0.0603, negative_rate=0.0446, lift=1.3525, precision_like=0.0348, balanced_score=0.0516, interpretation=weak_or_unrelated, warnings=[]
+- external_call_near_loop_candidate: coverage=0.9914, negative_rate=0.7962, lift=1.2451, precision_like=0.0321, balanced_score=0.8018, interpretation=weak_or_unrelated, warnings=[]
+- call_with_return_check: coverage=0.9741, negative_rate=0.7850, lift=1.2410, precision_like=0.0320, balanced_score=0.7861, interpretation=weak_or_unrelated, warnings=[]
+- has_external_call: coverage=0.9914, negative_rate=0.8084, lift=1.2263, precision_like=0.0317, balanced_score=0.7935, interpretation=weak_or_unrelated, warnings=[]
+top by coverage:
+- has_state_read: coverage=1.0000, negative_rate=0.9860, lift=1.0142, precision_like=0.0263, balanced_score=0.7002, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_followed_by_guard_or_revert: coverage=1.0000, negative_rate=0.9989, lift=1.0012, precision_like=0.0260, balanced_score=0.6937, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=1.0000, negative_rate=0.9961, lift=1.0039, precision_like=0.0261, balanced_score=0.6951, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_external_call: coverage=0.9914, negative_rate=0.8084, lift=1.2263, precision_like=0.0317, balanced_score=0.7935, interpretation=weak_or_unrelated, warnings=[]
+- arithmetic_chain: coverage=0.9914, negative_rate=0.9959, lift=0.9955, precision_like=0.0259, balanced_score=0.6849, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- sensitive_call_with_auth_guard: coverage=0.8534, negative_rate=0.3312, lift=2.5769, precision_like=0.0643, balanced_score=1.0877, interpretation=strong_candidate, warnings=[]
+- external_call_near_loop_candidate: coverage=0.9914, negative_rate=0.7962, lift=1.2451, precision_like=0.0321, balanced_score=0.8018, interpretation=weak_or_unrelated, warnings=[]
+- has_external_call: coverage=0.9914, negative_rate=0.8084, lift=1.2263, precision_like=0.0317, balanced_score=0.7935, interpretation=weak_or_unrelated, warnings=[]
+- call_with_return_check: coverage=0.9741, negative_rate=0.7850, lift=1.2410, precision_like=0.0320, balanced_score=0.7861, interpretation=weak_or_unrelated, warnings=[]
+- hardcoded_address_near_call: coverage=0.8966, negative_rate=0.7374, lift=1.2159, precision_like=0.0314, balanced_score=0.7134, interpretation=weak_or_unrelated, warnings=[]
+
+[Time manipulation] support=1260
+top by lift:
+- env_used_in_condition: coverage=0.8548, negative_rate=0.3408, lift=2.5079, precision_like=0.4965, balanced_score=1.0727, interpretation=strong_candidate, warnings=[]
+- state_write_before_call: coverage=0.4992, negative_rate=0.2269, lift=2.2001, precision_like=0.4639, balanced_score=0.5807, interpretation=strong_candidate, warnings=[]
+- env_used_in_arithmetic_or_hash: coverage=0.9302, negative_rate=0.4354, lift=2.1364, precision_like=0.4566, balanced_score=1.0632, interpretation=strong_candidate, warnings=[]
+- dense_storage_or_call_ops: coverage=0.3127, negative_rate=0.1904, lift=1.6424, precision_like=0.3924, balanced_score=0.3038, interpretation=strong_candidate, warnings=[]
+- create_contract_present: coverage=0.0984, negative_rate=0.0668, lift=1.4734, precision_like=0.3669, balanced_score=0.0891, interpretation=weak_or_unrelated, warnings=[]
+top by coverage:
+- arithmetic_followed_by_guard_or_revert: coverage=0.9992, negative_rate=0.9988, lift=1.0005, precision_like=0.2824, balanced_score=0.6928, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- arithmetic_chain: coverage=0.9984, negative_rate=0.9947, lift=1.0037, precision_like=0.2830, balanced_score=0.6939, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- revert_or_invalid_present: coverage=0.9976, negative_rate=0.9956, lift=1.0020, precision_like=0.2827, balanced_score=0.6925, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_read: coverage=0.9889, negative_rate=0.9853, lift=1.0036, precision_like=0.2830, balanced_score=0.6872, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+- has_state_write: coverage=0.9833, negative_rate=0.9719, lift=1.0118, precision_like=0.2846, balanced_score=0.6874, interpretation=common_but_weak, warnings=['high_coverage_but_low_discrimination']
+top by balanced score:
+- env_used_in_condition: coverage=0.8548, negative_rate=0.3408, lift=2.5079, precision_like=0.4965, balanced_score=1.0727, interpretation=strong_candidate, warnings=[]
+- env_used_in_arithmetic_or_hash: coverage=0.9302, negative_rate=0.4354, lift=2.1364, precision_like=0.4566, balanced_score=1.0632, interpretation=strong_candidate, warnings=[]
+- has_external_call: coverage=0.9357, negative_rate=0.7650, lift=1.2232, precision_like=0.3248, balanced_score=0.7476, interpretation=weak_or_unrelated, warnings=[]
+- external_call_near_loop_candidate: coverage=0.9254, negative_rate=0.7525, lift=1.2298, precision_like=0.3260, balanced_score=0.7421, interpretation=weak_or_unrelated, warnings=[]
+- call_with_return_check: coverage=0.9167, negative_rate=0.7400, lift=1.2387, precision_like=0.3276, balanced_score=0.7387, interpretation=weak_or_unrelated, warnings=[]

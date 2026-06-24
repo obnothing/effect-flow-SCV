@@ -1,0 +1,44 @@
+Effect-flow corpus build report: BJUT
+
+vulnerability_labels_written: false
+total_contracts: 148384
+total_chunks: 1405356
+
+[train]
+input_path: data/processed/BJUT_SC01/train.jsonl
+output_path: data/processed/effect_flow_pretrain/BJUT/train_effect_flow_chunks.jsonl
+contracts: 104845
+chunks: 1048925
+empty_contracts: 0
+truncated_contracts: 4897
+mean_chunks_per_contract: 10.004530497400925
+max_chunks_per_contract: 32
+coverage_ratio_mean: 0.988985538022254
+coverage_ratio_p50: 1.0
+coverage_ratio_p90: 1.0
+
+[valid]
+input_path: data/processed/BJUT_SC01/valid.jsonl
+output_path: data/processed/effect_flow_pretrain/BJUT/valid_effect_flow_chunks.jsonl
+contracts: 26791
+chunks: 225663
+empty_contracts: 0
+truncated_contracts: 563
+mean_chunks_per_contract: 8.423089843604195
+max_chunks_per_contract: 32
+coverage_ratio_mean: 0.9955077186360526
+coverage_ratio_p50: 1.0
+coverage_ratio_p90: 1.0
+
+[test]
+input_path: data/processed/BJUT_SC01/test.jsonl
+output_path: data/processed/effect_flow_pretrain/BJUT/test_effect_flow_chunks.jsonl
+contracts: 16748
+chunks: 130768
+empty_contracts: 0
+truncated_contracts: 615
+mean_chunks_per_contract: 7.807977071889181
+max_chunks_per_contract: 32
+coverage_ratio_mean: 0.9899658823598002
+coverage_ratio_p50: 1.0
+coverage_ratio_p90: 1.0
