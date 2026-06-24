@@ -13,6 +13,10 @@ results/*
 !results/**/
 !results/**/*.txt
 !results/**/*.json
+!results/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/*.csv
+!results/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/*.png
+!results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/*.csv
+!results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/*.png
 *.pt
 *.pth
 *.json
@@ -44,6 +48,9 @@ results/*
 !data/reports/label_pattern_relevance_DIVE_all_splits_diagnostic.json
 !data/reports/usable_efpp_patterns_recommendation.json
 !data/reports/stage16a_effect_flow_summary.json
+!data/reports/stage16b_effect_flow_pretraining_report.json
+!data/reports/stage16b_effect_flow_pretraining_sanity_report.json
+!configs/effect_flow_efpp_conservative_22.json
 output.log
 
 # Large datasets
