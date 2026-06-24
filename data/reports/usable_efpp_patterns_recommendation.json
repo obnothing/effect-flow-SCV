@@ -13,7 +13,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.36148990006802545,
-        "DIVE": 0.23386740744262496
+        "DIVE": 0.23426522128942864
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -33,7 +33,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.03374305158265948,
-        "DIVE": 0.004124981039123929
+        "DIVE": 0.005191947183959573
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -48,7 +48,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.7736509468063608,
-        "DIVE": 0.7423132042408971
+        "DIVE": 0.7066855489444942
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -63,7 +63,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.5978755560868563,
-        "DIVE": 0.5828245026590506
+        "DIVE": 0.5553366207514875
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -84,7 +84,7 @@
       ],
       "positive_chunk_ratio": {
         "BJUT": 0.027775168711700098,
-        "DIVE": 0.032336500648631764
+        "DIVE": 0.030373298557339636
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -105,7 +105,7 @@
       ],
       "positive_chunk_ratio": {
         "BJUT": 0.0430140121079641,
-        "DIVE": 0.03611961992216419
+        "DIVE": 0.035868856467519764
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -123,7 +123,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.04661096547778641,
-        "DIVE": 0.01177045906827953
+        "DIVE": 0.014255440541201403
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -140,7 +140,7 @@
       ],
       "positive_chunk_ratio": {
         "BJUT": 0.32756041885472437,
-        "DIVE": 0.2237202257646044
+        "DIVE": 0.221684733882142
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -155,7 +155,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.2841372577482147,
-        "DIVE": 0.19736291003602
+        "DIVE": 0.18094180454804792
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -170,7 +170,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.4995595422085223,
-        "DIVE": 0.5122945716426798
+        "DIVE": 0.49075719292525877
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -196,7 +196,7 @@
       ],
       "positive_chunk_ratio": {
         "BJUT": 0.11351074033910269,
-        "DIVE": 0.052037699881593576
+        "DIVE": 0.049087130165457654
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -213,7 +213,7 @@
       ],
       "positive_chunk_ratio": {
         "BJUT": 0.32793897062381344,
-        "DIVE": 0.20750782772883797
+        "DIVE": 0.21118673078490505
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -235,7 +235,7 @@
       ],
       "positive_chunk_ratio": {
         "BJUT": 0.1383620947290224,
-        "DIVE": 0.11109148990602197
+        "DIVE": 0.10950566468334827
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -257,7 +257,7 @@
       ],
       "positive_chunk_ratio": {
         "BJUT": 0.155186301549216,
-        "DIVE": 0.14926454440693776
+        "DIVE": 0.15470902274023962
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -272,7 +272,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.9462620147492877,
-        "DIVE": 0.9175954665960303
+        "DIVE": 0.9208289184122586
       },
       "distribution_warning": [
         "BJUT:too_frequent",
@@ -292,7 +292,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.3171964968306963,
-        "DIVE": 0.216262658507264
+        "DIVE": 0.2100802836416986
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -307,7 +307,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.9510906844956011,
-        "DIVE": 0.9736223084045923
+        "DIVE": 0.9656064063900889
       },
       "distribution_warning": [
         "BJUT:too_frequent",
@@ -325,7 +325,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.5552493460731658,
-        "DIVE": 0.39767352880581575
+        "DIVE": 0.38265343548781483
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -340,7 +340,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.3973740461491608,
-        "DIVE": 0.26647332233036525
+        "DIVE": 0.25323987285027305
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -357,7 +357,7 @@
       ],
       "positive_chunk_ratio": {
         "BJUT": 0.315618249041524,
-        "DIVE": 0.20891376253964805
+        "DIVE": 0.2095117776509903
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -374,30 +374,31 @@
       ],
       "related_DIVE_labels": [
         "Arithmetic",
-        "Reentrancy"
+        "Reentrancy",
+        "Time manipulation",
+        "Unchecked Return Values"
       ],
       "positive_chunk_ratio": {
         "BJUT": 0.021869903426605074,
-        "DIVE": 0.031890495563721
+        "DIVE": 0.031000896568587497
       },
       "distribution_warning": [],
       "noise_warning": null
     },
     {
       "pattern_name": "revert_or_invalid_present",
-      "use_in_pretraining": false,
+      "use_in_pretraining": true,
       "use_in_label_prior_BJUT": false,
       "use_in_label_prior_DIVE": false,
-      "reason": "too sparse/frequent and no strong train-only relevance",
+      "reason": "prevalence falls in [0.1%, 80%] for at least one dataset",
       "related_BJUT_labels": [],
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.8578410025644748,
-        "DIVE": 0.8069409258341087
+        "DIVE": 0.7899299046377047
       },
       "distribution_warning": [
-        "BJUT:too_frequent",
-        "DIVE:too_frequent"
+        "BJUT:too_frequent"
       ],
       "noise_warning": null
     },
@@ -411,7 +412,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.0,
-        "DIVE": 0.06100308128386073
+        "DIVE": 0.06591613008395142
       },
       "distribution_warning": [
         "BJUT:too_sparse"
@@ -431,7 +432,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.01651111889087178,
-        "DIVE": 0.004890208037600266
+        "DIVE": 0.0054222022984758336
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -446,7 +447,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.038968773748431,
-        "DIVE": 0.007206264899852615
+        "DIVE": 0.008882141983861766
       },
       "distribution_warning": [],
       "noise_warning": null
@@ -463,7 +464,7 @@
       ],
       "positive_chunk_ratio": {
         "BJUT": 0.337520172824537,
-        "DIVE": 0.22657058313466863
+        "DIVE": 0.22497147281767055
       },
       "distribution_warning": [],
       "noise_warning": "noisy_but_candidate: weak loop heuristic without CFG/backward-jump proof"
@@ -478,7 +479,7 @@
       "related_DIVE_labels": [],
       "positive_chunk_ratio": {
         "BJUT": 0.42674738642735366,
-        "DIVE": 0.43456743166726663
+        "DIVE": 0.4141352188442416
       },
       "distribution_warning": [],
       "noise_warning": "noisy_but_candidate: weak loop heuristic without CFG/backward-jump proof"
@@ -504,6 +505,7 @@
     "hardcoded_address_near_call",
     "value_or_gas_sensitive_call",
     "dense_storage_or_call_ops",
+    "revert_or_invalid_present",
     "panic_selector_present",
     "selfdestruct_present",
     "create_contract_present",
@@ -512,7 +514,6 @@
   ],
   "excluded_pattern_names": [
     "arithmetic_chain",
-    "arithmetic_followed_by_guard_or_revert",
-    "revert_or_invalid_present"
+    "arithmetic_followed_by_guard_or_revert"
   ]
 }

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=stage16a_dive64
+#SBATCH --partition=cpu56c
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=64G
 #SBATCH --time=16:00:00
 #SBATCH --output=logs/slurm_stage16a_dive64_%j.out
 #SBATCH --error=logs/slurm_stage16a_dive64_%j.err

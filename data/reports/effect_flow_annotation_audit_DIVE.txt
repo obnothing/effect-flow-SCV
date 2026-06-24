@@ -2,156 +2,156 @@ Effect-flow annotation audit: DIVE
 
 annotation_semantics: weak rule-based signals, not vulnerability labels
 total_contracts: 22330
-total_chunks: 441699
-mean_chunks_per_contract: 19.780519
-max_chunks_per_contract: 32
-token_coverage_ratio_mean: 0.960330
+total_chunks: 490760
+mean_chunks_per_contract: 21.977609
+max_chunks_per_contract: 64
+token_coverage_ratio_mean: 0.999409
 token_coverage_ratio_p50: 1.000000
 token_coverage_ratio_p90: 1.000000
 usable_for_pretraining: True
-usable_reason: 24/27 patterns fall in the 0.1%-80% chunk prevalence range
+usable_reason: 25/27 patterns fall in the 0.1%-80% chunk prevalence range
 
 ETP primary effect type distribution:
 effect_type | token_count | token_ratio | chunks | chunk_ratio
-Normal | 128659736 | 0.746425 | 441679 | 0.999955
-ExternalCall | 180357 | 0.001046 | 103299 | 0.233867
-StateRead | 2705626 | 0.015697 | 327879 | 0.742313
-StateWrite | 836260 | 0.004852 | 257433 | 0.582825
-AuthSource | 610282 | 0.003541 | 186221 | 0.421602
-ControlGuard | 10850901 | 0.062952 | 434021 | 0.982617
-ReturnCheck | 844782 | 0.004901 | 98766 | 0.223605
-EnvDependency | 123487 | 0.000716 | 75791 | 0.171590
-Arithmetic | 11780581 | 0.068346 | 438251 | 0.992194
-AddressLiteral | 1852153 | 0.010745 | 175652 | 0.397674
-CreateContract | 5055 | 0.000029 | 3183 | 0.007206
-Destructive | 2613 | 0.000015 | 2160 | 0.004890
-RevertOrAssert | 2155982 | 0.012508 | 356473 | 0.807050
-GasOrValue | 1202928 | 0.006979 | 225591 | 0.510735
-HashOrCrypto | 1223037 | 0.007096 | 294857 | 0.667552
-StorageOrMemoryHeavy | 9334123 | 0.054152 | 437197 | 0.989808
+Normal | 143198925 | 0.751297 | 490729 | 0.999937
+ExternalCall | 201989 | 0.001060 | 114968 | 0.234265
+StateRead | 2846687 | 0.014935 | 346813 | 0.706686
+StateWrite | 894053 | 0.004691 | 272537 | 0.555337
+AuthSource | 638917 | 0.003352 | 197797 | 0.403042
+ControlGuard | 11665480 | 0.061203 | 479081 | 0.976202
+ReturnCheck | 936306 | 0.004912 | 108704 | 0.221501
+EnvDependency | 146716 | 0.000770 | 87468 | 0.178230
+Arithmetic | 13113223 | 0.068799 | 486789 | 0.991908
+AddressLiteral | 1916202 | 0.010053 | 187791 | 0.382653
+CreateContract | 6599 | 0.000035 | 4359 | 0.008882
+Destructive | 3787 | 0.000020 | 2661 | 0.005422
+RevertOrAssert | 2308932 | 0.012114 | 387717 | 0.790034
+GasOrValue | 1238663 | 0.006499 | 241196 | 0.491474
+HashOrCrypto | 1306283 | 0.006853 | 317399 | 0.646750
+StorageOrMemoryHeavy | 10179408 | 0.053407 | 484932 | 0.988125
 
 ETP multi-hot effect type distribution:
 effect_type | token_count | token_ratio_per_active_token | chunks | chunk_ratio
-Normal | 128659736 | 0.746425 | 441679 | 0.999955
-ExternalCall | 180357 | 0.001046 | 103299 | 0.233867
-StateRead | 2705626 | 0.015697 | 327879 | 0.742313
-StateWrite | 836260 | 0.004852 | 257433 | 0.582825
-AuthSource | 610282 | 0.003541 | 186221 | 0.421602
-ControlGuard | 11329877 | 0.065731 | 436187 | 0.987521
-ReturnCheck | 1031094 | 0.005982 | 98817 | 0.223720
-EnvDependency | 123487 | 0.000716 | 75791 | 0.171590
-Arithmetic | 11780581 | 0.068346 | 438251 | 0.992194
-AddressLiteral | 1852153 | 0.010745 | 175652 | 0.397674
-CreateContract | 5055 | 0.000029 | 3183 | 0.007206
-Destructive | 2613 | 0.000015 | 2160 | 0.004890
-RevertOrAssert | 2155982 | 0.012508 | 356473 | 0.807050
-GasOrValue | 1216344 | 0.007057 | 226502 | 0.512797
-HashOrCrypto | 1223037 | 0.007096 | 294857 | 0.667552
-StorageOrMemoryHeavy | 12986329 | 0.075341 | 438682 | 0.993170
+Normal | 143198925 | 0.751297 | 490729 | 0.999937
+ExternalCall | 201989 | 0.001060 | 114968 | 0.234265
+StateRead | 2846687 | 0.014935 | 346813 | 0.706686
+StateWrite | 894053 | 0.004691 | 272537 | 0.555337
+AuthSource | 638917 | 0.003352 | 197797 | 0.403042
+ControlGuard | 12193282 | 0.063972 | 481278 | 0.980679
+ReturnCheck | 1143448 | 0.005999 | 108794 | 0.221685
+EnvDependency | 146716 | 0.000770 | 87468 | 0.178230
+Arithmetic | 13113223 | 0.068799 | 486789 | 0.991908
+AddressLiteral | 1916202 | 0.010053 | 187791 | 0.382653
+CreateContract | 6599 | 0.000035 | 4359 | 0.008882
+Destructive | 3787 | 0.000020 | 2661 | 0.005422
+RevertOrAssert | 2308932 | 0.012114 | 387717 | 0.790034
+GasOrValue | 1257418 | 0.006597 | 242562 | 0.494258
+HashOrCrypto | 1306283 | 0.006853 | 317399 | 0.646750
+StorageOrMemoryHeavy | 14043547 | 0.073680 | 486578 | 0.991479
 
 EFPP pattern distribution:
 pattern | chunk_count | chunk_ratio | contract_count | contract_ratio | usable | warnings
-has_external_call | 103299 | 0.233867 | 18431 | 0.825392 | True | []
-has_delegatecall | 1822 | 0.004125 | 685 | 0.030676 | True | []
-has_state_read | 327879 | 0.742313 | 21966 | 0.983699 | True | []
-has_state_write | 257433 | 0.582825 | 21736 | 0.973399 | True | []
-call_before_state_write | 14283 | 0.032337 | 6869 | 0.307613 | True | []
-state_write_before_call | 15954 | 0.036120 | 6955 | 0.311464 | True | []
-call_without_return_check | 5199 | 0.011770 | 2833 | 0.126870 | True | []
-call_with_return_check | 98817 | 0.223720 | 17934 | 0.803135 | True | []
-state_write_with_auth_guard | 87175 | 0.197363 | 17221 | 0.771205 | True | []
-state_write_without_auth_guard | 226280 | 0.512295 | 21565 | 0.965741 | True | []
-sensitive_call_with_auth_guard | 22985 | 0.052038 | 8036 | 0.359875 | True | []
-sensitive_call_without_auth_guard | 91656 | 0.207508 | 17620 | 0.789073 | True | []
-env_used_in_condition | 49069 | 0.111091 | 10867 | 0.486655 | True | []
-env_used_in_arithmetic_or_hash | 65930 | 0.149265 | 12941 | 0.579534 | True | []
-arithmetic_chain | 405301 | 0.917595 | 22227 | 0.995387 | False | ['too_frequent_low_discrimination']
-div_before_mul | 95523 | 0.216263 | 19153 | 0.857725 | True | []
-arithmetic_followed_by_guard_or_revert | 430048 | 0.973622 | 22280 | 0.997761 | False | ['too_frequent_low_discrimination']
-has_hardcoded_address | 175652 | 0.397674 | 18677 | 0.836408 | True | []
-hardcoded_address_near_call | 117701 | 0.266473 | 16350 | 0.732199 | True | []
-value_or_gas_sensitive_call | 92277 | 0.208914 | 17634 | 0.789700 | True | []
-dense_storage_or_call_ops | 14086 | 0.031890 | 4900 | 0.219436 | True | []
-revert_or_invalid_present | 356425 | 0.806941 | 22247 | 0.996283 | False | ['too_frequent_low_discrimination']
-panic_selector_present | 26945 | 0.061003 | 6759 | 0.302687 | True | []
-selfdestruct_present | 2160 | 0.004890 | 1062 | 0.047559 | True | []
-create_contract_present | 3183 | 0.007206 | 1588 | 0.071115 | True | []
-external_call_near_loop_candidate | 100076 | 0.226571 | 18154 | 0.812987 | True | ['noisy_but_candidate']
-storage_write_near_loop_candidate | 191948 | 0.434567 | 20817 | 0.932244 | True | ['noisy_but_candidate']
+has_external_call | 114968 | 0.234265 | 18547 | 0.830587 | True | []
+has_delegatecall | 2548 | 0.005192 | 900 | 0.040305 | True | []
+has_state_read | 346813 | 0.706686 | 21971 | 0.983923 | True | []
+has_state_write | 272537 | 0.555337 | 21749 | 0.973981 | True | []
+call_before_state_write | 14906 | 0.030373 | 6992 | 0.313121 | True | []
+state_write_before_call | 17603 | 0.035869 | 7211 | 0.322929 | True | []
+call_without_return_check | 6996 | 0.014255 | 3653 | 0.163592 | True | []
+call_with_return_check | 108794 | 0.221685 | 18050 | 0.808330 | True | []
+state_write_with_auth_guard | 88799 | 0.180942 | 17257 | 0.772817 | True | []
+state_write_without_auth_guard | 240844 | 0.490757 | 21584 | 0.966592 | True | []
+sensitive_call_with_auth_guard | 24090 | 0.049087 | 8198 | 0.367129 | True | []
+sensitive_call_without_auth_guard | 103642 | 0.211187 | 17771 | 0.795835 | True | []
+env_used_in_condition | 53741 | 0.109506 | 11309 | 0.506449 | True | []
+env_used_in_arithmetic_or_hash | 75925 | 0.154709 | 13203 | 0.591267 | True | []
+arithmetic_chain | 451906 | 0.920829 | 22227 | 0.995387 | False | ['too_frequent_low_discrimination']
+div_before_mul | 103099 | 0.210080 | 19272 | 0.863054 | True | []
+arithmetic_followed_by_guard_or_revert | 473881 | 0.965606 | 22280 | 0.997761 | False | ['too_frequent_low_discrimination']
+has_hardcoded_address | 187791 | 0.382653 | 18870 | 0.845052 | True | []
+hardcoded_address_near_call | 124280 | 0.253240 | 16484 | 0.738200 | True | []
+value_or_gas_sensitive_call | 102820 | 0.209512 | 17776 | 0.796059 | True | []
+dense_storage_or_call_ops | 15214 | 0.031001 | 5093 | 0.228079 | True | []
+revert_or_invalid_present | 387666 | 0.789930 | 22247 | 0.996283 | True | []
+panic_selector_present | 32349 | 0.065916 | 8006 | 0.358531 | True | []
+selfdestruct_present | 2661 | 0.005422 | 1297 | 0.058083 | True | []
+create_contract_present | 4359 | 0.008882 | 2146 | 0.096104 | True | []
+external_call_near_loop_candidate | 110407 | 0.224971 | 18271 | 0.818227 | True | ['noisy_but_candidate']
+storage_write_near_loop_candidate | 203241 | 0.414135 | 20832 | 0.932915 | True | ['noisy_but_candidate']
 
 Top effect event chains length 3:
-ControlGuard -> ControlGuard -> ControlGuard: 3545512
-Arithmetic -> StorageOrMemoryHeavy -> Arithmetic: 2948931
-StorageOrMemoryHeavy -> Arithmetic -> StorageOrMemoryHeavy: 2753816
-ControlGuard -> ControlGuard -> RevertOrAssert: 1592096
-StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> Arithmetic: 1508222
-Arithmetic -> ControlGuard -> ControlGuard: 1091440
-Arithmetic -> Arithmetic -> Arithmetic: 1012055
-Arithmetic -> Arithmetic -> StorageOrMemoryHeavy: 987790
-GasOrValue -> ControlGuard -> ControlGuard: 976909
-Arithmetic -> StorageOrMemoryHeavy -> StorageOrMemoryHeavy: 916159
-StorageOrMemoryHeavy -> Arithmetic -> Arithmetic: 898108
-ControlGuard -> ControlGuard -> StorageOrMemoryHeavy: 695293
-ControlGuard -> StorageOrMemoryHeavy -> StorageOrMemoryHeavy: 634542
-StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> HashOrCrypto: 618741
-ControlGuard -> ControlGuard -> Arithmetic: 611837
-Arithmetic -> Arithmetic -> ControlGuard: 575596
-StateRead -> Arithmetic -> Arithmetic: 542905
-ReturnCheck -> ReturnCheck -> ReturnCheck: 509344
-StorageOrMemoryHeavy -> HashOrCrypto -> StateRead: 479534
-Arithmetic -> GasOrValue -> ControlGuard: 477591
+ControlGuard -> ControlGuard -> ControlGuard: 3805592
+Arithmetic -> StorageOrMemoryHeavy -> Arithmetic: 3313360
+StorageOrMemoryHeavy -> Arithmetic -> StorageOrMemoryHeavy: 3024905
+ControlGuard -> ControlGuard -> RevertOrAssert: 1678749
+StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> Arithmetic: 1592863
+Arithmetic -> ControlGuard -> ControlGuard: 1255270
+Arithmetic -> Arithmetic -> Arithmetic: 1254205
+Arithmetic -> Arithmetic -> StorageOrMemoryHeavy: 1145119
+StorageOrMemoryHeavy -> Arithmetic -> Arithmetic: 1051626
+Arithmetic -> StorageOrMemoryHeavy -> StorageOrMemoryHeavy: 988144
+GasOrValue -> ControlGuard -> ControlGuard: 978579
+ControlGuard -> ControlGuard -> StorageOrMemoryHeavy: 743191
+ControlGuard -> ControlGuard -> Arithmetic: 703792
+ControlGuard -> StorageOrMemoryHeavy -> StorageOrMemoryHeavy: 659480
+Arithmetic -> Arithmetic -> ControlGuard: 655889
+StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> HashOrCrypto: 652259
+StateRead -> Arithmetic -> Arithmetic: 565302
+ReturnCheck -> ReturnCheck -> ReturnCheck: 565010
+StorageOrMemoryHeavy -> HashOrCrypto -> StateRead: 499486
+ControlGuard -> RevertOrAssert -> Arithmetic: 493877
 
 Top effect event chains length 4:
-StorageOrMemoryHeavy -> Arithmetic -> StorageOrMemoryHeavy -> Arithmetic: 2263885
-ControlGuard -> ControlGuard -> ControlGuard -> ControlGuard: 2001413
-Arithmetic -> StorageOrMemoryHeavy -> Arithmetic -> StorageOrMemoryHeavy: 1243284
-GasOrValue -> ControlGuard -> ControlGuard -> RevertOrAssert: 927884
-StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> Arithmetic -> StorageOrMemoryHeavy: 868952
-Arithmetic -> ControlGuard -> ControlGuard -> ControlGuard: 752398
-ControlGuard -> StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> Arithmetic: 599359
-ControlGuard -> ControlGuard -> ControlGuard -> RevertOrAssert: 532123
-ControlGuard -> ControlGuard -> StorageOrMemoryHeavy -> StorageOrMemoryHeavy: 477921
-Arithmetic -> Arithmetic -> ControlGuard -> ControlGuard: 477606
-Arithmetic -> Arithmetic -> StorageOrMemoryHeavy -> Arithmetic: 476668
-Arithmetic -> GasOrValue -> ControlGuard -> ControlGuard: 471329
-Arithmetic -> Arithmetic -> Arithmetic -> Arithmetic: 448930
-ControlGuard -> ControlGuard -> RevertOrAssert -> Arithmetic: 444801
-Arithmetic -> StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> Arithmetic: 428119
-Arithmetic -> StorageOrMemoryHeavy -> Arithmetic -> HashOrCrypto: 426762
-Arithmetic -> StorageOrMemoryHeavy -> Arithmetic -> Arithmetic: 424576
-AddressLiteral -> StorageOrMemoryHeavy -> Arithmetic -> StorageOrMemoryHeavy: 410239
-AddressLiteral -> AddressLiteral -> StorageOrMemoryHeavy -> Arithmetic: 404270
-StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> HashOrCrypto -> StateRead: 402766
+StorageOrMemoryHeavy -> Arithmetic -> StorageOrMemoryHeavy -> Arithmetic: 2485377
+ControlGuard -> ControlGuard -> ControlGuard -> ControlGuard: 2069936
+Arithmetic -> StorageOrMemoryHeavy -> Arithmetic -> StorageOrMemoryHeavy: 1437498
+GasOrValue -> ControlGuard -> ControlGuard -> RevertOrAssert: 928529
+StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> Arithmetic -> StorageOrMemoryHeavy: 910922
+Arithmetic -> ControlGuard -> ControlGuard -> ControlGuard: 888487
+ControlGuard -> StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> Arithmetic: 617867
+ControlGuard -> ControlGuard -> ControlGuard -> RevertOrAssert: 602336
+Arithmetic -> Arithmetic -> StorageOrMemoryHeavy -> Arithmetic: 586863
+Arithmetic -> Arithmetic -> Arithmetic -> Arithmetic: 566067
+Arithmetic -> Arithmetic -> ControlGuard -> ControlGuard: 552753
+Arithmetic -> StorageOrMemoryHeavy -> Arithmetic -> Arithmetic: 524694
+ControlGuard -> ControlGuard -> StorageOrMemoryHeavy -> StorageOrMemoryHeavy: 496541
+ControlGuard -> ControlGuard -> RevertOrAssert -> Arithmetic: 489943
+Arithmetic -> GasOrValue -> ControlGuard -> ControlGuard: 471836
+Arithmetic -> StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> Arithmetic: 461763
+Arithmetic -> StorageOrMemoryHeavy -> Arithmetic -> HashOrCrypto: 444154
+Arithmetic -> Arithmetic -> Arithmetic -> StorageOrMemoryHeavy: 442129
+AddressLiteral -> StorageOrMemoryHeavy -> Arithmetic -> StorageOrMemoryHeavy: 423663
+StorageOrMemoryHeavy -> StorageOrMemoryHeavy -> HashOrCrypto -> StateRead: 419121
 
 EFPP co-occurrence matrix (chunk counts):
 pattern | has_external_call | has_delegatecall | has_state_read | has_state_write | call_before_state_write | state_write_before_call | call_without_return_check | call_with_return_check | state_write_with_auth_guard | state_write_without_auth_guard | sensitive_call_with_auth_guard | sensitive_call_without_auth_guard | env_used_in_condition | env_used_in_arithmetic_or_hash | arithmetic_chain | div_before_mul | arithmetic_followed_by_guard_or_revert | has_hardcoded_address | hardcoded_address_near_call | value_or_gas_sensitive_call | dense_storage_or_call_ops | revert_or_invalid_present | panic_selector_present | selfdestruct_present | create_contract_present | external_call_near_loop_candidate | storage_write_near_loop_candidate
-has_external_call | 103299 | 1822 | 93343 | 78938 | 14283 | 15954 | 5199 | 98817 | 24827 | 69154 | 22237 | 89698 | 22816 | 33020 | 101972 | 23394 | 102759 | 47156 | 40859 | 92277 | 5431 | 97872 | 2933 | 865 | 1708 | 100076 | 59196
-has_delegatecall | 1822 | 1822 | 972 | 633 | 161 | 78 | 807 | 1064 | 234 | 542 | 402 | 1617 | 238 | 490 | 1691 | 380 | 1751 | 1167 | 930 | 1469 | 5 | 1588 | 506 | 80 | 124 | 1367 | 506
-has_state_read | 93343 | 972 | 327879 | 253992 | 14146 | 15753 | 2355 | 91566 | 87059 | 222941 | 22014 | 80593 | 43987 | 55101 | 300999 | 77435 | 325030 | 139715 | 113039 | 83803 | 14086 | 256553 | 5171 | 1317 | 1383 | 91714 | 189832
-has_state_write | 78938 | 633 | 253992 | 257433 | 14283 | 15954 | 2123 | 77285 | 87175 | 226280 | 18240 | 67898 | 39214 | 50029 | 249368 | 58672 | 255578 | 119909 | 109803 | 70035 | 13725 | 194857 | 4479 | 1125 | 1338 | 77429 | 191948
-call_before_state_write | 14283 | 161 | 14146 | 14283 | 14283 | 4641 | 367 | 14068 | 2222 | 13897 | 2108 | 13159 | 6877 | 9408 | 14090 | 3847 | 14270 | 5517 | 4945 | 13106 | 2444 | 14012 | 227 | 109 | 64 | 14177 | 13883
-state_write_before_call | 15954 | 78 | 15753 | 15954 | 4641 | 15954 | 900 | 15304 | 4174 | 15177 | 3552 | 13534 | 5056 | 7110 | 15810 | 4849 | 15880 | 5607 | 5412 | 13095 | 453 | 13718 | 134 | 108 | 471 | 15431 | 12851
-call_without_return_check | 5199 | 807 | 2355 | 2123 | 367 | 900 | 5199 | 717 | 645 | 1958 | 1048 | 4550 | 962 | 1948 | 4539 | 1345 | 4729 | 2396 | 2255 | 3729 | 69 | 3950 | 1612 | 194 | 1374 | 2746 | 1504
-call_with_return_check | 98817 | 1064 | 91566 | 77285 | 14068 | 15304 | 717 | 98817 | 24354 | 67604 | 21481 | 85805 | 22033 | 31301 | 98133 | 22304 | 98745 | 45085 | 38905 | 89172 | 5384 | 94580 | 1358 | 684 | 440 | 98020 | 58092
-state_write_with_auth_guard | 24827 | 234 | 87059 | 87175 | 2222 | 4174 | 645 | 24354 | 87175 | 56022 | 10283 | 18569 | 10052 | 11791 | 86423 | 21696 | 87073 | 37422 | 35002 | 22123 | 2897 | 70107 | 523 | 677 | 432 | 24362 | 75899
-state_write_without_auth_guard | 69154 | 542 | 222941 | 226280 | 13897 | 15177 | 1958 | 67604 | 56022 | 226280 | 13902 | 60238 | 36764 | 47136 | 218583 | 49412 | 224442 | 108231 | 99414 | 60966 | 12946 | 168266 | 4192 | 855 | 1237 | 67734 | 165822
-sensitive_call_with_auth_guard | 22237 | 402 | 22014 | 18240 | 2108 | 3552 | 1048 | 21481 | 10283 | 13902 | 22985 | 8650 | 3149 | 3844 | 22798 | 8308 | 22933 | 11952 | 10934 | 18752 | 632 | 22484 | 571 | 1062 | 550 | 21629 | 14040
-sensitive_call_without_auth_guard | 89698 | 1617 | 80593 | 67898 | 13159 | 13534 | 4550 | 85805 | 18569 | 60238 | 8650 | 91656 | 21174 | 31482 | 90173 | 18862 | 91007 | 41462 | 34916 | 81763 | 4994 | 86127 | 3503 | 1403 | 2892 | 86960 | 50673
-env_used_in_condition | 22816 | 238 | 43987 | 39214 | 6877 | 5056 | 962 | 22033 | 10052 | 36764 | 3149 | 21174 | 49069 | 43408 | 46904 | 7356 | 48834 | 14662 | 9894 | 21509 | 3158 | 37749 | 3340 | 402 | 506 | 22248 | 33762
-env_used_in_arithmetic_or_hash | 33020 | 490 | 55101 | 50029 | 9408 | 7110 | 1948 | 31301 | 11791 | 47136 | 3844 | 31482 | 43408 | 65930 | 63332 | 11862 | 65246 | 27151 | 17909 | 31275 | 4214 | 52706 | 7228 | 633 | 1049 | 31897 | 41019
-arithmetic_chain | 101972 | 1691 | 300999 | 249368 | 14090 | 15810 | 4539 | 98133 | 86423 | 218583 | 22798 | 90173 | 46904 | 63332 | 405301 | 95393 | 399421 | 170378 | 114268 | 91522 | 11252 | 328340 | 26073 | 2002 | 2732 | 99202 | 185978
-div_before_mul | 23394 | 380 | 77435 | 58672 | 3847 | 4849 | 1345 | 22304 | 21696 | 49412 | 8308 | 18862 | 7356 | 11862 | 95393 | 95523 | 95326 | 55515 | 40130 | 19005 | 1213 | 84747 | 9609 | 601 | 563 | 22806 | 39402
-arithmetic_followed_by_guard_or_revert | 102759 | 1751 | 325030 | 255578 | 14270 | 15880 | 4729 | 98745 | 87073 | 224442 | 22933 | 91007 | 48834 | 65246 | 399421 | 95326 | 430048 | 173715 | 116689 | 91845 | 13967 | 352047 | 26864 | 2097 | 2801 | 99983 | 191362
-has_hardcoded_address | 47156 | 1167 | 139715 | 119909 | 5517 | 5607 | 2396 | 45085 | 37422 | 108231 | 11952 | 41462 | 14662 | 27151 | 170378 | 55515 | 173715 | 175652 | 117701 | 42053 | 3936 | 158399 | 6521 | 1308 | 1414 | 45694 | 78966
-hardcoded_address_near_call | 40859 | 930 | 113039 | 109803 | 4945 | 5412 | 2255 | 38905 | 35002 | 99414 | 10934 | 34916 | 9894 | 17909 | 114268 | 40130 | 116689 | 117701 | 117701 | 36088 | 3316 | 106562 | 1942 | 910 | 796 | 39496 | 71743
-value_or_gas_sensitive_call | 92277 | 1469 | 83803 | 70035 | 13106 | 13095 | 3729 | 89172 | 22123 | 60966 | 18752 | 81763 | 21509 | 31275 | 91522 | 19005 | 91845 | 42053 | 36088 | 92277 | 4040 | 87707 | 2344 | 672 | 1570 | 90038 | 52083
-dense_storage_or_call_ops | 5431 | 5 | 14086 | 13725 | 2444 | 453 | 69 | 5384 | 2897 | 12946 | 632 | 4994 | 3158 | 4214 | 11252 | 1213 | 13967 | 3936 | 3316 | 4040 | 14086 | 9043 | 72 | 53 | 35 | 5382 | 13279
-revert_or_invalid_present | 97872 | 1588 | 256553 | 194857 | 14012 | 13718 | 3950 | 94580 | 70107 | 168266 | 22484 | 86127 | 37749 | 52706 | 328340 | 84747 | 352047 | 158399 | 106562 | 87707 | 9043 | 356425 | 26897 | 1895 | 2411 | 95793 | 139300
-panic_selector_present | 2933 | 506 | 5171 | 4479 | 227 | 134 | 1612 | 1358 | 523 | 4192 | 571 | 3503 | 3340 | 7228 | 26073 | 9609 | 26864 | 6521 | 1942 | 2344 | 72 | 26897 | 26945 | 449 | 1014 | 2180 | 2986
-selfdestruct_present | 865 | 80 | 1317 | 1125 | 109 | 108 | 194 | 684 | 677 | 855 | 1062 | 1403 | 402 | 633 | 2002 | 601 | 2097 | 1308 | 910 | 672 | 53 | 1895 | 449 | 2160 | 133 | 763 | 917
-create_contract_present | 1708 | 124 | 1383 | 1338 | 64 | 471 | 1374 | 440 | 432 | 1237 | 550 | 2892 | 506 | 1049 | 2732 | 563 | 2801 | 1414 | 796 | 1570 | 35 | 2411 | 1014 | 133 | 3183 | 912 | 899
-external_call_near_loop_candidate | 100076 | 1367 | 91714 | 77429 | 14177 | 15431 | 2746 | 98020 | 24362 | 67734 | 21629 | 86960 | 22248 | 31897 | 99202 | 22806 | 99983 | 45694 | 39496 | 90038 | 5382 | 95793 | 2180 | 763 | 912 | 100076 | 58258
-storage_write_near_loop_candidate | 59196 | 506 | 189832 | 191948 | 13883 | 12851 | 1504 | 58092 | 75899 | 165822 | 14040 | 50673 | 33762 | 41019 | 185978 | 39402 | 191362 | 78966 | 71743 | 52083 | 13279 | 139300 | 2986 | 917 | 899 | 58258 | 191948
+has_external_call | 114968 | 2548 | 101122 | 84364 | 14906 | 17603 | 6996 | 108794 | 25511 | 74312 | 23250 | 100775 | 24984 | 37927 | 113337 | 24822 | 114096 | 51555 | 44276 | 102820 | 5710 | 107888 | 3541 | 1005 | 2197 | 110407 | 62809
+has_delegatecall | 2548 | 2548 | 1298 | 877 | 231 | 130 | 1169 | 1447 | 261 | 768 | 479 | 2300 | 343 | 704 | 2364 | 474 | 2416 | 1583 | 1257 | 2020 | 21 | 2147 | 627 | 113 | 195 | 1827 | 680
+has_state_read | 101122 | 1298 | 346813 | 268195 | 14710 | 17329 | 2746 | 99018 | 88649 | 236638 | 22872 | 87998 | 46549 | 59624 | 319197 | 80873 | 343387 | 146230 | 118180 | 91025 | 15214 | 268622 | 6041 | 1399 | 1604 | 99252 | 200603
+has_state_write | 84364 | 877 | 268195 | 272537 | 14906 | 17603 | 2492 | 82392 | 88799 | 240844 | 18916 | 73001 | 41244 | 53554 | 263733 | 61308 | 270127 | 125232 | 114511 | 74942 | 14827 | 203998 | 5228 | 1207 | 1551 | 82605 | 203241
+call_before_state_write | 14906 | 231 | 14710 | 14906 | 14906 | 4782 | 460 | 14622 | 2315 | 14491 | 2228 | 13726 | 6977 | 9606 | 14694 | 4009 | 14883 | 5731 | 5153 | 13602 | 2500 | 14585 | 245 | 113 | 91 | 14752 | 14430
+state_write_before_call | 17603 | 130 | 17329 | 17603 | 4782 | 17603 | 1070 | 16808 | 4314 | 16793 | 3687 | 15090 | 5153 | 7737 | 17414 | 4971 | 17489 | 6451 | 6246 | 14559 | 502 | 14728 | 146 | 118 | 546 | 16979 | 13718
+call_without_return_check | 6996 | 1169 | 2746 | 2492 | 460 | 1070 | 6996 | 822 | 683 | 2305 | 1225 | 6206 | 1288 | 2793 | 6090 | 1573 | 6234 | 3136 | 2948 | 4929 | 85 | 5069 | 2003 | 305 | 1828 | 3353 | 1731
+call_with_return_check | 108794 | 1447 | 99018 | 82392 | 14622 | 16808 | 822 | 108794 | 25006 | 72461 | 22327 | 95329 | 23888 | 35399 | 108047 | 23522 | 108677 | 48774 | 41655 | 98602 | 5648 | 103563 | 1582 | 718 | 498 | 107829 | 61511
+state_write_with_auth_guard | 25511 | 261 | 88649 | 88799 | 2315 | 4314 | 683 | 25006 | 88799 | 57106 | 10557 | 19085 | 10309 | 12112 | 88039 | 22109 | 88687 | 38062 | 35570 | 22707 | 3010 | 71463 | 529 | 686 | 456 | 25019 | 77324
+state_write_without_auth_guard | 74312 | 768 | 236638 | 240844 | 14491 | 16793 | 2305 | 72461 | 57106 | 240844 | 14457 | 65139 | 38707 | 50577 | 232409 | 51874 | 238457 | 113319 | 103929 | 65629 | 14018 | 176933 | 4940 | 935 | 1441 | 72659 | 176674
+sensitive_call_with_auth_guard | 23250 | 479 | 22872 | 18916 | 2228 | 3687 | 1225 | 22327 | 10557 | 14457 | 24090 | 9071 | 3457 | 4250 | 23855 | 8520 | 23986 | 12499 | 11343 | 19625 | 681 | 23446 | 603 | 1121 | 645 | 22509 | 14558
+sensitive_call_without_auth_guard | 100775 | 2300 | 87998 | 73001 | 13726 | 15090 | 6206 | 95329 | 19085 | 65139 | 9071 | 103642 | 23317 | 36556 | 101763 | 20279 | 102567 | 45901 | 38134 | 91830 | 5236 | 96180 | 4276 | 1857 | 3997 | 96808 | 54009
+env_used_in_condition | 24984 | 343 | 46549 | 41244 | 6977 | 5153 | 1288 | 23888 | 10309 | 38707 | 3457 | 23317 | 53741 | 47687 | 51325 | 7789 | 53306 | 16406 | 10677 | 23545 | 3419 | 40885 | 3585 | 506 | 735 | 24148 | 35312
+env_used_in_arithmetic_or_hash | 37927 | 704 | 59624 | 53554 | 9606 | 7737 | 2793 | 35399 | 12112 | 50577 | 4250 | 36556 | 47687 | 75925 | 72839 | 12924 | 74177 | 32605 | 20424 | 35892 | 4546 | 59746 | 7912 | 874 | 1570 | 36066 | 43278
+arithmetic_chain | 113337 | 2364 | 319197 | 263733 | 14694 | 17414 | 6090 | 108047 | 88039 | 232409 | 23855 | 101763 | 51325 | 72839 | 451906 | 102901 | 442048 | 182015 | 120609 | 101884 | 12085 | 358995 | 31376 | 2436 | 3770 | 109412 | 196730
+div_before_mul | 24822 | 474 | 80873 | 61308 | 4009 | 4971 | 1573 | 23522 | 22109 | 51874 | 8520 | 20279 | 7789 | 12924 | 102901 | 103099 | 102883 | 57995 | 41570 | 20153 | 1307 | 90580 | 11353 | 654 | 684 | 24110 | 41566
+arithmetic_followed_by_guard_or_revert | 114096 | 2416 | 343387 | 270127 | 14883 | 17489 | 6234 | 108677 | 88687 | 238457 | 23986 | 102567 | 53306 | 74177 | 442048 | 102883 | 473881 | 184669 | 122812 | 102138 | 14998 | 383053 | 32265 | 2530 | 3818 | 110265 | 202452
+has_hardcoded_address | 51555 | 1583 | 146230 | 125232 | 5731 | 6451 | 3136 | 48774 | 38062 | 113319 | 12499 | 45901 | 16406 | 32605 | 182015 | 57995 | 184669 | 187791 | 124280 | 46166 | 4118 | 166738 | 7054 | 1506 | 1891 | 49410 | 82261
+hardcoded_address_near_call | 44276 | 1257 | 118180 | 114511 | 5153 | 6246 | 2948 | 41655 | 35570 | 103929 | 11343 | 38134 | 10677 | 20424 | 120609 | 41570 | 122812 | 124280 | 124280 | 39240 | 3475 | 111162 | 2110 | 993 | 1011 | 42273 | 74573
+value_or_gas_sensitive_call | 102820 | 2020 | 91025 | 74942 | 13602 | 14559 | 4929 | 98602 | 22707 | 65629 | 19625 | 91830 | 23545 | 35892 | 101884 | 20153 | 102138 | 46166 | 39240 | 102820 | 4293 | 96868 | 2754 | 762 | 1979 | 99652 | 55284
+dense_storage_or_call_ops | 5710 | 21 | 15214 | 14827 | 2500 | 502 | 85 | 5648 | 3010 | 14018 | 681 | 5236 | 3419 | 4546 | 12085 | 1307 | 14998 | 4118 | 3475 | 4293 | 15214 | 9475 | 80 | 54 | 39 | 5645 | 14259
+revert_or_invalid_present | 107888 | 2147 | 268622 | 203998 | 14585 | 14728 | 5069 | 103563 | 71463 | 176933 | 23446 | 96180 | 40885 | 59746 | 358995 | 90580 | 383053 | 166738 | 111162 | 96868 | 9475 | 387666 | 32298 | 2208 | 3154 | 105119 | 146005
+panic_selector_present | 3541 | 627 | 6041 | 5228 | 245 | 146 | 2003 | 1582 | 529 | 4940 | 603 | 4276 | 3585 | 7912 | 31376 | 11353 | 32265 | 7054 | 2110 | 2754 | 80 | 32298 | 32349 | 561 | 1253 | 2569 | 3626
+selfdestruct_present | 1005 | 113 | 1399 | 1207 | 113 | 118 | 305 | 718 | 686 | 935 | 1121 | 1857 | 506 | 874 | 2436 | 654 | 2530 | 1506 | 993 | 762 | 54 | 2208 | 561 | 2661 | 210 | 814 | 963
+create_contract_present | 2197 | 195 | 1604 | 1551 | 91 | 546 | 1828 | 498 | 456 | 1441 | 645 | 3997 | 735 | 1570 | 3770 | 684 | 3818 | 1891 | 1011 | 1979 | 39 | 3154 | 1253 | 210 | 4359 | 1125 | 1031
+external_call_near_loop_candidate | 110407 | 1827 | 99252 | 82605 | 14752 | 16979 | 3353 | 107829 | 25019 | 72659 | 22509 | 96808 | 24148 | 36066 | 109412 | 24110 | 110265 | 49410 | 42273 | 99652 | 5645 | 105119 | 2569 | 814 | 1125 | 110407 | 61767
+storage_write_near_loop_candidate | 62809 | 680 | 200603 | 203241 | 14430 | 13718 | 1731 | 61511 | 77324 | 176674 | 14558 | 54009 | 35312 | 43278 | 196730 | 41566 | 202452 | 82261 | 74573 | 55284 | 14259 | 146005 | 3626 | 963 | 1031 | 61767 | 203241
 
 Examples by EFPP pattern:
 [has_external_call]

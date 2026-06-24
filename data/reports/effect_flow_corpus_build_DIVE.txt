@@ -2,18 +2,18 @@ Effect-flow corpus build report: DIVE
 
 vulnerability_labels_written: false
 total_contracts: 22330
-total_chunks: 441699
+total_chunks: 490760
 
 [train]
 input_path: data/processed/DIVE/train.jsonl
 output_path: data/processed/effect_flow_pretrain/DIVE/train_effect_flow_chunks.jsonl
 contracts: 15616
-chunks: 309716
+chunks: 344349
 empty_contracts: 0
-truncated_contracts: 3474
-mean_chunks_per_contract: 19.833247950819672
-max_chunks_per_contract: 32
-coverage_ratio_mean: 0.9600053645221034
+truncated_contracts: 112
+mean_chunks_per_contract: 22.051037397540984
+max_chunks_per_contract: 64
+coverage_ratio_mean: 0.9993338777532663
 coverage_ratio_p50: 1.0
 coverage_ratio_p90: 1.0
 
@@ -21,12 +21,12 @@ coverage_ratio_p90: 1.0
 input_path: data/processed/DIVE/valid.jsonl
 output_path: data/processed/effect_flow_pretrain/DIVE/valid_effect_flow_chunks.jsonl
 contracts: 2250
-chunks: 43953
+chunks: 48524
 empty_contracts: 0
-truncated_contracts: 493
-mean_chunks_per_contract: 19.534666666666666
-max_chunks_per_contract: 32
-coverage_ratio_mean: 0.9632332023522073
+truncated_contracts: 6
+mean_chunks_per_contract: 21.566222222222223
+max_chunks_per_contract: 64
+coverage_ratio_mean: 0.999791461884342
 coverage_ratio_p50: 1.0
 coverage_ratio_p90: 1.0
 
@@ -34,11 +34,11 @@ coverage_ratio_p90: 1.0
 input_path: data/processed/DIVE/test.jsonl
 output_path: data/processed/effect_flow_pretrain/DIVE/test_effect_flow_chunks.jsonl
 contracts: 4464
-chunks: 88030
+chunks: 97887
 empty_contracts: 0
-truncated_contracts: 997
-mean_chunks_per_contract: 19.719982078853047
-max_chunks_per_contract: 32
-coverage_ratio_mean: 0.9600002873497546
+truncated_contracts: 24
+mean_chunks_per_contract: 21.928091397849464
+max_chunks_per_contract: 64
+coverage_ratio_mean: 0.9994778992615211
 coverage_ratio_p50: 1.0
 coverage_ratio_p90: 1.0
