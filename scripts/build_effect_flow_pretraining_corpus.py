@@ -48,7 +48,12 @@ def parse_args():
     parser.add_argument("--output_dir", default=None)
     parser.add_argument("--max_len", type=int, default=512)
     parser.add_argument("--chunk_stride", type=int, default=256)
-    parser.add_argument("--max_chunks_per_contract", type=int, default=32)
+    parser.add_argument(
+        "--max_chunks_per_contract",
+        type=int,
+        default=None,
+        help="Maximum chunks per contract. Defaults to 32 for BJUT and 64 for DIVE.",
+    )
     parser.add_argument("--debug_num_contracts", type=int, default=None)
     parser.add_argument("--include_other_operands", action="store_true")
     parser.add_argument("--num_workers", type=int, default=4)
@@ -290,6 +295,8 @@ def build_split(args, tokenizer, split, input_path, output_path):
 
 def main():
     args = parse_args()
+    if args.max_chunks_per_contract is None:
+        args.max_chunks_per_contract = 64 if args.dataset == "DIVE" else 32
     tokenizer = EVMOpcodeTokenizer.from_vocab_file(resolve(args.vocab_path))
     input_paths = strict_split_paths(args.dataset)
     missing = [relative(path) for path in input_paths.values() if not path.exists()]

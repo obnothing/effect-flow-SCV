@@ -21,12 +21,14 @@ python scripts/find_effect_flow_inputs.py
 echo "[2/10] build BJUT label-free effect-flow corpus"
 python scripts/build_effect_flow_pretraining_corpus.py \
   --dataset BJUT \
+  --max_chunks_per_contract 32 \
   --num_workers 4 \
   --force
 
 echo "[3/10] build DIVE label-free effect-flow corpus"
 python scripts/build_effect_flow_pretraining_corpus.py \
   --dataset DIVE \
+  --max_chunks_per_contract 64 \
   --num_workers 4 \
   --force
 
