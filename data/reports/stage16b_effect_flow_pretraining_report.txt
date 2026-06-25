@@ -1,0 +1,87 @@
+Stage 16B Effect-Flow-Aware EVM-BERT continued pretraining report
+
+experiment_name: pretrain_effect_flow_evm_bert_bjut_dive_train_balanced
+base_hf_model_path: checkpoints/pretrain_evm_bert_base_full_bjut/hf_model
+base_encoder_init: BJUT full-corpus EVM-BERT
+base_encoder_init_setting: transductive_initialization
+train_corpora: {'BJUT': {'path': 'data/processed/effect_flow_pretrain/BJUT/train_effect_flow_chunks.jsonl', 'chunks': 1048925, 'train_after_holdout': 1038436}, 'DIVE': {'path': 'data/processed/effect_flow_pretrain/DIVE/train_effect_flow_chunks.jsonl', 'chunks': 344349, 'train_after_holdout': 340906}}
+internal_valid_ratio: 0.01
+internal_valid_counts_by_dataset: {'BJUT': 10489, 'DIVE': 3443}
+dataset_balanced_sampling_ratio: {'BJUT': 0.5, 'DIVE': 0.5}
+actual_sample_counts: {'BJUT': 1152000, 'DIVE': 1152000, 'BJUT_ratio': 0.5, 'DIVE_ratio': 0.5}
+efpp_pattern_subset: conservative_22
+included_patterns: ['has_external_call', 'has_delegatecall', 'has_state_read', 'has_state_write', 'call_before_state_write', 'state_write_before_call', 'call_without_return_check', 'call_with_return_check', 'state_write_with_auth_guard', 'state_write_without_auth_guard', 'sensitive_call_with_auth_guard', 'sensitive_call_without_auth_guard', 'env_used_in_condition', 'env_used_in_arithmetic_or_hash', 'div_before_mul', 'has_hardcoded_address', 'hardcoded_address_near_call', 'value_or_gas_sensitive_call', 'dense_storage_or_call_ops', 'panic_selector_present', 'selfdestruct_present', 'create_contract_present']
+excluded_patterns: ['arithmetic_chain', 'arithmetic_followed_by_guard_or_revert', 'revert_or_invalid_present', 'external_call_near_loop_candidate', 'storage_write_near_loop_candidate']
+excluded_reasons: {'arithmetic_chain': 'Too frequent and weakly discriminative.', 'arithmetic_followed_by_guard_or_revert': 'Too frequent and weakly discriminative.', 'revert_or_invalid_present': 'DIVE contract-level prevalence is about 99.63 percent despite chunk prevalence below 80 percent.', 'external_call_near_loop_candidate': 'Noisy weak rule without CFG or backward-jump confirmation.', 'storage_write_near_loop_candidate': 'Noisy weak rule without CFG or backward-jump confirmation.'}
+loss_weights: {'lambda_mom': 1.0, 'lambda_etp': 0.3, 'lambda_efpp': 0.5, 'etp_class_weights': [0.14654844225232458, 5.0, 1.9349287834892903, 3.554082600418038, 3.939909899357933, 0.9773501237660718, 3.3403414096419897, 5.0, 0.9009715294398755, 2.3202172891048, 5.0, 5.0, 2.071284703943683, 2.9134713458156085, 2.812258950718323, 1.065335660359411], 'efpp_pos_weights': [1.5437289145527686, 9.367651450445273, 0.591081560173355, 0.8514014217331005, 5.63347422622658, 4.737896169196131, 5.839336313836603, 1.6341626313016688, 1.8180371310887455, 1.0008144401526602, 3.367164047289729, 1.6868236526481846, 2.64594834845212, 2.392726336457974, 1.6288689755280503, 1.098453783378997, 1.4803263896602221, 1.7031681888507566, 5.891569340386381, 5.415691581182509, 9.719514491911765, 7.942511866545365]}
+training_hyperparameters: {'batch_size': 16, 'eval_batch_size': 32, 'gradient_accumulation_steps': 2, 'steps_per_epoch': 12000, 'epochs': 3, 'learning_rate': 2e-05, 'warmup_ratio': 0.06, 'max_grad_norm': 1.0, 'mlm_probability': 0.15, 'num_workers': 4, 'fp16': True, 'bf16': False}
+encoder_checksum_before: 6221e4515b50c9fbe35af3fd6fc7e00c6ee2adf289f57cf16c734daa6eb84fd0
+encoder_checksum_after: 967fba147402ca9449ead20eb897e99462616ed69f69e3697bc8d94d41e7df72
+encoder_checksum_changed: True
+best_valid_loss: 0.0980788965174993
+best_epoch: 3
+checkpoint_paths: {'best_valid_loss': 'checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/best_valid_loss.pt', 'last': 'checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/last.pt'}
+hf_model_path: checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model
+result_paths: {'training_log': 'results/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/training_log.csv', 'internal_valid_metrics': 'results/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/internal_valid_metrics.json', 'etp_per_effect_metrics': 'results/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/etp_per_effect_metrics.csv', 'efpp_per_pattern_metrics': 'results/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/efpp_per_pattern_metrics.csv', 'loss_curves': 'results/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/loss_curves.png'}
+sanity_success: True
+full_pretraining_success: True
+recommendation_for_stage16c: Run downstream first-512 quick validation only after checking all three pretraining tasks.
+
+Epoch loss table:
+epoch=1 train_total=0.235959 train_mom=0.136053 train_etp=0.089274 train_efpp=0.146247 valid_total=0.120764 valid_mom=0.089615 valid_etp=0.006971 valid_efpp=0.058117
+epoch=2 train_total=0.126668 train_mom=0.101038 train_etp=0.007730 train_efpp=0.046622 valid_total=0.103206 valid_mom=0.082809 valid_etp=0.005347 valid_efpp=0.037585
+epoch=3 train_total=0.113947 train_mom=0.094591 train_etp=0.006553 train_efpp=0.034781 valid_total=0.098079 valid_mom=0.080196 valid_etp=0.004995 valid_efpp=0.032768
+
+MOM metrics: accuracy=0.979598, top5_accuracy=0.992407
+ETP metrics: accuracy=0.998382, macro_f1=0.973806, macro_f1_excluding_normal=0.972128
+EFPP metrics: micro_f1=0.983474, macro_f1=0.960436, macro_auc=0.9987726803456473
+
+ETP per-effect metrics:
+effect | precision | recall | f1 | support
+Normal | 0.999807 | 0.998154 | 0.998980 | 3736379
+ExternalCall | 0.968024 | 0.996864 | 0.982233 | 7653
+StateRead | 0.994150 | 0.998962 | 0.996550 | 91528
+StateWrite | 0.987633 | 0.998023 | 0.992801 | 26806
+AuthSource | 0.943287 | 0.996181 | 0.969013 | 23041
+ControlGuard | 0.997814 | 0.999205 | 0.998509 | 350855
+ReturnCheck | 0.994115 | 0.999465 | 0.996783 | 31774
+EnvDependency | 0.742924 | 0.977223 | 0.844117 | 4566
+Arithmetic | 0.997365 | 0.999065 | 0.998215 | 422496
+AddressLiteral | 0.999063 | 0.999889 | 0.999476 | 62940
+CreateContract | 0.870330 | 0.949640 | 0.908257 | 417
+Destructive | 0.878788 | 0.940541 | 0.908616 | 185
+RevertOrAssert | 0.997237 | 0.999538 | 0.998387 | 82335
+GasOrValue | 0.988780 | 0.996593 | 0.992671 | 41386
+HashOrCrypto | 0.996277 | 0.999198 | 0.997735 | 43651
+StorageOrMemoryHeavy | 0.997937 | 0.999187 | 0.998562 | 291454
+
+EFPP per-pattern metrics:
+pattern | precision | recall | f1 | support
+has_external_call | 0.998917 | 0.996111 | 0.997512 | 4629
+has_delegatecall | 0.943966 | 0.969027 | 0.956332 | 226
+has_state_read | 0.998670 | 0.995736 | 0.997201 | 10554
+has_state_write | 0.999514 | 0.997213 | 0.998362 | 8253
+call_before_state_write | 0.891353 | 0.980488 | 0.933798 | 410
+state_write_before_call | 0.856574 | 0.972851 | 0.911017 | 663
+call_without_return_check | 0.909980 | 0.952869 | 0.930931 | 488
+call_with_return_check | 0.996227 | 0.997403 | 0.996815 | 4236
+state_write_with_auth_guard | 0.968082 | 0.981624 | 0.974806 | 3646
+state_write_without_auth_guard | 0.989310 | 0.986358 | 0.987832 | 7037
+sensitive_call_with_auth_guard | 0.878209 | 0.970182 | 0.921907 | 1375
+sensitive_call_without_auth_guard | 0.974951 | 0.982673 | 0.978797 | 4040
+env_used_in_condition | 0.910095 | 0.970541 | 0.939347 | 1867
+env_used_in_arithmetic_or_hash | 0.891275 | 0.944337 | 0.917039 | 2066
+div_before_mul | 0.979304 | 0.985096 | 0.982191 | 4227
+has_hardcoded_address | 0.998197 | 0.998197 | 0.998197 | 6657
+hardcoded_address_near_call | 0.980342 | 0.992935 | 0.986599 | 4671
+value_or_gas_sensitive_call | 0.984367 | 0.996233 | 0.990265 | 3982
+dense_storage_or_call_ops | 0.720703 | 0.953488 | 0.820912 | 387
+panic_selector_present | 1.000000 | 1.000000 | 1.000000 | 216
+selfdestruct_present | 0.955556 | 0.950276 | 0.952909 | 181
+create_contract_present | 0.977941 | 0.936620 | 0.956835 | 284
+
+Warnings:
+- The base encoder was initialized from BJUT full-corpus EVM-BERT and is therefore a transductive initialization. Stage 16B itself uses only BJUT-train and DIVE-train effect-flow chunks.
+- Continued pretraining uses train chunks only.
+- No downstream vulnerability labels were used.
+- MOM/ETP/EFPP metrics are pretraining-task metrics, not vulnerability-detection metrics.

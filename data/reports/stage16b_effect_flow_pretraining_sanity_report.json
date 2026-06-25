@@ -1,0 +1,836 @@
+{
+  "experiment_name": "sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced",
+  "base_hf_model_path": "checkpoints/pretrain_evm_bert_base_full_bjut/hf_model",
+  "base_encoder_init": "BJUT full-corpus EVM-BERT",
+  "base_encoder_init_setting": "transductive_initialization",
+  "train_corpora": {
+    "BJUT": {
+      "path": "data/processed/effect_flow_pretrain/BJUT/train_effect_flow_chunks.jsonl",
+      "chunks": 1048925,
+      "train_after_holdout": 1038436
+    },
+    "DIVE": {
+      "path": "data/processed/effect_flow_pretrain/DIVE/train_effect_flow_chunks.jsonl",
+      "chunks": 344349,
+      "train_after_holdout": 340906
+    }
+  },
+  "internal_valid_ratio": 0.01,
+  "internal_valid_counts_by_dataset": {
+    "BJUT": 10489,
+    "DIVE": 3443
+  },
+  "dataset_balanced_sampling_ratio": {
+    "BJUT": 0.5,
+    "DIVE": 0.5
+  },
+  "actual_sample_counts": {
+    "BJUT": 8000,
+    "DIVE": 8000,
+    "BJUT_ratio": 0.5,
+    "DIVE_ratio": 0.5
+  },
+  "efpp_pattern_subset": "conservative_22",
+  "included_patterns": [
+    "has_external_call",
+    "has_delegatecall",
+    "has_state_read",
+    "has_state_write",
+    "call_before_state_write",
+    "state_write_before_call",
+    "call_without_return_check",
+    "call_with_return_check",
+    "state_write_with_auth_guard",
+    "state_write_without_auth_guard",
+    "sensitive_call_with_auth_guard",
+    "sensitive_call_without_auth_guard",
+    "env_used_in_condition",
+    "env_used_in_arithmetic_or_hash",
+    "div_before_mul",
+    "has_hardcoded_address",
+    "hardcoded_address_near_call",
+    "value_or_gas_sensitive_call",
+    "dense_storage_or_call_ops",
+    "panic_selector_present",
+    "selfdestruct_present",
+    "create_contract_present"
+  ],
+  "excluded_patterns": [
+    "arithmetic_chain",
+    "arithmetic_followed_by_guard_or_revert",
+    "revert_or_invalid_present",
+    "external_call_near_loop_candidate",
+    "storage_write_near_loop_candidate"
+  ],
+  "excluded_reasons": {
+    "arithmetic_chain": "Too frequent and weakly discriminative.",
+    "arithmetic_followed_by_guard_or_revert": "Too frequent and weakly discriminative.",
+    "revert_or_invalid_present": "DIVE contract-level prevalence is about 99.63 percent despite chunk prevalence below 80 percent.",
+    "external_call_near_loop_candidate": "Noisy weak rule without CFG or backward-jump confirmation.",
+    "storage_write_near_loop_candidate": "Noisy weak rule without CFG or backward-jump confirmation."
+  },
+  "loss_weights": {
+    "lambda_mom": 1.0,
+    "lambda_etp": 0.3,
+    "lambda_efpp": 0.5,
+    "etp_class_weights": [
+      0.14654844225232458,
+      5.0,
+      1.9349287834892903,
+      3.554082600418038,
+      3.939909899357933,
+      0.9773501237660718,
+      3.3403414096419897,
+      5.0,
+      0.9009715294398755,
+      2.3202172891048,
+      5.0,
+      5.0,
+      2.071284703943683,
+      2.9134713458156085,
+      2.812258950718323,
+      1.065335660359411
+    ],
+    "efpp_pos_weights": [
+      1.5437289145527686,
+      9.367651450445273,
+      0.591081560173355,
+      0.8514014217331005,
+      5.63347422622658,
+      4.737896169196131,
+      5.839336313836603,
+      1.6341626313016688,
+      1.8180371310887455,
+      1.0008144401526602,
+      3.367164047289729,
+      1.6868236526481846,
+      2.64594834845212,
+      2.392726336457974,
+      1.6288689755280503,
+      1.098453783378997,
+      1.4803263896602221,
+      1.7031681888507566,
+      5.891569340386381,
+      5.415691581182509,
+      9.719514491911765,
+      7.942511866545365
+    ]
+  },
+  "training_hyperparameters": {
+    "batch_size": 16,
+    "eval_batch_size": 32,
+    "gradient_accumulation_steps": 1,
+    "steps_per_epoch": 500,
+    "epochs": 1,
+    "learning_rate": 2e-05,
+    "warmup_ratio": 0.06,
+    "max_grad_norm": 1.0,
+    "mlm_probability": 0.15,
+    "num_workers": 4,
+    "fp16": true,
+    "bf16": false
+  },
+  "epoch_loss_table": [
+    {
+      "epoch": 1,
+      "global_step": 500,
+      "train_loss_total": 0.5651128371953964,
+      "train_loss_mom": 0.22366180942207575,
+      "train_loss_etp": 0.3532370786592364,
+      "train_loss_efpp": 0.47095979806780813,
+      "bjut_samples": 8000,
+      "dive_samples": 8000,
+      "evaluated_samples": 512,
+      "valid_loss_total": 0.40023754723370075,
+      "valid_loss_mom": 0.1785658849403262,
+      "valid_loss_etp": 0.09834261983633041,
+      "valid_loss_efpp": 0.3843377474695444,
+      "masked_token_accuracy": 0.9542440318302388,
+      "masked_token_top5_accuracy": 0.9844164456233422,
+      "masked_token_count": 36192,
+      "etp_accuracy": 0.9818787038978172,
+      "etp_macro_f1": 0.7980859928465402,
+      "etp_macro_f1_excluding_normal": 0.7853616734810129,
+      "efpp_micro_f1": 0.7963404932378679,
+      "efpp_macro_f1": 0.5730984756020031,
+      "efpp_macro_auc": 0.905850330935938,
+      "learning_rate": 0.0,
+      "max_memory_allocated_mb": 2757.44091796875,
+      "max_memory_reserved_mb": 4174.0
+    }
+  ],
+  "final_internal_valid_metrics": {
+    "evaluated_samples": 512,
+    "valid_loss_total": 0.40023754723370075,
+    "valid_loss_mom": 0.1785658849403262,
+    "valid_loss_etp": 0.09834261983633041,
+    "valid_loss_efpp": 0.3843377474695444,
+    "masked_token_accuracy": 0.9542440318302388,
+    "masked_token_top5_accuracy": 0.9844164456233422,
+    "masked_token_count": 36192,
+    "etp_accuracy": 0.9818787038978172,
+    "etp_macro_f1": 0.7980859928465402,
+    "etp_macro_f1_excluding_normal": 0.7853616734810129,
+    "efpp_micro_f1": 0.7963404932378679,
+    "efpp_macro_f1": 0.5730984756020031,
+    "efpp_macro_auc": 0.905850330935938,
+    "etp_per_effect": [
+      {
+        "name": "Normal",
+        "precision": 0.996833168468321,
+        "recall": 0.9811920789582443,
+        "f1": 0.9889507833294503,
+        "support": 142759,
+        "predicted_positive_count": 140519
+      },
+      {
+        "name": "ExternalCall",
+        "precision": 0.5879732739420935,
+        "recall": 0.9814126394052045,
+        "f1": 0.7353760445682451,
+        "support": 269,
+        "predicted_positive_count": 449
+      },
+      {
+        "name": "StateRead",
+        "precision": 0.9525568181818181,
+        "recall": 0.9841502788376871,
+        "f1": 0.9680958567922622,
+        "support": 3407,
+        "predicted_positive_count": 3520
+      },
+      {
+        "name": "StateWrite",
+        "precision": 0.8115477145148356,
+        "recall": 0.968421052631579,
+        "f1": 0.8830715532286213,
+        "support": 1045,
+        "predicted_positive_count": 1247
+      },
+      {
+        "name": "AuthSource",
+        "precision": 0.8813559322033898,
+        "recall": 0.9466019417475728,
+        "f1": 0.9128145114101813,
+        "support": 824,
+        "predicted_positive_count": 885
+      },
+      {
+        "name": "ControlGuard",
+        "precision": 0.9655304775065254,
+        "recall": 0.9872056514913657,
+        "f1": 0.9762477683769308,
+        "support": 12740,
+        "predicted_positive_count": 13026
+      },
+      {
+        "name": "ReturnCheck",
+        "precision": 0.7945301542776999,
+        "recall": 0.987794245858762,
+        "f1": 0.8806840264282939,
+        "support": 1147,
+        "predicted_positive_count": 1426
+      },
+      {
+        "name": "EnvDependency",
+        "precision": 0.44837758112094395,
+        "recall": 0.8941176470588236,
+        "f1": 0.5972495088408644,
+        "support": 170,
+        "predicted_positive_count": 339
+      },
+      {
+        "name": "Arithmetic",
+        "precision": 0.9555816839767457,
+        "recall": 0.9809562127003286,
+        "f1": 0.9681027066375488,
+        "support": 14913,
+        "predicted_positive_count": 15309
+      },
+      {
+        "name": "AddressLiteral",
+        "precision": 0.9934895833333334,
+        "recall": 0.9995633187772925,
+        "f1": 0.9965171963430562,
+        "support": 2290,
+        "predicted_positive_count": 2304
+      },
+      {
+        "name": "CreateContract",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 11,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Destructive",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 5,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "RevertOrAssert",
+        "precision": 0.9600870827285921,
+        "recall": 0.9943630214205186,
+        "f1": 0.9769244969540335,
+        "support": 2661,
+        "predicted_positive_count": 2756
+      },
+      {
+        "name": "GasOrValue",
+        "precision": 0.9253840526700805,
+        "recall": 0.9612462006079028,
+        "f1": 0.9429742825195676,
+        "support": 1316,
+        "predicted_positive_count": 1367
+      },
+      {
+        "name": "HashOrCrypto",
+        "precision": 0.9515828677839852,
+        "recall": 0.9948085658663206,
+        "f1": 0.9727157360406092,
+        "support": 1541,
+        "predicted_positive_count": 1611
+      },
+      {
+        "name": "StorageOrMemoryHeavy",
+        "precision": 0.9544067326366411,
+        "recall": 0.9853910054425666,
+        "f1": 0.9696514140749789,
+        "support": 10473,
+        "predicted_positive_count": 10813
+      }
+    ],
+    "efpp_per_pattern": [
+      {
+        "name": "has_external_call",
+        "precision": 0.94375,
+        "recall": 0.949685534591195,
+        "f1": 0.9467084639498432,
+        "support": 159,
+        "predicted_positive_count": 160
+      },
+      {
+        "name": "has_delegatecall",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 8,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "has_state_read",
+        "precision": 0.9656160458452722,
+        "recall": 0.903485254691689,
+        "f1": 0.9335180055401662,
+        "support": 373,
+        "predicted_positive_count": 349
+      },
+      {
+        "name": "has_state_write",
+        "precision": 0.8746081504702194,
+        "recall": 0.9029126213592233,
+        "f1": 0.8885350318471338,
+        "support": 309,
+        "predicted_positive_count": 319
+      },
+      {
+        "name": "call_before_state_write",
+        "precision": 0.375,
+        "recall": 0.21428571428571427,
+        "f1": 0.2727272727272727,
+        "support": 14,
+        "predicted_positive_count": 8
+      },
+      {
+        "name": "state_write_before_call",
+        "precision": 0.5,
+        "recall": 0.16,
+        "f1": 0.24242424242424243,
+        "support": 25,
+        "predicted_positive_count": 8
+      },
+      {
+        "name": "call_without_return_check",
+        "precision": 0.6363636363636364,
+        "recall": 0.3684210526315789,
+        "f1": 0.4666666666666667,
+        "support": 19,
+        "predicted_positive_count": 11
+      },
+      {
+        "name": "call_with_return_check",
+        "precision": 0.9342105263157895,
+        "recall": 0.9659863945578231,
+        "f1": 0.9498327759197324,
+        "support": 147,
+        "predicted_positive_count": 152
+      },
+      {
+        "name": "state_write_with_auth_guard",
+        "precision": 0.5194805194805194,
+        "recall": 0.6451612903225806,
+        "f1": 0.5755395683453237,
+        "support": 124,
+        "predicted_positive_count": 154
+      },
+      {
+        "name": "state_write_without_auth_guard",
+        "precision": 0.7821782178217822,
+        "recall": 0.8909774436090225,
+        "f1": 0.8330404217926187,
+        "support": 266,
+        "predicted_positive_count": 303
+      },
+      {
+        "name": "sensitive_call_with_auth_guard",
+        "precision": 0.2857142857142857,
+        "recall": 0.4782608695652174,
+        "f1": 0.35772357723577236,
+        "support": 46,
+        "predicted_positive_count": 77
+      },
+      {
+        "name": "sensitive_call_without_auth_guard",
+        "precision": 0.7727272727272727,
+        "recall": 0.8947368421052632,
+        "f1": 0.8292682926829269,
+        "support": 133,
+        "predicted_positive_count": 154
+      },
+      {
+        "name": "env_used_in_condition",
+        "precision": 0.49411764705882355,
+        "recall": 0.6176470588235294,
+        "f1": 0.5490196078431373,
+        "support": 68,
+        "predicted_positive_count": 85
+      },
+      {
+        "name": "env_used_in_arithmetic_or_hash",
+        "precision": 0.46987951807228917,
+        "recall": 0.5064935064935064,
+        "f1": 0.4875,
+        "support": 77,
+        "predicted_positive_count": 83
+      },
+      {
+        "name": "div_before_mul",
+        "precision": 0.6551724137931034,
+        "recall": 0.5241379310344828,
+        "f1": 0.5823754789272032,
+        "support": 145,
+        "predicted_positive_count": 116
+      },
+      {
+        "name": "has_hardcoded_address",
+        "precision": 0.92,
+        "recall": 0.8288288288288288,
+        "f1": 0.8720379146919431,
+        "support": 222,
+        "predicted_positive_count": 200
+      },
+      {
+        "name": "hardcoded_address_near_call",
+        "precision": 0.7206703910614525,
+        "recall": 0.8431372549019608,
+        "f1": 0.7771084337349398,
+        "support": 153,
+        "predicted_positive_count": 179
+      },
+      {
+        "name": "value_or_gas_sensitive_call",
+        "precision": 0.86,
+        "recall": 0.9555555555555556,
+        "f1": 0.9052631578947369,
+        "support": 135,
+        "predicted_positive_count": 150
+      },
+      {
+        "name": "dense_storage_or_call_ops",
+        "precision": 1.0,
+        "recall": 0.19047619047619047,
+        "f1": 0.32,
+        "support": 21,
+        "predicted_positive_count": 4
+      },
+      {
+        "name": "panic_selector_present",
+        "precision": 0.6296296296296297,
+        "recall": 0.7727272727272727,
+        "f1": 0.6938775510204083,
+        "support": 22,
+        "predicted_positive_count": 27
+      },
+      {
+        "name": "selfdestruct_present",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 5,
+        "predicted_positive_count": 2
+      },
+      {
+        "name": "create_contract_present",
+        "precision": 0.1111111111111111,
+        "recall": 0.14285714285714285,
+        "f1": 0.125,
+        "support": 7,
+        "predicted_positive_count": 9
+      }
+    ]
+  },
+  "best_internal_valid_metrics": {
+    "evaluated_samples": 512,
+    "valid_loss_total": 0.40023754723370075,
+    "valid_loss_mom": 0.1785658849403262,
+    "valid_loss_etp": 0.09834261983633041,
+    "valid_loss_efpp": 0.3843377474695444,
+    "masked_token_accuracy": 0.9542440318302388,
+    "masked_token_top5_accuracy": 0.9844164456233422,
+    "masked_token_count": 36192,
+    "etp_accuracy": 0.9818787038978172,
+    "etp_macro_f1": 0.7980859928465402,
+    "etp_macro_f1_excluding_normal": 0.7853616734810129,
+    "efpp_micro_f1": 0.7963404932378679,
+    "efpp_macro_f1": 0.5730984756020031,
+    "efpp_macro_auc": 0.905850330935938,
+    "etp_per_effect": [
+      {
+        "name": "Normal",
+        "precision": 0.996833168468321,
+        "recall": 0.9811920789582443,
+        "f1": 0.9889507833294503,
+        "support": 142759,
+        "predicted_positive_count": 140519
+      },
+      {
+        "name": "ExternalCall",
+        "precision": 0.5879732739420935,
+        "recall": 0.9814126394052045,
+        "f1": 0.7353760445682451,
+        "support": 269,
+        "predicted_positive_count": 449
+      },
+      {
+        "name": "StateRead",
+        "precision": 0.9525568181818181,
+        "recall": 0.9841502788376871,
+        "f1": 0.9680958567922622,
+        "support": 3407,
+        "predicted_positive_count": 3520
+      },
+      {
+        "name": "StateWrite",
+        "precision": 0.8115477145148356,
+        "recall": 0.968421052631579,
+        "f1": 0.8830715532286213,
+        "support": 1045,
+        "predicted_positive_count": 1247
+      },
+      {
+        "name": "AuthSource",
+        "precision": 0.8813559322033898,
+        "recall": 0.9466019417475728,
+        "f1": 0.9128145114101813,
+        "support": 824,
+        "predicted_positive_count": 885
+      },
+      {
+        "name": "ControlGuard",
+        "precision": 0.9655304775065254,
+        "recall": 0.9872056514913657,
+        "f1": 0.9762477683769308,
+        "support": 12740,
+        "predicted_positive_count": 13026
+      },
+      {
+        "name": "ReturnCheck",
+        "precision": 0.7945301542776999,
+        "recall": 0.987794245858762,
+        "f1": 0.8806840264282939,
+        "support": 1147,
+        "predicted_positive_count": 1426
+      },
+      {
+        "name": "EnvDependency",
+        "precision": 0.44837758112094395,
+        "recall": 0.8941176470588236,
+        "f1": 0.5972495088408644,
+        "support": 170,
+        "predicted_positive_count": 339
+      },
+      {
+        "name": "Arithmetic",
+        "precision": 0.9555816839767457,
+        "recall": 0.9809562127003286,
+        "f1": 0.9681027066375488,
+        "support": 14913,
+        "predicted_positive_count": 15309
+      },
+      {
+        "name": "AddressLiteral",
+        "precision": 0.9934895833333334,
+        "recall": 0.9995633187772925,
+        "f1": 0.9965171963430562,
+        "support": 2290,
+        "predicted_positive_count": 2304
+      },
+      {
+        "name": "CreateContract",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 11,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Destructive",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 5,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "RevertOrAssert",
+        "precision": 0.9600870827285921,
+        "recall": 0.9943630214205186,
+        "f1": 0.9769244969540335,
+        "support": 2661,
+        "predicted_positive_count": 2756
+      },
+      {
+        "name": "GasOrValue",
+        "precision": 0.9253840526700805,
+        "recall": 0.9612462006079028,
+        "f1": 0.9429742825195676,
+        "support": 1316,
+        "predicted_positive_count": 1367
+      },
+      {
+        "name": "HashOrCrypto",
+        "precision": 0.9515828677839852,
+        "recall": 0.9948085658663206,
+        "f1": 0.9727157360406092,
+        "support": 1541,
+        "predicted_positive_count": 1611
+      },
+      {
+        "name": "StorageOrMemoryHeavy",
+        "precision": 0.9544067326366411,
+        "recall": 0.9853910054425666,
+        "f1": 0.9696514140749789,
+        "support": 10473,
+        "predicted_positive_count": 10813
+      }
+    ],
+    "efpp_per_pattern": [
+      {
+        "name": "has_external_call",
+        "precision": 0.94375,
+        "recall": 0.949685534591195,
+        "f1": 0.9467084639498432,
+        "support": 159,
+        "predicted_positive_count": 160
+      },
+      {
+        "name": "has_delegatecall",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 8,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "has_state_read",
+        "precision": 0.9656160458452722,
+        "recall": 0.903485254691689,
+        "f1": 0.9335180055401662,
+        "support": 373,
+        "predicted_positive_count": 349
+      },
+      {
+        "name": "has_state_write",
+        "precision": 0.8746081504702194,
+        "recall": 0.9029126213592233,
+        "f1": 0.8885350318471338,
+        "support": 309,
+        "predicted_positive_count": 319
+      },
+      {
+        "name": "call_before_state_write",
+        "precision": 0.375,
+        "recall": 0.21428571428571427,
+        "f1": 0.2727272727272727,
+        "support": 14,
+        "predicted_positive_count": 8
+      },
+      {
+        "name": "state_write_before_call",
+        "precision": 0.5,
+        "recall": 0.16,
+        "f1": 0.24242424242424243,
+        "support": 25,
+        "predicted_positive_count": 8
+      },
+      {
+        "name": "call_without_return_check",
+        "precision": 0.6363636363636364,
+        "recall": 0.3684210526315789,
+        "f1": 0.4666666666666667,
+        "support": 19,
+        "predicted_positive_count": 11
+      },
+      {
+        "name": "call_with_return_check",
+        "precision": 0.9342105263157895,
+        "recall": 0.9659863945578231,
+        "f1": 0.9498327759197324,
+        "support": 147,
+        "predicted_positive_count": 152
+      },
+      {
+        "name": "state_write_with_auth_guard",
+        "precision": 0.5194805194805194,
+        "recall": 0.6451612903225806,
+        "f1": 0.5755395683453237,
+        "support": 124,
+        "predicted_positive_count": 154
+      },
+      {
+        "name": "state_write_without_auth_guard",
+        "precision": 0.7821782178217822,
+        "recall": 0.8909774436090225,
+        "f1": 0.8330404217926187,
+        "support": 266,
+        "predicted_positive_count": 303
+      },
+      {
+        "name": "sensitive_call_with_auth_guard",
+        "precision": 0.2857142857142857,
+        "recall": 0.4782608695652174,
+        "f1": 0.35772357723577236,
+        "support": 46,
+        "predicted_positive_count": 77
+      },
+      {
+        "name": "sensitive_call_without_auth_guard",
+        "precision": 0.7727272727272727,
+        "recall": 0.8947368421052632,
+        "f1": 0.8292682926829269,
+        "support": 133,
+        "predicted_positive_count": 154
+      },
+      {
+        "name": "env_used_in_condition",
+        "precision": 0.49411764705882355,
+        "recall": 0.6176470588235294,
+        "f1": 0.5490196078431373,
+        "support": 68,
+        "predicted_positive_count": 85
+      },
+      {
+        "name": "env_used_in_arithmetic_or_hash",
+        "precision": 0.46987951807228917,
+        "recall": 0.5064935064935064,
+        "f1": 0.4875,
+        "support": 77,
+        "predicted_positive_count": 83
+      },
+      {
+        "name": "div_before_mul",
+        "precision": 0.6551724137931034,
+        "recall": 0.5241379310344828,
+        "f1": 0.5823754789272032,
+        "support": 145,
+        "predicted_positive_count": 116
+      },
+      {
+        "name": "has_hardcoded_address",
+        "precision": 0.92,
+        "recall": 0.8288288288288288,
+        "f1": 0.8720379146919431,
+        "support": 222,
+        "predicted_positive_count": 200
+      },
+      {
+        "name": "hardcoded_address_near_call",
+        "precision": 0.7206703910614525,
+        "recall": 0.8431372549019608,
+        "f1": 0.7771084337349398,
+        "support": 153,
+        "predicted_positive_count": 179
+      },
+      {
+        "name": "value_or_gas_sensitive_call",
+        "precision": 0.86,
+        "recall": 0.9555555555555556,
+        "f1": 0.9052631578947369,
+        "support": 135,
+        "predicted_positive_count": 150
+      },
+      {
+        "name": "dense_storage_or_call_ops",
+        "precision": 1.0,
+        "recall": 0.19047619047619047,
+        "f1": 0.32,
+        "support": 21,
+        "predicted_positive_count": 4
+      },
+      {
+        "name": "panic_selector_present",
+        "precision": 0.6296296296296297,
+        "recall": 0.7727272727272727,
+        "f1": 0.6938775510204083,
+        "support": 22,
+        "predicted_positive_count": 27
+      },
+      {
+        "name": "selfdestruct_present",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 5,
+        "predicted_positive_count": 2
+      },
+      {
+        "name": "create_contract_present",
+        "precision": 0.1111111111111111,
+        "recall": 0.14285714285714285,
+        "f1": 0.125,
+        "support": 7,
+        "predicted_positive_count": 9
+      }
+    ]
+  },
+  "encoder_checksum_before": "6221e4515b50c9fbe35af3fd6fc7e00c6ee2adf289f57cf16c734daa6eb84fd0",
+  "encoder_checksum_after": "4b346e9b123ad888ece4c04f6ea9a05f508eb7214fe47ea58efcedbfe5f7794a",
+  "encoder_checksum_changed": true,
+  "best_valid_loss": 0.40023754723370075,
+  "best_epoch": 1,
+  "checkpoint_paths": {
+    "best_valid_loss": "checkpoints/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/best_valid_loss.pt",
+    "last": "checkpoints/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/last.pt"
+  },
+  "hf_model_path": "checkpoints/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model",
+  "result_paths": {
+    "training_log": "results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/training_log.csv",
+    "internal_valid_metrics": "results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/internal_valid_metrics.json",
+    "etp_per_effect_metrics": "results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/etp_per_effect_metrics.csv",
+    "efpp_per_pattern_metrics": "results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/efpp_per_pattern_metrics.csv",
+    "loss_curves": "results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/loss_curves.png"
+  },
+  "sanity_success": true,
+  "full_pretraining_success": false,
+  "warnings": [
+    "The base encoder was initialized from BJUT full-corpus EVM-BERT and is therefore a transductive initialization. Stage 16B itself uses only BJUT-train and DIVE-train effect-flow chunks.",
+    "Continued pretraining uses train chunks only.",
+    "No downstream vulnerability labels were used.",
+    "MOM/ETP/EFPP metrics are pretraining-task metrics, not vulnerability-detection metrics."
+  ],
+  "recommendation_for_stage16c": "Do not start Stage 16C until full Stage 16B success criteria pass."
+}
