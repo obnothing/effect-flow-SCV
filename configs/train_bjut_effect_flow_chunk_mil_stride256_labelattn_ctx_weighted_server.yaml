@@ -1,0 +1,68 @@
+experiment_name: train_bjut_effect_flow_chunk_mil_stride256_labelattn_ctx_weighted
+model_type: evm_chunk_mil
+feature_dir: data/features/effect_flow_evm_bert_chunks_mean_stride256/BJUT
+checkpoint_dir: checkpoints/train_bjut_effect_flow_chunk_mil_stride256_labelattn_ctx_weighted
+result_dir: results/train_bjut_effect_flow_chunk_mil_stride256_labelattn_ctx_weighted
+report_dir: data/reports
+log_dir: logs
+
+num_labels: 10
+feature_dim: 768
+hidden_dim: 512
+attn_dim: 256
+max_chunks: 32
+dropout: 0.1
+feature_pooling: masked_mean
+chunk_stride: 256
+recognition_aggregation: label_gated_attention
+top_k: 2
+
+use_chunk_context: true
+chunk_context_num_layers: 2
+chunk_context_num_heads: 8
+chunk_context_dropout: 0.1
+
+batch_size: 512
+gradient_accumulation_steps: 1
+use_data_parallel: true
+data_parallel_device_ids: [0, 1]
+epochs: 30
+learning_rate: 0.0003
+weight_decay: 0.01
+early_stopping_patience: 5
+gradient_clip_norm: 1.0
+use_pos_weight: true
+pos_weight_source: train_mlsmote
+pos_weight_mode: sqrt_ratio
+max_pos_weight: 5.0
+threshold: 0.5
+thresholds: [0.1, 0.2, 0.3, 0.4, 0.5]
+seed: 42
+num_workers: 4
+
+is_transductive_pretraining: true
+encoder_frozen: true
+base_encoder_init: BJUT full-corpus EVM-BERT
+base_encoder_init_setting: transductive_initialization
+continued_encoder: MOM + ETP + EFPP effect-flow-aware continued pretraining
+data_dir: data/processed/BJUT_SC01_random_split
+split_policy: random_sample_split
+leakage_status: warning
+
+baseline_comparison:
+  old_chunk_context_micro_f1: 0.6870
+  old_chunk_context_macro_f1: 0.5757
+  old_chunk_context_detection_f1: 0.7669
+
+label_names:
+  - Reentrancy
+  - Contract contains unknown address
+  - Integer overflow or underflow
+  - Timestamp dependence
+  - DoS with failed call
+  - Assert violation
+  - Unchecked call return value
+  - Unsafe send
+  - Multiplication after division
+  - Extra gas consumption
+

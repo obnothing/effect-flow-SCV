@@ -1,0 +1,71 @@
+experiment_name: train_bjut_effect_flow_first512_weighted
+model_type: evm_bert
+tokenizer_type: evm
+hf_model_path: checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model
+vocab_path: data/processed/BJUT_SC01/evm_vocab.json
+
+data_dir: data/processed/BJUT_SC01
+checkpoint_dir: checkpoints/train_bjut_effect_flow_first512_weighted
+result_dir: results/train_bjut_effect_flow_first512_weighted
+report_dir: data/reports
+log_dir: logs
+
+num_labels: 10
+max_len: 512
+hidden_size: 768
+bigru_hidden_size: 256
+
+batch_size: 8
+gradient_accumulation_steps: 2
+epochs: 10
+
+encoder_learning_rate: 2e-5
+head_learning_rate: 1e-4
+weight_decay: 0.01
+warmup_ratio: 0.06
+gradient_clip_norm: 1.0
+early_stopping_patience: 3
+
+freeze_encoder: false
+use_mlsmote_train: true
+use_pos_weight: true
+pos_weight_source: train_mlsmote
+pos_weight_mode: sqrt_ratio
+max_pos_weight: 5.0
+apply_pos_weight_to: recognition_only
+
+debug_num_train_samples:
+debug_num_valid_samples:
+
+threshold: 0.5
+thresholds: [0.1, 0.2, 0.3, 0.4, 0.5]
+
+baseline_micro_f1: 0.5659
+baseline_macro_f1: 0.4326
+baseline_detection_f1: 0.6895
+reference_baseline_name: BJUT old EVM-BERT first512 weighted
+
+seed: 42
+num_workers: 4
+fp16: true
+local_files_only: true
+ddp_find_unused_parameters: false
+is_transductive_pretraining: true
+base_encoder_init: BJUT full-corpus EVM-BERT
+base_encoder_init_setting: transductive_initialization
+continued_encoder: MOM + ETP + EFPP effect-flow-aware continued pretraining
+split_policy: opcode_hash_grouped
+leakage_status: ok_transductive_pretraining
+
+label_names:
+  - Reentrancy
+  - Contract contains unknown address
+  - Integer overflow or underflow
+  - Timestamp dependence
+  - DoS with failed call
+  - Assert violation
+  - Unchecked call return value
+  - Unsafe send
+  - Multiplication after division
+  - Extra gas consumption
+

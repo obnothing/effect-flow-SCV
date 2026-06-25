@@ -52,13 +52,21 @@ def parse_args():
     parser.add_argument(
         "--threshold_search",
         default=None,
-        choices=["per_label"],
-        help="Search validation thresholds. Use per_label with --split valid.",
+        choices=["per_label", "global_and_per_label"],
+        help=(
+            "Search validation thresholds. Use per_label or global_and_per_label "
+            "with --split valid."
+        ),
     )
     parser.add_argument(
         "--threshold_file",
         default=None,
         help="Validation-selected per-label threshold JSON.",
+    )
+    parser.add_argument(
+        "--global_threshold_file",
+        default=None,
+        help="Validation global threshold scan JSON.",
     )
     parser.add_argument(
         "--global_threshold",
@@ -131,6 +139,31 @@ def default_threshold_grid():
     return [round(value, 2) for value in np.arange(0.05, 1.0, 0.05)]
 
 
+def sample_subset_hamming_metrics(labels, preds):
+    labels = np.asarray(labels).astype(int)
+    preds = np.asarray(preds).astype(int)
+    sample_f1 = []
+    for true_row, pred_row in zip(labels, preds):
+        intersection = int(((true_row == 1) & (pred_row == 1)).sum())
+        pred_count = int(pred_row.sum())
+        true_count = int(true_row.sum())
+        precision = intersection / pred_count if pred_count else 0.0
+        recall = intersection / true_count if true_count else 0.0
+        f1 = (
+            2 * precision * recall / (precision + recall)
+            if precision + recall
+            else 0.0
+        )
+        sample_f1.append(f1)
+    return {
+        "recognition_samples_f1": float(np.mean(sample_f1)) if sample_f1 else 0.0,
+        "subset_accuracy": (
+            float((labels == preds).all(axis=1).mean()) if labels.size else 0.0
+        ),
+        "hamming_loss": float((labels != preds).mean()) if labels.size else 0.0,
+    }
+
+
 @torch.no_grad()
 def collect_predictions(model, dataloader, device, fp16=False, bf16=False):
     model.eval()
@@ -177,6 +210,8 @@ def run_global_evaluation(predictions, threshold):
         threshold=threshold,
         scan_thresholds=None,
     )
+    preds = (predictions["recognition_probs"] >= float(threshold)).astype(int)
+    metrics.update(sample_subset_hamming_metrics(predictions["multi_labels"], preds))
     return predictions["loss"], metrics
 
 
@@ -194,6 +229,11 @@ def run_per_label_evaluation(predictions, thresholds, detection_threshold):
     metrics = {}
     metrics.update(detection_metrics)
     metrics.update(recognition_metrics)
+    preds = (
+        predictions["recognition_probs"]
+        >= np.asarray(thresholds, dtype=float).reshape(1, -1)
+    ).astype(int)
+    metrics.update(sample_subset_hamming_metrics(predictions["multi_labels"], preds))
     return predictions["loss"], metrics
 
 
@@ -228,6 +268,11 @@ def load_threshold_file(path):
     return data, [float(value) for value in thresholds]
 
 
+def load_best_global_macro_threshold(path):
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    return data, float(data["best_macro_f1_threshold"])
+
+
 def threshold_output_paths(config):
     result_dir = Path(config.get("result_dir", "results"))
     return (
@@ -260,6 +305,85 @@ def write_threshold_report(path, report):
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
+def save_global_threshold_scan(result_dir, predictions, thresholds):
+    ensure_dir(result_dir)
+    rows = []
+    for threshold in thresholds:
+        _, metrics = run_global_evaluation(predictions, float(threshold))
+        rows.append(
+            {
+                "threshold": float(threshold),
+                "micro_precision": metrics["recognition_micro_precision"],
+                "micro_recall": metrics["recognition_micro_recall"],
+                "micro_f1": metrics["recognition_micro_f1"],
+                "macro_precision": metrics["recognition_macro_precision"],
+                "macro_recall": metrics["recognition_macro_recall"],
+                "macro_f1": metrics["recognition_macro_f1"],
+                "predicted_positive_total": metrics["predicted_positive_total"],
+            }
+        )
+    best_macro = max(
+        rows,
+        key=lambda row: (row["macro_f1"], -abs(row["threshold"] - 0.5)),
+    )
+    best_micro = max(
+        rows,
+        key=lambda row: (row["micro_f1"], -abs(row["threshold"] - 0.5)),
+    )
+    baseline = min(rows, key=lambda row: abs(row["threshold"] - 0.5))
+    report = {
+        "threshold_source": "validation set",
+        "thresholds": thresholds,
+        "rows": rows,
+        "best_macro_f1_threshold": best_macro["threshold"],
+        "best_macro_f1_value": best_macro["macro_f1"],
+        "best_micro_f1_threshold": best_micro["threshold"],
+        "best_micro_f1_value": best_micro["micro_f1"],
+        "threshold_0_5_baseline": baseline,
+    }
+    json_path = result_dir / "valid_global_threshold_scan.json"
+    txt_path = result_dir / "valid_global_threshold_scan.txt"
+    csv_path = result_dir / "threshold_curve_data.csv"
+    json_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    lines = [
+        "Validation global threshold scan",
+        "",
+        f"best_macro_f1_threshold: {best_macro['threshold']}",
+        f"best_macro_f1_value: {best_macro['macro_f1']:.6f}",
+        f"best_micro_f1_threshold: {best_micro['threshold']}",
+        f"best_micro_f1_value: {best_micro['micro_f1']:.6f}",
+        "",
+        (
+            "threshold | micro_precision | micro_recall | micro_f1 | "
+            "macro_precision | macro_recall | macro_f1 | predicted_positive_total"
+        ),
+    ]
+    for row in rows:
+        lines.append(
+            f"{row['threshold']:.2f} | {row['micro_precision']:.6f} | "
+            f"{row['micro_recall']:.6f} | {row['micro_f1']:.6f} | "
+            f"{row['macro_precision']:.6f} | {row['macro_recall']:.6f} | "
+            f"{row['macro_f1']:.6f} | {row['predicted_positive_total']}"
+        )
+    txt_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    with csv_path.open("w", encoding="utf-8") as f:
+        f.write(
+            "threshold,micro_precision,micro_recall,micro_f1,"
+            "macro_precision,macro_recall,macro_f1,predicted_positive_total\n"
+        )
+        for row in rows:
+            f.write(
+                f"{row['threshold']},{row['micro_precision']},"
+                f"{row['micro_recall']},{row['micro_f1']},"
+                f"{row['macro_precision']},{row['macro_recall']},"
+                f"{row['macro_f1']},{row['predicted_positive_total']}\n"
+            )
+    print(f"[OK] wrote {json_path}")
+    print(f"[OK] wrote {txt_path}")
+    print(f"[OK] wrote {csv_path}")
+    return report
+
+
 def write_text_report(path, report):
     ensure_dir(path.parent)
     lines = ["Strict evaluation report", ""]
@@ -287,6 +411,9 @@ def write_text_report(path, report):
         "recognition_macro_precision",
         "recognition_macro_recall",
         "recognition_macro_f1",
+        "recognition_samples_f1",
+        "subset_accuracy",
+        "hamming_loss",
         "predicted_positive_total",
         "micro_f1_change_over_global_threshold",
         "macro_f1_improvement_over_global_threshold",
@@ -341,6 +468,132 @@ def write_text_report(path, report):
         for warning in report["warnings"]:
             lines.append(f"- {warning}")
     path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def metric_summary(metrics, threshold_mode, threshold_source, thresholds):
+    if isinstance(thresholds, np.ndarray):
+        thresholds = [float(value) for value in thresholds.tolist()]
+    return {
+        "threshold_mode": threshold_mode,
+        "threshold_source": threshold_source,
+        "thresholds": thresholds,
+        "detection_accuracy": metrics["detection_accuracy"],
+        "detection_precision": metrics["detection_precision"],
+        "detection_recall": metrics["detection_recall"],
+        "detection_f1": metrics["detection_f1"],
+        "recognition_micro_precision": metrics["recognition_micro_precision"],
+        "recognition_micro_recall": metrics["recognition_micro_recall"],
+        "recognition_micro_f1": metrics["recognition_micro_f1"],
+        "recognition_macro_precision": metrics["recognition_macro_precision"],
+        "recognition_macro_recall": metrics["recognition_macro_recall"],
+        "recognition_macro_f1": metrics["recognition_macro_f1"],
+        "recognition_samples_f1": metrics.get("recognition_samples_f1"),
+        "subset_accuracy": metrics.get("subset_accuracy"),
+        "hamming_loss": metrics.get("hamming_loss"),
+        "predicted_positive_total": metrics["predicted_positive_total"],
+        "per_label_predicted_positive_count": metrics[
+            "per_label_predicted_positive_count"
+        ],
+        "per_label_true_positive_count": metrics["per_label_true_positive_count"],
+        "per_label_mean_pred_prob": metrics["per_label_mean_pred_prob"],
+    }
+
+
+def write_report_json_txt(prefix, title, report):
+    ensure_dir(prefix.parent)
+    json_path = prefix.with_suffix(".json")
+    txt_path = prefix.with_suffix(".txt")
+    json_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    lines = [title, ""]
+    for key, value in report.items():
+        if key == "per_label_metrics":
+            lines.append("per_label_metrics:")
+            for row in value:
+                lines.append(
+                    f"{row['label_id']} | {row['label_name']} | "
+                    f"precision={row['precision']:.6f} "
+                    f"recall={row['recall']:.6f} f1={row['f1']:.6f} "
+                    f"support={row['support']} "
+                    f"predicted={row['predicted_positive_count']}"
+                )
+        else:
+            lines.append(f"{key}: {value}")
+    txt_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"[OK] wrote {json_path}")
+    print(f"[OK] wrote {txt_path}")
+
+
+def write_threshold_calibration_report(
+    result_dir,
+    config,
+    args,
+    checkpoint,
+    predictions,
+    baseline_metrics,
+    best_global_threshold,
+    best_global_metrics,
+    per_label_thresholds,
+    per_label_metrics,
+):
+    baseline = metric_summary(
+        baseline_metrics,
+        "global",
+        "fixed_0.5_baseline",
+        0.5,
+    )
+    best_global = metric_summary(
+        best_global_metrics,
+        "global",
+        "validation_best_macro_f1",
+        float(best_global_threshold),
+    )
+    per_label = metric_summary(
+        per_label_metrics,
+        "per_label",
+        "validation_selected_per_label",
+        [float(value) for value in per_label_thresholds],
+    )
+    label_names = config.get("label_names") or [
+        f"label_{idx}" for idx in range(config["num_labels"])
+    ]
+    per_label_metric_rows = label_table(config, per_label_metrics)
+    report = {
+        "split": args.split,
+        "checkpoint": args.checkpoint,
+        "checkpoint_epoch": checkpoint.get("epoch"),
+        "model": "EVM-BERT first-512 weighted classifier",
+        "model_type": config.get("model_type"),
+        "hf_model_path": config.get("hf_model_path"),
+        "is_transductive_pretraining": bool(
+            config.get("is_transductive_pretraining", True)
+        ),
+        "threshold_source": "validation set",
+        "evaluated_samples": predictions["evaluated_samples"],
+        "loss": predictions["loss"],
+        "threshold_0_5_baseline": baseline,
+        "best_global_threshold_result": best_global,
+        "per_label_threshold_result": per_label,
+        "per_label_metrics": per_label_metric_rows,
+        "per_label_thresholds": [
+            {
+                "label_id": idx,
+                "label_name": label_names[idx],
+                "threshold": float(value),
+            }
+            for idx, value in enumerate(per_label_thresholds)
+        ],
+        "warnings": build_evaluation_warnings(
+            {"per_label": per_label_metric_rows, **per_label_metrics},
+            expected_samples=len(predictions["binary_labels"]),
+            evaluated_samples=predictions["evaluated_samples"],
+        ),
+    }
+    write_report_json_txt(
+        result_dir / "test_threshold_calibration_metrics",
+        "EVM-BERT first-512 threshold calibration report",
+        report,
+    )
+    return report
 
 
 def dataset_records(dataset):
@@ -546,10 +799,17 @@ def main():
     bf16 = bool(config.get("bf16", False)) and torch.cuda.is_available()
     predictions = collect_predictions(model, dataloader, device, fp16=fp16, bf16=bf16)
 
-    if args.threshold_search == "per_label":
+    if args.threshold_search in {"per_label", "global_and_per_label"}:
         if args.split != "valid":
-            raise ValueError("--threshold_search per_label must be run on --split valid.")
+            raise ValueError("--threshold_search must be run on --split valid.")
         threshold_grid = default_threshold_grid()
+        global_scan = None
+        if args.threshold_search == "global_and_per_label":
+            global_scan = save_global_threshold_scan(
+                Path(config.get("result_dir", "results")),
+                predictions,
+                threshold_grid,
+            )
         selection = select_per_label_thresholds(
             predictions["multi_labels"],
             predictions["recognition_probs"],
@@ -567,6 +827,21 @@ def main():
             "threshold_grid": threshold_grid,
             "thresholds": selection["thresholds"],
             "per_label": selection["per_label"],
+            "global_threshold_scan_path": (
+                str(Path(config.get("result_dir", "results")) / "valid_global_threshold_scan.json")
+                if global_scan is not None
+                else None
+            ),
+            "best_global_macro_threshold": (
+                global_scan["best_macro_f1_threshold"]
+                if global_scan is not None
+                else None
+            ),
+            "best_global_micro_threshold": (
+                global_scan["best_micro_f1_threshold"]
+                if global_scan is not None
+                else None
+            ),
             "warnings": (
                 []
                 if predictions["evaluated_samples"] == len(dataset)
@@ -631,6 +906,87 @@ def main():
             - global_baseline["recognition_micro_f1"]
         )
         per_label_threshold_rows = threshold_file_data.get("per_label", [])
+        if args.global_threshold_file:
+            _, best_global_threshold = load_best_global_macro_threshold(
+                args.global_threshold_file
+            )
+            _, baseline_metrics = run_global_evaluation(predictions, 0.5)
+            _, best_global_metrics = run_global_evaluation(
+                predictions,
+                best_global_threshold,
+            )
+            calibration_report = write_threshold_calibration_report(
+                Path(config.get("result_dir", "results")),
+                config,
+                args,
+                checkpoint,
+                predictions,
+                baseline_metrics,
+                best_global_threshold,
+                best_global_metrics,
+                per_label_thresholds,
+                metrics,
+            )
+            if args.save_predictions:
+                result_dir = Path(config.get("result_dir", "results"))
+                fixed_report = {
+                    "threshold_mode": "global_fixed_0_5",
+                    "threshold": 0.5,
+                }
+                best_global_report = {
+                    "threshold_mode": "global_validation_best_macro",
+                    "threshold": best_global_threshold,
+                }
+                per_label_report = {
+                    "threshold_mode": "per_label",
+                    "per_label_thresholds": per_label_threshold_rows,
+                }
+                write_prediction_jsonl(
+                    result_dir / "test_predictions_threshold_0_5.jsonl",
+                    dataset,
+                    predictions,
+                    fixed_report,
+                )
+                write_prediction_jsonl(
+                    result_dir / "test_predictions_best_global.jsonl",
+                    dataset,
+                    predictions,
+                    best_global_report,
+                )
+                write_prediction_jsonl(
+                    result_dir / "test_predictions.jsonl",
+                    dataset,
+                    predictions,
+                    best_global_report,
+                )
+                write_prediction_jsonl(
+                    result_dir / "test_predictions_per_label.jsonl",
+                    dataset,
+                    predictions,
+                    per_label_report,
+                )
+                calibration_report["fixed_threshold_prediction_path"] = str(
+                    result_dir / "test_predictions_threshold_0_5.jsonl"
+                )
+                calibration_report["best_global_prediction_path"] = str(
+                    result_dir / "test_predictions_best_global.jsonl"
+                )
+                calibration_report["prediction_path"] = str(
+                    result_dir / "test_predictions.jsonl"
+                )
+                calibration_report["per_label_prediction_path"] = str(
+                    result_dir / "test_predictions_per_label.jsonl"
+                )
+                write_report_json_txt(
+                    result_dir / "test_threshold_calibration_metrics",
+                    "EVM-BERT first-512 threshold calibration report",
+                    calibration_report,
+                )
+                print(f"[OK] wrote {result_dir / 'test_predictions_threshold_0_5.jsonl'}")
+                print(f"[OK] wrote {result_dir / 'test_predictions_best_global.jsonl'}")
+                print(f"[OK] wrote {result_dir / 'test_predictions.jsonl'}")
+                print(f"[OK] wrote {result_dir / 'test_predictions_per_label.jsonl'}")
+            return
     else:
         loss, metrics = run_global_evaluation(predictions, threshold)
 
@@ -665,6 +1021,9 @@ def main():
         "recognition_macro_precision": metrics["recognition_macro_precision"],
         "recognition_macro_recall": metrics["recognition_macro_recall"],
         "recognition_macro_f1": metrics["recognition_macro_f1"],
+        "recognition_samples_f1": metrics.get("recognition_samples_f1"),
+        "subset_accuracy": metrics.get("subset_accuracy"),
+        "hamming_loss": metrics.get("hamming_loss"),
         "predicted_positive_total": metrics["predicted_positive_total"],
         "per_label_predicted_positive_count": metrics[
             "per_label_predicted_positive_count"
