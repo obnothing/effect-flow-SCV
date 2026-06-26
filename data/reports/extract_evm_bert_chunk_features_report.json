@@ -1,12 +1,12 @@
 {
-  "experiment_name": "extract_dive_effect_flow_chunks_mean_stride256",
-  "output_dir": "data/features/effect_flow_evm_bert_chunks_mean_stride256/DIVE",
+  "experiment_name": "extract_continued_dive_evm_bert_dive_random_stride256_max64",
+  "output_dir": "data/features/continued_dive_evm_bert_dive_random_stride256_max64",
   "pooling": "masked_mean",
   "max_len": 512,
   "chunk_content_size": 510,
   "chunk_stride": 256,
-  "max_chunks_per_contract": 32,
-  "hf_model_path": "checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model",
+  "max_chunks_per_contract": 64,
+  "hf_model_path": "checkpoints/continue_pretrain_evm_bert_dive_train_only/hf_model",
   "is_transductive_pretraining": true,
   "num_labels": 8,
   "label_names": [
@@ -24,24 +24,24 @@
       "split": "train",
       "samples": 20134,
       "pooling": "masked_mean",
-      "max_chunks_per_contract": 32,
-      "generated_chunks": 390976,
-      "mean_chunks_per_contract": 19.418694745207112,
-      "truncated_contract_count": 4246,
-      "mean_coverage_ratio": 0.960508538623102,
+      "max_chunks_per_contract": 64,
+      "generated_chunks": 435147,
+      "mean_chunks_per_contract": 21.612545942187346,
+      "truncated_contract_count": 156,
+      "mean_coverage_ratio": 0.9993177228055629,
       "p50_coverage_ratio": 1.0,
       "p90_coverage_ratio": 1.0,
       "p95_coverage_ratio": 1.0,
       "feature_shape": [
         20134,
-        32,
+        64,
         768
       ],
       "dtype": "torch.float16",
       "nan_count": 0,
       "inf_count": 0,
       "empty_content_fallback_to_cls_count": 0,
-      "hf_model_path": "checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model",
+      "hf_model_path": "checkpoints/continue_pretrain_evm_bert_dive_train_only/hf_model",
       "is_transductive_pretraining": true,
       "num_labels": 8,
       "label_names": [
@@ -54,30 +54,30 @@
         "Front Running",
         "Time manipulation"
       ],
-      "disk_size_bytes": 992604307
+      "disk_size_bytes": 1982874899
     },
     "valid": {
       "split": "valid",
       "samples": 2233,
       "pooling": "masked_mean",
-      "max_chunks_per_contract": 32,
-      "generated_chunks": 44211,
-      "mean_chunks_per_contract": 19.798925212718316,
-      "truncated_contract_count": 510,
-      "mean_coverage_ratio": 0.9598828740754564,
+      "max_chunks_per_contract": 64,
+      "generated_chunks": 49138,
+      "mean_chunks_per_contract": 22.005373936408418,
+      "truncated_contract_count": 11,
+      "mean_coverage_ratio": 0.999637923866311,
       "p50_coverage_ratio": 1.0,
       "p90_coverage_ratio": 1.0,
       "p95_coverage_ratio": 1.0,
       "feature_shape": [
         2233,
-        32,
+        64,
         768
       ],
       "dtype": "torch.float16",
       "nan_count": 0,
       "inf_count": 0,
       "empty_content_fallback_to_cls_count": 0,
-      "hf_model_path": "checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model",
+      "hf_model_path": "checkpoints/continue_pretrain_evm_bert_dive_train_only/hf_model",
       "is_transductive_pretraining": true,
       "num_labels": 8,
       "label_names": [
@@ -90,30 +90,30 @@
         "Front Running",
         "Time manipulation"
       ],
-      "disk_size_bytes": 110084691
+      "disk_size_bytes": 219912531
     },
     "test": {
       "split": "test",
       "samples": 2233,
       "pooling": "masked_mean",
-      "max_chunks_per_contract": 32,
-      "generated_chunks": 45061,
-      "mean_chunks_per_contract": 20.179579041648008,
-      "truncated_contract_count": 523,
-      "mean_coverage_ratio": 0.9600438840504535,
+      "max_chunks_per_contract": 64,
+      "generated_chunks": 50049,
+      "mean_chunks_per_contract": 22.41334527541424,
+      "truncated_contract_count": 15,
+      "mean_coverage_ratio": 0.999439700553369,
       "p50_coverage_ratio": 1.0,
       "p90_coverage_ratio": 1.0,
       "p95_coverage_ratio": 1.0,
       "feature_shape": [
         2233,
-        32,
+        64,
         768
       ],
       "dtype": "torch.float16",
       "nan_count": 0,
       "inf_count": 0,
       "empty_content_fallback_to_cls_count": 0,
-      "hf_model_path": "checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model",
+      "hf_model_path": "checkpoints/continue_pretrain_evm_bert_dive_train_only/hf_model",
       "is_transductive_pretraining": true,
       "num_labels": 8,
       "label_names": [
@@ -126,7 +126,7 @@
         "Front Running",
         "Time manipulation"
       ],
-      "disk_size_bytes": 110084749
+      "disk_size_bytes": 219912589
     }
   }
 }

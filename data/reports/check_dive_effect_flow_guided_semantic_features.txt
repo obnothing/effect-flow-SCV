@@ -1,0 +1,67 @@
+Effect-flow semantic feature cache check
+
+status: ok
+semantic_dir: data/features/effect_flow_semantics/dive_random_stride256_max64
+feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256_max64
+expected_max_chunks: 64
+expected_efpp_dim: 22
+expected_etp_dim: 16
+expected_num_labels: 8
+splits:
+- train:
+  split: train
+  semantic_path: data/features/effect_flow_semantics/dive_random_stride256_max64/train.pt
+  feature_path: data/features/continued_dive_evm_bert_dive_random_stride256_max64/train.pt
+  samples: 20134
+  expected_samples: 20134
+  efpp_shape: [20134, 64, 22]
+  etp_distribution_shape: [20134, 64, 16]
+  ids_match_feature_cache: True
+  chunk_mask_matches_feature_cache: True
+  labels_match_feature_cache: True
+  efpp_nan_count: 0
+  efpp_inf_count: 0
+  etp_nan_count: 0
+  etp_inf_count: 0
+  mean_real_chunks: 21.612545013427734
+  max_real_chunks: 64
+  mean_active_etp_distribution_sum: 0.9999997615814209
+  mean_efpp_probability: 0.19819410145282745
+- valid:
+  split: valid
+  semantic_path: data/features/effect_flow_semantics/dive_random_stride256_max64/valid.pt
+  feature_path: data/features/continued_dive_evm_bert_dive_random_stride256_max64/valid.pt
+  samples: 2233
+  expected_samples: 2233
+  efpp_shape: [2233, 64, 22]
+  etp_distribution_shape: [2233, 64, 16]
+  ids_match_feature_cache: True
+  chunk_mask_matches_feature_cache: True
+  labels_match_feature_cache: True
+  efpp_nan_count: 0
+  efpp_inf_count: 0
+  etp_nan_count: 0
+  etp_inf_count: 0
+  mean_real_chunks: 22.005373001098633
+  max_real_chunks: 64
+  mean_active_etp_distribution_sum: 0.9999998211860657
+  mean_efpp_probability: 0.19249972701072693
+- test:
+  split: test
+  semantic_path: data/features/effect_flow_semantics/dive_random_stride256_max64/test.pt
+  feature_path: data/features/continued_dive_evm_bert_dive_random_stride256_max64/test.pt
+  samples: 2233
+  expected_samples: 2233
+  efpp_shape: [2233, 64, 22]
+  etp_distribution_shape: [2233, 64, 16]
+  ids_match_feature_cache: True
+  chunk_mask_matches_feature_cache: True
+  labels_match_feature_cache: True
+  efpp_nan_count: 0
+  efpp_inf_count: 0
+  etp_nan_count: 0
+  etp_inf_count: 0
+  mean_real_chunks: 22.413345336914062
+  max_real_chunks: 64
+  mean_active_etp_distribution_sum: 0.9999998211860657
+  mean_efpp_probability: 0.19281266629695892

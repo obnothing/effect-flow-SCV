@@ -1,0 +1,56 @@
+EVM chunk MIL training report
+
+experiment_name: train_bjut_effect_flow_guided_mil
+model_type: effect_flow_guided_chunk_mil
+encoder_frozen: True
+feature_dir: data/features/continued_dive_evm_bert_bjut_random_stride256
+semantic_feature_dir: data/features/effect_flow_semantics/bjut_random_stride256_max32
+use_effect_flow_semantics: True
+efpp_dim: 22
+etp_dim: 16
+semantic_projection_dim: 128
+semantic_fusion: gated_add
+feature_pooling: masked_mean
+max_chunks: 32
+feature_dim: 768
+hidden_dim: 512
+use_chunk_context: True
+chunk_context_num_layers: 2
+chunk_context_num_heads: 8
+chunk_context_dropout: 0.1
+use_data_parallel: True
+visible_cuda_devices: 2
+total_batch_size: 512
+approx_batch_per_gpu: 256
+recognition_aggregation: label_gated_attention
+top_k: 2
+use_pos_weight: True
+pos_weight_rows: [{'label_id': 0, 'label_name': 'Reentrancy', 'positive_count': 3900, 'negative_count': 117581, 'raw_ratio': 30.14897435897436, 'sqrt_ratio': 5.490808169930394, 'final_pos_weight': 5.0}, {'label_id': 1, 'label_name': 'Contract contains unknown address', 'positive_count': 16768, 'negative_count': 104713, 'raw_ratio': 6.244811545801527, 'sqrt_ratio': 2.498962093710412, 'final_pos_weight': 2.498962093710412}, {'label_id': 2, 'label_name': 'Integer overflow or underflow', 'positive_count': 15883, 'negative_count': 105598, 'raw_ratio': 6.648492098470062, 'sqrt_ratio': 2.578467005503476, 'final_pos_weight': 2.578467005503476}, {'label_id': 3, 'label_name': 'Timestamp dependence', 'positive_count': 1776, 'negative_count': 119705, 'raw_ratio': 67.40146396396396, 'sqrt_ratio': 8.209839460303957, 'final_pos_weight': 5.0}, {'label_id': 4, 'label_name': 'DoS with failed call', 'positive_count': 1859, 'negative_count': 119622, 'raw_ratio': 64.34749865519096, 'sqrt_ratio': 8.021689264437445, 'final_pos_weight': 5.0}, {'label_id': 5, 'label_name': 'Assert violation', 'positive_count': 1732, 'negative_count': 119749, 'raw_ratio': 69.1391454965358, 'sqrt_ratio': 8.314995219273177, 'final_pos_weight': 5.0}, {'label_id': 6, 'label_name': 'Unchecked call return value', 'positive_count': 6772, 'negative_count': 114709, 'raw_ratio': 16.938718251624337, 'sqrt_ratio': 4.115667412659135, 'final_pos_weight': 4.115667412659135}, {'label_id': 7, 'label_name': 'Unsafe send', 'positive_count': 1269, 'negative_count': 120212, 'raw_ratio': 94.72970843183609, 'sqrt_ratio': 9.73291880331055, 'final_pos_weight': 5.0}, {'label_id': 8, 'label_name': 'Multiplication after division', 'positive_count': 1573, 'negative_count': 119908, 'raw_ratio': 76.22886204704386, 'sqrt_ratio': 8.7309141587261, 'final_pos_weight': 5.0}, {'label_id': 9, 'label_name': 'Extra gas consumption', 'positive_count': 4501, 'negative_count': 116980, 'raw_ratio': 25.98978004887803, 'sqrt_ratio': 5.098017266435847, 'final_pos_weight': 5.0}]
+best_loss_epoch: 9
+best_loss_value: 0.16996969128477163
+best_micro_f1_epoch: 21
+best_micro_f1_value: 0.6825483044928999
+best_macro_f1_epoch: 21
+best_macro_f1_value: 0.5538822423376434
+best_macro_f1_threshold: 0.5
+valid_loss_at_best_macro: 0.20355112028533015
+valid_micro_f1: 0.6825483044928999
+valid_macro_f1: 0.5538822423376434
+detection_f1: 0.8006872852233676
+predicted_positive_total: 7339
+baseline_comparison: {'random_chunk_context_micro_f1': 0.686971, 'random_chunk_context_macro_f1': 0.575692, 'random_chunk_context_detection_f1': 0.787745}
+improves_evm_bert_first512_macro_f1: False
+is_transductive_pretraining: True
+train_samples: 121481
+valid_samples: 14838
+per_label_table:
+- Reentrancy: precision=0.198516 recall=0.835938 f1=0.320840 support=128
+- Contract contains unknown address: precision=0.735506 recall=0.831077 f1=0.780376 support=1847
+- Integer overflow or underflow: precision=0.694752 recall=0.808857 f1=0.747475 support=1784
+- Timestamp dependence: precision=0.234432 recall=0.876712 f1=0.369942 support=73
+- DoS with failed call: precision=0.180851 recall=0.708333 f1=0.288136 support=48
+- Assert violation: precision=0.235099 recall=0.731959 f1=0.355890 support=97
+- Unchecked call return value: precision=0.625455 recall=0.750000 f1=0.682089 support=688
+- Unsafe send: precision=0.769231 recall=0.803571 f1=0.786026 support=112
+- Multiplication after division: precision=0.469091 recall=0.635468 f1=0.539749 support=203
+- Extra gas consumption: precision=0.623476 recall=0.720070 f1=0.668301 support=568
