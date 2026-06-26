@@ -1,0 +1,67 @@
+experiment_name: sanity_bjut_effect_flow_guided_mil
+model_type: effect_flow_guided_chunk_mil
+feature_dir: data/features/continued_dive_evm_bert_bjut_random_stride256
+semantic_feature_dir: data/features/effect_flow_semantics/bjut_random_stride256_max32
+checkpoint_dir: checkpoints/sanity_bjut_effect_flow_guided_mil
+result_dir: results/sanity_bjut_effect_flow_guided_mil
+report_dir: data/reports
+log_dir: logs
+
+num_labels: 10
+feature_dim: 768
+hidden_dim: 512
+attn_dim: 256
+max_chunks: 32
+efpp_dim: 22
+etp_dim: 16
+semantic_projection_dim: 128
+semantic_fusion: gated_add
+dropout: 0.1
+feature_pooling: masked_mean
+chunk_stride: 256
+recognition_aggregation: label_gated_attention
+top_k: 2
+
+use_chunk_context: true
+chunk_context_num_layers: 2
+chunk_context_num_heads: 8
+chunk_context_dropout: 0.1
+
+batch_size: 512
+gradient_accumulation_steps: 1
+use_data_parallel: true
+data_parallel_device_ids: [0, 1]
+epochs: 1
+learning_rate: 0.0003
+weight_decay: 0.01
+early_stopping_patience: 1
+gradient_clip_norm: 1.0
+use_pos_weight: true
+pos_weight_source: train_mlsmote
+pos_weight_mode: sqrt_ratio
+max_pos_weight: 5.0
+threshold: 0.5
+thresholds: [0.1, 0.2, 0.3, 0.4, 0.5]
+seed: 42
+num_workers: 4
+debug_num_train_samples: 512
+debug_num_valid_samples: 512
+
+is_transductive_pretraining: true
+encoder_frozen: true
+data_dir: data/processed/BJUT_SC01_random_split
+split_policy: random_sample_split
+leakage_status: warning
+
+label_names:
+  - Reentrancy
+  - Contract contains unknown address
+  - Integer overflow or underflow
+  - Timestamp dependence
+  - DoS with failed call
+  - Assert violation
+  - Unchecked call return value
+  - Unsafe send
+  - Multiplication after division
+  - Extra gas consumption
+

@@ -217,3 +217,119 @@ class EVMChunkMILClassifier(nn.Module):
             "chunk_logits": chunk_logits,
             "chunk_scores": chunk_scores,
         }
+
+
+class EffectFlowGuidedChunkMIL(EVMChunkMILClassifier):
+    """Chunk-context MIL with explicit effect-flow semantic evidence.
+
+    The model keeps contract-level MIL supervision: effect-flow probabilities are
+    auxiliary chunk evidence, not chunk-level vulnerability labels.
+    """
+
+    def __init__(self, config):
+        super().__init__(config)
+        hidden_dim = int(config.get("hidden_dim", 512))
+        efpp_dim = int(config.get("efpp_dim", 22))
+        etp_dim = int(config.get("etp_dim", 16))
+        semantic_hidden_dim = int(config.get("semantic_projection_dim", 128))
+        dropout = float(config.get("dropout", 0.1))
+        self.semantic_input_dim = efpp_dim + etp_dim
+        self.semantic_projection = nn.Sequential(
+            nn.LayerNorm(self.semantic_input_dim),
+            nn.Linear(self.semantic_input_dim, semantic_hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(semantic_hidden_dim, hidden_dim),
+        )
+        self.semantic_gate = nn.Sequential(
+            nn.Linear(hidden_dim * 2, hidden_dim),
+            nn.Sigmoid(),
+        )
+        self.semantic_fusion = config.get("semantic_fusion", "gated_add")
+        if self.semantic_fusion != "gated_add":
+            raise ValueError(
+                "EffectFlowGuidedChunkMIL currently supports semantic_fusion=gated_add only"
+            )
+
+    def fuse_semantics(self, h, chunk_mask, efpp_probs, etp_distribution):
+        if efpp_probs is None or etp_distribution is None:
+            raise ValueError(
+                "EffectFlowGuidedChunkMIL requires efpp_probs and etp_distribution"
+            )
+        if efpp_probs.shape[:2] != h.shape[:2]:
+            raise ValueError("efpp_probs [B, C] prefix must match chunk features")
+        if etp_distribution.shape[:2] != h.shape[:2]:
+            raise ValueError("etp_distribution [B, C] prefix must match chunk features")
+        semantic_input = torch.cat(
+            [efpp_probs.to(dtype=h.dtype), etp_distribution.to(dtype=h.dtype)],
+            dim=-1,
+        )
+        if semantic_input.shape[-1] != self.semantic_input_dim:
+            raise ValueError(
+                f"semantic feature dim mismatch: got {semantic_input.shape[-1]}, "
+                f"expected {self.semantic_input_dim}"
+            )
+        semantic_h = self.semantic_projection(semantic_input)
+        gate = self.semantic_gate(torch.cat([h, semantic_h], dim=-1))
+        fused = h + gate * semantic_h
+        return fused.masked_fill(~chunk_mask.unsqueeze(-1), 0.0), gate
+
+    def forward(
+        self,
+        chunk_features,
+        chunk_mask,
+        efpp_probs=None,
+        etp_distribution=None,
+        binary_label=None,
+        multi_labels=None,
+    ):
+        chunk_mask = chunk_mask.bool()
+        if self.use_chunk_context:
+            h = self.chunk_context_encoder(chunk_features, chunk_mask)
+        else:
+            h = self.chunk_projection(chunk_features)
+        h, semantic_gate = self.fuse_semantics(
+            h,
+            chunk_mask,
+            efpp_probs,
+            etp_distribution,
+        )
+        chunk_logits = self.chunk_classifier(h)
+        chunk_scores = None
+        if self.recognition_aggregation == "label_gated_attention":
+            recognition_logits, chunk_scores, chunk_logits = self.label_gated_attention(
+                h,
+                chunk_mask,
+            )
+        else:
+            recognition_logits = self.aggregate_recognition(chunk_logits, chunk_mask)
+            chunk_scores = torch.sigmoid(chunk_logits).masked_fill(
+                ~chunk_mask.unsqueeze(-1),
+                0.0,
+            )
+        global_h = self.masked_mean(h, chunk_mask)
+        detection_logits = self.detection_classifier(global_h).squeeze(-1)
+
+        loss = None
+        if binary_label is not None and multi_labels is not None:
+            detection_loss = self.detection_loss_fn(detection_logits, binary_label.float())
+            if self.recognition_pos_weight is None:
+                recognition_loss = F.binary_cross_entropy_with_logits(
+                    recognition_logits,
+                    multi_labels.float(),
+                )
+            else:
+                recognition_loss = F.binary_cross_entropy_with_logits(
+                    recognition_logits,
+                    multi_labels.float(),
+                    pos_weight=self.recognition_pos_weight,
+                )
+            loss = ((detection_loss + recognition_loss) / 2).reshape(1)
+        return {
+            "loss": loss,
+            "detection_logits": detection_logits,
+            "recognition_logits": recognition_logits,
+            "chunk_logits": chunk_logits,
+            "chunk_scores": chunk_scores,
+            "semantic_gate": semantic_gate,
+        }

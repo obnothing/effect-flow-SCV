@@ -1,0 +1,33 @@
+experiment_name: extract_dive_effect_flow_semantics_stride256_max64
+hf_model_path: checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model
+vocab_path: data/processed/BJUT_SC01/evm_vocab.json
+data_dir: data/processed/DIVE_random_split
+
+train_path: data/processed/DIVE_random_split/train_mlsmote.jsonl
+valid_path: data/processed/DIVE_random_split/valid.jsonl
+test_path: data/processed/DIVE_random_split/test.jsonl
+
+reference_feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256_max64
+output_dir: data/features/effect_flow_semantics/dive_random_stride256_max64
+report_dir: data/reports
+log_dir: logs
+
+num_labels: 8
+max_len: 512
+chunk_content_size: 510
+chunk_stride: 256
+max_chunks_per_contract: 64
+batch_size: 64
+num_workers: 4
+fp16: true
+
+label_names:
+  - Reentrancy
+  - Access Control
+  - Arithmetic
+  - Unchecked Return Values
+  - DoS
+  - Bad Randomness
+  - Front Running
+  - Time manipulation
+

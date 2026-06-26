@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from chunk_feature_dataset import build_chunk_feature_datasets
-from evm_chunk_mil_model import EVMChunkMILClassifier
+from evm_chunk_mil_model import EVMChunkMILClassifier, EffectFlowGuidedChunkMIL
 from metrics import compute_metrics
 
 
@@ -103,7 +103,7 @@ def best_threshold_from_scan(threshold_scan, metric_name):
 
 
 def collate_batch(batch):
-    return {
+    collated = {
         "id": [item["id"] for item in batch],
         "chunk_features": torch.stack([item["chunk_features"] for item in batch]),
         "chunk_mask": torch.stack([item["chunk_mask"] for item in batch]),
@@ -111,6 +111,12 @@ def collate_batch(batch):
         "multi_labels": torch.stack([item["multi_labels"] for item in batch]),
         "metadata": [item["metadata"] for item in batch],
     }
+    if "efpp_probs" in batch[0]:
+        collated["efpp_probs"] = torch.stack([item["efpp_probs"] for item in batch])
+        collated["etp_distribution"] = torch.stack(
+            [item["etp_distribution"] for item in batch]
+        )
+    return collated
 
 
 def make_loader(dataset, config, shuffle):
@@ -125,12 +131,25 @@ def make_loader(dataset, config, shuffle):
 
 
 def move_batch(batch, device):
-    return {
+    moved = {
         "chunk_features": batch["chunk_features"].to(device),
         "chunk_mask": batch["chunk_mask"].to(device),
         "binary_label": batch["binary_label"].to(device),
         "multi_labels": batch["multi_labels"].to(device),
     }
+    if "efpp_probs" in batch:
+        moved["efpp_probs"] = batch["efpp_probs"].to(device)
+        moved["etp_distribution"] = batch["etp_distribution"].to(device)
+    return moved
+
+
+def build_model(config):
+    model_type = config.get("model_type", "evm_chunk_mil")
+    if model_type == "effect_flow_guided_chunk_mil":
+        return EffectFlowGuidedChunkMIL(config)
+    if model_type == "evm_chunk_mil":
+        return EVMChunkMILClassifier(config)
+    raise ValueError(f"Unsupported chunk MIL model_type: {model_type}")
 
 
 def train_one_epoch(model, loader, optimizer, config, device):
@@ -223,6 +242,7 @@ def checkpoint_payload(model, optimizer, epoch, config, valid_loss, metrics):
         "recognition_macro_f1": metrics.get("recognition_macro_f1"),
         "encoder_frozen": True,
         "feature_dir": config["feature_dir"],
+        "semantic_feature_dir": config.get("semantic_feature_dir"),
         "is_transductive_pretraining": bool(config.get("is_transductive_pretraining", True)),
         "metrics": metrics,
     }
@@ -307,7 +327,7 @@ def main():
     datasets = build_chunk_feature_datasets(config)
     train_loader = make_loader(datasets["train"], config, shuffle=True)
     valid_loader = make_loader(datasets["valid"], config, shuffle=False)
-    model = EVMChunkMILClassifier(config).to(device)
+    model = build_model(config).to(device)
     pos_weight_rows = None
     if config.get("use_pos_weight", False):
         pos_weight, pos_weight_rows = compute_pos_weight_from_feature_cache(config)
@@ -431,9 +451,15 @@ def main():
     baseline = config.get("baseline_comparison", {})
     summary = {
         "experiment_name": config["experiment_name"],
-        "model_type": "evm_chunk_mil",
+        "model_type": config.get("model_type", "evm_chunk_mil"),
         "encoder_frozen": True,
         "feature_dir": config["feature_dir"],
+        "semantic_feature_dir": config.get("semantic_feature_dir"),
+        "use_effect_flow_semantics": config.get("model_type") == "effect_flow_guided_chunk_mil",
+        "efpp_dim": int(config.get("efpp_dim", 0)),
+        "etp_dim": int(config.get("etp_dim", 0)),
+        "semantic_projection_dim": int(config.get("semantic_projection_dim", 0)),
+        "semantic_fusion": config.get("semantic_fusion"),
         "feature_pooling": config.get("feature_pooling"),
         "max_chunks": config["max_chunks"],
         "feature_dim": config["feature_dim"],

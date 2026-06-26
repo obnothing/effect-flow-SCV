@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from chunk_feature_dataset import ChunkFeatureDataset
-from evm_chunk_mil_model import EVMChunkMILClassifier
+from evm_chunk_mil_model import EVMChunkMILClassifier, EffectFlowGuidedChunkMIL
 from metrics import (
     binary_detection_metrics,
     compute_metrics,
@@ -82,7 +82,10 @@ def make_loader(dataset, config):
 
 
 def load_model(config, checkpoint, device):
-    model = EVMChunkMILClassifier(config).to(device)
+    if config.get("model_type", "evm_chunk_mil") == "effect_flow_guided_chunk_mil":
+        model = EffectFlowGuidedChunkMIL(config).to(device)
+    else:
+        model = EVMChunkMILClassifier(config).to(device)
     if config.get("use_pos_weight", False):
         pos_weight, _ = compute_pos_weight_from_feature_cache(config)
         model.set_recognition_pos_weight(pos_weight.to(device))
@@ -116,6 +119,9 @@ def collect_predictions(model, loader, device):
             "binary_label": batch["binary_label"].to(device),
             "multi_labels": batch["multi_labels"].to(device),
         }
+        if "efpp_probs" in batch:
+            inputs["efpp_probs"] = batch["efpp_probs"].to(device)
+            inputs["etp_distribution"] = batch["etp_distribution"].to(device)
         outputs = model(**inputs)
         losses.append(float(outputs["loss"].mean().detach().cpu().item()))
         ids.extend(batch["id"])
@@ -374,6 +380,14 @@ def load_best_global_macro_threshold(path):
     return float(data["best_macro_f1_threshold"])
 
 
+def model_description(config):
+    if config.get("model_type") == "effect_flow_guided_chunk_mil":
+        return "effect_flow_guided_chunk_context_transformer_label_gated_attention_MIL"
+    if config.get("use_chunk_context", False):
+        return "chunk_context_transformer_label_gated_attention_MIL"
+    return "masked_mean_label_gated_attention_MIL"
+
+
 def write_top_chunks(path, config, predictions, thresholds):
     label_names = config.get("label_names", [f"label_{idx}" for idx in range(10)])
     probs = sigmoid(predictions["recognition_logits"])
@@ -579,17 +593,15 @@ def write_threshold_calibration_report(
         "split": args.split,
         "checkpoint": args.checkpoint,
         "checkpoint_epoch": checkpoint.get("epoch"),
-        "model": (
-            "chunk_context_transformer_label_gated_attention_MIL"
-            if config.get("use_chunk_context", False)
-            else "masked_mean_label_gated_attention_MIL"
-        ),
+        "model": model_description(config),
         "use_chunk_context": bool(config.get("use_chunk_context", False)),
         "chunk_context_num_layers": int(config.get("chunk_context_num_layers", 0)),
         "chunk_context_num_heads": int(config.get("chunk_context_num_heads", 0)),
         "feature_pooling": config.get("feature_pooling"),
         "recognition_aggregation": config.get("recognition_aggregation"),
         "feature_dir": config["feature_dir"],
+        "semantic_feature_dir": config.get("semantic_feature_dir"),
+        "use_effect_flow_semantics": config.get("model_type") == "effect_flow_guided_chunk_mil",
         "is_transductive_pretraining": bool(config.get("is_transductive_pretraining", True)),
         "threshold_source": "validation set",
         "evaluated_samples": len(predictions["ids"]),
@@ -661,7 +673,15 @@ def main():
     args = parse_args()
     config = load_config(args.config)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    dataset = ChunkFeatureDataset(feature_path(config, args.split), seed=config.get("seed", 42))
+    semantic_path = None
+    if config.get("semantic_feature_dir"):
+        semantic_path = Path(config["semantic_feature_dir"]) / f"{args.split}.pt"
+    dataset = ChunkFeatureDataset(
+        feature_path(config, args.split),
+        seed=config.get("seed", 42),
+        num_labels=config.get("num_labels"),
+        semantic_path=semantic_path,
+    )
     loader = make_loader(dataset, config)
     model, checkpoint = load_model(config, args.checkpoint, device)
     result_dir = Path(config["result_dir"])
@@ -778,9 +798,11 @@ def main():
         "checkpoint_epoch": checkpoint.get("epoch"),
         "threshold": threshold,
         "threshold_source": threshold_source,
-        "model_type": "evm_chunk_mil",
+        "model_type": config.get("model_type", "evm_chunk_mil"),
         "encoder_frozen": True,
         "feature_dir": config["feature_dir"],
+        "semantic_feature_dir": config.get("semantic_feature_dir"),
+        "use_effect_flow_semantics": config.get("model_type") == "effect_flow_guided_chunk_mil",
         "evaluated_samples": len(dataset),
         "loss": predictions["loss"],
         "detection_precision": metrics["detection_precision"],
