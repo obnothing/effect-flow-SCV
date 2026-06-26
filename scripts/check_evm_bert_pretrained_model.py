@@ -19,7 +19,7 @@ def parse_args():
     )
     parser.add_argument(
         "--config",
-        default="configs/train_evm_bert_weighted_server.yaml",
+        default="configs/extract_continued_dive_evm_bert_bjut_random_stride256.yaml",
         help="Downstream config containing hf_model_path and vocab_path.",
     )
     return parser.parse_args()

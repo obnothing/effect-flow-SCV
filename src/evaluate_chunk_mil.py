@@ -518,9 +518,9 @@ def add_comparison_fields(result, baseline, config):
         result["recognition_macro_f1"]
         - comparisons.get("evm_bert_first512_macro_f1", 0.0)
     )
-    result["macro_f1_change_over_codebert_weighted"] = (
+    result["macro_f1_change_over_legacy_weighted_baseline"] = (
         result["recognition_macro_f1"]
-        - comparisons.get("codebert_weighted_macro_f1", 0.0)
+        - comparisons.get("legacy_weighted_macro_f1", 0.0)
     )
     if "nonoverlap_labelattn_calibrated_macro_f1" in comparisons:
         result["macro_f1_change_over_nonoverlap_calibrated"] = (
@@ -655,7 +655,7 @@ def write_threshold_calibration_report(
                 "detection_f1": 0.6895,
                 "predicted_positive_total": 5806,
             },
-            "codebert_weighted": {
+            "legacy_weighted_baseline": {
                 "micro_f1": 0.5604,
                 "macro_f1": 0.4215,
                 "detection_f1": 0.6430,

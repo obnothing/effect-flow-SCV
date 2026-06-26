@@ -1,25 +1,35 @@
-model_name: microsoft/codebert-base
-num_labels: 10
-max_len: 512
-hidden_size: 768
-bigru_hidden_size: 256
-batch_size: 8
-learning_rate: 2e-5
-epochs: 5
-seed: 42
+# Shared data configuration for the effect-flow project.
 
-data_dir: data/processed/BJUT_SC01
-raw_data_dir: data/raw/BJUT_SC01/extracted
+seed: 42
 report_dir: data/reports
-checkpoint_dir: checkpoints
-label_names:
-  - Reentrancy
-  - Contract contains unknown address
-  - Integer overflow or underflow
-  - Timestamp dependence
-  - DoS with failed call
-  - Assert violation
-  - Unchecked call return value
-  - Unsafe send
-  - Multiplication after division
-  - Extra gas consumption
+
+bjut:
+  data_dir: data/processed/BJUT_SC01_random_split
+  raw_data_dir: data/raw/BJUT_SC01/extracted
+  num_labels: 10
+  max_chunks: 32
+  label_names:
+    - Reentrancy
+    - Contract contains unknown address
+    - Integer overflow or underflow
+    - Timestamp dependence
+    - DoS with failed call
+    - Assert violation
+    - Unchecked call return value
+    - Unsafe send
+    - Multiplication after division
+    - Extra gas consumption
+
+dive:
+  data_dir: data/processed/DIVE_random_split
+  num_labels: 8
+  max_chunks: 64
+  label_names:
+    - Reentrancy
+    - Access Control
+    - Arithmetic
+    - Unchecked Return Values
+    - DoS
+    - Bad Randomness
+    - Front Running
+    - Time manipulation

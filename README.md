@@ -1,99 +1,107 @@
-# CorrelaScan Reproduction
+# Effect-Flow Guided Smart Contract Vulnerability Detection
 
-This repository currently contains the stage-1 minimal runnable skeleton for a
-CorrelaScan reproduction.
+This project implements an EVM behavior effect-flow framework for multi-label
+smart contract vulnerability detection.
 
-## Project Structure
-
-```text
-reproduc_corre_scan/
-+-- configs/
-|   +-- config.yaml
-+-- src/
-|   +-- model.py
-|   +-- dataset.py
-|   +-- train.py
-|   +-- metrics.py
-|   +-- utils.py
-+-- scripts/
-|   +-- train.sh
-+-- requirements.txt
-+-- README.md
-```
-
-## Data Format
-
-Prepare the following JSONL files:
+The current research direction is:
 
 ```text
-data/processed/train.jsonl
-data/processed/valid.jsonl
-data/processed/test.jsonl
+opcode chunks
+-> EVM-BERT representation
+-> effect-flow behavior pretraining
+-> EFPP/ETP semantic evidence
+-> evidence-guided MIL
+-> contract-level multi-label vulnerability detection
 ```
 
-Each line should be one sample:
+## Core Idea
 
-```json
-{"opcode":"PUSH1 MSTORE CALLVALUE ...","binary_label":1,"multi_labels":[1,0,0,0,0,0,0,0,0,0]}
-```
+The model explicitly decomposes smart contract vulnerability mechanisms into:
 
-## Encoder Selection
+- risky behavior, such as external calls and value/gas-sensitive calls;
+- protective behavior, such as guards and checked returns;
+- missing-check behavior, such as unchecked call return and unguarded state writes.
 
-The default shared encoder is:
+These behaviors are learned through effect-flow pretraining tasks and then used
+as semantic evidence in a Multiple Instance Learning detector.
 
-```yaml
-model_name: microsoft/codebert-base
-```
-
-You can switch `model_name` in `configs/config.yaml` to:
-
-```yaml
-model_name: microsoft/graphcodebert-base
-```
-
-or:
-
-```yaml
-model_name: huggingface/CodeBERTa-small-v1
-```
-
-## Run
-
-```bash
-cd reproduc_corre_scan
-pip install -r requirements.txt
-bash scripts/train.sh
-```
-
-The best checkpoint is saved to:
+## Main Components
 
 ```text
-checkpoints/best.pt
+src/
+  effect_flow_schema.py              # effect types and EFPP pattern rules
+  effect_flow_pretraining_dataset.py # MOM + ETP + EFPP pretraining data
+  effect_flow_pretraining_model.py   # EVM-BERT with effect-flow heads
+  pretrain_effect_flow_evm_bert.py   # effect-flow continued pretraining
+  evm_chunk_mil_model.py             # chunk context + guided MIL detector
+  train_chunk_mil.py                 # detector training
+  evaluate_chunk_mil.py              # detector evaluation and threshold search
+
+scripts/
+  build_effect_flow_pretraining_corpus.py
+  audit_effect_flow_annotations.py
+  audit_label_pattern_relevance.py
+  extract_effect_flow_semantic_features.py
+  train_eval_effect_flow_guided_mil.slurm
+
+configs/
+  pretrain_effect_flow_evm_bert_bjut_dive_train_balanced.yaml
+  train_bjut_effect_flow_guided_mil.yaml
+  train_dive_effect_flow_guided_mil.yaml
 ```
 
-## Stage 2: BJUT SC01 Dataset Preparation
+## Main Experiments
 
-Download the dataset:
+Effect-flow pretraining:
 
 ```bash
-python scripts/download_bjut_sc01.py
+sbatch scripts/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced.slurm
 ```
 
-Inspect the raw files:
+Effect-flow guided MIL on BJUT and DIVE:
 
 ```bash
-python scripts/inspect_bjut_sc01.py
+sbatch scripts/train_eval_effect_flow_guided_mil.slurm
 ```
 
-Preprocess the dataset:
+The guided MIL script runs the two datasets sequentially on two GPUs:
 
-```bash
-python src/preprocess_bjut_sc01.py --config configs/config.yaml
+1. checks/generates BJUT chunk and semantic caches;
+2. trains and evaluates BJUT guided MIL;
+3. checks/generates DIVE 64-chunk caches;
+4. trains and evaluates DIVE guided MIL;
+5. writes semantic contribution summaries.
+
+## Current Key Results
+
+BJUT random split, effect-flow guided MIL:
+
+```text
+micro-F1:    0.6875
+macro-F1:    0.5712
+detection F1: 0.7970
 ```
 
-Check the outputs:
+DIVE random split, effect-flow guided MIL:
 
-```bash
-ls data/processed/BJUT_SC01
-cat data/reports/bjut_sc01_processed_report.txt
+```text
+micro-F1:    0.8309
+macro-F1:    0.7424
+detection F1: 0.9459
 ```
+
+Detailed reports are kept under:
+
+```text
+results/train_bjut_effect_flow_guided_mil/
+results/train_dive_effect_flow_guided_mil/
+data/reports/
+```
+
+## Notes
+
+- BJUT uses `max_chunks=32`.
+- DIVE uses `max_chunks=64`.
+- Chunk labels are not manually assigned. The detector uses contract-level
+  labels and learns chunk-level evidence through MIL attention.
+- EFPP and ETP outputs are semantic evidence, not final vulnerability labels.
