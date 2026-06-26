@@ -1,0 +1,18 @@
+Validation-selected per-label thresholds
+
+checkpoint: checkpoints/train_bjut_effect_flow_first512_weighted/best_macro_f1.pt
+checkpoint_epoch: 6
+split: valid
+global_threshold_fallback: 0.5
+
+label_name | support | best_threshold | valid_precision | valid_recall | valid_f1 | predicted_positive_count
+Reentrancy | 86 | 0.60 | 0.237354 | 0.709302 | 0.355685 | 257
+Contract contains unknown address | 1365 | 0.70 | 0.739726 | 0.632967 | 0.682195 | 1168
+Integer overflow or underflow | 1807 | 0.60 | 0.680258 | 0.701716 | 0.690820 | 1864
+Timestamp dependence | 77 | 0.60 | 0.233871 | 0.753247 | 0.356923 | 248
+DoS with failed call | 17 | 0.50 | 0.250000 | 0.235294 | 0.242424 | 16
+Assert violation | 84 | 0.75 | 0.226337 | 0.654762 | 0.336391 | 243
+Unchecked call return value | 546 | 0.80 | 0.565558 | 0.529304 | 0.546831 | 511
+Unsafe send | 63 | 0.75 | 0.772727 | 0.269841 | 0.400000 | 22
+Multiplication after division | 195 | 0.60 | 0.610738 | 0.466667 | 0.529070 | 149
+Extra gas consumption | 542 | 0.80 | 0.461664 | 0.522140 | 0.490043 | 613

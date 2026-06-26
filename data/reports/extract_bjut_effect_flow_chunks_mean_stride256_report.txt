@@ -1,0 +1,80 @@
+EVM-BERT chunk feature extraction report
+
+experiment_name: extract_bjut_effect_flow_chunks_mean_stride256
+output_dir: data/features/effect_flow_evm_bert_chunks_mean_stride256/BJUT
+pooling: masked_mean
+max_len: 512
+chunk_content_size: 510
+chunk_stride: 256
+max_chunks_per_contract: 32
+hf_model_path: checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model
+is_transductive_pretraining: True
+num_labels: 10
+label_names: ['Reentrancy', 'Contract contains unknown address', 'Integer overflow or underflow', 'Timestamp dependence', 'DoS with failed call', 'Assert violation', 'Unchecked call return value', 'Unsafe send', 'Multiplication after division', 'Extra gas consumption']
+splits:
+- train:
+  split: train
+  samples: 121481
+  pooling: masked_mean
+  max_chunks_per_contract: 32
+  generated_chunks: 1139166
+  mean_chunks_per_contract: 9.377318263761412
+  truncated_contract_count: 4866
+  mean_coverage_ratio: 0.9904518749466638
+  p50_coverage_ratio: 1.0
+  p90_coverage_ratio: 1.0
+  p95_coverage_ratio: 1.0
+  feature_shape: [121481, 32, 768]
+  dtype: torch.float16
+  nan_count: 0
+  inf_count: 0
+  empty_content_fallback_to_cls_count: 0
+  hf_model_path: checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model
+  is_transductive_pretraining: True
+  num_labels: 10
+  label_names: ['Reentrancy', 'Contract contains unknown address', 'Integer overflow or underflow', 'Timestamp dependence', 'DoS with failed call', 'Assert violation', 'Unchecked call return value', 'Unsafe send', 'Multiplication after division', 'Extra gas consumption']
+  disk_size_bytes: 5994389023
+- valid:
+  split: valid
+  samples: 14838
+  pooling: masked_mean
+  max_chunks_per_contract: 32
+  generated_chunks: 138863
+  mean_chunks_per_contract: 9.358606281169969
+  truncated_contract_count: 603
+  mean_coverage_ratio: 0.9906395705162453
+  p50_coverage_ratio: 1.0
+  p90_coverage_ratio: 1.0
+  p95_coverage_ratio: 1.0
+  feature_shape: [14838, 32, 768]
+  dtype: torch.float16
+  nan_count: 0
+  inf_count: 0
+  empty_content_fallback_to_cls_count: 0
+  hf_model_path: checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model
+  is_transductive_pretraining: True
+  num_labels: 10
+  label_names: ['Reentrancy', 'Contract contains unknown address', 'Integer overflow or underflow', 'Timestamp dependence', 'DoS with failed call', 'Assert violation', 'Unchecked call return value', 'Unsafe send', 'Multiplication after division', 'Extra gas consumption']
+  disk_size_bytes: 732166995
+- test:
+  split: test
+  samples: 14839
+  pooling: masked_mean
+  max_chunks_per_contract: 32
+  generated_chunks: 140126
+  mean_chunks_per_contract: 9.443089156951277
+  truncated_contract_count: 606
+  mean_coverage_ratio: 0.9902682427365672
+  p50_coverage_ratio: 1.0
+  p90_coverage_ratio: 1.0
+  p95_coverage_ratio: 1.0
+  feature_shape: [14839, 32, 768]
+  dtype: torch.float16
+  nan_count: 0
+  inf_count: 0
+  empty_content_fallback_to_cls_count: 0
+  hf_model_path: checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model
+  is_transductive_pretraining: True
+  num_labels: 10
+  label_names: ['Reentrancy', 'Contract contains unknown address', 'Integer overflow or underflow', 'Timestamp dependence', 'DoS with failed call', 'Assert violation', 'Unchecked call return value', 'Unsafe send', 'Multiplication after division', 'Extra gas consumption']
+  disk_size_bytes: 732216397

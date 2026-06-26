@@ -1,0 +1,349 @@
+CorrelaScan sanity training report
+
+loaded_model: True
+
+loaded_pretrained_evm_bert: True
+
+loaded_local_model: True
+
+loaded_tokenizer: True
+
+model_type: evm_bert
+
+tokenizer_type: evm
+
+model_name: None
+
+hf_model_path: checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model
+
+vocab_path: data/processed/BJUT_SC01/evm_vocab.json
+
+vocab_size: 1161
+
+model_vocab_size: 1161
+
+vocab_size_matches_model: True
+
+hidden_size: 768
+
+num_hidden_layers: 12
+
+num_attention_heads: 12
+
+is_transductive_pretraining: True
+
+train_samples: 20134
+
+valid_samples: 2233
+
+completed_epochs: 5
+
+early_stopped: True
+
+stopped_epoch: 5
+
+early_stopping_patience: 3
+
+best_epoch: 2
+
+best_loss_epoch: 2
+
+best_micro_f1_epoch: 5
+
+best_micro_f1_value: 0.784369036754335
+
+best_micro_f1_threshold: 0.5
+
+best_macro_f1_epoch: 5
+
+best_macro_f1_value: 0.6835414424916126
+
+best_macro_f1_threshold: 0.5
+
+use_pos_weight: True
+
+pos_weight_mode: sqrt_ratio
+
+max_pos_weight: 5.0
+
+pos_weight_source: train_mlsmote
+
+pos_weight_source_file: data/processed/DIVE_random_split/train_mlsmote.jsonl
+
+pos_weight_path: results/train_dive_effect_flow_first512_weighted/pos_weight.json
+
+use_vte: False
+
+vte_fusion: None
+
+vte_dropout: None
+
+vte_temperature: None
+
+vte_label_correlation_path: None
+
+use_mlsmote_train: True
+
+freeze_encoder: False
+
+max_len: 512
+
+chunk_size: None
+
+chunk_stride: None
+
+max_chunks: None
+
+max_covered_tokens: None
+
+encoder_chunk_batch_size: None
+
+chunk_pooling: None
+
+encoder_type: None
+
+embedding_dim: None
+
+batch_size: 8
+
+gradient_accumulation_steps: 2
+
+effective_batch_size: 16
+
+global_effective_batch_size: 32
+
+learning_rate: 2e-05
+
+encoder_learning_rate: 2e-05
+
+head_learning_rate: 0.0001
+
+device: cuda:0
+
+torch_version: 2.0.1+cu118
+
+cuda_available: True
+
+cuda_device_name: NVIDIA L20
+
+fp16: True
+
+bf16: False
+
+distributed: True
+
+world_size: 2
+
+trainable_parameters: 89498889
+
+total_parameters: 89498889
+
+trainable_ratio: 1.0
+
+batch_shapes:
+- input_ids: [8, 512]
+- attention_mask: [8, 512]
+- token_type_ids: [8, 512]
+- binary_label: [8]
+- multi_labels: [8, 8]
+
+logits_shapes:
+- detection_logits: [8]
+- recognition_logits: [8, 8]
+
+train_loss: 0.3296594023704529
+
+valid_loss: 0.3453503796032497
+
+metric_source: best_checkpoint_epoch
+
+last_train_loss: 0.228055939078331
+
+last_valid_loss: 0.3708103184322161
+
+last_detection_accuracy: 0.8929690998656515
+
+last_recognition_micro_precision: 0.7164292209760533
+
+last_recognition_micro_recall: 0.8665444546287809
+
+last_recognition_micro_f1: 0.784369036754335
+
+last_recognition_macro_precision: 0.6270516498669229
+
+last_recognition_macro_recall: 0.7550644629933945
+
+last_recognition_macro_f1: 0.6835414424916126
+
+detection_accuracy: 0.8947604120017913
+
+detection_precision: 0.9061904761904762
+
+detection_recall: 0.9804224626481195
+
+detection_f1: 0.9418460777035388
+
+recognition_micro_precision: 0.6984444786693362
+
+recognition_micro_recall: 0.8313473877176902
+
+recognition_micro_f1: 0.7591228657515902
+
+recognition_macro_precision: 0.5804039488445072
+
+recognition_macro_recall: 0.746559411050574
+
+recognition_macro_f1: 0.6422550435905415
+
+predicted_positive_total: 6493
+
+per_label_predicted_positive_count:
+- 1246
+- 2043
+- 1125
+- 711
+- 538
+- 141
+- 109
+- 580
+
+per_label_true_positive_count:
+- 1121
+- 1665
+- 968
+- 582
+- 369
+- 53
+- 66
+- 631
+
+per_label_mean_pred_prob:
+- 0.498779296875
+- 0.78857421875
+- 0.47021484375
+- 0.3134765625
+- 0.28662109375
+- 0.090087890625
+- 0.0628662109375
+- 0.306640625
+
+per_label_accuracy:
+- 0.7684729064039408
+- 0.7895208240035826
+- 0.7604120017913122
+- 0.8634124496193462
+- 0.8159426780116436
+- 0.9471562919838782
+- 0.9511867442901926
+- 0.8150470219435737
+
+per_label_precision:
+- 0.7423756019261637
+- 0.7924620655898189
+- 0.6924444444444444
+- 0.6947960618846695
+- 0.46096654275092935
+- 0.2695035460992908
+- 0.30275229357798167
+- 0.6879310344827586
+
+per_label_recall:
+- 0.8251561106155219
+- 0.9723723723723724
+- 0.8047520661157025
+- 0.8487972508591065
+- 0.6720867208672087
+- 0.7169811320754716
+- 0.5
+- 0.6323296354992076
+
+per_label_f1:
+- 0.7815800591465991
+- 0.8732470334412081
+- 0.7443860487338748
+- 0.7641144624903325
+- 0.5468577728776185
+- 0.39175257731958757
+- 0.37714285714285717
+- 0.6589595375722545
+
+per_label_support:
+- 1121
+- 1665
+- 968
+- 582
+- 369
+- 53
+- 66
+- 631
+
+pos_weight_table:
+- {'label_id': 0, 'label_name': 'Reentrancy', 'positive_count': 10780, 'negative_count': 9354, 'raw_ratio': 0.8677179962894248, 'sqrt_ratio': 0.9315138196985726, 'final_pos_weight': 1.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/DIVE_random_split/train_mlsmote.jsonl'}
+- {'label_id': 1, 'label_name': 'Access Control', 'positive_count': 15449, 'negative_count': 4685, 'raw_ratio': 0.3032558741666127, 'sqrt_ratio': 0.5506867296082344, 'final_pos_weight': 1.0, 'max_pos_weight': 5.0, 'source_file': 'data/processed/DIVE_random_split/train_mlsmote.jsonl'}
+- {'label_id': 2, 'label_name': 'Arithmetic', 'positive_count': 8723, 'negative_count': 11411, 'raw_ratio': 1.3081508655279148, 'sqrt_ratio': 1.1437442308173251, 'final_pos_weight': 1.1437442308173251, 'max_pos_weight': 5.0, 'source_file': 'data/processed/DIVE_random_split/train_mlsmote.jsonl'}
+- {'label_id': 3, 'label_name': 'Unchecked Return Values', 'positive_count': 5298, 'negative_count': 14836, 'raw_ratio': 2.8003020007550017, 'sqrt_ratio': 1.673410290620624, 'final_pos_weight': 1.673410290620624, 'max_pos_weight': 5.0, 'source_file': 'data/processed/DIVE_random_split/train_mlsmote.jsonl'}
+- {'label_id': 4, 'label_name': 'DoS', 'positive_count': 4003, 'negative_count': 16131, 'raw_ratio': 4.029727704221834, 'sqrt_ratio': 2.007418168748563, 'final_pos_weight': 2.007418168748563, 'max_pos_weight': 5.0, 'source_file': 'data/processed/DIVE_random_split/train_mlsmote.jsonl'}
+- {'label_id': 5, 'label_name': 'Bad Randomness', 'positive_count': 1787, 'negative_count': 18347, 'raw_ratio': 10.266927811975378, 'sqrt_ratio': 3.2042047081881924, 'final_pos_weight': 3.2042047081881924, 'max_pos_weight': 5.0, 'source_file': 'data/processed/DIVE_random_split/train_mlsmote.jsonl'}
+- {'label_id': 6, 'label_name': 'Front Running', 'positive_count': 1787, 'negative_count': 18347, 'raw_ratio': 10.266927811975378, 'sqrt_ratio': 3.2042047081881924, 'final_pos_weight': 3.2042047081881924, 'max_pos_weight': 5.0, 'source_file': 'data/processed/DIVE_random_split/train_mlsmote.jsonl'}
+- {'label_id': 7, 'label_name': 'Time manipulation', 'positive_count': 5919, 'negative_count': 14215, 'raw_ratio': 2.401588106099003, 'sqrt_ratio': 1.5497058127589904, 'final_pos_weight': 1.5497058127589904, 'max_pos_weight': 5.0, 'source_file': 'data/processed/DIVE_random_split/train_mlsmote.jsonl'}
+
+baseline_micro_f1: None
+
+baseline_macro_f1: None
+
+macro_f1_improvement_over_unweighted_baseline: None
+
+threshold_scan:
+- 0.1: {'micro_precision': 0.5201640464798359, 'micro_recall': 0.9765352887259395, 'micro_f1': 0.6787716615698267, 'macro_precision': 0.4284290143776406, 'macro_recall': 0.9346540453496306, 'macro_f1': 0.5614801285418276, 'predicted_positive_total': 10241}
+- 0.2: {'micro_precision': 0.582574480044969, 'micro_recall': 0.9499541704857929, 'micro_f1': 0.7222299651567944, 'macro_precision': 0.4763466653416075, 'macro_recall': 0.8925956778026487, 'macro_f1': 0.6017119265339426, 'predicted_positive_total': 8895}
+- 0.3: {'micro_precision': 0.6266999376169682, 'micro_recall': 0.9208065994500458, 'micro_f1': 0.7458054936896809, 'macro_precision': 0.5129287305955198, 'macro_recall': 0.8504548278664346, 'macro_f1': 0.6253150407367598, 'predicted_positive_total': 8015}
+- 0.4: {'micro_precision': 0.6627251478069572, 'micro_recall': 0.8835930339138405, 'micro_f1': 0.7573852922690132, 'macro_precision': 0.5467528494979961, 'macro_recall': 0.8095467323160546, 'macro_f1': 0.6410093385039555, 'predicted_positive_total': 7273}
+- 0.5: {'micro_precision': 0.6984444786693362, 'micro_recall': 0.8313473877176902, 'micro_f1': 0.7591228657515902, 'macro_precision': 0.5804039488445072, 'macro_recall': 0.746559411050574, 'macro_f1': 0.6422550435905415, 'predicted_positive_total': 6493}
+
+max_memory_allocated_mb: 5626.5166015625
+
+max_memory_reserved_mb: 5780.0
+
+checkpoint_saved: True
+
+checkpoint_path: checkpoints/train_dive_effect_flow_first512_weighted/best_loss.pt
+
+best_loss_checkpoint_saved: True
+
+best_loss_checkpoint_path: checkpoints/train_dive_effect_flow_first512_weighted/best_loss.pt
+
+best_micro_f1_checkpoint_saved: True
+
+best_micro_f1_checkpoint_path: checkpoints/train_dive_effect_flow_first512_weighted/best_micro_f1.pt
+
+best_macro_f1_checkpoint_saved: True
+
+best_macro_f1_checkpoint_path: checkpoints/train_dive_effect_flow_first512_weighted/best_macro_f1.pt
+
+last_checkpoint_saved: True
+
+last_checkpoint_path: checkpoints/train_dive_effect_flow_first512_weighted/last.pt
+
+checkpoint_summary_path: results/train_dive_effect_flow_first512_weighted/checkpoint_summary.json
+
+tokenizer_saved: True
+
+tokenizer_path: checkpoints/train_dive_effect_flow_first512_weighted/tokenizer
+
+epoch_history_saved: True
+
+epoch_history_txt_path: data/reports/train_dive_effect_flow_first512_weighted_epoch_history.txt
+
+epoch_history_json_path: data/reports/train_dive_effect_flow_first512_weighted_epoch_history.json
+
+plots_generated: True
+
+can_enter_full_training: True
+
+can_enter_full_evm_chunk_training: False
+
+warnings:
+- MLSMOTE-compatible text oversampling duplicates real opcode samples; it does not synthesize opcode sequences by linear interpolation.
+- Recognition loss uses pos_weight; detection loss remains ordinary BCE.
+- EVM-BERT uses full BJUT unlabeled transductive pretraining; this is not a strict inductive baseline.
+- EVM-BERT downstream fine-tuning uses the fixed EVM opcode-aware vocabulary and truncates each contract to the first 510 EVM tokens plus [CLS]/[SEP]. Chunk aggregation is not enabled in this stage.

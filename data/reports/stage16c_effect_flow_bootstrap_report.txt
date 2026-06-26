@@ -1,0 +1,22 @@
+Stage 16C paired bootstrap report
+
+comparison: BJUT first512
+status: ok
+delta_micro_f1: mean=-0.002490, ci95=[-0.0129574308053912, 0.007675475051783311], crosses_zero=True
+delta_macro_f1: mean=-0.004732, ci95=[-0.017919177574753715, 0.00851295799140976], crosses_zero=True
+delta_detection_f1: mean=0.004209, ci95=[-0.007670543896911041, 0.015949836776615406], crosses_zero=True
+
+comparison: DIVE first512
+status: missing_predictions
+
+comparison: BJUT stride256 chunk-context MIL
+status: ok
+delta_micro_f1: mean=-0.032033, ci95=[-0.041131858360316645, -0.02319789956497748], crosses_zero=False
+delta_macro_f1: mean=-0.030469, ci95=[-0.0396474468130759, -0.020483393583007162], crosses_zero=False
+delta_detection_f1: mean=-0.016671, ci95=[-0.02774567267482371, -0.005223689649767931], crosses_zero=False
+
+comparison: DIVE stride256 chunk-context MIL
+status: ok
+delta_micro_f1: mean=0.001656, ci95=[-0.005358304538319617, 0.008846840587515411], crosses_zero=True
+delta_macro_f1: mean=0.009808, ci95=[-0.009639568610374795, 0.028900532502261652], crosses_zero=True
+delta_detection_f1: mean=-0.004627, ci95=[-0.009038234374031876, -8.363892828482402e-05], crosses_zero=False

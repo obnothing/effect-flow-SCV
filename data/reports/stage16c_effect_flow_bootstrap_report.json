@@ -1,0 +1,81 @@
+[
+  {
+    "comparison": "BJUT first512",
+    "status": "ok",
+    "n_bootstrap": 1000,
+    "seed": 42,
+    "samples": 16748,
+    "delta_micro_f1_mean": -0.002489829294420514,
+    "delta_micro_f1_ci95": [
+      -0.0129574308053912,
+      0.007675475051783311
+    ],
+    "delta_micro_f1_ci_crosses_zero": true,
+    "delta_macro_f1_mean": -0.004731799838063134,
+    "delta_macro_f1_ci95": [
+      -0.017919177574753715,
+      0.00851295799140976
+    ],
+    "delta_macro_f1_ci_crosses_zero": true,
+    "delta_detection_f1_mean": 0.004209181202202137,
+    "delta_detection_f1_ci95": [
+      -0.007670543896911041,
+      0.015949836776615406
+    ],
+    "delta_detection_f1_ci_crosses_zero": true
+  },
+  {
+    "comparison": "DIVE first512",
+    "status": "missing_predictions"
+  },
+  {
+    "comparison": "BJUT stride256 chunk-context MIL",
+    "status": "ok",
+    "n_bootstrap": 1000,
+    "seed": 42,
+    "samples": 14839,
+    "delta_micro_f1_mean": -0.03203319903362619,
+    "delta_micro_f1_ci95": [
+      -0.041131858360316645,
+      -0.02319789956497748
+    ],
+    "delta_micro_f1_ci_crosses_zero": false,
+    "delta_macro_f1_mean": -0.03046910310574408,
+    "delta_macro_f1_ci95": [
+      -0.0396474468130759,
+      -0.020483393583007162
+    ],
+    "delta_macro_f1_ci_crosses_zero": false,
+    "delta_detection_f1_mean": -0.016671214690839688,
+    "delta_detection_f1_ci95": [
+      -0.02774567267482371,
+      -0.005223689649767931
+    ],
+    "delta_detection_f1_ci_crosses_zero": false
+  },
+  {
+    "comparison": "DIVE stride256 chunk-context MIL",
+    "status": "ok",
+    "n_bootstrap": 1000,
+    "seed": 42,
+    "samples": 2233,
+    "delta_micro_f1_mean": 0.0016563359064379472,
+    "delta_micro_f1_ci95": [
+      -0.005358304538319617,
+      0.008846840587515411
+    ],
+    "delta_micro_f1_ci_crosses_zero": true,
+    "delta_macro_f1_mean": 0.009807619373285838,
+    "delta_macro_f1_ci95": [
+      -0.009639568610374795,
+      0.028900532502261652
+    ],
+    "delta_macro_f1_ci_crosses_zero": true,
+    "delta_detection_f1_mean": -0.004627068702871478,
+    "delta_detection_f1_ci95": [
+      -0.009038234374031876,
+      -8.363892828482402e-05
+    ],
+    "delta_detection_f1_ci_crosses_zero": false
+  }
+]

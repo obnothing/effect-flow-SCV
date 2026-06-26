@@ -1,0 +1,26 @@
+Checkpoint selection summary
+
+best_loss_epoch: 2
+best_loss_value: 0.3453503796032497
+best_loss_checkpoint: checkpoints/train_dive_effect_flow_first512_weighted/best_loss.pt
+best_micro_f1_epoch: 5
+best_micro_f1_value: 0.784369036754335
+best_micro_f1_threshold: 0.5
+best_micro_f1_checkpoint: checkpoints/train_dive_effect_flow_first512_weighted/best_micro_f1.pt
+best_macro_f1_epoch: 5
+best_macro_f1_value: 0.6835414424916126
+best_macro_f1_threshold: 0.5
+best_macro_f1_checkpoint: checkpoints/train_dive_effect_flow_first512_weighted/best_macro_f1.pt
+last_epoch: 5
+last_checkpoint: checkpoints/train_dive_effect_flow_first512_weighted/last.pt
+use_pos_weight: True
+pos_weight_mode: sqrt_ratio
+max_pos_weight: 5.0
+pos_weight_source_file: data/processed/DIVE_random_split/train_mlsmote.jsonl
+pos_weight_report: results/train_dive_effect_flow_first512_weighted/pos_weight.json
+use_vte: False
+vte_fusion: None
+vte_dropout: None
+vte_temperature: None
+vte_label_correlation_report: None
+recommendation_for_test: Use best_macro_f1.pt for macro-F1-oriented final evaluation.

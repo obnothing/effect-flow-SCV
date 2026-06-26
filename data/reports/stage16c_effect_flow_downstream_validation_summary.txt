@@ -1,0 +1,34 @@
+Stage 16C effect-flow downstream validation summary
+
+The effect-flow encoder was continued from BJUT full-corpus EVM-BERT; base_encoder_init_setting=transductive_initialization.
+
+comparison | old_status | new_status | old micro/macro/det | new micro/macro/det | delta micro/macro/det
+--------------------------------------------------------------------------------------------------------------------------------------------
+BJUT first512 | ok | ok | 0.565903/0.432564/0.689495 | 0.563353/0.428042/0.693294 | -0.002550/-0.004522/0.003799
+  per_label_f1_delta: [0.0060515661623694594, 0.00358788093550666, 0.01407599603973908, 0.0063694267515923, 0.0049261083743842304, -0.006527221480492562, -0.0008781469673780351, -0.0407592407592407, 0.022821715817694432, -0.05488526343738964]
+DIVE first512 | missing | ok | NA/NA/NA | 0.775311/0.663380/0.946719 | NA/NA/NA
+BJUT stride256 chunk-context MIL | ok | ok | 0.683691/0.570881/0.787745 | 0.651625/0.540487/0.770925 | -0.032066/-0.030394/-0.016820
+  per_label_f1_delta: [0.0067563443940649726, -0.028681412299246034, -0.030816016671296187, 0.0054945054945054195, -0.006812771895263914, -0.007874015748031482, -0.053964134025483834, -0.07009083772569247, -0.03241669216039533, -0.0855340375586856]
+DIVE stride256 chunk-context MIL | ok | ok | 0.811373/0.709955/0.949902 | 0.813046/0.719462/0.945185 | 0.001674/0.009507/-0.004717
+  per_label_f1_delta: [-0.0008219730680281145, -0.004712825021603861, -0.02600722427905977, 0.0005699236684548747, 0.005929423238905884, 0.05814458040440862, -0.019555555555555548, 0.06251176681322967]
+
+Available threshold variants:
+BJUT first512 | old | valid_best_global | micro=0.565903 macro=0.432564 det=0.689495
+BJUT first512 | new | fixed_0_5 | micro=0.554139 macro=0.417552 det=0.693294
+BJUT first512 | new | valid_best_global | micro=0.563353 macro=0.428042 det=0.693294
+BJUT first512 | new | valid_per_label | micro=0.569778 macro=0.426713 det=0.693294
+DIVE first512 | new | fixed_0_5 | micro=0.772977 macro=0.661275 det=0.946719
+DIVE first512 | new | valid_best_global | micro=0.775311 macro=0.663380 det=0.946719
+DIVE first512 | new | valid_per_label | micro=0.779934 macro=0.663286 det=0.946719
+BJUT stride256 chunk-context MIL | old | fixed_0_5 | micro=0.677845 macro=0.561936 det=0.787745
+BJUT stride256 chunk-context MIL | old | valid_best_global | micro=0.683691 macro=0.570881 det=0.787745
+BJUT stride256 chunk-context MIL | old | valid_per_label | micro=0.686971 macro=0.575692 det=0.787745
+BJUT stride256 chunk-context MIL | new | fixed_0_5 | micro=0.646364 macro=0.535563 det=0.770925
+BJUT stride256 chunk-context MIL | new | valid_best_global | micro=0.651625 macro=0.540487 det=0.770925
+BJUT stride256 chunk-context MIL | new | valid_per_label | micro=0.654578 macro=0.546905 det=0.770925
+DIVE stride256 chunk-context MIL | old | fixed_0_5 | micro=0.813258 macro=0.715227 det=0.949902
+DIVE stride256 chunk-context MIL | old | valid_best_global | micro=0.811373 macro=0.709955 det=0.949902
+DIVE stride256 chunk-context MIL | old | valid_per_label | micro=0.809900 macro=0.705864 det=0.949902
+DIVE stride256 chunk-context MIL | new | fixed_0_5 | micro=0.813046 macro=0.719462 det=0.945185
+DIVE stride256 chunk-context MIL | new | valid_best_global | micro=0.813046 macro=0.719462 det=0.945185
+DIVE stride256 chunk-context MIL | new | valid_per_label | micro=0.810626 macro=0.713236 det=0.945185

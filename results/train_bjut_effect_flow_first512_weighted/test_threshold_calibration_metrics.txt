@@ -1,0 +1,32 @@
+EVM-BERT first-512 threshold calibration report
+
+split: test
+checkpoint: checkpoints/train_bjut_effect_flow_first512_weighted/best_macro_f1.pt
+checkpoint_epoch: 6
+model: EVM-BERT first-512 weighted classifier
+model_type: evm_bert
+hf_model_path: checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model
+is_transductive_pretraining: True
+threshold_source: validation set
+evaluated_samples: 16748
+loss: 0.2147150044693054
+threshold_0_5_baseline: {'threshold_mode': 'global', 'threshold_source': 'fixed_0.5_baseline', 'thresholds': 0.5, 'detection_accuracy': 0.9014210652018152, 'detection_precision': 0.7119420068676078, 'detection_recall': 0.6755973931933381, 'detection_f1': 0.6932937023964332, 'recognition_micro_precision': 0.4893425397778445, 'recognition_micro_recall': 0.6387147335423198, 'recognition_micro_f1': 0.5541390447050824, 'recognition_macro_precision': 0.36776838922614274, 'recognition_macro_recall': 0.5456725645576647, 'recognition_macro_f1': 0.41755226800693857, 'recognition_samples_f1': 0.09918437850131186, 'subset_accuracy': 0.8434439933126343, 'hamming_loss': 0.031323143061858134, 'predicted_positive_total': 6662, 'per_label_predicted_positive_count': [254, 1490, 2092, 243, 16, 241, 974, 53, 186, 1113], 'per_label_true_positive_count': [89, 1496, 1817, 78, 17, 84, 616, 64, 191, 652], 'per_label_mean_pred_prob': [0.01415252685546875, 0.09857177734375, 0.125, 0.01409912109375, 0.00124359130859375, 0.0162811279296875, 0.06854248046875, 0.00804901123046875, 0.023284912109375, 0.076904296875]}
+best_global_threshold_result: {'threshold_mode': 'global', 'threshold_source': 'validation_best_macro_f1', 'thresholds': 0.7, 'detection_accuracy': 0.8981370909959399, 'detection_precision': 0.7645290581162325, 'detection_recall': 0.5524981897175959, 'detection_f1': 0.6414459857082807, 'recognition_micro_precision': 0.560512024825446, 'recognition_micro_recall': 0.5662225705329154, 'recognition_micro_f1': 0.5633528265107212, 'recognition_macro_precision': 0.4427779348644202, 'recognition_macro_recall': 0.4987951605453701, 'recognition_macro_f1': 0.428042321403006, 'recognition_samples_f1': 0.09199726115775793, 'subset_accuracy': 0.8572366849773108, 'hamming_loss': 0.026749462622402676, 'predicted_positive_total': 5156, 'per_label_predicted_positive_count': [236, 1160, 1629, 236, 11, 231, 688, 27, 129, 809], 'per_label_true_positive_count': [89, 1496, 1817, 78, 17, 84, 616, 64, 191, 652], 'per_label_mean_pred_prob': [0.01415252685546875, 0.09857177734375, 0.125, 0.01409912109375, 0.00124359130859375, 0.0162811279296875, 0.06854248046875, 0.00804901123046875, 0.023284912109375, 0.076904296875]}
+per_label_threshold_result: {'threshold_mode': 'per_label', 'threshold_source': 'validation_selected_per_label', 'thresholds': [0.6, 0.7, 0.6, 0.6, 0.5, 0.75, 0.8, 0.75, 0.6, 0.8], 'detection_accuracy': 0.9014210652018152, 'detection_precision': 0.7119420068676078, 'detection_recall': 0.6755973931933381, 'detection_f1': 0.6932937023964332, 'recognition_micro_precision': 0.5696103387507343, 'recognition_micro_recall': 0.5699451410658307, 'recognition_micro_f1': 0.569777690725688, 'recognition_macro_precision': 0.44171800218463, 'recognition_macro_recall': 0.496835586767301, 'recognition_macro_f1': 0.4267126052847347, 'recognition_samples_f1': 0.09440361339692603, 'subset_accuracy': 0.8568784332457607, 'hamming_loss': 0.026229997611655124, 'predicted_positive_total': 5107, 'per_label_predicted_positive_count': [249, 1160, 1873, 241, 16, 229, 521, 26, 152, 640], 'per_label_true_positive_count': [89, 1496, 1817, 78, 17, 84, 616, 64, 191, 652], 'per_label_mean_pred_prob': [0.01415252685546875, 0.09857177734375, 0.125, 0.01409912109375, 0.00124359130859375, 0.0162811279296875, 0.06854248046875, 0.00804901123046875, 0.023284912109375, 0.076904296875]}
+per_label_metrics:
+0 | Reentrancy | precision=0.220884 recall=0.617978 f1=0.325444 support=89 predicted=249
+1 | Contract contains unknown address | precision=0.731897 recall=0.567513 f1=0.639307 support=1496 predicted=1160
+2 | Integer overflow or underflow | precision=0.651361 recall=0.671436 f1=0.661247 support=1817 predicted=1873
+3 | Timestamp dependence | precision=0.257261 recall=0.794872 f1=0.388715 support=78 predicted=241
+4 | DoS with failed call | precision=0.125000 recall=0.117647 f1=0.121212 support=17 predicted=16
+5 | Assert violation | precision=0.218341 recall=0.595238 f1=0.319489 support=84 predicted=229
+6 | Unchecked call return value | precision=0.529750 recall=0.448052 f1=0.485488 support=616 predicted=521
+7 | Unsafe send | precision=0.692308 recall=0.281250 f1=0.400000 support=64 predicted=26
+8 | Multiplication after division | precision=0.526316 recall=0.418848 f1=0.466472 support=191 predicted=152
+9 | Extra gas consumption | precision=0.464062 recall=0.455521 f1=0.459752 support=652 predicted=640
+per_label_thresholds: [{'label_id': 0, 'label_name': 'Reentrancy', 'threshold': 0.6}, {'label_id': 1, 'label_name': 'Contract contains unknown address', 'threshold': 0.7}, {'label_id': 2, 'label_name': 'Integer overflow or underflow', 'threshold': 0.6}, {'label_id': 3, 'label_name': 'Timestamp dependence', 'threshold': 0.6}, {'label_id': 4, 'label_name': 'DoS with failed call', 'threshold': 0.5}, {'label_id': 5, 'label_name': 'Assert violation', 'threshold': 0.75}, {'label_id': 6, 'label_name': 'Unchecked call return value', 'threshold': 0.8}, {'label_id': 7, 'label_name': 'Unsafe send', 'threshold': 0.75}, {'label_id': 8, 'label_name': 'Multiplication after division', 'threshold': 0.6}, {'label_id': 9, 'label_name': 'Extra gas consumption', 'threshold': 0.8}]
+warnings: ['Timestamp dependence: predicted positives may be too many (241 vs support 78).']
+fixed_threshold_prediction_path: results/train_bjut_effect_flow_first512_weighted/test_predictions_threshold_0_5.jsonl
+best_global_prediction_path: results/train_bjut_effect_flow_first512_weighted/test_predictions_best_global.jsonl
+prediction_path: results/train_bjut_effect_flow_first512_weighted/test_predictions.jsonl
+per_label_prediction_path: results/train_bjut_effect_flow_first512_weighted/test_predictions_per_label.jsonl
