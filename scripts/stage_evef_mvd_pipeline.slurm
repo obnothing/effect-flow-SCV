@@ -14,8 +14,10 @@ set -euo pipefail
 cd "$SLURM_SUBMIT_DIR"
 mkdir -p logs
 
+set +u
 source ~/.bashrc || true
 conda activate correlascan_a40 || true
+set -u
 
 export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0,1}"
 export NPROC_PER_NODE="${NPROC_PER_NODE:-2}"

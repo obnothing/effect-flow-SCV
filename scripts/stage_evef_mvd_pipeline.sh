@@ -77,10 +77,14 @@ mkdir -p logs data/reports
 
 if [[ -f "$HOME/.bashrc" ]]; then
   # shellcheck disable=SC1090
+  set +u
   source "$HOME/.bashrc" || true
+  set -u
 fi
 if command -v conda >/dev/null 2>&1; then
+  set +u
   conda activate "$CONDA_ENV" || true
+  set -u
 fi
 
 if command -v python >/dev/null 2>&1; then
