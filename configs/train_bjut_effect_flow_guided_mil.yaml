@@ -6,6 +6,8 @@ checkpoint_dir: checkpoints/train_bjut_effect_flow_guided_mil
 result_dir: results/train_bjut_effect_flow_guided_mil
 report_dir: data/reports
 log_dir: logs
+ontology_path: configs/effect_flow_ontology.yaml
+template_path: configs/vulnerability_templates_bjut.yaml
 
 num_labels: 10
 feature_dim: 768
@@ -14,6 +16,7 @@ attn_dim: 256
 max_chunks: 32
 efpp_dim: 22
 etp_dim: 16
+relation_dim: 6
 semantic_projection_dim: 128
 semantic_fusion: gated_add
 dropout: 0.1
@@ -44,6 +47,8 @@ threshold: 0.5
 thresholds: [0.1, 0.2, 0.3, 0.4, 0.5]
 seed: 42
 num_workers: 4
+evidence_align_weight: 0.2
+template_consistency_weight: 0.1
 
 is_transductive_pretraining: true
 encoder_frozen: true
@@ -67,4 +72,3 @@ label_names:
   - Unsafe send
   - Multiplication after division
   - Extra gas consumption
-

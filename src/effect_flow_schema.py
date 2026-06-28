@@ -156,6 +156,14 @@ STORAGE_MEMORY_OPS = {
 }
 ADDRESS_NEAR_OPS = CALL_OPS | {"BALANCE", "EXTCODESIZE", "EXTCODEHASH", "SSTORE"}
 REVERT_OPS = {"REVERT", "INVALID"}
+RELATION_TYPES = [
+    "call_then_state_write",
+    "state_write_then_call",
+    "call_then_return_check",
+    "state_write_then_auth_guard",
+    "env_then_branch",
+    "div_then_mul",
+]
 
 
 @dataclass(frozen=True)
@@ -513,6 +521,57 @@ def annotate_efpp_patterns(units, params=None):
     return labels, matches
 
 
+def annotate_effect_relations(units, params=None):
+    params = {**DEFAULT_PATTERN_PARAMS, **(params or {})}
+    opcodes = [unit.opcode for unit in units]
+    matches = {}
+
+    def mark(name, index, rule):
+        if name not in matches:
+            matches[name] = {
+                "matched_rule": rule,
+                "token_index": int(max(0, index)),
+                "local_opcode_snippet": _snippet(units, max(0, index)),
+            }
+
+    index = _near_pair(opcodes, CALL_OPS, {"SSTORE"}, params["call_state_window"])
+    if index is not None:
+        mark("call_then_state_write", index, "CALL-like followed by SSTORE")
+    index = _near_pair(opcodes, {"SSTORE"}, CALL_OPS, params["call_state_window"])
+    if index is not None:
+        mark("state_write_then_call", index, "SSTORE followed by CALL-like")
+
+    for index, opcode in enumerate(opcodes):
+        if opcode in CALL_OPS and _window_has(
+            opcodes,
+            index + 1,
+            index + 1 + params["return_check_window"],
+            RETURN_CHECK_OPS,
+        ):
+            mark("call_then_return_check", index, "CALL-like followed by weak return-check window")
+        if opcode == "SSTORE" and _auth_guard_before(opcodes, index, params["auth_window"]):
+            mark("state_write_then_auth_guard", index, "SSTORE has preceding auth-source guard")
+        if opcode in CONDITION_ENV_OPS and _window_has(
+            opcodes,
+            index + 1,
+            index + 1 + params["condition_window"],
+            GUARD_OPS,
+        ):
+            mark("env_then_branch", index, "environment opcode followed by branch/guard")
+        if opcode in {"DIV", "SDIV"} and _window_has(
+            opcodes,
+            index + 1,
+            index + 1 + params["arithmetic_window"],
+            {"MUL"},
+        ):
+            mark("div_then_mul", index, "DIV/SDIV followed by MUL")
+
+    labels = [int(name in matches) for name in RELATION_TYPES]
+    primary_name = next((name for name in RELATION_TYPES if name in matches), None)
+    primary_id = RELATION_TYPES.index(primary_name) if primary_name is not None else -100
+    return labels, matches, primary_id
+
+
 def effect_events(units, effects, offset=0):
     events = []
     for index, (unit, effect) in enumerate(zip(units, effects)):
@@ -524,6 +583,40 @@ def effect_events(units, effects, offset=0):
                 "opcode": unit.raw,
                 "effect_type": effect["primary_name"],
                 "effect_type_id": effect["primary_id"],
+            }
+        )
+    return events
+
+
+def effect_type_token_names(effects):
+    names = []
+    for effect in effects:
+        names.append(effect["primary_name"] if effect["loss_mask"] else None)
+    return names
+
+
+def effect_type_chunk_histogram(effects):
+    histogram = [0] * len(EFFECT_TYPES)
+    active = 0
+    for effect in effects:
+        if not effect["loss_mask"]:
+            continue
+        active += 1
+        histogram[effect["primary_id"]] += 1
+    if active == 0:
+        return [0.0] * len(EFFECT_TYPES)
+    return [count / active for count in histogram]
+
+
+def relation_events(units, relation_matches, offset=0):
+    events = []
+    for relation_name, match in relation_matches.items():
+        events.append(
+            {
+                "token_index": int(match["token_index"]) + offset,
+                "relation_type": relation_name,
+                "relation_type_id": RELATION_TYPES.index(relation_name),
+                "opcode_snippet": match["local_opcode_snippet"],
             }
         )
     return events

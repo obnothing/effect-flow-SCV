@@ -64,6 +64,22 @@ Effect-flow guided MIL on BJUT and DIVE:
 sbatch scripts/train_eval_effect_flow_guided_mil.slurm
 ```
 
+Unified EVEF-MVD one-click server pipeline:
+
+```bash
+sbatch scripts/stage_evef_mvd_pipeline.slurm
+```
+
+Or run selected segments directly:
+
+```bash
+bash scripts/stage_evef_mvd_pipeline.sh --mode status
+bash scripts/stage_evef_mvd_pipeline.sh --mode corpus
+bash scripts/stage_evef_mvd_pipeline.sh --mode pretrain_sanity
+bash scripts/stage_evef_mvd_pipeline.sh --mode pretrain_full
+bash scripts/stage_evef_mvd_pipeline.sh --mode downstream --dataset both
+```
+
 The guided MIL script runs the two datasets sequentially on two GPUs:
 
 1. checks/generates BJUT chunk and semantic caches;
@@ -71,6 +87,33 @@ The guided MIL script runs the two datasets sequentially on two GPUs:
 3. checks/generates DIVE 64-chunk caches;
 4. trains and evaluates DIVE guided MIL;
 5. writes semantic contribution summaries.
+
+The unified pipeline goes one level higher and runs:
+
+1. ontology/template-driven corpus build and audits;
+2. Stage P1/P2 sanity pretraining;
+3. Stage P1/P2 full pretraining;
+4. BJUT semantic cache v2 extraction + template-aware guided MIL;
+5. DIVE semantic cache v2 extraction + template-aware guided MIL;
+6. threshold calibration and semantic contribution summaries.
+
+## Current Stage
+
+The repository is currently at:
+
+```text
+EVEF-MVD mainline code-complete, sanity-ready
+```
+
+Meaning:
+
+- ontology and vulnerability templates are now first-class config files;
+- corpus v2 now includes relation/template/evidence pseudo supervision;
+- pretraining has been upgraded from MOM+ETP+EFPP to MOM+ETP+EFPP+ERR+VEP+VTM;
+- semantic cache v2 now includes relation / evidence / template scores;
+- downstream MIL has been upgraded to template-aware guided MIL;
+- local syntax and minimal forward checks pass;
+- the next hard boundary is server-side end-to-end runtime validation.
 
 ## Current Key Results
 

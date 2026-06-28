@@ -11,6 +11,8 @@ reference_feature_dir: data/features/continued_dive_evm_bert_bjut_random_stride2
 output_dir: data/features/effect_flow_semantics/bjut_random_stride256_max32
 report_dir: data/reports
 log_dir: logs
+ontology_path: configs/effect_flow_ontology.yaml
+template_path: configs/vulnerability_templates_bjut.yaml
 
 num_labels: 10
 max_len: 512
@@ -32,4 +34,3 @@ label_names:
   - Unsafe send
   - Multiplication after division
   - Extra gas consumption
-

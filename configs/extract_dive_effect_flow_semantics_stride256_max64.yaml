@@ -11,6 +11,8 @@ reference_feature_dir: data/features/continued_dive_evm_bert_dive_random_stride2
 output_dir: data/features/effect_flow_semantics/dive_random_stride256_max64
 report_dir: data/reports
 log_dir: logs
+ontology_path: configs/effect_flow_ontology.yaml
+template_path: configs/vulnerability_templates_dive.yaml
 
 num_labels: 8
 max_len: 512
@@ -30,4 +32,3 @@ label_names:
   - Bad Randomness
   - Front Running
   - Time manipulation
-

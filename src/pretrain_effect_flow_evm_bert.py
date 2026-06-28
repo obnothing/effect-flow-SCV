@@ -37,6 +37,7 @@ from effect_flow_pretraining_dataset import (  # noqa: E402
     subtract_stats,
 )
 from effect_flow_pretraining_model import EffectFlowBertForPreTraining  # noqa: E402
+from effect_flow_ontology import RELATION_TYPES  # noqa: E402
 from effect_flow_schema import EFFECT_TYPES  # noqa: E402
 
 
@@ -248,6 +249,9 @@ def prepare_data(config, distributed, rank, seed):
             "weights": weights,
             "pattern_config": pattern_config,
             "included_original_pattern_indices": original_indices,
+            "global_vulnerability_label_names": stats_by_dataset["BJUT"][
+                "global_vulnerability_label_names"
+            ],
         }
         state_path.write_text(
             json.dumps(data_state, indent=2, ensure_ascii=False), encoding="utf-8"
@@ -279,9 +283,21 @@ def metric_rows(tp, fp, fn, names):
 
 
 @torch.no_grad()
-def evaluate(model, dataloader, device, pattern_names, fp16, bf16):
+def evaluate(
+    model,
+    dataloader,
+    device,
+    pattern_names,
+    relation_names,
+    vulnerability_names,
+    fp16,
+    bf16,
+):
     model.eval()
-    totals = {key: 0.0 for key in ("total", "mom", "etp", "efpp")}
+    totals = {
+        key: 0.0
+        for key in ("total", "mom", "etp", "efpp", "err", "vep", "vtm")
+    }
     sample_count = 0
     mom_correct = mom_top5 = mom_count = 0
     etp_tp = np.zeros(len(EFFECT_TYPES), dtype=np.int64)
@@ -290,14 +306,21 @@ def evaluate(model, dataloader, device, pattern_names, fp16, bf16):
     efpp_tp = np.zeros(len(pattern_names), dtype=np.int64)
     efpp_fp = np.zeros(len(pattern_names), dtype=np.int64)
     efpp_fn = np.zeros(len(pattern_names), dtype=np.int64)
+    err_tp = np.zeros(len(relation_names), dtype=np.int64)
+    err_fp = np.zeros(len(relation_names), dtype=np.int64)
+    err_fn = np.zeros(len(relation_names), dtype=np.int64)
+    vep_tp = np.zeros(len(vulnerability_names), dtype=np.int64)
+    vep_fp = np.zeros(len(vulnerability_names), dtype=np.int64)
+    vep_fn = np.zeros(len(vulnerability_names), dtype=np.int64)
+    vtm_tp = np.zeros(len(vulnerability_names), dtype=np.int64)
+    vtm_fp = np.zeros(len(vulnerability_names), dtype=np.int64)
+    vtm_fn = np.zeros(len(vulnerability_names), dtype=np.int64)
     efpp_true_all = []
     efpp_prob_all = []
     dtype = torch.bfloat16 if bf16 else torch.float16
     for batch in tqdm(dataloader, desc="internal_valid", leave=False):
         batch = {key: value.to(device) for key, value in batch.items()}
-        with torch.cuda.amp.autocast(
-            enabled=(fp16 or bf16), dtype=dtype
-        ):
+        with torch.cuda.amp.autocast(enabled=(fp16 or bf16), dtype=dtype):
             outputs = model(**batch)
         size = batch["input_ids"].size(0)
         sample_count += size
@@ -306,6 +329,9 @@ def evaluate(model, dataloader, device, pattern_names, fp16, bf16):
             ("mom", "mom_loss"),
             ("etp", "etp_loss"),
             ("efpp", "efpp_loss"),
+            ("err", "err_loss"),
+            ("vep", "vep_loss"),
+            ("vtm", "vtm_loss"),
         ):
             totals[key] += float(outputs[output_key].detach().cpu()) * size
 
@@ -337,8 +363,42 @@ def evaluate(model, dataloader, device, pattern_names, fp16, bf16):
         efpp_true_all.append(efpp_true.cpu().numpy().astype(np.int8))
         efpp_prob_all.append(efpp_prob.float().cpu().numpy())
 
+        err_true = batch["err_labels"]
+        err_pred = outputs["err_logits"].argmax(dim=-1)
+        err_mask = err_true != -100
+        for index in range(len(relation_names)):
+            pred = (err_pred == index) & err_mask
+            true = (err_true == index) & err_mask
+            err_tp[index] += int((pred & true).sum().item())
+            err_fp[index] += int((pred & ~true).sum().item())
+            err_fn[index] += int((~pred & true).sum().item())
+
+        vulnerability_mask = batch["vulnerability_loss_mask"].bool()
+        vep_prob = torch.sigmoid(outputs["vep_logits"])
+        vep_pred = vep_prob >= 0.5
+        vep_true = batch["vep_labels"].bool()
+        vtm_prob = torch.sigmoid(outputs["vtm_logits"])
+        vtm_pred = vtm_prob >= 0.5
+        vtm_true = batch["vtm_labels"].bool()
+        for index in range(len(vulnerability_names)):
+            active = vulnerability_mask[:, index]
+            if active.any():
+                pred = vep_pred[:, index] & active
+                true = vep_true[:, index] & active
+                vep_tp[index] += int((pred & true).sum().item())
+                vep_fp[index] += int((pred & ~true).sum().item())
+                vep_fn[index] += int((~pred & true).sum().item())
+                pred = vtm_pred[:, index] & active
+                true = vtm_true[:, index] & active
+                vtm_tp[index] += int((pred & true).sum().item())
+                vtm_fp[index] += int((pred & ~true).sum().item())
+                vtm_fn[index] += int((~pred & true).sum().item())
+
     etp_rows = metric_rows(etp_tp, etp_fp, etp_fn, EFFECT_TYPES)
     efpp_rows = metric_rows(efpp_tp, efpp_fp, efpp_fn, pattern_names)
+    err_rows = metric_rows(err_tp, err_fp, err_fn, relation_names)
+    vep_rows = metric_rows(vep_tp, vep_fp, vep_fn, vulnerability_names)
+    vtm_rows = metric_rows(vtm_tp, vtm_fp, vtm_fn, vulnerability_names)
     etp_macro = float(np.mean([row["f1"] for row in etp_rows]))
     etp_macro_without_normal = float(np.mean([row["f1"] for row in etp_rows[1:]]))
     etp_accuracy = float(etp_tp.sum() / max(1, etp_tp.sum() + etp_fn.sum()))
@@ -347,6 +407,16 @@ def evaluate(model, dataloader, device, pattern_names, fp16, bf16):
         / max(1, 2 * efpp_tp.sum() + efpp_fp.sum() + efpp_fn.sum())
     )
     efpp_macro = float(np.mean([row["f1"] for row in efpp_rows]))
+    err_accuracy = float(err_tp.sum() / max(1, err_tp.sum() + err_fn.sum()))
+    err_macro = float(np.mean([row["f1"] for row in err_rows]))
+    vep_micro = float(
+        2 * vep_tp.sum() / max(1, 2 * vep_tp.sum() + vep_fp.sum() + vep_fn.sum())
+    )
+    vep_macro = float(np.mean([row["f1"] for row in vep_rows]))
+    vtm_micro = float(
+        2 * vtm_tp.sum() / max(1, 2 * vtm_tp.sum() + vtm_fp.sum() + vtm_fn.sum())
+    )
+    vtm_macro = float(np.mean([row["f1"] for row in vtm_rows]))
     efpp_auc = None
     try:
         from sklearn.metrics import roc_auc_score
@@ -374,6 +444,9 @@ def evaluate(model, dataloader, device, pattern_names, fp16, bf16):
         "valid_loss_mom": totals["mom"] / max(1, sample_count),
         "valid_loss_etp": totals["etp"] / max(1, sample_count),
         "valid_loss_efpp": totals["efpp"] / max(1, sample_count),
+        "valid_loss_err": totals["err"] / max(1, sample_count),
+        "valid_loss_vep": totals["vep"] / max(1, sample_count),
+        "valid_loss_vtm": totals["vtm"] / max(1, sample_count),
         "masked_token_accuracy": mom_correct / max(1, mom_count),
         "masked_token_top5_accuracy": mom_top5 / max(1, mom_count),
         "masked_token_count": mom_count,
@@ -383,8 +456,17 @@ def evaluate(model, dataloader, device, pattern_names, fp16, bf16):
         "efpp_micro_f1": efpp_micro,
         "efpp_macro_f1": efpp_macro,
         "efpp_macro_auc": efpp_auc,
+        "err_accuracy": err_accuracy,
+        "err_macro_f1": err_macro,
+        "vep_micro_f1": vep_micro,
+        "vep_macro_f1": vep_macro,
+        "vtm_micro_f1": vtm_micro,
+        "vtm_macro_f1": vtm_macro,
         "etp_per_effect": etp_rows,
         "efpp_per_pattern": efpp_rows,
+        "err_per_relation": err_rows,
+        "vep_per_label": vep_rows,
+        "vtm_per_label": vtm_rows,
     }
 
 
@@ -442,7 +524,7 @@ def plot_loss_curves(path, history):
     import matplotlib.pyplot as plt
 
     epochs = [row["epoch"] for row in history]
-    figure, axes = plt.subplots(1, 2, figsize=(12, 4.5))
+    figure, axes = plt.subplots(1, 3, figsize=(17, 4.5))
     axes[0].plot(epochs, [row["train_loss_total"] for row in history], marker="o", label="train")
     axes[0].plot(epochs, [row["valid_loss_total"] for row in history], marker="o", label="internal valid")
     axes[0].set_title("Total pretraining loss")
@@ -469,6 +551,26 @@ def plot_loss_curves(path, history):
     axes[1].set_xlabel("Epoch")
     axes[1].set_ylabel("Loss")
     axes[1].legend(fontsize=8, ncol=2)
+    for task, color in (("err", "#7c3aed"), ("vep", "#ea580c"), ("vtm", "#0891b2")):
+        axes[2].plot(
+            epochs,
+            [row[f"train_loss_{task}"] for row in history],
+            color=color,
+            marker="o",
+            label=f"train {task.upper()}",
+        )
+        axes[2].plot(
+            epochs,
+            [row[f"valid_loss_{task}"] for row in history],
+            color=color,
+            linestyle="--",
+            marker="x",
+            label=f"valid {task.upper()}",
+        )
+    axes[2].set_title("ERR / VEP / VTM losses")
+    axes[2].set_xlabel("Epoch")
+    axes[2].set_ylabel("Loss")
+    axes[2].legend(fontsize=8, ncol=2)
     for axis in axes:
         axis.grid(alpha=0.25)
     figure.tight_layout()
@@ -489,10 +591,16 @@ def save_outputs(config, report, history, metrics):
         "train_loss_mom",
         "train_loss_etp",
         "train_loss_efpp",
+        "train_loss_err",
+        "train_loss_vep",
+        "train_loss_vtm",
         "valid_loss_total",
         "valid_loss_mom",
         "valid_loss_etp",
         "valid_loss_efpp",
+        "valid_loss_err",
+        "valid_loss_vep",
+        "valid_loss_vtm",
         "masked_token_accuracy",
         "masked_token_top5_accuracy",
         "etp_accuracy",
@@ -501,6 +609,12 @@ def save_outputs(config, report, history, metrics):
         "efpp_micro_f1",
         "efpp_macro_f1",
         "efpp_macro_auc",
+        "err_accuracy",
+        "err_macro_f1",
+        "vep_micro_f1",
+        "vep_macro_f1",
+        "vtm_micro_f1",
+        "vtm_macro_f1",
         "bjut_samples",
         "dive_samples",
         "learning_rate",
@@ -520,6 +634,21 @@ def save_outputs(config, report, history, metrics):
         result_dir / "efpp_per_pattern_metrics.csv",
         list(metrics["efpp_per_pattern"][0]),
         metrics["efpp_per_pattern"],
+    )
+    write_csv(
+        result_dir / "err_per_relation_metrics.csv",
+        list(metrics["err_per_relation"][0]),
+        metrics["err_per_relation"],
+    )
+    write_csv(
+        result_dir / "vep_per_label_metrics.csv",
+        list(metrics["vep_per_label"][0]),
+        metrics["vep_per_label"],
+    )
+    write_csv(
+        result_dir / "vtm_per_label_metrics.csv",
+        list(metrics["vtm_per_label"][0]),
+        metrics["vtm_per_label"],
     )
     plot_loss_curves(result_dir / "loss_curves.png", history)
     report_name = config["report_filename"]
@@ -630,6 +759,7 @@ def main():
     pattern_names = pattern_config["included_pattern_names"]
     original_indices = data_state["included_original_pattern_indices"]
     weights = data_state["weights"]
+    vulnerability_names = data_state["global_vulnerability_label_names"]
     tokenizer = load_tokenizer(config["vocab_path"])
     vocab_size = len(tokenizer)
 
@@ -696,11 +826,19 @@ def main():
         vocab_size,
         num_effect_types=int(config.get("num_effect_types", 16)),
         num_efpp_patterns=len(pattern_names),
+        num_relation_types=len(RELATION_TYPES),
+        num_vulnerability_templates=len(vulnerability_names),
         lambda_mom=float(config.get("lambda_mom", 1.0)),
         lambda_etp=float(config.get("lambda_etp", 0.3)),
         lambda_efpp=float(config.get("lambda_efpp", 0.5)),
+        lambda_err=float(config.get("lambda_err", 0.3)),
+        lambda_vep=float(config.get("lambda_vep", 0.4)),
+        lambda_vtm=float(config.get("lambda_vtm", 0.4)),
         etp_class_weights=weights["etp_class_weights"],
         efpp_pos_weights=weights["efpp_pos_weights"],
+        relation_class_weights=weights["relation_class_weights"],
+        vep_pos_weights=weights["vep_pos_weights"],
+        vtm_pos_weights=weights["vtm_pos_weights"],
     )
     if config.get("gradient_checkpointing", True):
         model.gradient_checkpointing_enable()
@@ -772,7 +910,7 @@ def main():
         train_dataset.set_epoch(epoch)
         model.train()
         optimizer.zero_grad(set_to_none=True)
-        accumulators = torch.zeros(7, dtype=torch.float64, device=device)
+        accumulators = torch.zeros(10, dtype=torch.float64, device=device)
         progress = tqdm(train_loader, desc=f"stage16b {epoch}/{epochs}", disable=rank != 0)
         for micro_step, batch in enumerate(progress, start=1):
             source_ids = batch["source_dataset_id"]
@@ -800,6 +938,9 @@ def main():
                     float(outputs["mom_loss"].detach()) * size,
                     float(outputs["etp_loss"].detach()) * size,
                     float(outputs["efpp_loss"].detach()) * size,
+                    float(outputs["err_loss"].detach()) * size,
+                    float(outputs["vep_loss"].detach()) * size,
+                    float(outputs["vtm_loss"].detach()) * size,
                     size,
                     bjut_count,
                     dive_count,
@@ -819,21 +960,26 @@ def main():
                     print(
                         f"[INFO] step={global_step} total={float(outputs['loss']):.6f} "
                         f"mom={float(outputs['mom_loss']):.6f} etp={float(outputs['etp_loss']):.6f} "
-                        f"efpp={float(outputs['efpp_loss']):.6f} lr={scheduler.get_last_lr()[0]:.8g}",
+                        f"efpp={float(outputs['efpp_loss']):.6f} err={float(outputs['err_loss']):.6f} "
+                        f"vep={float(outputs['vep_loss']):.6f} vtm={float(outputs['vtm_loss']):.6f} "
+                        f"lr={scheduler.get_last_lr()[0]:.8g}",
                         flush=True,
                     )
             progress.set_postfix(total=float(loss.detach()))
 
         if distributed:
             dist.all_reduce(accumulators, op=dist.ReduceOp.SUM)
-        samples = max(1.0, float(accumulators[4].item()))
+        samples = max(1.0, float(accumulators[7].item()))
         train_values = {
             "train_loss_total": float(accumulators[0].item() / samples),
             "train_loss_mom": float(accumulators[1].item() / samples),
             "train_loss_etp": float(accumulators[2].item() / samples),
             "train_loss_efpp": float(accumulators[3].item() / samples),
-            "bjut_samples": int(accumulators[5].item()),
-            "dive_samples": int(accumulators[6].item()),
+            "train_loss_err": float(accumulators[4].item() / samples),
+            "train_loss_vep": float(accumulators[5].item() / samples),
+            "train_loss_vtm": float(accumulators[6].item() / samples),
+            "bjut_samples": int(accumulators[8].item()),
+            "dive_samples": int(accumulators[9].item()),
         }
         if distributed:
             dist.barrier()
@@ -841,7 +987,14 @@ def main():
         if rank == 0:
             valid_dataset.set_epoch(0)
             metrics = evaluate(
-                unwrap(model), valid_loader, device, pattern_names, fp16, bf16
+                unwrap(model),
+                valid_loader,
+                device,
+                pattern_names,
+                RELATION_TYPES,
+                vulnerability_names,
+                fp16,
+                bf16,
             )
             last_metrics = metrics
             allocated = torch.cuda.max_memory_allocated(device) / 1024 / 1024 if torch.cuda.is_available() else 0.0
@@ -861,6 +1014,8 @@ def main():
                 f"valid_total={row['valid_loss_total']:.6f} mom_acc={row['masked_token_accuracy']:.6f} "
                 f"etp_macro_no_normal={row['etp_macro_f1_excluding_normal']:.6f} "
                 f"efpp_micro={row['efpp_micro_f1']:.6f} efpp_macro={row['efpp_macro_f1']:.6f} "
+                f"err_macro={row['err_macro_f1']:.6f} vep_macro={row['vep_macro_f1']:.6f} "
+                f"vtm_macro={row['vtm_macro_f1']:.6f} "
                 f"BJUT/DIVE={row['bjut_samples']}/{row['dive_samples']}",
                 flush=True,
             )
@@ -889,6 +1044,8 @@ def main():
                 metadata = {
                     "efpp_pattern_subset": "conservative_22",
                     "included_pattern_names": pattern_names,
+                    "relation_types": RELATION_TYPES,
+                    "global_vulnerability_label_names": vulnerability_names,
                     "base_encoder_init_setting": config["base_encoder_init_setting"],
                     "continued_pretraining_train_only": True,
                 }
@@ -927,10 +1084,16 @@ def main():
                 "train_loss_mom",
                 "train_loss_etp",
                 "train_loss_efpp",
+                "train_loss_err",
+                "train_loss_vep",
+                "train_loss_vtm",
                 "valid_loss_total",
                 "valid_loss_mom",
                 "valid_loss_etp",
                 "valid_loss_efpp",
+                "valid_loss_err",
+                "valid_loss_vep",
+                "valid_loss_vtm",
             )
         )
         balanced_ratio = total_bjut / total_seen
@@ -949,6 +1112,9 @@ def main():
             and history[-1]["train_loss_mom"] < history[0]["train_loss_mom"]
             and selected_metrics["etp_macro_f1_excluding_normal"] > 0
             and selected_metrics["efpp_macro_f1"] > 0
+            and selected_metrics["err_macro_f1"] > 0
+            and selected_metrics["vep_macro_f1"] > 0
+            and selected_metrics["vtm_macro_f1"] > 0
             and sum(row["f1"] > 0 for row in selected_metrics["efpp_per_pattern"])
             >= len(pattern_names) // 2
             and (checkpoint_dir / "hf_model" / "config.json").exists()
@@ -986,9 +1152,17 @@ def main():
                 "lambda_mom": float(config["lambda_mom"]),
                 "lambda_etp": float(config["lambda_etp"]),
                 "lambda_efpp": float(config["lambda_efpp"]),
+                "lambda_err": float(config.get("lambda_err", 0.3)),
+                "lambda_vep": float(config.get("lambda_vep", 0.4)),
+                "lambda_vtm": float(config.get("lambda_vtm", 0.4)),
                 "etp_class_weights": weights["etp_class_weights"],
                 "efpp_pos_weights": weights["efpp_pos_weights"],
+                "relation_class_weights": weights["relation_class_weights"],
+                "vep_pos_weights": weights["vep_pos_weights"],
+                "vtm_pos_weights": weights["vtm_pos_weights"],
             },
+            "relation_types": RELATION_TYPES,
+            "global_vulnerability_label_names": vulnerability_names,
             "training_hyperparameters": {
                 key: config[key]
                 for key in (
@@ -1024,6 +1198,9 @@ def main():
                 "internal_valid_metrics": relative(Path(config["result_dir"]) / "internal_valid_metrics.json"),
                 "etp_per_effect_metrics": relative(Path(config["result_dir"]) / "etp_per_effect_metrics.csv"),
                 "efpp_per_pattern_metrics": relative(Path(config["result_dir"]) / "efpp_per_pattern_metrics.csv"),
+                "err_per_relation_metrics": relative(Path(config["result_dir"]) / "err_per_relation_metrics.csv"),
+                "vep_per_label_metrics": relative(Path(config["result_dir"]) / "vep_per_label_metrics.csv"),
+                "vtm_per_label_metrics": relative(Path(config["result_dir"]) / "vtm_per_label_metrics.csv"),
                 "loss_curves": relative(Path(config["result_dir"]) / "loss_curves.png"),
             },
             "sanity_success": sanity_success,
@@ -1031,8 +1208,9 @@ def main():
             "warnings": [
                 TRANSDUCTIVE_WARNING,
                 "Continued pretraining uses train chunks only.",
-                "No downstream vulnerability labels were used.",
-                "MOM/ETP/EFPP metrics are pretraining-task metrics, not vulnerability-detection metrics.",
+                "Stage P2 weak supervision uses train-split contract labels plus ontology templates only.",
+                "No valid/test labels are used to construct VEP/VTM pseudo targets.",
+                "P1/P2 pretraining metrics (MOM/ETP/EFPP/ERR/VEP/VTM) are not the final vulnerability-detection metrics.",
             ],
             "recommendation_for_stage16c": (
                 config["stage16c_recommendation"] if full_success else "Do not start Stage 16C until full Stage 16B success criteria pass."

@@ -42,6 +42,12 @@ DATASET_SPECS = {
     },
 }
 
+GLOBAL_VULNERABILITY_LABELS = []
+for _dataset_name in ("BJUT", "DIVE"):
+    for _label_name in DATASET_SPECS[_dataset_name]["label_names"]:
+        if _label_name not in GLOBAL_VULNERABILITY_LABELS:
+            GLOBAL_VULNERABILITY_LABELS.append(_label_name)
+
 
 def resolve(path):
     path = Path(path)

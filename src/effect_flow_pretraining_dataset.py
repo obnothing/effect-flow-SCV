@@ -7,6 +7,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, Sampler
 
+from effect_flow_ontology import RELATION_TYPES
 from evm_tokenizer import EVMOpcodeTokenizer
 
 
@@ -18,6 +19,7 @@ FORBIDDEN_LABEL_FIELDS = {
 }
 NUM_EFFECT_TYPES = 16
 ORIGINAL_PATTERN_COUNT = 27
+NUM_RELATION_TYPES = len(RELATION_TYPES)
 
 
 def _cache_paths(corpus_path):
@@ -54,6 +56,11 @@ def build_or_load_corpus_index(corpus_path, force=False, progress_callback=None)
     offsets = []
     etp_counts = [0] * NUM_EFFECT_TYPES
     efpp_positive_counts = [0] * ORIGINAL_PATTERN_COUNT
+    relation_counts = [0] * NUM_RELATION_TYPES
+    vep_positive_counts = None
+    vtm_positive_counts = None
+    vulnerability_label_count = None
+    vulnerability_label_names = None
     active_etp_tokens = 0
     with corpus_path.open("rb") as handle:
         line_no = 0
@@ -78,10 +85,27 @@ def build_or_load_corpus_index(corpus_path, force=False, progress_callback=None)
                 )
             if len(item.get("efpp_pattern_labels", [])) != ORIGINAL_PATTERN_COUNT:
                 raise ValueError(f"Invalid EFPP label width at {corpus_path}:{line_no}")
+            relation_labels = item.get("effect_relations", {}).get("labels", [])
+            if len(relation_labels) != NUM_RELATION_TYPES:
+                raise ValueError(f"Invalid relation label width at {corpus_path}:{line_no}")
             effect_ids = item.get("effect_type_ids", [])
             loss_mask = item.get("etp_loss_mask", [])
             if len(effect_ids) != len(loss_mask):
                 raise ValueError(f"ETP labels/mask length mismatch at {corpus_path}:{line_no}")
+            vep = item.get("chunk_vulnerability_evidence", [])
+            vtm = item.get("vulnerability_template_matches", [])
+            active_mask = item.get("active_vulnerability_label_mask", [])
+            if vulnerability_label_count is None:
+                vulnerability_label_count = len(vtm)
+                vulnerability_label_names = item.get("global_vulnerability_label_names", [])
+                vep_positive_counts = [0] * vulnerability_label_count
+                vtm_positive_counts = [0] * vulnerability_label_count
+            if len(vep) != vulnerability_label_count or len(vtm) != vulnerability_label_count:
+                raise ValueError(f"Template target width mismatch at {corpus_path}:{line_no}")
+            if len(active_mask) != vulnerability_label_count:
+                raise ValueError(f"Active vulnerability mask width mismatch at {corpus_path}:{line_no}")
+            if item.get("global_vulnerability_label_names", []) != vulnerability_label_names:
+                raise ValueError(f"Inconsistent global vulnerability label names at {corpus_path}:{line_no}")
             offsets.append(offset)
             for effect_id, active in zip(effect_ids, loss_mask):
                 if active:
@@ -92,6 +116,12 @@ def build_or_load_corpus_index(corpus_path, force=False, progress_callback=None)
                     active_etp_tokens += 1
             for index, value in enumerate(item["efpp_pattern_labels"]):
                 efpp_positive_counts[index] += int(value)
+            for index, value in enumerate(relation_labels):
+                relation_counts[index] += int(value)
+            for index, value in enumerate(vep):
+                vep_positive_counts[index] += int(float(value) > 0.0)
+            for index, value in enumerate(vtm):
+                vtm_positive_counts[index] += int(float(value) > 0.0)
             if progress_callback and line_no % 10000 == 0:
                 progress_callback(line_no)
 
@@ -107,6 +137,11 @@ def build_or_load_corpus_index(corpus_path, force=False, progress_callback=None)
         "active_etp_tokens": active_etp_tokens,
         "etp_counts": etp_counts,
         "efpp_positive_counts": efpp_positive_counts,
+        "relation_counts": relation_counts,
+        "vulnerability_label_count": vulnerability_label_count,
+        "global_vulnerability_label_names": vulnerability_label_names,
+        "vep_positive_counts": vep_positive_counts,
+        "vtm_positive_counts": vtm_positive_counts,
         "contains_downstream_labels": False,
         "source_split": "train",
     }
@@ -133,6 +168,11 @@ def choose_internal_holdout(offsets, ratio, seed):
 def count_offsets_labels(corpus_path, offsets):
     etp_counts = [0] * NUM_EFFECT_TYPES
     efpp_counts = [0] * ORIGINAL_PATTERN_COUNT
+    relation_counts = [0] * NUM_RELATION_TYPES
+    vep_counts = None
+    vtm_counts = None
+    vulnerability_label_count = None
+    vulnerability_label_names = None
     active_tokens = 0
     with Path(corpus_path).open("rb") as handle:
         for offset in sorted(int(value) for value in offsets):
@@ -146,11 +186,35 @@ def count_offsets_labels(corpus_path, offsets):
                     active_tokens += 1
             for index, value in enumerate(item["efpp_pattern_labels"]):
                 efpp_counts[index] += int(value)
+            relation_labels = item["effect_relations"]["labels"]
+            for index, value in enumerate(relation_labels):
+                relation_counts[index] += int(value)
+            vep = item["chunk_vulnerability_evidence"]
+            vtm = item["vulnerability_template_matches"]
+            active_mask = item["active_vulnerability_label_mask"]
+            if vulnerability_label_count is None:
+                vulnerability_label_count = len(vtm)
+                vulnerability_label_names = item.get("global_vulnerability_label_names", [])
+                vep_counts = [0] * vulnerability_label_count
+                vtm_counts = [0] * vulnerability_label_count
+            if len(active_mask) != vulnerability_label_count:
+                raise ValueError("active_vulnerability_label_mask width mismatch")
+            if item.get("global_vulnerability_label_names", []) != vulnerability_label_names:
+                raise ValueError("global_vulnerability_label_names mismatch")
+            for index, value in enumerate(vep):
+                vep_counts[index] += int(float(value) > 0.0)
+            for index, value in enumerate(vtm):
+                vtm_counts[index] += int(float(value) > 0.0)
     return {
         "sample_count": len(offsets),
         "active_etp_tokens": active_tokens,
         "etp_counts": etp_counts,
         "efpp_positive_counts": efpp_counts,
+        "relation_counts": relation_counts,
+        "vulnerability_label_count": vulnerability_label_count,
+        "global_vulnerability_label_names": vulnerability_label_names,
+        "vep_positive_counts": vep_counts,
+        "vtm_positive_counts": vtm_counts,
     }
 
 
@@ -170,6 +234,29 @@ def subtract_stats(full_stats, heldout_stats):
                 heldout_stats["efpp_positive_counts"],
             )
         ],
+        "relation_counts": [
+            int(left - right)
+            for left, right in zip(
+                full_stats["relation_counts"],
+                heldout_stats["relation_counts"],
+            )
+        ],
+        "vulnerability_label_count": full_stats["vulnerability_label_count"],
+        "global_vulnerability_label_names": full_stats["global_vulnerability_label_names"],
+        "vep_positive_counts": [
+            int(left - right)
+            for left, right in zip(
+                full_stats["vep_positive_counts"],
+                heldout_stats["vep_positive_counts"],
+            )
+        ],
+        "vtm_positive_counts": [
+            int(left - right)
+            for left, right in zip(
+                full_stats["vtm_positive_counts"],
+                heldout_stats["vtm_positive_counts"],
+            )
+        ],
     }
 
 
@@ -183,6 +270,9 @@ def calculate_balanced_class_weights(
     datasets = sorted(train_stats_by_dataset)
     etp_rates = []
     efpp_rates = []
+    relation_rates = []
+    vep_rates = []
+    vtm_rates = []
     for dataset in datasets:
         stats = train_stats_by_dataset[dataset]
         etp_total = max(1, stats["active_etp_tokens"])
@@ -190,6 +280,15 @@ def calculate_balanced_class_weights(
         etp_rates.append([count / etp_total for count in stats["etp_counts"]])
         efpp_rates.append(
             [count / sample_total for count in stats["efpp_positive_counts"]]
+        )
+        relation_rates.append(
+            [count / sample_total for count in stats["relation_counts"]]
+        )
+        vep_rates.append(
+            [count / sample_total for count in stats["vep_positive_counts"]]
+        )
+        vtm_rates.append(
+            [count / sample_total for count in stats["vtm_positive_counts"]]
         )
     balanced_etp_rates = [
         sum(rates[index] for rates in etp_rates) / len(etp_rates)
@@ -214,11 +313,47 @@ def calculate_balanced_class_weights(
         )
         for rate in selected_rates
     ]
+    balanced_relation_rates = [
+        sum(rates[index] for rates in relation_rates) / len(relation_rates)
+        for index in range(NUM_RELATION_TYPES)
+    ]
+    relation_class_weights = [
+        min(float(max_etp_class_weight), math.sqrt(1.0 / max(NUM_RELATION_TYPES * rate, 1e-12)))
+        for rate in balanced_relation_rates
+    ]
+    balanced_vep_rates = [
+        sum(rates[index] for rates in vep_rates) / len(vep_rates)
+        for index in range(len(vep_rates[0]))
+    ]
+    balanced_vtm_rates = [
+        sum(rates[index] for rates in vtm_rates) / len(vtm_rates)
+        for index in range(len(vtm_rates[0]))
+    ]
+    vep_pos_weights = [
+        min(
+            float(max_efpp_pos_weight),
+            math.sqrt(max(0.0, 1.0 - rate) / max(rate, 1e-12)),
+        )
+        for rate in balanced_vep_rates
+    ]
+    vtm_pos_weights = [
+        min(
+            float(max_efpp_pos_weight),
+            math.sqrt(max(0.0, 1.0 - rate) / max(rate, 1e-12)),
+        )
+        for rate in balanced_vtm_rates
+    ]
     return {
         "etp_class_weights": etp_weights,
         "efpp_pos_weights": efpp_pos_weights,
+        "relation_class_weights": relation_class_weights,
+        "vep_pos_weights": vep_pos_weights,
+        "vtm_pos_weights": vtm_pos_weights,
         "balanced_etp_frequencies": balanced_etp_rates,
         "balanced_efpp_positive_rates": selected_rates,
+        "balanced_relation_rates": balanced_relation_rates,
+        "balanced_vep_positive_rates": balanced_vep_rates,
+        "balanced_vtm_positive_rates": balanced_vtm_rates,
         "weighting_distribution": "equal-weight average of BJUT and DIVE train distributions",
     }
 
@@ -356,6 +491,18 @@ class EffectFlowChunkDataset(Dataset):
             [item["efpp_pattern_labels"][index] for index in self.pattern_indices],
             dtype=torch.float32,
         )
+        relation_labels = torch.tensor(
+            item["effect_relations"]["labels"],
+            dtype=torch.float32,
+        )
+        active_relations = [idx for idx, value in enumerate(relation_labels.tolist()) if value > 0]
+        err_label = active_relations[0] if active_relations else -100
+        vep_labels = torch.tensor(item["chunk_vulnerability_evidence"], dtype=torch.float32)
+        vtm_labels = torch.tensor(item["vulnerability_template_matches"], dtype=torch.float32)
+        vulnerability_loss_mask = torch.tensor(
+            item["active_vulnerability_label_mask"],
+            dtype=torch.float32,
+        )
         seed_value = (
             self.seed
             + self.epoch * 1_000_000_007
@@ -374,6 +521,11 @@ class EffectFlowChunkDataset(Dataset):
             "mom_labels": mom_labels,
             "etp_labels": etp_labels,
             "efpp_labels": efpp_labels,
+            "err_labels": torch.tensor(err_label, dtype=torch.long),
+            "relation_labels": relation_labels,
+            "vep_labels": vep_labels,
+            "vtm_labels": vtm_labels,
+            "vulnerability_loss_mask": vulnerability_loss_mask,
             "source_dataset_id": torch.tensor(source_index, dtype=torch.long),
         }
 

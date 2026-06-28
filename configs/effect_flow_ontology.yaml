@@ -1,0 +1,101 @@
+effect_types:
+  - name: Normal
+    role: protective_behavior
+  - name: ExternalCall
+    role: risk_behavior
+  - name: StateRead
+    role: risk_behavior
+  - name: StateWrite
+    role: risk_behavior
+  - name: AuthSource
+    role: protective_behavior
+  - name: ControlGuard
+    role: protective_behavior
+  - name: ReturnCheck
+    role: protective_behavior
+  - name: EnvDependency
+    role: risk_behavior
+  - name: Arithmetic
+    role: risk_behavior
+  - name: AddressLiteral
+    role: risk_behavior
+  - name: CreateContract
+    role: risk_behavior
+  - name: Destructive
+    role: risk_behavior
+  - name: RevertOrAssert
+    role: protective_behavior
+  - name: GasOrValue
+    role: risk_behavior
+  - name: HashOrCrypto
+    role: risk_behavior
+  - name: StorageOrMemoryHeavy
+    role: risk_behavior
+
+role_groups:
+  risk_behavior:
+    effect_types:
+      - ExternalCall
+      - StateRead
+      - StateWrite
+      - EnvDependency
+      - Arithmetic
+      - AddressLiteral
+      - CreateContract
+      - Destructive
+      - GasOrValue
+      - HashOrCrypto
+      - StorageOrMemoryHeavy
+  protective_behavior:
+    effect_types:
+      - Normal
+      - AuthSource
+      - ControlGuard
+      - ReturnCheck
+      - RevertOrAssert
+  missing_check_behavior:
+    effect_types:
+      - ExternalCall
+      - StateWrite
+      - EnvDependency
+      - Arithmetic
+
+pattern_groups:
+  risk_pattern:
+    - has_external_call
+    - has_delegatecall
+    - has_state_read
+    - has_state_write
+    - call_before_state_write
+    - state_write_before_call
+    - sensitive_call_without_auth_guard
+    - env_used_in_condition
+    - env_used_in_arithmetic_or_hash
+    - div_before_mul
+    - has_hardcoded_address
+    - hardcoded_address_near_call
+    - value_or_gas_sensitive_call
+    - dense_storage_or_call_ops
+    - selfdestruct_present
+    - create_contract_present
+  protective_pattern:
+    - call_with_return_check
+    - state_write_with_auth_guard
+    - sensitive_call_with_auth_guard
+    - panic_selector_present
+  missing_check_pattern:
+    - call_without_return_check
+    - state_write_without_auth_guard
+
+relation_types:
+  - call_then_state_write
+  - state_write_then_call
+  - call_then_return_check
+  - state_write_then_auth_guard
+  - env_then_branch
+  - div_then_mul
+
+role_names:
+  - risk_behavior
+  - protective_behavior
+  - missing_check_behavior

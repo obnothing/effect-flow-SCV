@@ -5,6 +5,10 @@ base_encoder_init_setting: transductive_initialization
 vocab_path: data/processed/BJUT_SC01/evm_vocab.json
 efpp_pattern_config: configs/effect_flow_efpp_conservative_22.json
 efpp_pattern_subset: conservative_22
+ontology_path: configs/effect_flow_ontology.yaml
+template_paths:
+  BJUT: configs/vulnerability_templates_bjut.yaml
+  DIVE: configs/vulnerability_templates_dive.yaml
 
 train_corpora:
   BJUT: data/processed/effect_flow_pretrain/BJUT/train_effect_flow_chunks.jsonl
@@ -30,10 +34,14 @@ max_len: 512
 mlm_probability: 0.15
 num_effect_types: 16
 num_efpp_patterns: 22
+num_relation_types: 6
 
 lambda_mom: 1.0
 lambda_etp: 0.3
 lambda_efpp: 0.5
+lambda_err: 0.3
+lambda_vep: 0.4
+lambda_vtm: 0.4
 max_etp_class_weight: 5.0
 normal_class_weight_scale: 0.5
 max_efpp_pos_weight: 10.0

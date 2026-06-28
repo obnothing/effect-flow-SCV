@@ -116,6 +116,24 @@ def collate_batch(batch):
         collated["etp_distribution"] = torch.stack(
             [item["etp_distribution"] for item in batch]
         )
+        collated["relation_distribution"] = torch.stack(
+            [item["relation_distribution"] for item in batch]
+        )
+        collated["vulnerability_evidence_probs"] = torch.stack(
+            [item["vulnerability_evidence_probs"] for item in batch]
+        )
+        collated["template_match_scores"] = torch.stack(
+            [item["template_match_scores"] for item in batch]
+        )
+        collated["chunk_vulnerability_evidence"] = torch.stack(
+            [item["chunk_vulnerability_evidence"] for item in batch]
+        )
+        collated["vulnerability_template_matches"] = torch.stack(
+            [item["vulnerability_template_matches"] for item in batch]
+        )
+        collated["active_vulnerability_label_mask"] = torch.stack(
+            [item["active_vulnerability_label_mask"] for item in batch]
+        )
     return collated
 
 
@@ -140,6 +158,12 @@ def move_batch(batch, device):
     if "efpp_probs" in batch:
         moved["efpp_probs"] = batch["efpp_probs"].to(device)
         moved["etp_distribution"] = batch["etp_distribution"].to(device)
+        moved["relation_distribution"] = batch["relation_distribution"].to(device)
+        moved["vulnerability_evidence_probs"] = batch["vulnerability_evidence_probs"].to(device)
+        moved["template_match_scores"] = batch["template_match_scores"].to(device)
+        moved["chunk_vulnerability_evidence"] = batch["chunk_vulnerability_evidence"].to(device)
+        moved["vulnerability_template_matches"] = batch["vulnerability_template_matches"].to(device)
+        moved["active_vulnerability_label_mask"] = batch["active_vulnerability_label_mask"].to(device)
     return moved
 
 

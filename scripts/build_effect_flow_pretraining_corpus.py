@@ -17,12 +17,23 @@ from effect_flow_schema import (  # noqa: E402
     EFFECT_TYPES,
     EFPP_PATTERNS,
     annotate_effect_types,
+    annotate_effect_relations,
     annotate_efpp_patterns,
     build_token_units,
     effect_events,
+    effect_type_chunk_histogram,
+    effect_type_token_names,
+    relation_events,
+)
+from effect_flow_ontology import (  # noqa: E402
+    load_ontology,
+    load_vulnerability_templates,
+    pseudo_evidence_vector,
+    template_score_vector,
 )
 from effect_flow_utils import (  # noqa: E402
     DATASET_SPECS,
+    GLOBAL_VULNERABILITY_LABELS,
     REPORT_DIR,
     iter_jsonl,
     opcode_hash,
@@ -58,6 +69,14 @@ def parse_args():
     parser.add_argument("--include_other_operands", action="store_true")
     parser.add_argument("--num_workers", type=int, default=4)
     parser.add_argument("--force", action="store_true")
+    parser.add_argument(
+        "--ontology_path",
+        default="configs/effect_flow_ontology.yaml",
+    )
+    parser.add_argument(
+        "--template_path",
+        default=None,
+    )
     return parser.parse_args()
 
 
@@ -92,11 +111,32 @@ def make_payload(
     coverage_ratio,
     max_len,
     include_other_operands,
+    label_names,
+    ontology,
+    templates,
+    contract_multi_labels,
 ):
     effects = annotate_effect_types(
         content_units, include_other_operands=include_other_operands
     )
     pattern_labels, pattern_matches = annotate_efpp_patterns(content_units)
+    relation_labels, relation_matches, relation_primary_id = annotate_effect_relations(
+        content_units
+    )
+    effect_histogram = effect_type_chunk_histogram(effects)
+    template_scores = template_score_vector(
+        label_names,
+        templates,
+        ontology,
+        effect_histogram,
+        pattern_labels,
+        relation_labels,
+    )
+    chunk_evidence = (
+        pseudo_evidence_vector(template_scores, contract_multi_labels, label_names)
+        if contract_multi_labels is not None
+        else [0.0] * len(GLOBAL_VULNERABILITY_LABELS)
+    )
     content_tokens = [unit.token for unit in content_units]
     tokens = [tokenizer.cls_token] + content_tokens + [tokenizer.sep_token]
     input_ids = tokenizer.convert_tokens_to_ids(tokens)
@@ -128,10 +168,26 @@ def make_payload(
         "input_ids": input_ids,
         "attention_mask": attention_mask,
         "effect_type_ids": effect_type_ids,
+        "effect_type_tokens": effect_type_token_names(effects),
         "effect_type_multihot": effect_type_multihot,
+        "effect_type_chunk_histogram": effect_histogram,
         "etp_loss_mask": etp_loss_mask,
         "efpp_pattern_labels": pattern_labels,
         "efpp_matches": pattern_matches,
+        "effect_relations": {
+            "labels": relation_labels,
+            "matches": relation_matches,
+            "primary_relation_id": relation_primary_id,
+            "events": relation_events(content_units, relation_matches, offset=1),
+        },
+        "vulnerability_template_matches": template_scores,
+        "chunk_vulnerability_evidence": chunk_evidence,
+        "global_vulnerability_label_names": GLOBAL_VULNERABILITY_LABELS,
+        "active_vulnerability_label_names": label_names,
+        "active_vulnerability_label_mask": [
+            1 if label_name in label_names else 0
+            for label_name in GLOBAL_VULNERABILITY_LABELS
+        ],
         "effect_events": effect_events(content_units, effects, offset=1),
         "coverage_start": start,
         "coverage_end": min(total_tokens, start + len(content_units)),
@@ -170,6 +226,14 @@ def process_contract(task):
     opcode = opcode or ""
     units = build_token_units(opcode, tokenizer)
     total_tokens = len(units)
+    contract_multi_labels = None
+    if split == "train" and "multi_labels" in item:
+        contract_multi_labels = item["multi_labels"]
+        if len(contract_multi_labels) != len(config["label_names"]):
+            raise ValueError(
+                f"{config['dataset']} train sample label width mismatch: "
+                f"expected {len(config['label_names'])}, got {len(contract_multi_labels)}"
+            )
     if not units:
         return {
             "lines": [],
@@ -203,6 +267,10 @@ def process_contract(task):
             coverage_ratio,
             config["max_len"],
             config["include_other_operands"],
+            config["label_names"],
+            config["ontology"],
+            config["templates"],
+            contract_multi_labels,
         )
         lines.append(json.dumps(payload, ensure_ascii=False))
     return {
@@ -234,6 +302,9 @@ def build_split(args, tokenizer, split, input_path, output_path):
         "chunk_stride": args.chunk_stride,
         "max_chunks_per_contract": args.max_chunks_per_contract,
         "include_other_operands": args.include_other_operands,
+        "ontology": args.ontology,
+        "templates": args.templates,
+        "label_names": DATASET_SPECS[args.dataset]["label_names"],
     }
 
     def tasks():
@@ -297,7 +368,19 @@ def main():
     args = parse_args()
     if args.max_chunks_per_contract is None:
         args.max_chunks_per_contract = 64 if args.dataset == "DIVE" else 32
+    if args.template_path is None:
+        args.template_path = (
+            "configs/vulnerability_templates_dive.yaml"
+            if args.dataset == "DIVE"
+            else "configs/vulnerability_templates_bjut.yaml"
+        )
     tokenizer = EVMOpcodeTokenizer.from_vocab_file(resolve(args.vocab_path))
+    args.ontology = load_ontology(resolve(args.ontology_path))
+    args.templates = load_vulnerability_templates(
+        resolve(args.template_path),
+        args.ontology,
+        expected_label_names=DATASET_SPECS[args.dataset]["label_names"],
+    )
     input_paths = strict_split_paths(args.dataset)
     missing = [relative(path) for path in input_paths.values() if not path.exists()]
     if missing:
@@ -324,6 +407,10 @@ def main():
         "num_workers": max(1, min(4, int(args.num_workers))),
         "effect_type_count": len(EFFECT_TYPES),
         "efpp_pattern_count": len(EFPP_PATTERNS),
+        "relation_type_count": len(args.ontology["relation_types"]),
+        "global_vulnerability_label_count": len(GLOBAL_VULNERABILITY_LABELS),
+        "template_path": relative(resolve(args.template_path)),
+        "ontology_path": relative(resolve(args.ontology_path)),
         "splits": split_reports,
         "total_contracts": sum(row["contracts"] for row in split_reports.values()),
         "total_chunks": sum(row["chunks"] for row in split_reports.values()),

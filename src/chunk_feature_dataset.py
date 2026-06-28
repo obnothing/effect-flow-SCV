@@ -29,6 +29,12 @@ class ChunkFeatureDataset(Dataset):
         self.semantic_path = Path(semantic_path) if semantic_path else None
         self.efpp_probs = None
         self.etp_distribution = None
+        self.relation_distribution = None
+        self.vulnerability_evidence_probs = None
+        self.template_match_scores = None
+        self.chunk_vulnerability_evidence = None
+        self.vulnerability_template_matches = None
+        self.active_vulnerability_label_mask = None
         self.semantic_report = {}
         if self.semantic_path is not None:
             self._load_semantic_cache()
@@ -71,8 +77,29 @@ class ChunkFeatureDataset(Dataset):
             raise ValueError(f"Semantic binary labels do not match feature cache: {self.semantic_path}")
         if not torch.equal(payload["multi_labels"].float(), self.multi_labels):
             raise ValueError(f"Semantic multi-labels do not match feature cache: {self.semantic_path}")
+        required = [
+            "efpp_probs",
+            "etp_distribution",
+            "relation_distribution",
+            "vulnerability_evidence_probs",
+            "template_match_scores",
+            "chunk_vulnerability_evidence",
+            "vulnerability_template_matches",
+            "active_vulnerability_label_mask",
+        ]
+        missing = [key for key in required if key not in payload]
+        if missing:
+            raise ValueError(
+                f"{self.semantic_path} is not a semantic cache v2 payload. Missing: {missing}"
+            )
         self.efpp_probs = payload["efpp_probs"].float()
         self.etp_distribution = payload["etp_distribution"].float()
+        self.relation_distribution = payload["relation_distribution"].float()
+        self.vulnerability_evidence_probs = payload["vulnerability_evidence_probs"].float()
+        self.template_match_scores = payload["template_match_scores"].float()
+        self.chunk_vulnerability_evidence = payload["chunk_vulnerability_evidence"].float()
+        self.vulnerability_template_matches = payload["vulnerability_template_matches"].float()
+        self.active_vulnerability_label_mask = payload["active_vulnerability_label_mask"].float()
         self.semantic_report = payload.get("report", {})
 
     def _validate(self):
@@ -99,10 +126,28 @@ class ChunkFeatureDataset(Dataset):
                 raise ValueError("efpp_probs must have the same [N, C] prefix as features")
             if self.etp_distribution.shape[:2] != self.features.shape[:2]:
                 raise ValueError("etp_distribution must have the same [N, C] prefix as features")
+            if self.relation_distribution.shape[:2] != self.features.shape[:2]:
+                raise ValueError("relation_distribution must have the same [N, C] prefix as features")
+            if self.vulnerability_evidence_probs.shape[:2] != self.features.shape[:2]:
+                raise ValueError("vulnerability_evidence_probs must have the same [N, C] prefix as features")
+            if self.template_match_scores.shape[:2] != self.features.shape[:2]:
+                raise ValueError("template_match_scores must have the same [N, C] prefix as features")
+            if self.chunk_vulnerability_evidence.shape[:2] != self.features.shape[:2]:
+                raise ValueError("chunk_vulnerability_evidence must have the same [N, C] prefix as features")
+            if self.vulnerability_template_matches.shape[:2] != self.features.shape[:2]:
+                raise ValueError("vulnerability_template_matches must have the same [N, C] prefix as features")
+            if self.active_vulnerability_label_mask.shape[0] != self.features.shape[0]:
+                raise ValueError("active_vulnerability_label_mask sample count mismatch")
             if torch.isnan(self.efpp_probs).any() or torch.isinf(self.efpp_probs).any():
                 raise ValueError(f"{self.semantic_path} contains NaN/Inf efpp_probs")
             if torch.isnan(self.etp_distribution).any() or torch.isinf(self.etp_distribution).any():
                 raise ValueError(f"{self.semantic_path} contains NaN/Inf etp_distribution")
+            if torch.isnan(self.relation_distribution).any() or torch.isinf(self.relation_distribution).any():
+                raise ValueError(f"{self.semantic_path} contains NaN/Inf relation_distribution")
+            if torch.isnan(self.vulnerability_evidence_probs).any() or torch.isinf(self.vulnerability_evidence_probs).any():
+                raise ValueError(f"{self.semantic_path} contains NaN/Inf vulnerability_evidence_probs")
+            if torch.isnan(self.template_match_scores).any() or torch.isinf(self.template_match_scores).any():
+                raise ValueError(f"{self.semantic_path} contains NaN/Inf template_match_scores")
 
     def __len__(self):
         return len(self.indices)
@@ -120,6 +165,12 @@ class ChunkFeatureDataset(Dataset):
         if self.efpp_probs is not None:
             item["efpp_probs"] = self.efpp_probs[real_idx]
             item["etp_distribution"] = self.etp_distribution[real_idx]
+            item["relation_distribution"] = self.relation_distribution[real_idx]
+            item["vulnerability_evidence_probs"] = self.vulnerability_evidence_probs[real_idx]
+            item["template_match_scores"] = self.template_match_scores[real_idx]
+            item["chunk_vulnerability_evidence"] = self.chunk_vulnerability_evidence[real_idx]
+            item["vulnerability_template_matches"] = self.vulnerability_template_matches[real_idx]
+            item["active_vulnerability_label_mask"] = self.active_vulnerability_label_mask[real_idx]
         return item
 
 

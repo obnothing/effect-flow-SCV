@@ -122,6 +122,12 @@ def collect_predictions(model, loader, device):
         if "efpp_probs" in batch:
             inputs["efpp_probs"] = batch["efpp_probs"].to(device)
             inputs["etp_distribution"] = batch["etp_distribution"].to(device)
+            inputs["relation_distribution"] = batch["relation_distribution"].to(device)
+            inputs["vulnerability_evidence_probs"] = batch["vulnerability_evidence_probs"].to(device)
+            inputs["template_match_scores"] = batch["template_match_scores"].to(device)
+            inputs["chunk_vulnerability_evidence"] = batch["chunk_vulnerability_evidence"].to(device)
+            inputs["vulnerability_template_matches"] = batch["vulnerability_template_matches"].to(device)
+            inputs["active_vulnerability_label_mask"] = batch["active_vulnerability_label_mask"].to(device)
         outputs = model(**inputs)
         losses.append(float(outputs["loss"].mean().detach().cpu().item()))
         ids.extend(batch["id"])

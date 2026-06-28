@@ -18,6 +18,21 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from evm_bert_classification_dataset import validate_evm_vocab  # noqa: E402
+from effect_flow_ontology import (  # noqa: E402
+    RELATION_TYPES,
+    load_ontology,
+    load_vulnerability_templates,
+    pseudo_evidence_vector,
+    template_score_vector,
+)
+from effect_flow_schema import (  # noqa: E402
+    annotate_effect_relations,
+    annotate_effect_types,
+    annotate_efpp_patterns,
+    build_token_units,
+    effect_type_chunk_histogram,
+)
+from effect_flow_utils import GLOBAL_VULNERABILITY_LABELS  # noqa: E402
 from evm_tokenizer import EVMOpcodeTokenizer  # noqa: E402
 
 
@@ -99,10 +114,26 @@ def build_contract_chunks(tokenizer, opcode, config):
     start = 0
     while start < original_len and len(chunks) < max_chunks:
         chunk_tokens = tokens[start : start + content_size]
-        chunks.append(encode_chunk(tokenizer, chunk_tokens, max_len))
+        input_ids, attention_mask, content_mask = encode_chunk(tokenizer, chunk_tokens, max_len)
+        chunks.append(
+            {
+                "chunk_tokens": chunk_tokens,
+                "input_ids": input_ids,
+                "attention_mask": attention_mask,
+                "content_mask": content_mask,
+            }
+        )
         start += stride
     if not chunks:
-        chunks.append(encode_chunk(tokenizer, [], max_len))
+        input_ids, attention_mask, content_mask = encode_chunk(tokenizer, [], max_len)
+        chunks.append(
+            {
+                "chunk_tokens": [],
+                "input_ids": input_ids,
+                "attention_mask": attention_mask,
+                "content_mask": content_mask,
+            }
+        )
     num_kept = len(chunks)
     covered_tokens = min(original_len, content_size + stride * max(0, num_kept - 1))
     coverage = 1.0 if original_len == 0 else covered_tokens / original_len
@@ -129,10 +160,18 @@ class EffectFlowSemanticExtractor(nn.Module):
         self.bert = model.bert
         self.etp_head = nn.Linear(hidden_size, int(heads["num_effect_types"]))
         self.efpp_head = nn.Linear(hidden_size, int(heads["num_efpp_patterns"]))
+        self.err_head = nn.Linear(hidden_size, int(heads["num_relation_types"]))
+        self.vep_head = nn.Linear(hidden_size, int(heads["num_vulnerability_templates"]))
+        self.vtm_head = nn.Linear(hidden_size, int(heads["num_vulnerability_templates"]))
         self.etp_head.load_state_dict(heads["etp_head_state_dict"])
         self.efpp_head.load_state_dict(heads["efpp_head_state_dict"])
+        self.err_head.load_state_dict(heads["err_head_state_dict"])
+        self.vep_head.load_state_dict(heads["vep_head_state_dict"])
+        self.vtm_head.load_state_dict(heads["vtm_head_state_dict"])
         self.num_effect_types = int(heads["num_effect_types"])
         self.num_efpp_patterns = int(heads["num_efpp_patterns"])
+        self.num_relation_types = int(heads["num_relation_types"])
+        self.num_vulnerability_templates = int(heads["num_vulnerability_templates"])
         self.eval()
 
     def forward(self, input_ids, attention_mask, content_mask):
@@ -151,10 +190,32 @@ class EffectFlowSemanticExtractor(nn.Module):
         pooling_weights = pooling_mask.unsqueeze(-1).to(hidden.dtype)
         pooled = (hidden * pooling_weights).sum(dim=1) / pooling_weights.sum(dim=1).clamp_min(1.0)
         efpp_probs = torch.sigmoid(self.efpp_head(pooled))
-        return efpp_probs, etp_distribution
+        relation_distribution = torch.softmax(self.err_head(pooled), dim=-1)
+        vulnerability_evidence_probs = torch.sigmoid(self.vep_head(pooled))
+        template_match_scores = torch.sigmoid(self.vtm_head(pooled))
+        return (
+            efpp_probs,
+            etp_distribution,
+            relation_distribution,
+            vulnerability_evidence_probs,
+            template_match_scores,
+        )
 
 
-def flush_batch(model, input_ids, masks, content_masks, targets, efpp_probs, etp_distribution, device, use_fp16):
+def flush_batch(
+    model,
+    input_ids,
+    masks,
+    content_masks,
+    targets,
+    efpp_probs,
+    etp_distribution,
+    relation_distribution,
+    vulnerability_evidence_probs,
+    template_match_scores,
+    device,
+    use_fp16,
+):
     if not input_ids:
         return
     ids = torch.tensor(input_ids, dtype=torch.long, device=device)
@@ -163,18 +224,74 @@ def flush_batch(model, input_ids, masks, content_masks, targets, efpp_probs, etp
     with torch.no_grad():
         if use_fp16 and device.type == "cuda":
             with torch.cuda.amp.autocast(dtype=torch.float16):
-                batch_efpp, batch_etp = model(ids, attention, content)
+                (
+                    batch_efpp,
+                    batch_etp,
+                    batch_relation,
+                    batch_vep,
+                    batch_vtm,
+                ) = model(ids, attention, content)
         else:
-            batch_efpp, batch_etp = model(ids, attention, content)
+            (
+                batch_efpp,
+                batch_etp,
+                batch_relation,
+                batch_vep,
+                batch_vtm,
+            ) = model(ids, attention, content)
     batch_efpp = batch_efpp.detach().cpu().to(efpp_probs.dtype)
     batch_etp = batch_etp.detach().cpu().to(etp_distribution.dtype)
+    batch_relation = batch_relation.detach().cpu().to(relation_distribution.dtype)
+    batch_vep = batch_vep.detach().cpu().to(vulnerability_evidence_probs.dtype)
+    batch_vtm = batch_vtm.detach().cpu().to(template_match_scores.dtype)
     for row_idx, chunk_idx, pooled_idx in targets:
         efpp_probs[row_idx, chunk_idx] = batch_efpp[pooled_idx]
         etp_distribution[row_idx, chunk_idx] = batch_etp[pooled_idx]
+        relation_distribution[row_idx, chunk_idx] = batch_relation[pooled_idx]
+        vulnerability_evidence_probs[row_idx, chunk_idx] = batch_vep[pooled_idx]
+        template_match_scores[row_idx, chunk_idx] = batch_vtm[pooled_idx]
     input_ids.clear()
     masks.clear()
     content_masks.clear()
     targets.clear()
+
+
+def annotate_chunk_targets(
+    tokenizer,
+    chunk_tokens,
+    label_names,
+    ontology,
+    templates,
+    contract_multi_labels,
+):
+    units = build_token_units(" ".join(chunk_tokens), tokenizer)
+    effects = annotate_effect_types(units)
+    pattern_labels, _ = annotate_efpp_patterns(units)
+    relation_labels, _, _ = annotate_effect_relations(units)
+    effect_histogram = effect_type_chunk_histogram(effects)
+    template_scores = template_score_vector(
+        label_names,
+        templates,
+        ontology,
+        effect_histogram,
+        pattern_labels,
+        relation_labels,
+    )
+    chunk_evidence = pseudo_evidence_vector(
+        template_scores,
+        contract_multi_labels,
+        label_names,
+    )
+    active_mask = [
+        1 if label_name in label_names else 0
+        for label_name in GLOBAL_VULNERABILITY_LABELS
+    ]
+    return {
+        "relation_labels": relation_labels,
+        "template_scores": template_scores,
+        "chunk_evidence": chunk_evidence,
+        "active_mask": active_mask,
+    }
 
 
 def load_reference(split, config):
@@ -210,9 +327,15 @@ def extract_split(split, input_path, output_path, tokenizer, model, config, devi
     dtype = torch.float16 if bool(config.get("fp16", True)) else torch.float32
     efpp_probs = torch.zeros(sample_count, max_chunks, model.num_efpp_patterns, dtype=dtype)
     etp_distribution = torch.zeros(sample_count, max_chunks, model.num_effect_types, dtype=dtype)
+    relation_distribution = torch.zeros(sample_count, max_chunks, model.num_relation_types, dtype=dtype)
+    vulnerability_evidence_probs = torch.zeros(sample_count, max_chunks, model.num_vulnerability_templates, dtype=dtype)
+    template_match_scores = torch.zeros(sample_count, max_chunks, model.num_vulnerability_templates, dtype=dtype)
     chunk_mask = torch.zeros(sample_count, max_chunks, dtype=torch.bool)
     binary_labels = torch.zeros(sample_count, dtype=torch.float32)
     multi_labels = torch.zeros(sample_count, num_labels, dtype=torch.float32)
+    chunk_vulnerability_evidence = torch.zeros(sample_count, max_chunks, model.num_vulnerability_templates, dtype=torch.float32)
+    vulnerability_template_matches = torch.zeros(sample_count, max_chunks, model.num_vulnerability_templates, dtype=torch.float32)
+    active_vulnerability_label_mask = torch.zeros(sample_count, model.num_vulnerability_templates, dtype=torch.float32)
     ids = []
     metadata = []
     input_ids = []
@@ -225,6 +348,12 @@ def extract_split(split, input_path, output_path, tokenizer, model, config, devi
     chunks_kept_values = []
     batch_size = int(config["batch_size"])
     use_fp16 = bool(config.get("fp16", True))
+    ontology = load_ontology(resolve_path(config["ontology_path"]))
+    templates = load_vulnerability_templates(
+        resolve_path(config["template_path"]),
+        ontology,
+        expected_label_names=config["label_names"],
+    )
 
     pbar = tqdm(total=sample_count, desc=f"effect_sem:{split}")
     for row_idx, (line_idx, item) in enumerate(iter_jsonl(input_path)):
@@ -236,6 +365,7 @@ def extract_split(split, input_path, output_path, tokenizer, model, config, devi
         ids.append(str(contract_id))
         binary_labels[row_idx] = float(item["binary_label"])
         multi_labels[row_idx] = torch.tensor(labels, dtype=torch.float32)
+        contract_multi_labels = labels if split == "train" else [0] * len(labels)
         truncated_count += int(chunk_info["truncated"])
         coverage_values.append(chunk_info["coverage_ratio"])
         chunks_kept_values.append(chunk_info["num_chunks_kept"])
@@ -249,13 +379,33 @@ def extract_split(split, input_path, output_path, tokenizer, model, config, devi
                 "coverage_ratio": chunk_info["coverage_ratio"],
             }
         )
-        for chunk_idx, (chunk_ids, attention, content) in enumerate(chunk_info["chunks"]):
+        for chunk_idx, chunk in enumerate(chunk_info["chunks"]):
             chunk_mask[row_idx, chunk_idx] = True
-            input_ids.append(chunk_ids)
-            masks.append(attention)
-            content_masks.append(content)
+            input_ids.append(chunk["input_ids"])
+            masks.append(chunk["attention_mask"])
+            content_masks.append(chunk["content_mask"])
             targets.append((row_idx, chunk_idx, len(targets)))
             total_chunks += 1
+            heuristic = annotate_chunk_targets(
+                tokenizer,
+                chunk["chunk_tokens"],
+                config["label_names"],
+                ontology,
+                templates,
+                contract_multi_labels,
+            )
+            chunk_vulnerability_evidence[row_idx, chunk_idx] = torch.tensor(
+                heuristic["chunk_evidence"],
+                dtype=torch.float32,
+            )
+            vulnerability_template_matches[row_idx, chunk_idx] = torch.tensor(
+                heuristic["template_scores"],
+                dtype=torch.float32,
+            )
+            active_vulnerability_label_mask[row_idx] = torch.tensor(
+                heuristic["active_mask"],
+                dtype=torch.float32,
+            )
             if len(input_ids) >= batch_size:
                 flush_batch(
                     model,
@@ -265,6 +415,9 @@ def extract_split(split, input_path, output_path, tokenizer, model, config, devi
                     targets,
                     efpp_probs,
                     etp_distribution,
+                    relation_distribution,
+                    vulnerability_evidence_probs,
+                    template_match_scores,
                     device,
                     use_fp16,
                 )
@@ -278,6 +431,9 @@ def extract_split(split, input_path, output_path, tokenizer, model, config, devi
         targets,
         efpp_probs,
         etp_distribution,
+        relation_distribution,
+        vulnerability_evidence_probs,
+        template_match_scores,
         device,
         use_fp16,
     )
@@ -294,23 +450,43 @@ def extract_split(split, input_path, output_path, tokenizer, model, config, devi
         "p95_coverage_ratio": float(np.percentile(coverage_values, 95)),
         "efpp_shape": list(efpp_probs.shape),
         "etp_distribution_shape": list(etp_distribution.shape),
+        "relation_distribution_shape": list(relation_distribution.shape),
+        "vulnerability_evidence_probs_shape": list(vulnerability_evidence_probs.shape),
+        "template_match_scores_shape": list(template_match_scores.shape),
         "dtype": str(dtype),
         "efpp_nan_count": int(torch.isnan(efpp_probs.float()).sum().item()),
         "efpp_inf_count": int(torch.isinf(efpp_probs.float()).sum().item()),
         "etp_nan_count": int(torch.isnan(etp_distribution.float()).sum().item()),
         "etp_inf_count": int(torch.isinf(etp_distribution.float()).sum().item()),
+        "relation_nan_count": int(torch.isnan(relation_distribution.float()).sum().item()),
+        "relation_inf_count": int(torch.isinf(relation_distribution.float()).sum().item()),
+        "vep_nan_count": int(torch.isnan(vulnerability_evidence_probs.float()).sum().item()),
+        "vep_inf_count": int(torch.isinf(vulnerability_evidence_probs.float()).sum().item()),
+        "vtm_nan_count": int(torch.isnan(template_match_scores.float()).sum().item()),
+        "vtm_inf_count": int(torch.isinf(template_match_scores.float()).sum().item()),
         "hf_model_path": config["hf_model_path"],
         "num_effect_types": int(model.num_effect_types),
         "num_efpp_patterns": int(model.num_efpp_patterns),
+        "num_relation_types": int(model.num_relation_types),
+        "num_vulnerability_templates": int(model.num_vulnerability_templates),
         "reference_feature_dir": config.get("reference_feature_dir"),
+        "ontology_path": config["ontology_path"],
+        "template_path": config["template_path"],
     }
     payload = {
         "ids": ids,
         "efpp_probs": efpp_probs,
         "etp_distribution": etp_distribution,
+        "relation_distribution": relation_distribution,
+        "vulnerability_evidence_probs": vulnerability_evidence_probs,
+        "template_match_scores": template_match_scores,
         "chunk_mask": chunk_mask,
         "binary_labels": binary_labels,
         "multi_labels": multi_labels,
+        "chunk_vulnerability_evidence": chunk_vulnerability_evidence,
+        "vulnerability_template_matches": vulnerability_template_matches,
+        "active_vulnerability_label_mask": active_vulnerability_label_mask,
+        "global_vulnerability_label_names": GLOBAL_VULNERABILITY_LABELS,
         "metadata": metadata,
         "report": report,
     }
@@ -332,6 +508,8 @@ def write_report(config, reports):
         "output_dir": config["output_dir"],
         "hf_model_path": config["hf_model_path"],
         "reference_feature_dir": config.get("reference_feature_dir"),
+        "ontology_path": config["ontology_path"],
+        "template_path": config["template_path"],
         "max_len": config["max_len"],
         "chunk_stride": config["chunk_stride"],
         "max_chunks_per_contract": config["max_chunks_per_contract"],
