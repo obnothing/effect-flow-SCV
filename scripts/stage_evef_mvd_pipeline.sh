@@ -174,16 +174,24 @@ build_corpus() {
   if [[ "$FORCE_CORPUS" -eq 1 ]]; then
     force_args+=(--force)
   fi
-  run_python scripts/build_effect_flow_pretraining_corpus.py \
-    --dataset BJUT \
-    --max_chunks_per_contract 32 \
-    --num_workers 4 \
-    "${force_args[@]}"
-  run_python scripts/build_effect_flow_pretraining_corpus.py \
-    --dataset DIVE \
-    --max_chunks_per_contract 64 \
-    --num_workers 4 \
-    "${force_args[@]}"
+  if [[ "$FORCE_CORPUS" -eq 1 || ! -f data/processed/effect_flow_pretrain/BJUT/train_effect_flow_chunks.jsonl ]]; then
+    run_python scripts/build_effect_flow_pretraining_corpus.py \
+      --dataset BJUT \
+      --max_chunks_per_contract 32 \
+      --num_workers 4 \
+      "${force_args[@]}"
+  else
+    echo "[SKIP] BJUT effect-flow corpus exists; use --force-corpus to rebuild"
+  fi
+  if [[ "$FORCE_CORPUS" -eq 1 || ! -f data/processed/effect_flow_pretrain/DIVE/train_effect_flow_chunks.jsonl ]]; then
+    run_python scripts/build_effect_flow_pretraining_corpus.py \
+      --dataset DIVE \
+      --max_chunks_per_contract 64 \
+      --num_workers 4 \
+      "${force_args[@]}"
+  else
+    echo "[SKIP] DIVE effect-flow corpus exists; use --force-corpus to rebuild"
+  fi
   run_python scripts/audit_effect_flow_annotations.py --dataset BJUT
   run_python scripts/audit_effect_flow_annotations.py --dataset DIVE
   run_python scripts/audit_label_pattern_relevance.py --dataset BJUT --split train
