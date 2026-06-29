@@ -74,6 +74,70 @@ def count_jsonl(path):
     return count
 
 
+SEMANTIC_CACHE_V2_FIELDS = [
+    "ids",
+    "chunk_mask",
+    "binary_labels",
+    "multi_labels",
+    "efpp_probs",
+    "etp_distribution",
+    "relation_distribution",
+    "vulnerability_evidence_probs",
+    "template_match_scores",
+    "chunk_vulnerability_evidence",
+    "vulnerability_template_matches",
+    "active_vulnerability_label_mask",
+    "global_vulnerability_label_names",
+    "report",
+]
+
+
+def semantic_cache_v2_status(path, config, model):
+    if not path.exists():
+        return False, "missing"
+    try:
+        payload = torch.load(path, map_location="cpu")
+    except Exception as exc:
+        return False, f"unreadable: {exc}"
+    missing = [key for key in SEMANTIC_CACHE_V2_FIELDS if key not in payload]
+    if missing:
+        return False, f"missing v2 fields: {missing}"
+    max_chunks = int(config["max_chunks_per_contract"])
+    expected_shapes = {
+        "efpp_probs": (max_chunks, int(model.num_efpp_patterns)),
+        "etp_distribution": (max_chunks, int(model.num_effect_types)),
+        "relation_distribution": (max_chunks, int(model.num_relation_types)),
+        "vulnerability_evidence_probs": (
+            max_chunks,
+            int(model.num_vulnerability_templates),
+        ),
+        "template_match_scores": (
+            max_chunks,
+            int(model.num_vulnerability_templates),
+        ),
+        "chunk_vulnerability_evidence": (
+            max_chunks,
+            int(model.num_vulnerability_templates),
+        ),
+        "vulnerability_template_matches": (
+            max_chunks,
+            int(model.num_vulnerability_templates),
+        ),
+    }
+    for key, suffix_shape in expected_shapes.items():
+        value = payload[key]
+        if tuple(value.shape[1:]) != suffix_shape:
+            return (
+                False,
+                f"{key} shape suffix {tuple(value.shape[1:])} != {suffix_shape}",
+            )
+    if payload["active_vulnerability_label_mask"].shape[1] != int(
+        model.num_vulnerability_templates
+    ):
+        return False, "active_vulnerability_label_mask width mismatch"
+    return True, "ok"
+
+
 def iter_jsonl(path):
     with path.open("r", encoding="utf-8") as f:
         for idx, line in enumerate(f):
@@ -319,8 +383,14 @@ def validate_against_reference(split, payload, reference):
 
 def extract_split(split, input_path, output_path, tokenizer, model, config, device, overwrite):
     if output_path.exists() and not overwrite:
-        print(f"[OK] {project_relative(output_path)} already exists, skipping")
-        return torch.load(output_path, map_location="cpu").get("report", {})
+        cache_ok, cache_reason = semantic_cache_v2_status(output_path, config, model)
+        if cache_ok:
+            print(f"[OK] {project_relative(output_path)} already exists as cache v2, skipping")
+            return torch.load(output_path, map_location="cpu").get("report", {})
+        print(
+            f"[STALE] {project_relative(output_path)} is not semantic cache v2 "
+            f"({cache_reason}); rebuilding"
+        )
     sample_count = count_jsonl(input_path)
     max_chunks = int(config["max_chunks_per_contract"])
     num_labels = int(config["num_labels"])
