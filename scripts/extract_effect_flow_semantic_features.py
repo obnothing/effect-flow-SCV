@@ -135,6 +135,15 @@ def semantic_cache_v2_status(path, config, model):
         model.num_vulnerability_templates
     ):
         return False, "active_vulnerability_label_mask width mismatch"
+    report = payload.get("report", {})
+    if report.get("hf_model_path") != config["hf_model_path"]:
+        return False, "hf_model_path mismatch"
+    if report.get("reference_feature_dir") != config.get("reference_feature_dir"):
+        return False, "reference_feature_dir mismatch"
+    if report.get("template_path") != config["template_path"]:
+        return False, "template_path mismatch"
+    if report.get("ontology_path") != config["ontology_path"]:
+        return False, "ontology_path mismatch"
     return True, "ok"
 
 

@@ -106,6 +106,82 @@ run_python() {
   "$PYTHON_BIN" "$@"
 }
 
+corpus_is_v2() {
+  local path="$1"
+  "$PYTHON_BIN" - "$path" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+required = {
+    "effect_type_tokens",
+    "effect_type_chunk_histogram",
+    "efpp_labels",
+    "effect_relations",
+    "vulnerability_template_matches",
+    "chunk_vulnerability_evidence",
+    "global_vulnerability_label_names",
+    "active_vulnerability_label_names",
+    "active_vulnerability_label_mask",
+}
+if not path.exists():
+    sys.exit(1)
+with path.open("r", encoding="utf-8") as handle:
+    for line in handle:
+        line = line.strip()
+        if not line:
+            continue
+        row = json.loads(line)
+        missing = sorted(required - set(row))
+        if missing:
+            print(f"[STALE] {path}: missing v2 fields {missing}")
+            sys.exit(1)
+        relations = row.get("effect_relations")
+        if not isinstance(relations, dict) or "labels" not in relations:
+            print(f"[STALE] {path}: effect_relations.labels missing")
+            sys.exit(1)
+        sys.exit(0)
+print(f"[STALE] {path}: no samples")
+sys.exit(1)
+PY
+}
+
+build_one_corpus() {
+  local dataset="$1"
+  local max_chunks="$2"
+  local corpus_path="$3"
+  local rebuild=0
+  local reason=""
+
+  if [[ "$FORCE_CORPUS" -eq 1 ]]; then
+    rebuild=1
+    reason="--force-corpus requested"
+  elif [[ ! -f "$corpus_path" ]]; then
+    rebuild=1
+    reason="missing"
+  elif ! corpus_is_v2 "$corpus_path"; then
+    rebuild=1
+    reason="stale or non-v2 schema"
+  fi
+
+  if [[ "$rebuild" -eq 1 ]]; then
+    echo "[BUILD] $dataset effect-flow corpus v2 ($reason)"
+    local args=(
+      scripts/build_effect_flow_pretraining_corpus.py
+      --dataset "$dataset"
+      --max_chunks_per_contract "$max_chunks"
+      --num_workers 4
+    )
+    if [[ -f "$corpus_path" ]]; then
+      args+=(--force)
+    fi
+    run_python "${args[@]}"
+  else
+    echo "[SKIP] $dataset effect-flow corpus exists and matches v2 schema; use --force-corpus to rebuild"
+  fi
+}
+
 require_two_gpus() {
   local visible
   visible="$("$PYTHON_BIN" -c 'import torch; print(torch.cuda.device_count())')"
@@ -137,6 +213,8 @@ targets = {
     "stage16a_dive_corpus": root / "data/processed/effect_flow_pretrain/DIVE/train_effect_flow_chunks.jsonl",
     "stage16b_sanity_report": root / "data/reports/stage16b_effect_flow_pretraining_sanity_report.json",
     "stage16b_full_report": root / "data/reports/stage16b_effect_flow_pretraining_report.json",
+    "bjut_base_chunk_cache": root / "data/features/effect_flow_evm_bert_bjut_random_stride256/train.pt",
+    "dive_base_chunk_cache": root / "data/features/effect_flow_evm_bert_dive_random_stride256_max64/train.pt",
     "bjut_semantic_cache": root / "data/features/effect_flow_semantics/bjut_random_stride256_max32/train.pt",
     "dive_semantic_cache": root / "data/features/effect_flow_semantics/dive_random_stride256_max64/train.pt",
     "bjut_downstream_result": root / "results/train_bjut_effect_flow_guided_mil/checkpoint_summary.json",
@@ -170,28 +248,8 @@ PY
 build_corpus() {
   echo "[STAGE] ontology + corpus v2"
   run_python scripts/find_effect_flow_inputs.py
-  local force_args=()
-  if [[ "$FORCE_CORPUS" -eq 1 ]]; then
-    force_args+=(--force)
-  fi
-  if [[ "$FORCE_CORPUS" -eq 1 || ! -f data/processed/effect_flow_pretrain/BJUT/train_effect_flow_chunks.jsonl ]]; then
-    run_python scripts/build_effect_flow_pretraining_corpus.py \
-      --dataset BJUT \
-      --max_chunks_per_contract 32 \
-      --num_workers 4 \
-      "${force_args[@]}"
-  else
-    echo "[SKIP] BJUT effect-flow corpus exists; use --force-corpus to rebuild"
-  fi
-  if [[ "$FORCE_CORPUS" -eq 1 || ! -f data/processed/effect_flow_pretrain/DIVE/train_effect_flow_chunks.jsonl ]]; then
-    run_python scripts/build_effect_flow_pretraining_corpus.py \
-      --dataset DIVE \
-      --max_chunks_per_contract 64 \
-      --num_workers 4 \
-      "${force_args[@]}"
-  else
-    echo "[SKIP] DIVE effect-flow corpus exists; use --force-corpus to rebuild"
-  fi
+  build_one_corpus "BJUT" 32 "data/processed/effect_flow_pretrain/BJUT/train_effect_flow_chunks.jsonl"
+  build_one_corpus "DIVE" 64 "data/processed/effect_flow_pretrain/DIVE/train_effect_flow_chunks.jsonl"
   run_python scripts/audit_effect_flow_annotations.py --dataset BJUT
   run_python scripts/audit_effect_flow_annotations.py --dataset DIVE
   run_python scripts/audit_label_pattern_relevance.py --dataset BJUT --split train
@@ -230,16 +288,16 @@ ensure_base_chunk_cache() {
   local dataset="$1"
   local feature_dir data_dir config_path max_chunks num_labels output_path
   if [[ "$dataset" == "BJUT" ]]; then
-    feature_dir="data/features/continued_dive_evm_bert_bjut_random_stride256"
+    feature_dir="data/features/effect_flow_evm_bert_bjut_random_stride256"
     data_dir="data/processed/BJUT_SC01_random_split"
-    config_path="configs/extract_continued_dive_evm_bert_bjut_random_stride256.yaml"
+    config_path="configs/extract_effect_flow_evm_bert_bjut_random_stride256.yaml"
     max_chunks=32
     num_labels=10
     output_path="data/reports/check_bjut_effect_flow_guided_base_features.txt"
   else
-    feature_dir="data/features/continued_dive_evm_bert_dive_random_stride256_max64"
+    feature_dir="data/features/effect_flow_evm_bert_dive_random_stride256_max64"
     data_dir="data/processed/DIVE_random_split"
-    config_path="configs/extract_continued_dive_evm_bert_dive_random_stride256_max64.yaml"
+    config_path="configs/extract_effect_flow_evm_bert_dive_random_stride256_max64.yaml"
     max_chunks=64
     num_labels=8
     output_path="data/reports/check_dive_effect_flow_guided_base_features.txt"
@@ -275,14 +333,14 @@ check_semantic_cache_v2() {
   template_dim="$(global_template_dim)"
   if [[ "$dataset" == "BJUT" ]]; then
     semantic_dir="data/features/effect_flow_semantics/bjut_random_stride256_max32"
-    feature_dir="data/features/continued_dive_evm_bert_bjut_random_stride256"
+    feature_dir="data/features/effect_flow_evm_bert_bjut_random_stride256"
     data_dir="data/processed/BJUT_SC01_random_split"
     max_chunks=32
     num_labels=10
     output_path="data/reports/check_bjut_effect_flow_guided_semantic_features.txt"
   else
     semantic_dir="data/features/effect_flow_semantics/dive_random_stride256_max64"
-    feature_dir="data/features/continued_dive_evm_bert_dive_random_stride256_max64"
+    feature_dir="data/features/effect_flow_evm_bert_dive_random_stride256_max64"
     data_dir="data/processed/DIVE_random_split"
     max_chunks=64
     num_labels=8

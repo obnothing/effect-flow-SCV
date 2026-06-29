@@ -126,7 +126,7 @@ def main():
             "Front Running",
         ],
         "recommend_stage16b": proceed,
-        "stage16b_recommended_tasks": ["MOM", "ETP", "EFPP"] if proceed else [],
+        "stage16b_recommended_tasks": ["MOM", "ETP", "EFPP", "ERR", "VEP", "VTM"] if proceed else [],
         "stage16b_not_recommended_yet": ["EEP", "complex EOP"],
         "external_unlabeled_dataset_schema_reusable": True,
         "external_dataset_minimum_format": {

@@ -1,4 +1,4 @@
-experiment_name: extract_dive_effect_flow_semantics_stride256_max64
+experiment_name: extract_effect_flow_evm_bert_dive_random_stride256_max64
 hf_model_path: checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model
 vocab_path: data/processed/BJUT_SC01/evm_vocab.json
 data_dir: data/processed/DIVE_random_split
@@ -7,12 +7,9 @@ train_path: data/processed/DIVE_random_split/train_mlsmote.jsonl
 valid_path: data/processed/DIVE_random_split/valid.jsonl
 test_path: data/processed/DIVE_random_split/test.jsonl
 
-reference_feature_dir: data/features/effect_flow_evm_bert_dive_random_stride256_max64
-output_dir: data/features/effect_flow_semantics/dive_random_stride256_max64
+output_dir: data/features/effect_flow_evm_bert_dive_random_stride256_max64
 report_dir: data/reports
 log_dir: logs
-ontology_path: configs/effect_flow_ontology.yaml
-template_path: configs/vulnerability_templates_dive.yaml
 
 num_labels: 8
 max_len: 512
@@ -22,6 +19,11 @@ max_chunks_per_contract: 64
 batch_size: 64
 num_workers: 4
 fp16: true
+pooling: masked_mean
+
+is_transductive_pretraining: true
+pretraining_provenance: BJUT+DIVE train-balanced EVEF-MVD P1/P2 effect-flow pretraining
+split_policy: random_sample_split
 
 label_names:
   - Reentrancy

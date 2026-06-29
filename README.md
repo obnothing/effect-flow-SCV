@@ -9,8 +9,8 @@ The current research direction is:
 opcode chunks
 -> EVM-BERT representation
 -> effect-flow behavior pretraining
--> EFPP/ETP semantic evidence
--> evidence-guided MIL
+-> ETP/EFPP/ERR/VEP/VTM semantic evidence
+-> template-aware evidence-guided MIL
 -> contract-level multi-label vulnerability detection
 ```
 
@@ -29,9 +29,9 @@ as semantic evidence in a Multiple Instance Learning detector.
 
 ```text
 src/
-  effect_flow_schema.py              # effect types and EFPP pattern rules
-  effect_flow_pretraining_dataset.py # MOM + ETP + EFPP pretraining data
-  effect_flow_pretraining_model.py   # EVM-BERT with effect-flow heads
+  effect_flow_schema.py              # effect types, EFPP patterns, and relations
+  effect_flow_pretraining_dataset.py # MOM + ETP + EFPP + ERR + VEP + VTM data
+  effect_flow_pretraining_model.py   # EVM-BERT with shared and vulnerability-specific heads
   pretrain_effect_flow_evm_bert.py   # effect-flow continued pretraining
   evm_chunk_mil_model.py             # chunk context + guided MIL detector
   train_chunk_mil.py                 # detector training
@@ -112,6 +112,7 @@ Meaning:
 - pretraining has been upgraded from MOM+ETP+EFPP to MOM+ETP+EFPP+ERR+VEP+VTM;
 - semantic cache v2 now includes relation / evidence / template scores;
 - downstream MIL has been upgraded to template-aware guided MIL;
+- the unified pipeline checks stale v1 corpus/cache artifacts before reusing them;
 - local syntax and minimal forward checks pass;
 - the next hard boundary is server-side end-to-end runtime validation.
 
@@ -147,4 +148,5 @@ data/reports/
 - DIVE uses `max_chunks=64`.
 - Chunk labels are not manually assigned. The detector uses contract-level
   labels and learns chunk-level evidence through MIL attention.
-- EFPP and ETP outputs are semantic evidence, not final vulnerability labels.
+- ETP, EFPP, ERR, VEP, and VTM outputs are semantic evidence, not final
+  vulnerability labels.

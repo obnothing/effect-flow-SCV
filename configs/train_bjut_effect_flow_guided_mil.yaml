@@ -1,6 +1,6 @@
 experiment_name: train_bjut_effect_flow_guided_mil
 model_type: effect_flow_guided_chunk_mil
-feature_dir: data/features/continued_dive_evm_bert_bjut_random_stride256
+feature_dir: data/features/effect_flow_evm_bert_bjut_random_stride256
 semantic_feature_dir: data/features/effect_flow_semantics/bjut_random_stride256_max32
 checkpoint_dir: checkpoints/train_bjut_effect_flow_guided_mil
 result_dir: results/train_bjut_effect_flow_guided_mil

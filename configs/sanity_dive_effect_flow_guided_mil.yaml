@@ -1,6 +1,6 @@
 experiment_name: sanity_dive_effect_flow_guided_mil
 model_type: effect_flow_guided_chunk_mil
-feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256_max64
+feature_dir: data/features/effect_flow_evm_bert_dive_random_stride256_max64
 semantic_feature_dir: data/features/effect_flow_semantics/dive_random_stride256_max64
 checkpoint_dir: checkpoints/sanity_dive_effect_flow_guided_mil
 result_dir: results/sanity_dive_effect_flow_guided_mil

@@ -1,5 +1,6 @@
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -8,6 +9,12 @@ import yaml
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = PROJECT_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from effect_flow_schema import RELATION_TYPES  # noqa: E402
+from effect_flow_utils import GLOBAL_VULNERABILITY_LABELS  # noqa: E402
 
 
 def parse_args():
@@ -71,6 +78,35 @@ def mean_patterns_for_indices(contract_pattern_means, indices, pattern_names, to
     ]
 
 
+def mean_top_values_for_indices(values, indices, names, top_k, value_name="mean_probability"):
+    if values is None or not indices:
+        return []
+    mean_values = values[indices].mean(axis=0)
+    order = np.argsort(-mean_values)[:top_k]
+    return [
+        {
+            "name": names[int(idx)],
+            value_name: float(mean_values[int(idx)]),
+        }
+        for idx in order
+    ]
+
+
+def mean_scalar_for_indices(values, indices, label_index):
+    if values is None or not indices or label_index is None:
+        return None
+    return float(values[indices, label_index].mean())
+
+
+def format_optional_float(value):
+    return "n/a" if value is None else f"{value:.6f}"
+
+
+def dataset_label_to_global_indices(label_names):
+    global_index = {name: idx for idx, name in enumerate(GLOBAL_VULNERABILITY_LABELS)}
+    return [global_index.get(name) for name in label_names]
+
+
 def main():
     args = parse_args()
     config = load_yaml(args.config)
@@ -95,10 +131,36 @@ def main():
     contract_pattern_means = (
         (efpp * weights).sum(dim=1) / weights.sum(dim=1).clamp_min(1.0)
     ).numpy()
+    relation = semantic.get("relation_distribution")
+    evidence = semantic.get("vulnerability_evidence_probs")
+    template = semantic.get("template_match_scores")
+    if relation is not None:
+        relation = relation.float()
+        contract_relation_means = (
+            (relation * weights).sum(dim=1) / weights.sum(dim=1).clamp_min(1.0)
+        ).numpy()
+    else:
+        contract_relation_means = None
+    if evidence is not None:
+        evidence = evidence.float()
+        contract_evidence_means = (
+            (evidence * weights).sum(dim=1) / weights.sum(dim=1).clamp_min(1.0)
+        ).numpy()
+    else:
+        contract_evidence_means = None
+    if template is not None:
+        template = template.float()
+        contract_template_means = (
+            (template * weights).sum(dim=1) / weights.sum(dim=1).clamp_min(1.0)
+        ).numpy()
+    else:
+        contract_template_means = None
     label_names = config.get("label_names", [f"label_{idx}" for idx in range(config["num_labels"])])
+    global_label_indices = dataset_label_to_global_indices(label_names)
     top_k = int(config.get("semantic_summary_top_k", 8))
     per_label = []
     for label_id, label_name in enumerate(label_names):
+        global_label_id = global_label_indices[label_id]
         true_positive_indices = [
             idx for idx, row in enumerate(predictions) if int(row["multi_true"][label_id]) == 1
         ]
@@ -117,6 +179,27 @@ def main():
                 "true_positive_contract_count": len(true_positive_indices),
                 "predicted_positive_contract_count": len(predicted_positive_indices),
                 "true_and_predicted_positive_contract_count": len(true_and_pred_indices),
+                "global_label_id": None if global_label_id is None else int(global_label_id),
+                "mean_vep_for_true_positive_contracts": mean_scalar_for_indices(
+                    contract_evidence_means,
+                    true_positive_indices,
+                    global_label_id,
+                ),
+                "mean_vep_for_predicted_positive_contracts": mean_scalar_for_indices(
+                    contract_evidence_means,
+                    predicted_positive_indices,
+                    global_label_id,
+                ),
+                "mean_template_score_for_true_positive_contracts": mean_scalar_for_indices(
+                    contract_template_means,
+                    true_positive_indices,
+                    global_label_id,
+                ),
+                "mean_template_score_for_predicted_positive_contracts": mean_scalar_for_indices(
+                    contract_template_means,
+                    predicted_positive_indices,
+                    global_label_id,
+                ),
                 "top_patterns_for_true_positive_contracts": mean_patterns_for_indices(
                     contract_pattern_means,
                     true_positive_indices,
@@ -135,6 +218,18 @@ def main():
                     pattern_names,
                     top_k,
                 ),
+                "top_relations_for_true_positive_contracts": mean_top_values_for_indices(
+                    contract_relation_means,
+                    true_positive_indices,
+                    RELATION_TYPES,
+                    min(top_k, len(RELATION_TYPES)),
+                ),
+                "top_relations_for_predicted_positive_contracts": mean_top_values_for_indices(
+                    contract_relation_means,
+                    predicted_positive_indices,
+                    RELATION_TYPES,
+                    min(top_k, len(RELATION_TYPES)),
+                ),
             }
         )
     report = {
@@ -142,6 +237,10 @@ def main():
         "semantic_feature_dir": config["semantic_feature_dir"],
         "prediction_path": project_relative(prediction_path),
         "pattern_source": args.patterns,
+        "semantic_cache_schema": "v2",
+        "uses_relation_distribution": contract_relation_means is not None,
+        "uses_vulnerability_evidence_probs": contract_evidence_means is not None,
+        "uses_template_match_scores": contract_template_means is not None,
         "top_k": top_k,
         "per_label": per_label,
     }
@@ -161,12 +260,28 @@ def main():
             f"pred={row['predicted_positive_contract_count']} "
             f"tp_pred={row['true_and_predicted_positive_contract_count']}"
         )
+        if row["mean_vep_for_true_positive_contracts"] is not None:
+            lines.append(
+                "  mean VEP/template for true positives: "
+                f"vep={format_optional_float(row['mean_vep_for_true_positive_contracts'])} "
+                f"template={format_optional_float(row['mean_template_score_for_true_positive_contracts'])}"
+            )
+        if row["mean_vep_for_predicted_positive_contracts"] is not None:
+            lines.append(
+                "  mean VEP/template for predicted positives: "
+                f"vep={format_optional_float(row['mean_vep_for_predicted_positive_contracts'])} "
+                f"template={format_optional_float(row['mean_template_score_for_predicted_positive_contracts'])}"
+            )
         lines.append("  top true-positive patterns:")
         for pattern in row["top_patterns_for_true_positive_contracts"]:
             lines.append(f"  - {pattern['pattern']}: {pattern['mean_probability']:.6f}")
         lines.append("  top predicted-positive patterns:")
         for pattern in row["top_patterns_for_predicted_positive_contracts"]:
             lines.append(f"  - {pattern['pattern']}: {pattern['mean_probability']:.6f}")
+        if row["top_relations_for_true_positive_contracts"]:
+            lines.append("  top true-positive relations:")
+            for relation_row in row["top_relations_for_true_positive_contracts"]:
+                lines.append(f"  - {relation_row['name']}: {relation_row['mean_probability']:.6f}")
     txt_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"[OK] wrote {project_relative(txt_path)}")
     print(f"[OK] wrote {project_relative(json_path)}")

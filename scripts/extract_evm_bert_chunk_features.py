@@ -120,6 +120,50 @@ def build_contract_chunks(tokenizer, opcode, config):
     }
 
 
+def existing_feature_cache_matches_config(output_path, config, hidden_size):
+    try:
+        payload = torch.load(output_path, map_location="cpu")
+    except Exception as exc:
+        return False, f"failed to load existing cache: {exc}", {}
+    report = payload.get("report", {})
+    features = payload.get("features")
+    chunk_mask = payload.get("chunk_mask")
+    if features is None or chunk_mask is None:
+        return False, "missing features or chunk_mask", report
+    expected_max_chunks = int(config["max_chunks_per_contract"])
+    expected_num_labels = int(config.get("num_labels", len(config.get("label_names", [])) or 10))
+    checks = [
+        (
+            list(features.shape[1:]) == [expected_max_chunks, int(hidden_size)],
+            f"feature shape suffix {list(features.shape[1:])} != {[expected_max_chunks, int(hidden_size)]}",
+        ),
+        (
+            list(chunk_mask.shape) == list(features.shape[:2]),
+            f"chunk_mask shape {list(chunk_mask.shape)} != feature prefix {list(features.shape[:2])}",
+        ),
+        (
+            report.get("hf_model_path") == config["hf_model_path"],
+            f"hf_model_path {report.get('hf_model_path')} != {config['hf_model_path']}",
+        ),
+        (
+            int(report.get("max_chunks_per_contract", -1)) == expected_max_chunks,
+            "max_chunks_per_contract mismatch",
+        ),
+        (
+            report.get("pooling") == config.get("pooling", "cls"),
+            "pooling mismatch",
+        ),
+        (
+            int(report.get("num_labels", -1)) == expected_num_labels,
+            "num_labels mismatch",
+        ),
+    ]
+    for ok, reason in checks:
+        if not ok:
+            return False, reason, report
+    return True, "ok", report
+
+
 def pool_encoder_output(outputs, attention_mask, pooling):
     hidden = outputs.last_hidden_state
     if pooling == "cls":
@@ -188,8 +232,15 @@ def flush_chunk_batch(
 
 def extract_split(split_name, input_path, output_path, tokenizer, encoder, config, device, overwrite):
     if output_path.exists() and not overwrite:
-        print(f"[OK] {project_relative(output_path)} already exists, skipping")
-        return torch.load(output_path, map_location="cpu").get("report", {})
+        matches, reason, report = existing_feature_cache_matches_config(
+            output_path,
+            config,
+            encoder.config.hidden_size,
+        )
+        if matches:
+            print(f"[OK] {project_relative(output_path)} already matches current config, skipping")
+            return report
+        print(f"[STALE] {project_relative(output_path)} will be rebuilt: {reason}")
 
     sample_count = count_jsonl(input_path)
     max_chunks = int(config["max_chunks_per_contract"])
