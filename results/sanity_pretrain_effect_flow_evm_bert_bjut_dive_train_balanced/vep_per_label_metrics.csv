@@ -1,0 +1,18 @@
+name,precision,recall,f1,support,predicted_positive_count
+Reentrancy,0.0,0.0,0.0,98,0
+Contract contains unknown address,0.0,0.0,0.0,28,0
+Integer overflow or underflow,0.0,0.0,0.0,35,0
+Timestamp dependence,0.0,0.0,0.0,0,0
+DoS with failed call,0.0,0.0,0.0,2,0
+Assert violation,0.0,0.0,0.0,0,0
+Unchecked call return value,0.0,0.0,0.0,9,0
+Unsafe send,0.0,0.0,0.0,2,0
+Multiplication after division,0.0,0.0,0.0,7,0
+Extra gas consumption,0.0,0.0,0.0,12,0
+Access Control,0.7575757575757576,0.13157894736842105,0.22421524663677128,190,33
+Arithmetic,0.0,0.0,0.0,127,0
+Unchecked Return Values,0.0,0.0,0.0,21,0
+DoS,0.0,0.0,0.0,13,0
+Bad Randomness,0.0,0.0,0.0,2,0
+Front Running,0.0,0.0,0.0,3,0
+Time manipulation,0.0,0.0,0.0,46,0

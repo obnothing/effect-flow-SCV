@@ -9,6 +9,10 @@
   "num_workers": 4,
   "effect_type_count": 16,
   "efpp_pattern_count": 27,
+  "relation_type_count": 6,
+  "global_vulnerability_label_count": 17,
+  "template_path": "configs/vulnerability_templates_bjut.yaml",
+  "ontology_path": "configs/effect_flow_ontology.yaml",
   "splits": {
     "train": {
       "input_path": "data/processed/BJUT_SC01/train.jsonl",

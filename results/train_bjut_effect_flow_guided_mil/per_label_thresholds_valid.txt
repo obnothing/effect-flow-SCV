@@ -2,13 +2,13 @@ Validation-selected per-label thresholds
 
 label_name | support | best_threshold | valid_precision | valid_recall | valid_f1 | predicted_positive_count
 ----------------------------------------------------------------------------------------------------------------
-Reentrancy | 128 | 0.50 | 0.198516 | 0.835938 | 0.320840 | 539
-Contract contains unknown address | 1847 | 0.70 | 0.797260 | 0.787764 | 0.792484 | 1825
-Integer overflow or underflow | 1784 | 0.55 | 0.705300 | 0.798206 | 0.748882 | 2019
-Timestamp dependence | 73 | 0.50 | 0.234432 | 0.876712 | 0.369942 | 273
-DoS with failed call | 48 | 0.60 | 0.181818 | 0.708333 | 0.289362 | 187
-Assert violation | 97 | 0.60 | 0.236486 | 0.721649 | 0.356234 | 296
-Unchecked call return value | 688 | 0.75 | 0.755776 | 0.665698 | 0.707883 | 606
-Unsafe send | 112 | 0.80 | 0.870000 | 0.776786 | 0.820755 | 100
-Multiplication after division | 203 | 0.80 | 0.640449 | 0.561576 | 0.598425 | 178
-Extra gas consumption | 568 | 0.65 | 0.662671 | 0.681338 | 0.671875 | 584
+Reentrancy | 128 | 0.20 | 0.188356 | 0.859375 | 0.308989 | 584
+Contract contains unknown address | 1847 | 0.50 | 0.781155 | 0.695723 | 0.735968 | 1645
+Integer overflow or underflow | 1784 | 0.55 | 0.585366 | 0.780269 | 0.668909 | 2378
+Timestamp dependence | 73 | 0.55 | 0.218045 | 0.794521 | 0.342183 | 266
+DoS with failed call | 48 | 0.85 | 0.172043 | 0.666667 | 0.273504 | 186
+Assert violation | 97 | 0.30 | 0.208904 | 0.628866 | 0.313625 | 292
+Unchecked call return value | 688 | 0.55 | 0.678883 | 0.565407 | 0.616971 | 573
+Unsafe send | 112 | 0.50 | 0.948052 | 0.651786 | 0.772487 | 77
+Multiplication after division | 203 | 0.45 | 0.600000 | 0.354680 | 0.445820 | 120
+Extra gas consumption | 568 | 0.50 | 0.510815 | 0.540493 | 0.525235 | 601

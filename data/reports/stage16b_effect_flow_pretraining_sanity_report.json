@@ -73,6 +73,9 @@
     "lambda_mom": 1.0,
     "lambda_etp": 0.3,
     "lambda_efpp": 0.5,
+    "lambda_err": 0.3,
+    "lambda_vep": 0.4,
+    "lambda_vtm": 0.4,
     "etp_class_weights": [
       0.14654844225232458,
       5.0,
@@ -114,8 +117,81 @@
       5.415691581182509,
       9.719514491911765,
       7.942511866545365
+    ],
+    "relation_class_weights": [
+      2.335809347869212,
+      1.9768518790441945,
+      0.7821431567113949,
+      0.8470791983847985,
+      1.1547757836247188,
+      0.7803005980003048
+    ],
+    "vep_pos_weights": [
+      2.1567785766668712,
+      3.965725640677037,
+      3.4014311610555086,
+      10.0,
+      10.0,
+      10.0,
+      7.960226305753728,
+      10.0,
+      8.750787034250731,
+      5.048464914974641,
+      1.2975409285945447,
+      1.777975313678811,
+      4.443060917232584,
+      5.827156676684791,
+      10.0,
+      10.0,
+      2.9506504211553115
+    ],
+    "vtm_pos_weights": [
+      0.6989905820399971,
+      1.2671203193714398,
+      1.0406388220662532,
+      1.5949596143050693,
+      1.4074725997127708,
+      1.0567851006545697,
+      2.129800897119008,
+      1.2014393198179172,
+      1.0304140740731542,
+      1.0335814733455622,
+      1.0232952034079805,
+      1.0413492112334528,
+      2.6191001366673796,
+      2.6191001366673796,
+      1.6134318566721133,
+      1.7123866112150503,
+      1.6134318566721133
     ]
   },
+  "relation_types": [
+    "call_then_state_write",
+    "state_write_then_call",
+    "call_then_return_check",
+    "state_write_then_auth_guard",
+    "env_then_branch",
+    "div_then_mul"
+  ],
+  "global_vulnerability_label_names": [
+    "Reentrancy",
+    "Contract contains unknown address",
+    "Integer overflow or underflow",
+    "Timestamp dependence",
+    "DoS with failed call",
+    "Assert violation",
+    "Unchecked call return value",
+    "Unsafe send",
+    "Multiplication after division",
+    "Extra gas consumption",
+    "Access Control",
+    "Arithmetic",
+    "Unchecked Return Values",
+    "DoS",
+    "Bad Randomness",
+    "Front Running",
+    "Time manipulation"
+  ],
   "training_hyperparameters": {
     "batch_size": 16,
     "eval_batch_size": 32,
@@ -134,126 +210,473 @@
     {
       "epoch": 1,
       "global_step": 500,
-      "train_loss_total": 0.5651128371953964,
-      "train_loss_mom": 0.22366180942207575,
-      "train_loss_etp": 0.3532370786592364,
-      "train_loss_efpp": 0.47095979806780813,
+      "train_loss_total": 1.1909448704123498,
+      "train_loss_mom": 0.25033276645839214,
+      "train_loss_etp": 0.43234675510972737,
+      "train_loss_efpp": 0.48034567062556743,
+      "train_loss_err": 0.8617750251293183,
+      "train_loss_vep": 0.3232561238706112,
+      "train_loss_vtm": 0.45725065740942955,
       "bjut_samples": 8000,
       "dive_samples": 8000,
       "evaluated_samples": 512,
-      "valid_loss_total": 0.40023754723370075,
-      "valid_loss_mom": 0.1785658849403262,
-      "valid_loss_etp": 0.09834261983633041,
-      "valid_loss_efpp": 0.3843377474695444,
-      "masked_token_accuracy": 0.9542440318302388,
-      "masked_token_top5_accuracy": 0.9844164456233422,
+      "valid_loss_total": 0.9026980474591255,
+      "valid_loss_mom": 0.1998947598040104,
+      "valid_loss_etp": 0.14407490147277713,
+      "valid_loss_efpp": 0.39695301093161106,
+      "valid_loss_err": 0.6448445320129395,
+      "valid_loss_vep": 0.25662114191800356,
+      "valid_loss_vtm": 0.4125062022358179,
+      "masked_token_accuracy": 0.9496297524314765,
+      "masked_token_top5_accuracy": 0.9830072944297082,
       "masked_token_count": 36192,
-      "etp_accuracy": 0.9818787038978172,
-      "etp_macro_f1": 0.7980859928465402,
-      "etp_macro_f1_excluding_normal": 0.7853616734810129,
-      "efpp_micro_f1": 0.7963404932378679,
-      "efpp_macro_f1": 0.5730984756020031,
-      "efpp_macro_auc": 0.905850330935938,
+      "etp_accuracy": 0.9759882600181008,
+      "etp_macro_f1": 0.7828802118251942,
+      "etp_macro_f1_excluding_normal": 0.7693497849138354,
+      "efpp_micro_f1": 0.7947441767867808,
+      "efpp_macro_f1": 0.5477723153625932,
+      "efpp_macro_auc": 0.9022666461182944,
+      "err_accuracy": 0.789308176100629,
+      "err_macro_f1": 0.6792202536840953,
+      "vep_micro_f1": 0.07961783439490445,
+      "vep_macro_f1": 0.013189132155104193,
+      "vtm_micro_f1": 0.16219303255282697,
+      "vtm_macro_f1": 0.16059891924328384,
+      "err_per_relation": [
+        {
+          "name": "call_then_state_write",
+          "precision": 0.3076923076923077,
+          "recall": 0.5714285714285714,
+          "f1": 0.4,
+          "support": 14,
+          "predicted_positive_count": 26
+        },
+        {
+          "name": "state_write_then_call",
+          "precision": 0.46153846153846156,
+          "recall": 0.3,
+          "f1": 0.3636363636363637,
+          "support": 20,
+          "predicted_positive_count": 13
+        },
+        {
+          "name": "call_then_return_check",
+          "precision": 0.8596491228070176,
+          "recall": 0.8305084745762712,
+          "f1": 0.8448275862068966,
+          "support": 118,
+          "predicted_positive_count": 114
+        },
+        {
+          "name": "state_write_then_auth_guard",
+          "precision": 0.8589743589743589,
+          "recall": 0.8481012658227848,
+          "f1": 0.8535031847133757,
+          "support": 79,
+          "predicted_positive_count": 78
+        },
+        {
+          "name": "env_then_branch",
+          "precision": 0.7058823529411765,
+          "recall": 0.8571428571428571,
+          "f1": 0.7741935483870968,
+          "support": 14,
+          "predicted_positive_count": 17
+        },
+        {
+          "name": "div_then_mul",
+          "precision": 0.8571428571428571,
+          "recall": 0.821917808219178,
+          "f1": 0.8391608391608392,
+          "support": 73,
+          "predicted_positive_count": 70
+        }
+      ],
+      "vep_per_label": [
+        {
+          "name": "Reentrancy",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 98,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Contract contains unknown address",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 28,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Integer overflow or underflow",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 35,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Timestamp dependence",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "DoS with failed call",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 2,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Assert violation",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Unchecked call return value",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 9,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Unsafe send",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 2,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Multiplication after division",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 7,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Extra gas consumption",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 12,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Access Control",
+          "precision": 0.7575757575757576,
+          "recall": 0.13157894736842105,
+          "f1": 0.22421524663677128,
+          "support": 190,
+          "predicted_positive_count": 33
+        },
+        {
+          "name": "Arithmetic",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 127,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Unchecked Return Values",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 21,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "DoS",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 13,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Bad Randomness",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 2,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Front Running",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Time manipulation",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 46,
+          "predicted_positive_count": 0
+        }
+      ],
+      "vtm_per_label": [
+        {
+          "name": "Reentrancy",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 353,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Contract contains unknown address",
+          "precision": 1.0,
+          "recall": 0.014354066985645933,
+          "f1": 0.02830188679245283,
+          "support": 209,
+          "predicted_positive_count": 3
+        },
+        {
+          "name": "Integer overflow or underflow",
+          "precision": 1.0,
+          "recall": 0.19421487603305784,
+          "f1": 0.32525951557093424,
+          "support": 242,
+          "predicted_positive_count": 47
+        },
+        {
+          "name": "Timestamp dependence",
+          "precision": 1.0,
+          "recall": 0.00684931506849315,
+          "f1": 0.013605442176870748,
+          "support": 146,
+          "predicted_positive_count": 1
+        },
+        {
+          "name": "DoS with failed call",
+          "precision": 1.0,
+          "recall": 0.00558659217877095,
+          "f1": 0.011111111111111112,
+          "support": 179,
+          "predicted_positive_count": 1
+        },
+        {
+          "name": "Assert violation",
+          "precision": 1.0,
+          "recall": 0.25416666666666665,
+          "f1": 0.4053156146179402,
+          "support": 240,
+          "predicted_positive_count": 61
+        },
+        {
+          "name": "Unchecked call return value",
+          "precision": 1.0,
+          "recall": 0.039603960396039604,
+          "f1": 0.07619047619047618,
+          "support": 101,
+          "predicted_positive_count": 4
+        },
+        {
+          "name": "Unsafe send",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 217,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Multiplication after division",
+          "precision": 1.0,
+          "recall": 0.012145748987854251,
+          "f1": 0.024,
+          "support": 247,
+          "predicted_positive_count": 3
+        },
+        {
+          "name": "Extra gas consumption",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 246,
+          "predicted_positive_count": 0
+        },
+        {
+          "name": "Access Control",
+          "precision": 1.0,
+          "recall": 0.1394422310756972,
+          "f1": 0.24475524475524477,
+          "support": 251,
+          "predicted_positive_count": 35
+        },
+        {
+          "name": "Arithmetic",
+          "precision": 1.0,
+          "recall": 0.20883534136546184,
+          "f1": 0.34551495016611294,
+          "support": 249,
+          "predicted_positive_count": 52
+        },
+        {
+          "name": "Unchecked Return Values",
+          "precision": 1.0,
+          "recall": 0.06060606060606061,
+          "f1": 0.1142857142857143,
+          "support": 66,
+          "predicted_positive_count": 4
+        },
+        {
+          "name": "DoS",
+          "precision": 1.0,
+          "recall": 0.4090909090909091,
+          "f1": 0.5806451612903226,
+          "support": 66,
+          "predicted_positive_count": 27
+        },
+        {
+          "name": "Bad Randomness",
+          "precision": 1.0,
+          "recall": 0.028368794326241134,
+          "f1": 0.05517241379310345,
+          "support": 141,
+          "predicted_positive_count": 4
+        },
+        {
+          "name": "Front Running",
+          "precision": 1.0,
+          "recall": 0.3387096774193548,
+          "f1": 0.5060240963855421,
+          "support": 124,
+          "predicted_positive_count": 42
+        },
+        {
+          "name": "Time manipulation",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 141,
+          "predicted_positive_count": 0
+        }
+      ],
       "learning_rate": 0.0,
-      "max_memory_allocated_mb": 2757.44091796875,
+      "max_memory_allocated_mb": 2758.5537109375,
       "max_memory_reserved_mb": 4174.0
     }
   ],
   "final_internal_valid_metrics": {
     "evaluated_samples": 512,
-    "valid_loss_total": 0.40023754723370075,
-    "valid_loss_mom": 0.1785658849403262,
-    "valid_loss_etp": 0.09834261983633041,
-    "valid_loss_efpp": 0.3843377474695444,
-    "masked_token_accuracy": 0.9542440318302388,
-    "masked_token_top5_accuracy": 0.9844164456233422,
+    "valid_loss_total": 0.9026980474591255,
+    "valid_loss_mom": 0.1998947598040104,
+    "valid_loss_etp": 0.14407490147277713,
+    "valid_loss_efpp": 0.39695301093161106,
+    "valid_loss_err": 0.6448445320129395,
+    "valid_loss_vep": 0.25662114191800356,
+    "valid_loss_vtm": 0.4125062022358179,
+    "masked_token_accuracy": 0.9496297524314765,
+    "masked_token_top5_accuracy": 0.9830072944297082,
     "masked_token_count": 36192,
-    "etp_accuracy": 0.9818787038978172,
-    "etp_macro_f1": 0.7980859928465402,
-    "etp_macro_f1_excluding_normal": 0.7853616734810129,
-    "efpp_micro_f1": 0.7963404932378679,
-    "efpp_macro_f1": 0.5730984756020031,
-    "efpp_macro_auc": 0.905850330935938,
+    "etp_accuracy": 0.9759882600181008,
+    "etp_macro_f1": 0.7828802118251942,
+    "etp_macro_f1_excluding_normal": 0.7693497849138354,
+    "efpp_micro_f1": 0.7947441767867808,
+    "efpp_macro_f1": 0.5477723153625932,
+    "efpp_macro_auc": 0.9022666461182944,
+    "err_accuracy": 0.789308176100629,
+    "err_macro_f1": 0.6792202536840953,
+    "vep_micro_f1": 0.07961783439490445,
+    "vep_macro_f1": 0.013189132155104193,
+    "vtm_micro_f1": 0.16219303255282697,
+    "vtm_macro_f1": 0.16059891924328384,
     "etp_per_effect": [
       {
         "name": "Normal",
-        "precision": 0.996833168468321,
-        "recall": 0.9811920789582443,
-        "f1": 0.9889507833294503,
+        "precision": 0.9952528144028897,
+        "recall": 0.9765969220854728,
+        "f1": 0.985836615495577,
         "support": 142759,
-        "predicted_positive_count": 140519
+        "predicted_positive_count": 140083
       },
       {
         "name": "ExternalCall",
-        "precision": 0.5879732739420935,
-        "recall": 0.9814126394052045,
-        "f1": 0.7353760445682451,
+        "precision": 0.5343035343035343,
+        "recall": 0.9553903345724907,
+        "f1": 0.6853333333333333,
         "support": 269,
-        "predicted_positive_count": 449
+        "predicted_positive_count": 481
       },
       {
         "name": "StateRead",
-        "precision": 0.9525568181818181,
-        "recall": 0.9841502788376871,
-        "f1": 0.9680958567922622,
+        "precision": 0.94874715261959,
+        "recall": 0.9779864983856765,
+        "f1": 0.9631449631449631,
         "support": 3407,
-        "predicted_positive_count": 3520
+        "predicted_positive_count": 3512
       },
       {
         "name": "StateWrite",
-        "precision": 0.8115477145148356,
-        "recall": 0.968421052631579,
-        "f1": 0.8830715532286213,
+        "precision": 0.7528005974607916,
+        "recall": 0.9645933014354067,
+        "f1": 0.8456375838926175,
         "support": 1045,
-        "predicted_positive_count": 1247
+        "predicted_positive_count": 1339
       },
       {
         "name": "AuthSource",
-        "precision": 0.8813559322033898,
-        "recall": 0.9466019417475728,
-        "f1": 0.9128145114101813,
+        "precision": 0.9216646266829865,
+        "recall": 0.9138349514563107,
+        "f1": 0.9177330895795246,
         "support": 824,
-        "predicted_positive_count": 885
+        "predicted_positive_count": 817
       },
       {
         "name": "ControlGuard",
-        "precision": 0.9655304775065254,
-        "recall": 0.9872056514913657,
-        "f1": 0.9762477683769308,
+        "precision": 0.9629803553259764,
+        "recall": 0.9657770800627944,
+        "f1": 0.9643766900497707,
         "support": 12740,
-        "predicted_positive_count": 13026
+        "predicted_positive_count": 12777
       },
       {
         "name": "ReturnCheck",
-        "precision": 0.7945301542776999,
-        "recall": 0.987794245858762,
-        "f1": 0.8806840264282939,
+        "precision": 0.6428571428571429,
+        "recall": 0.980819529206626,
+        "f1": 0.7766655160510875,
         "support": 1147,
-        "predicted_positive_count": 1426
+        "predicted_positive_count": 1750
       },
       {
         "name": "EnvDependency",
-        "precision": 0.44837758112094395,
-        "recall": 0.8941176470588236,
-        "f1": 0.5972495088408644,
+        "precision": 0.46534653465346537,
+        "recall": 0.8294117647058824,
+        "f1": 0.5961945031712473,
         "support": 170,
-        "predicted_positive_count": 339
+        "predicted_positive_count": 303
       },
       {
         "name": "Arithmetic",
-        "precision": 0.9555816839767457,
-        "recall": 0.9809562127003286,
-        "f1": 0.9681027066375488,
+        "precision": 0.9265845294042931,
+        "recall": 0.978341044726078,
+        "f1": 0.9517596790501973,
         "support": 14913,
-        "predicted_positive_count": 15309
+        "predicted_positive_count": 15746
       },
       {
         "name": "AddressLiteral",
-        "precision": 0.9934895833333334,
-        "recall": 0.9995633187772925,
-        "f1": 0.9965171963430562,
+        "precision": 0.9917570498915401,
+        "recall": 0.9982532751091703,
+        "f1": 0.9949945593035909,
         "support": 2290,
-        "predicted_positive_count": 2304
+        "predicted_positive_count": 2305
       },
       {
         "name": "CreateContract",
@@ -273,45 +696,45 @@
       },
       {
         "name": "RevertOrAssert",
-        "precision": 0.9600870827285921,
-        "recall": 0.9943630214205186,
-        "f1": 0.9769244969540335,
+        "precision": 0.9570642201834862,
+        "recall": 0.9800826756858324,
+        "f1": 0.9684366877088749,
         "support": 2661,
-        "predicted_positive_count": 2756
+        "predicted_positive_count": 2725
       },
       {
         "name": "GasOrValue",
-        "precision": 0.9253840526700805,
-        "recall": 0.9612462006079028,
-        "f1": 0.9429742825195676,
+        "precision": 0.9280948851000741,
+        "recall": 0.9513677811550152,
+        "f1": 0.9395872420262664,
         "support": 1316,
-        "predicted_positive_count": 1367
+        "predicted_positive_count": 1349
       },
       {
         "name": "HashOrCrypto",
-        "precision": 0.9515828677839852,
-        "recall": 0.9948085658663206,
-        "f1": 0.9727157360406092,
+        "precision": 0.946229913473424,
+        "recall": 0.9935107073329007,
+        "f1": 0.9692940804051916,
         "support": 1541,
-        "predicted_positive_count": 1611
+        "predicted_positive_count": 1618
       },
       {
         "name": "StorageOrMemoryHeavy",
-        "precision": 0.9544067326366411,
-        "recall": 0.9853910054425666,
-        "f1": 0.9696514140749789,
+        "precision": 0.9539290358536132,
+        "recall": 0.9806168242146472,
+        "f1": 0.9670888459908658,
         "support": 10473,
-        "predicted_positive_count": 10813
+        "predicted_positive_count": 10766
       }
     ],
     "efpp_per_pattern": [
       {
         "name": "has_external_call",
-        "precision": 0.94375,
-        "recall": 0.949685534591195,
-        "f1": 0.9467084639498432,
+        "precision": 0.9872611464968153,
+        "recall": 0.9748427672955975,
+        "f1": 0.9810126582278481,
         "support": 159,
-        "predicted_positive_count": 160
+        "predicted_positive_count": 157
       },
       {
         "name": "has_delegatecall",
@@ -323,147 +746,147 @@
       },
       {
         "name": "has_state_read",
-        "precision": 0.9656160458452722,
-        "recall": 0.903485254691689,
-        "f1": 0.9335180055401662,
+        "precision": 0.949438202247191,
+        "recall": 0.9061662198391421,
+        "f1": 0.9272976680384089,
         "support": 373,
-        "predicted_positive_count": 349
+        "predicted_positive_count": 356
       },
       {
         "name": "has_state_write",
-        "precision": 0.8746081504702194,
-        "recall": 0.9029126213592233,
-        "f1": 0.8885350318471338,
+        "precision": 0.9035369774919614,
+        "recall": 0.9093851132686084,
+        "f1": 0.9064516129032258,
         "support": 309,
-        "predicted_positive_count": 319
+        "predicted_positive_count": 311
       },
       {
         "name": "call_before_state_write",
-        "precision": 0.375,
-        "recall": 0.21428571428571427,
-        "f1": 0.2727272727272727,
+        "precision": 0.625,
+        "recall": 0.35714285714285715,
+        "f1": 0.45454545454545453,
         "support": 14,
         "predicted_positive_count": 8
       },
       {
         "name": "state_write_before_call",
-        "precision": 0.5,
-        "recall": 0.16,
-        "f1": 0.24242424242424243,
+        "precision": 0.3333333333333333,
+        "recall": 0.2,
+        "f1": 0.25,
         "support": 25,
-        "predicted_positive_count": 8
+        "predicted_positive_count": 15
       },
       {
         "name": "call_without_return_check",
-        "precision": 0.6363636363636364,
-        "recall": 0.3684210526315789,
-        "f1": 0.4666666666666667,
+        "precision": 0.6666666666666666,
+        "recall": 0.21052631578947367,
+        "f1": 0.32,
         "support": 19,
-        "predicted_positive_count": 11
+        "predicted_positive_count": 6
       },
       {
         "name": "call_with_return_check",
-        "precision": 0.9342105263157895,
-        "recall": 0.9659863945578231,
-        "f1": 0.9498327759197324,
+        "precision": 0.9415584415584416,
+        "recall": 0.9863945578231292,
+        "f1": 0.9634551495016611,
         "support": 147,
-        "predicted_positive_count": 152
+        "predicted_positive_count": 154
       },
       {
         "name": "state_write_with_auth_guard",
-        "precision": 0.5194805194805194,
-        "recall": 0.6451612903225806,
-        "f1": 0.5755395683453237,
+        "precision": 0.6544117647058824,
+        "recall": 0.717741935483871,
+        "f1": 0.6846153846153847,
         "support": 124,
-        "predicted_positive_count": 154
+        "predicted_positive_count": 136
       },
       {
         "name": "state_write_without_auth_guard",
-        "precision": 0.7821782178217822,
-        "recall": 0.8909774436090225,
-        "f1": 0.8330404217926187,
+        "precision": 0.7887323943661971,
+        "recall": 0.8421052631578947,
+        "f1": 0.8145454545454546,
         "support": 266,
-        "predicted_positive_count": 303
+        "predicted_positive_count": 284
       },
       {
         "name": "sensitive_call_with_auth_guard",
-        "precision": 0.2857142857142857,
-        "recall": 0.4782608695652174,
-        "f1": 0.35772357723577236,
+        "precision": 0.2912621359223301,
+        "recall": 0.6521739130434783,
+        "f1": 0.4026845637583893,
         "support": 46,
-        "predicted_positive_count": 77
+        "predicted_positive_count": 103
       },
       {
         "name": "sensitive_call_without_auth_guard",
-        "precision": 0.7727272727272727,
-        "recall": 0.8947368421052632,
-        "f1": 0.8292682926829269,
+        "precision": 0.7884615384615384,
+        "recall": 0.924812030075188,
+        "f1": 0.8512110726643599,
         "support": 133,
-        "predicted_positive_count": 154
+        "predicted_positive_count": 156
       },
       {
         "name": "env_used_in_condition",
-        "precision": 0.49411764705882355,
-        "recall": 0.6176470588235294,
-        "f1": 0.5490196078431373,
+        "precision": 0.5,
+        "recall": 0.75,
+        "f1": 0.6,
         "support": 68,
-        "predicted_positive_count": 85
+        "predicted_positive_count": 102
       },
       {
         "name": "env_used_in_arithmetic_or_hash",
-        "precision": 0.46987951807228917,
-        "recall": 0.5064935064935064,
-        "f1": 0.4875,
+        "precision": 0.4479166666666667,
+        "recall": 0.5584415584415584,
+        "f1": 0.49710982658959546,
         "support": 77,
-        "predicted_positive_count": 83
+        "predicted_positive_count": 96
       },
       {
         "name": "div_before_mul",
-        "precision": 0.6551724137931034,
-        "recall": 0.5241379310344828,
-        "f1": 0.5823754789272032,
+        "precision": 0.6818181818181818,
+        "recall": 0.41379310344827586,
+        "f1": 0.5150214592274678,
         "support": 145,
-        "predicted_positive_count": 116
+        "predicted_positive_count": 88
       },
       {
         "name": "has_hardcoded_address",
-        "precision": 0.92,
-        "recall": 0.8288288288288288,
-        "f1": 0.8720379146919431,
+        "precision": 0.7991071428571429,
+        "recall": 0.8063063063063063,
+        "f1": 0.8026905829596414,
         "support": 222,
-        "predicted_positive_count": 200
+        "predicted_positive_count": 224
       },
       {
         "name": "hardcoded_address_near_call",
-        "precision": 0.7206703910614525,
-        "recall": 0.8431372549019608,
-        "f1": 0.7771084337349398,
+        "precision": 0.6756756756756757,
+        "recall": 0.8169934640522876,
+        "f1": 0.7396449704142012,
         "support": 153,
-        "predicted_positive_count": 179
+        "predicted_positive_count": 185
       },
       {
         "name": "value_or_gas_sensitive_call",
-        "precision": 0.86,
-        "recall": 0.9555555555555556,
-        "f1": 0.9052631578947369,
+        "precision": 0.8636363636363636,
+        "recall": 0.9851851851851852,
+        "f1": 0.9204152249134949,
         "support": 135,
-        "predicted_positive_count": 150
+        "predicted_positive_count": 154
       },
       {
         "name": "dense_storage_or_call_ops",
-        "precision": 1.0,
-        "recall": 0.19047619047619047,
-        "f1": 0.32,
+        "precision": 0.5555555555555556,
+        "recall": 0.23809523809523808,
+        "f1": 0.33333333333333326,
         "support": 21,
-        "predicted_positive_count": 4
+        "predicted_positive_count": 9
       },
       {
         "name": "panic_selector_present",
-        "precision": 0.6296296296296297,
-        "recall": 0.7727272727272727,
-        "f1": 0.6938775510204083,
+        "precision": 1.0,
+        "recall": 0.045454545454545456,
+        "f1": 0.08695652173913045,
         "support": 22,
-        "predicted_positive_count": 27
+        "predicted_positive_count": 1
       },
       {
         "name": "selfdestruct_present",
@@ -471,113 +894,448 @@
         "recall": 0.0,
         "f1": 0.0,
         "support": 5,
-        "predicted_positive_count": 2
+        "predicted_positive_count": 0
       },
       {
         "name": "create_contract_present",
-        "precision": 0.1111111111111111,
-        "recall": 0.14285714285714285,
-        "f1": 0.125,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
         "support": 7,
-        "predicted_positive_count": 9
+        "predicted_positive_count": 0
+      }
+    ],
+    "err_per_relation": [
+      {
+        "name": "call_then_state_write",
+        "precision": 0.3076923076923077,
+        "recall": 0.5714285714285714,
+        "f1": 0.4,
+        "support": 14,
+        "predicted_positive_count": 26
+      },
+      {
+        "name": "state_write_then_call",
+        "precision": 0.46153846153846156,
+        "recall": 0.3,
+        "f1": 0.3636363636363637,
+        "support": 20,
+        "predicted_positive_count": 13
+      },
+      {
+        "name": "call_then_return_check",
+        "precision": 0.8596491228070176,
+        "recall": 0.8305084745762712,
+        "f1": 0.8448275862068966,
+        "support": 118,
+        "predicted_positive_count": 114
+      },
+      {
+        "name": "state_write_then_auth_guard",
+        "precision": 0.8589743589743589,
+        "recall": 0.8481012658227848,
+        "f1": 0.8535031847133757,
+        "support": 79,
+        "predicted_positive_count": 78
+      },
+      {
+        "name": "env_then_branch",
+        "precision": 0.7058823529411765,
+        "recall": 0.8571428571428571,
+        "f1": 0.7741935483870968,
+        "support": 14,
+        "predicted_positive_count": 17
+      },
+      {
+        "name": "div_then_mul",
+        "precision": 0.8571428571428571,
+        "recall": 0.821917808219178,
+        "f1": 0.8391608391608392,
+        "support": 73,
+        "predicted_positive_count": 70
+      }
+    ],
+    "vep_per_label": [
+      {
+        "name": "Reentrancy",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 98,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Contract contains unknown address",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 28,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Integer overflow or underflow",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 35,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Timestamp dependence",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "DoS with failed call",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Assert violation",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Unchecked call return value",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 9,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Unsafe send",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Multiplication after division",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 7,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Extra gas consumption",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 12,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Access Control",
+        "precision": 0.7575757575757576,
+        "recall": 0.13157894736842105,
+        "f1": 0.22421524663677128,
+        "support": 190,
+        "predicted_positive_count": 33
+      },
+      {
+        "name": "Arithmetic",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 127,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Unchecked Return Values",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 21,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "DoS",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 13,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Bad Randomness",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Front Running",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 3,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Time manipulation",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 46,
+        "predicted_positive_count": 0
+      }
+    ],
+    "vtm_per_label": [
+      {
+        "name": "Reentrancy",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 353,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Contract contains unknown address",
+        "precision": 1.0,
+        "recall": 0.014354066985645933,
+        "f1": 0.02830188679245283,
+        "support": 209,
+        "predicted_positive_count": 3
+      },
+      {
+        "name": "Integer overflow or underflow",
+        "precision": 1.0,
+        "recall": 0.19421487603305784,
+        "f1": 0.32525951557093424,
+        "support": 242,
+        "predicted_positive_count": 47
+      },
+      {
+        "name": "Timestamp dependence",
+        "precision": 1.0,
+        "recall": 0.00684931506849315,
+        "f1": 0.013605442176870748,
+        "support": 146,
+        "predicted_positive_count": 1
+      },
+      {
+        "name": "DoS with failed call",
+        "precision": 1.0,
+        "recall": 0.00558659217877095,
+        "f1": 0.011111111111111112,
+        "support": 179,
+        "predicted_positive_count": 1
+      },
+      {
+        "name": "Assert violation",
+        "precision": 1.0,
+        "recall": 0.25416666666666665,
+        "f1": 0.4053156146179402,
+        "support": 240,
+        "predicted_positive_count": 61
+      },
+      {
+        "name": "Unchecked call return value",
+        "precision": 1.0,
+        "recall": 0.039603960396039604,
+        "f1": 0.07619047619047618,
+        "support": 101,
+        "predicted_positive_count": 4
+      },
+      {
+        "name": "Unsafe send",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 217,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Multiplication after division",
+        "precision": 1.0,
+        "recall": 0.012145748987854251,
+        "f1": 0.024,
+        "support": 247,
+        "predicted_positive_count": 3
+      },
+      {
+        "name": "Extra gas consumption",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 246,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Access Control",
+        "precision": 1.0,
+        "recall": 0.1394422310756972,
+        "f1": 0.24475524475524477,
+        "support": 251,
+        "predicted_positive_count": 35
+      },
+      {
+        "name": "Arithmetic",
+        "precision": 1.0,
+        "recall": 0.20883534136546184,
+        "f1": 0.34551495016611294,
+        "support": 249,
+        "predicted_positive_count": 52
+      },
+      {
+        "name": "Unchecked Return Values",
+        "precision": 1.0,
+        "recall": 0.06060606060606061,
+        "f1": 0.1142857142857143,
+        "support": 66,
+        "predicted_positive_count": 4
+      },
+      {
+        "name": "DoS",
+        "precision": 1.0,
+        "recall": 0.4090909090909091,
+        "f1": 0.5806451612903226,
+        "support": 66,
+        "predicted_positive_count": 27
+      },
+      {
+        "name": "Bad Randomness",
+        "precision": 1.0,
+        "recall": 0.028368794326241134,
+        "f1": 0.05517241379310345,
+        "support": 141,
+        "predicted_positive_count": 4
+      },
+      {
+        "name": "Front Running",
+        "precision": 1.0,
+        "recall": 0.3387096774193548,
+        "f1": 0.5060240963855421,
+        "support": 124,
+        "predicted_positive_count": 42
+      },
+      {
+        "name": "Time manipulation",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 141,
+        "predicted_positive_count": 0
       }
     ]
   },
   "best_internal_valid_metrics": {
     "evaluated_samples": 512,
-    "valid_loss_total": 0.40023754723370075,
-    "valid_loss_mom": 0.1785658849403262,
-    "valid_loss_etp": 0.09834261983633041,
-    "valid_loss_efpp": 0.3843377474695444,
-    "masked_token_accuracy": 0.9542440318302388,
-    "masked_token_top5_accuracy": 0.9844164456233422,
+    "valid_loss_total": 0.9026980474591255,
+    "valid_loss_mom": 0.1998947598040104,
+    "valid_loss_etp": 0.14407490147277713,
+    "valid_loss_efpp": 0.39695301093161106,
+    "valid_loss_err": 0.6448445320129395,
+    "valid_loss_vep": 0.25662114191800356,
+    "valid_loss_vtm": 0.4125062022358179,
+    "masked_token_accuracy": 0.9496297524314765,
+    "masked_token_top5_accuracy": 0.9830072944297082,
     "masked_token_count": 36192,
-    "etp_accuracy": 0.9818787038978172,
-    "etp_macro_f1": 0.7980859928465402,
-    "etp_macro_f1_excluding_normal": 0.7853616734810129,
-    "efpp_micro_f1": 0.7963404932378679,
-    "efpp_macro_f1": 0.5730984756020031,
-    "efpp_macro_auc": 0.905850330935938,
+    "etp_accuracy": 0.9759882600181008,
+    "etp_macro_f1": 0.7828802118251942,
+    "etp_macro_f1_excluding_normal": 0.7693497849138354,
+    "efpp_micro_f1": 0.7947441767867808,
+    "efpp_macro_f1": 0.5477723153625932,
+    "efpp_macro_auc": 0.9022666461182944,
+    "err_accuracy": 0.789308176100629,
+    "err_macro_f1": 0.6792202536840953,
+    "vep_micro_f1": 0.07961783439490445,
+    "vep_macro_f1": 0.013189132155104193,
+    "vtm_micro_f1": 0.16219303255282697,
+    "vtm_macro_f1": 0.16059891924328384,
     "etp_per_effect": [
       {
         "name": "Normal",
-        "precision": 0.996833168468321,
-        "recall": 0.9811920789582443,
-        "f1": 0.9889507833294503,
+        "precision": 0.9952528144028897,
+        "recall": 0.9765969220854728,
+        "f1": 0.985836615495577,
         "support": 142759,
-        "predicted_positive_count": 140519
+        "predicted_positive_count": 140083
       },
       {
         "name": "ExternalCall",
-        "precision": 0.5879732739420935,
-        "recall": 0.9814126394052045,
-        "f1": 0.7353760445682451,
+        "precision": 0.5343035343035343,
+        "recall": 0.9553903345724907,
+        "f1": 0.6853333333333333,
         "support": 269,
-        "predicted_positive_count": 449
+        "predicted_positive_count": 481
       },
       {
         "name": "StateRead",
-        "precision": 0.9525568181818181,
-        "recall": 0.9841502788376871,
-        "f1": 0.9680958567922622,
+        "precision": 0.94874715261959,
+        "recall": 0.9779864983856765,
+        "f1": 0.9631449631449631,
         "support": 3407,
-        "predicted_positive_count": 3520
+        "predicted_positive_count": 3512
       },
       {
         "name": "StateWrite",
-        "precision": 0.8115477145148356,
-        "recall": 0.968421052631579,
-        "f1": 0.8830715532286213,
+        "precision": 0.7528005974607916,
+        "recall": 0.9645933014354067,
+        "f1": 0.8456375838926175,
         "support": 1045,
-        "predicted_positive_count": 1247
+        "predicted_positive_count": 1339
       },
       {
         "name": "AuthSource",
-        "precision": 0.8813559322033898,
-        "recall": 0.9466019417475728,
-        "f1": 0.9128145114101813,
+        "precision": 0.9216646266829865,
+        "recall": 0.9138349514563107,
+        "f1": 0.9177330895795246,
         "support": 824,
-        "predicted_positive_count": 885
+        "predicted_positive_count": 817
       },
       {
         "name": "ControlGuard",
-        "precision": 0.9655304775065254,
-        "recall": 0.9872056514913657,
-        "f1": 0.9762477683769308,
+        "precision": 0.9629803553259764,
+        "recall": 0.9657770800627944,
+        "f1": 0.9643766900497707,
         "support": 12740,
-        "predicted_positive_count": 13026
+        "predicted_positive_count": 12777
       },
       {
         "name": "ReturnCheck",
-        "precision": 0.7945301542776999,
-        "recall": 0.987794245858762,
-        "f1": 0.8806840264282939,
+        "precision": 0.6428571428571429,
+        "recall": 0.980819529206626,
+        "f1": 0.7766655160510875,
         "support": 1147,
-        "predicted_positive_count": 1426
+        "predicted_positive_count": 1750
       },
       {
         "name": "EnvDependency",
-        "precision": 0.44837758112094395,
-        "recall": 0.8941176470588236,
-        "f1": 0.5972495088408644,
+        "precision": 0.46534653465346537,
+        "recall": 0.8294117647058824,
+        "f1": 0.5961945031712473,
         "support": 170,
-        "predicted_positive_count": 339
+        "predicted_positive_count": 303
       },
       {
         "name": "Arithmetic",
-        "precision": 0.9555816839767457,
-        "recall": 0.9809562127003286,
-        "f1": 0.9681027066375488,
+        "precision": 0.9265845294042931,
+        "recall": 0.978341044726078,
+        "f1": 0.9517596790501973,
         "support": 14913,
-        "predicted_positive_count": 15309
+        "predicted_positive_count": 15746
       },
       {
         "name": "AddressLiteral",
-        "precision": 0.9934895833333334,
-        "recall": 0.9995633187772925,
-        "f1": 0.9965171963430562,
+        "precision": 0.9917570498915401,
+        "recall": 0.9982532751091703,
+        "f1": 0.9949945593035909,
         "support": 2290,
-        "predicted_positive_count": 2304
+        "predicted_positive_count": 2305
       },
       {
         "name": "CreateContract",
@@ -597,45 +1355,45 @@
       },
       {
         "name": "RevertOrAssert",
-        "precision": 0.9600870827285921,
-        "recall": 0.9943630214205186,
-        "f1": 0.9769244969540335,
+        "precision": 0.9570642201834862,
+        "recall": 0.9800826756858324,
+        "f1": 0.9684366877088749,
         "support": 2661,
-        "predicted_positive_count": 2756
+        "predicted_positive_count": 2725
       },
       {
         "name": "GasOrValue",
-        "precision": 0.9253840526700805,
-        "recall": 0.9612462006079028,
-        "f1": 0.9429742825195676,
+        "precision": 0.9280948851000741,
+        "recall": 0.9513677811550152,
+        "f1": 0.9395872420262664,
         "support": 1316,
-        "predicted_positive_count": 1367
+        "predicted_positive_count": 1349
       },
       {
         "name": "HashOrCrypto",
-        "precision": 0.9515828677839852,
-        "recall": 0.9948085658663206,
-        "f1": 0.9727157360406092,
+        "precision": 0.946229913473424,
+        "recall": 0.9935107073329007,
+        "f1": 0.9692940804051916,
         "support": 1541,
-        "predicted_positive_count": 1611
+        "predicted_positive_count": 1618
       },
       {
         "name": "StorageOrMemoryHeavy",
-        "precision": 0.9544067326366411,
-        "recall": 0.9853910054425666,
-        "f1": 0.9696514140749789,
+        "precision": 0.9539290358536132,
+        "recall": 0.9806168242146472,
+        "f1": 0.9670888459908658,
         "support": 10473,
-        "predicted_positive_count": 10813
+        "predicted_positive_count": 10766
       }
     ],
     "efpp_per_pattern": [
       {
         "name": "has_external_call",
-        "precision": 0.94375,
-        "recall": 0.949685534591195,
-        "f1": 0.9467084639498432,
+        "precision": 0.9872611464968153,
+        "recall": 0.9748427672955975,
+        "f1": 0.9810126582278481,
         "support": 159,
-        "predicted_positive_count": 160
+        "predicted_positive_count": 157
       },
       {
         "name": "has_delegatecall",
@@ -647,147 +1405,147 @@
       },
       {
         "name": "has_state_read",
-        "precision": 0.9656160458452722,
-        "recall": 0.903485254691689,
-        "f1": 0.9335180055401662,
+        "precision": 0.949438202247191,
+        "recall": 0.9061662198391421,
+        "f1": 0.9272976680384089,
         "support": 373,
-        "predicted_positive_count": 349
+        "predicted_positive_count": 356
       },
       {
         "name": "has_state_write",
-        "precision": 0.8746081504702194,
-        "recall": 0.9029126213592233,
-        "f1": 0.8885350318471338,
+        "precision": 0.9035369774919614,
+        "recall": 0.9093851132686084,
+        "f1": 0.9064516129032258,
         "support": 309,
-        "predicted_positive_count": 319
+        "predicted_positive_count": 311
       },
       {
         "name": "call_before_state_write",
-        "precision": 0.375,
-        "recall": 0.21428571428571427,
-        "f1": 0.2727272727272727,
+        "precision": 0.625,
+        "recall": 0.35714285714285715,
+        "f1": 0.45454545454545453,
         "support": 14,
         "predicted_positive_count": 8
       },
       {
         "name": "state_write_before_call",
-        "precision": 0.5,
-        "recall": 0.16,
-        "f1": 0.24242424242424243,
+        "precision": 0.3333333333333333,
+        "recall": 0.2,
+        "f1": 0.25,
         "support": 25,
-        "predicted_positive_count": 8
+        "predicted_positive_count": 15
       },
       {
         "name": "call_without_return_check",
-        "precision": 0.6363636363636364,
-        "recall": 0.3684210526315789,
-        "f1": 0.4666666666666667,
+        "precision": 0.6666666666666666,
+        "recall": 0.21052631578947367,
+        "f1": 0.32,
         "support": 19,
-        "predicted_positive_count": 11
+        "predicted_positive_count": 6
       },
       {
         "name": "call_with_return_check",
-        "precision": 0.9342105263157895,
-        "recall": 0.9659863945578231,
-        "f1": 0.9498327759197324,
+        "precision": 0.9415584415584416,
+        "recall": 0.9863945578231292,
+        "f1": 0.9634551495016611,
         "support": 147,
-        "predicted_positive_count": 152
+        "predicted_positive_count": 154
       },
       {
         "name": "state_write_with_auth_guard",
-        "precision": 0.5194805194805194,
-        "recall": 0.6451612903225806,
-        "f1": 0.5755395683453237,
+        "precision": 0.6544117647058824,
+        "recall": 0.717741935483871,
+        "f1": 0.6846153846153847,
         "support": 124,
-        "predicted_positive_count": 154
+        "predicted_positive_count": 136
       },
       {
         "name": "state_write_without_auth_guard",
-        "precision": 0.7821782178217822,
-        "recall": 0.8909774436090225,
-        "f1": 0.8330404217926187,
+        "precision": 0.7887323943661971,
+        "recall": 0.8421052631578947,
+        "f1": 0.8145454545454546,
         "support": 266,
-        "predicted_positive_count": 303
+        "predicted_positive_count": 284
       },
       {
         "name": "sensitive_call_with_auth_guard",
-        "precision": 0.2857142857142857,
-        "recall": 0.4782608695652174,
-        "f1": 0.35772357723577236,
+        "precision": 0.2912621359223301,
+        "recall": 0.6521739130434783,
+        "f1": 0.4026845637583893,
         "support": 46,
-        "predicted_positive_count": 77
+        "predicted_positive_count": 103
       },
       {
         "name": "sensitive_call_without_auth_guard",
-        "precision": 0.7727272727272727,
-        "recall": 0.8947368421052632,
-        "f1": 0.8292682926829269,
+        "precision": 0.7884615384615384,
+        "recall": 0.924812030075188,
+        "f1": 0.8512110726643599,
         "support": 133,
-        "predicted_positive_count": 154
+        "predicted_positive_count": 156
       },
       {
         "name": "env_used_in_condition",
-        "precision": 0.49411764705882355,
-        "recall": 0.6176470588235294,
-        "f1": 0.5490196078431373,
+        "precision": 0.5,
+        "recall": 0.75,
+        "f1": 0.6,
         "support": 68,
-        "predicted_positive_count": 85
+        "predicted_positive_count": 102
       },
       {
         "name": "env_used_in_arithmetic_or_hash",
-        "precision": 0.46987951807228917,
-        "recall": 0.5064935064935064,
-        "f1": 0.4875,
+        "precision": 0.4479166666666667,
+        "recall": 0.5584415584415584,
+        "f1": 0.49710982658959546,
         "support": 77,
-        "predicted_positive_count": 83
+        "predicted_positive_count": 96
       },
       {
         "name": "div_before_mul",
-        "precision": 0.6551724137931034,
-        "recall": 0.5241379310344828,
-        "f1": 0.5823754789272032,
+        "precision": 0.6818181818181818,
+        "recall": 0.41379310344827586,
+        "f1": 0.5150214592274678,
         "support": 145,
-        "predicted_positive_count": 116
+        "predicted_positive_count": 88
       },
       {
         "name": "has_hardcoded_address",
-        "precision": 0.92,
-        "recall": 0.8288288288288288,
-        "f1": 0.8720379146919431,
+        "precision": 0.7991071428571429,
+        "recall": 0.8063063063063063,
+        "f1": 0.8026905829596414,
         "support": 222,
-        "predicted_positive_count": 200
+        "predicted_positive_count": 224
       },
       {
         "name": "hardcoded_address_near_call",
-        "precision": 0.7206703910614525,
-        "recall": 0.8431372549019608,
-        "f1": 0.7771084337349398,
+        "precision": 0.6756756756756757,
+        "recall": 0.8169934640522876,
+        "f1": 0.7396449704142012,
         "support": 153,
-        "predicted_positive_count": 179
+        "predicted_positive_count": 185
       },
       {
         "name": "value_or_gas_sensitive_call",
-        "precision": 0.86,
-        "recall": 0.9555555555555556,
-        "f1": 0.9052631578947369,
+        "precision": 0.8636363636363636,
+        "recall": 0.9851851851851852,
+        "f1": 0.9204152249134949,
         "support": 135,
-        "predicted_positive_count": 150
+        "predicted_positive_count": 154
       },
       {
         "name": "dense_storage_or_call_ops",
-        "precision": 1.0,
-        "recall": 0.19047619047619047,
-        "f1": 0.32,
+        "precision": 0.5555555555555556,
+        "recall": 0.23809523809523808,
+        "f1": 0.33333333333333326,
         "support": 21,
-        "predicted_positive_count": 4
+        "predicted_positive_count": 9
       },
       {
         "name": "panic_selector_present",
-        "precision": 0.6296296296296297,
-        "recall": 0.7727272727272727,
-        "f1": 0.6938775510204083,
+        "precision": 1.0,
+        "recall": 0.045454545454545456,
+        "f1": 0.08695652173913045,
         "support": 22,
-        "predicted_positive_count": 27
+        "predicted_positive_count": 1
       },
       {
         "name": "selfdestruct_present",
@@ -795,22 +1553,348 @@
         "recall": 0.0,
         "f1": 0.0,
         "support": 5,
-        "predicted_positive_count": 2
+        "predicted_positive_count": 0
       },
       {
         "name": "create_contract_present",
-        "precision": 0.1111111111111111,
-        "recall": 0.14285714285714285,
-        "f1": 0.125,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
         "support": 7,
-        "predicted_positive_count": 9
+        "predicted_positive_count": 0
+      }
+    ],
+    "err_per_relation": [
+      {
+        "name": "call_then_state_write",
+        "precision": 0.3076923076923077,
+        "recall": 0.5714285714285714,
+        "f1": 0.4,
+        "support": 14,
+        "predicted_positive_count": 26
+      },
+      {
+        "name": "state_write_then_call",
+        "precision": 0.46153846153846156,
+        "recall": 0.3,
+        "f1": 0.3636363636363637,
+        "support": 20,
+        "predicted_positive_count": 13
+      },
+      {
+        "name": "call_then_return_check",
+        "precision": 0.8596491228070176,
+        "recall": 0.8305084745762712,
+        "f1": 0.8448275862068966,
+        "support": 118,
+        "predicted_positive_count": 114
+      },
+      {
+        "name": "state_write_then_auth_guard",
+        "precision": 0.8589743589743589,
+        "recall": 0.8481012658227848,
+        "f1": 0.8535031847133757,
+        "support": 79,
+        "predicted_positive_count": 78
+      },
+      {
+        "name": "env_then_branch",
+        "precision": 0.7058823529411765,
+        "recall": 0.8571428571428571,
+        "f1": 0.7741935483870968,
+        "support": 14,
+        "predicted_positive_count": 17
+      },
+      {
+        "name": "div_then_mul",
+        "precision": 0.8571428571428571,
+        "recall": 0.821917808219178,
+        "f1": 0.8391608391608392,
+        "support": 73,
+        "predicted_positive_count": 70
+      }
+    ],
+    "vep_per_label": [
+      {
+        "name": "Reentrancy",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 98,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Contract contains unknown address",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 28,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Integer overflow or underflow",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 35,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Timestamp dependence",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "DoS with failed call",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Assert violation",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Unchecked call return value",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 9,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Unsafe send",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Multiplication after division",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 7,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Extra gas consumption",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 12,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Access Control",
+        "precision": 0.7575757575757576,
+        "recall": 0.13157894736842105,
+        "f1": 0.22421524663677128,
+        "support": 190,
+        "predicted_positive_count": 33
+      },
+      {
+        "name": "Arithmetic",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 127,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Unchecked Return Values",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 21,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "DoS",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 13,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Bad Randomness",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Front Running",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 3,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Time manipulation",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 46,
+        "predicted_positive_count": 0
+      }
+    ],
+    "vtm_per_label": [
+      {
+        "name": "Reentrancy",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 353,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Contract contains unknown address",
+        "precision": 1.0,
+        "recall": 0.014354066985645933,
+        "f1": 0.02830188679245283,
+        "support": 209,
+        "predicted_positive_count": 3
+      },
+      {
+        "name": "Integer overflow or underflow",
+        "precision": 1.0,
+        "recall": 0.19421487603305784,
+        "f1": 0.32525951557093424,
+        "support": 242,
+        "predicted_positive_count": 47
+      },
+      {
+        "name": "Timestamp dependence",
+        "precision": 1.0,
+        "recall": 0.00684931506849315,
+        "f1": 0.013605442176870748,
+        "support": 146,
+        "predicted_positive_count": 1
+      },
+      {
+        "name": "DoS with failed call",
+        "precision": 1.0,
+        "recall": 0.00558659217877095,
+        "f1": 0.011111111111111112,
+        "support": 179,
+        "predicted_positive_count": 1
+      },
+      {
+        "name": "Assert violation",
+        "precision": 1.0,
+        "recall": 0.25416666666666665,
+        "f1": 0.4053156146179402,
+        "support": 240,
+        "predicted_positive_count": 61
+      },
+      {
+        "name": "Unchecked call return value",
+        "precision": 1.0,
+        "recall": 0.039603960396039604,
+        "f1": 0.07619047619047618,
+        "support": 101,
+        "predicted_positive_count": 4
+      },
+      {
+        "name": "Unsafe send",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 217,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Multiplication after division",
+        "precision": 1.0,
+        "recall": 0.012145748987854251,
+        "f1": 0.024,
+        "support": 247,
+        "predicted_positive_count": 3
+      },
+      {
+        "name": "Extra gas consumption",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 246,
+        "predicted_positive_count": 0
+      },
+      {
+        "name": "Access Control",
+        "precision": 1.0,
+        "recall": 0.1394422310756972,
+        "f1": 0.24475524475524477,
+        "support": 251,
+        "predicted_positive_count": 35
+      },
+      {
+        "name": "Arithmetic",
+        "precision": 1.0,
+        "recall": 0.20883534136546184,
+        "f1": 0.34551495016611294,
+        "support": 249,
+        "predicted_positive_count": 52
+      },
+      {
+        "name": "Unchecked Return Values",
+        "precision": 1.0,
+        "recall": 0.06060606060606061,
+        "f1": 0.1142857142857143,
+        "support": 66,
+        "predicted_positive_count": 4
+      },
+      {
+        "name": "DoS",
+        "precision": 1.0,
+        "recall": 0.4090909090909091,
+        "f1": 0.5806451612903226,
+        "support": 66,
+        "predicted_positive_count": 27
+      },
+      {
+        "name": "Bad Randomness",
+        "precision": 1.0,
+        "recall": 0.028368794326241134,
+        "f1": 0.05517241379310345,
+        "support": 141,
+        "predicted_positive_count": 4
+      },
+      {
+        "name": "Front Running",
+        "precision": 1.0,
+        "recall": 0.3387096774193548,
+        "f1": 0.5060240963855421,
+        "support": 124,
+        "predicted_positive_count": 42
+      },
+      {
+        "name": "Time manipulation",
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 141,
+        "predicted_positive_count": 0
       }
     ]
   },
   "encoder_checksum_before": "6221e4515b50c9fbe35af3fd6fc7e00c6ee2adf289f57cf16c734daa6eb84fd0",
-  "encoder_checksum_after": "4b346e9b123ad888ece4c04f6ea9a05f508eb7214fe47ea58efcedbfe5f7794a",
+  "encoder_checksum_after": "ec66fefd114180d9102613628a2919ae13c1205bd1e27e84803490db0614d823",
   "encoder_checksum_changed": true,
-  "best_valid_loss": 0.40023754723370075,
+  "best_valid_loss": 0.9026980474591255,
   "best_epoch": 1,
   "checkpoint_paths": {
     "best_valid_loss": "checkpoints/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/best_valid_loss.pt",
@@ -822,6 +1906,9 @@
     "internal_valid_metrics": "results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/internal_valid_metrics.json",
     "etp_per_effect_metrics": "results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/etp_per_effect_metrics.csv",
     "efpp_per_pattern_metrics": "results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/efpp_per_pattern_metrics.csv",
+    "err_per_relation_metrics": "results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/err_per_relation_metrics.csv",
+    "vep_per_label_metrics": "results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/vep_per_label_metrics.csv",
+    "vtm_per_label_metrics": "results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/vtm_per_label_metrics.csv",
     "loss_curves": "results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/loss_curves.png"
   },
   "sanity_success": true,
@@ -829,8 +1916,9 @@
   "warnings": [
     "The base encoder was initialized from BJUT full-corpus EVM-BERT and is therefore a transductive initialization. Stage 16B itself uses only BJUT-train and DIVE-train effect-flow chunks.",
     "Continued pretraining uses train chunks only.",
-    "No downstream vulnerability labels were used.",
-    "MOM/ETP/EFPP metrics are pretraining-task metrics, not vulnerability-detection metrics."
+    "Stage P2 weak supervision uses train-split contract labels plus ontology templates only.",
+    "No valid/test labels are used to construct VEP/VTM pseudo targets.",
+    "P1/P2 pretraining metrics (MOM/ETP/EFPP/ERR/VEP/VTM) are not the final vulnerability-detection metrics."
   ],
   "recommendation_for_stage16c": "Do not start Stage 16C until full Stage 16B success criteria pass."
 }

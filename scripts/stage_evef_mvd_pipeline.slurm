@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=evef_mvd_pipeline
-#SBATCH --partition=gpu-l20
+#SBATCH --partition=gpu-a10
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:2
 #SBATCH --ntasks=1

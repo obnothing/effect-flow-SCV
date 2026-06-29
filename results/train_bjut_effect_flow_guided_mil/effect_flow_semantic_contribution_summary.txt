@@ -4,202 +4,292 @@ experiment_name: train_bjut_effect_flow_guided_mil
 semantic_feature_dir: data/features/effect_flow_semantics/bjut_random_stride256_max32
 prediction_path: results/train_bjut_effect_flow_guided_mil/test_predictions_per_label.jsonl
 
-Reentrancy: true=158 pred=586 tp_pred=131
+Reentrancy: true=158 pred=644 tp_pred=134
+  mean VEP/template for true positives: vep=0.164580 template=0.147055
+  mean VEP/template for predicted positives: vep=0.161372 template=0.145593
   top true-positive patterns:
-  - has_state_read: 0.912758
-  - has_hardcoded_address: 0.741833
-  - has_external_call: 0.711459
-  - value_or_gas_sensitive_call: 0.693835
-  - has_state_write: 0.684445
-  - hardcoded_address_near_call: 0.636861
-  - sensitive_call_without_auth_guard: 0.627270
-  - call_with_return_check: 0.625826
+  - has_state_read: 0.884914
+  - has_hardcoded_address: 0.740625
+  - has_external_call: 0.700017
+  - value_or_gas_sensitive_call: 0.688676
+  - has_state_write: 0.683087
+  - hardcoded_address_near_call: 0.639319
+  - call_with_return_check: 0.612604
+  - sensitive_call_without_auth_guard: 0.591498
   top predicted-positive patterns:
-  - has_state_read: 0.931857
-  - has_hardcoded_address: 0.772835
-  - has_external_call: 0.722240
-  - value_or_gas_sensitive_call: 0.712126
-  - has_state_write: 0.695860
-  - hardcoded_address_near_call: 0.662828
-  - sensitive_call_without_auth_guard: 0.642628
-  - call_with_return_check: 0.634600
+  - has_state_read: 0.896602
+  - has_hardcoded_address: 0.771006
+  - value_or_gas_sensitive_call: 0.709430
+  - has_external_call: 0.708649
+  - has_state_write: 0.690417
+  - hardcoded_address_near_call: 0.663986
+  - call_with_return_check: 0.636647
+  - sensitive_call_without_auth_guard: 0.598978
+  top true-positive relations:
+  - call_then_return_check: 0.340295
+  - call_then_state_write: 0.164206
+  - state_write_then_call: 0.160455
+  - state_write_then_auth_guard: 0.137141
+  - div_then_mul: 0.123389
+  - env_then_branch: 0.074535
 
-Contract contains unknown address: true=1899 pred=1839 tp_pred=1495
+Contract contains unknown address: true=1899 pred=1717 tp_pred=1351
+  mean VEP/template for true positives: vep=0.311244 template=0.488984
+  mean VEP/template for predicted positives: vep=0.322956 template=0.498644
   top true-positive patterns:
-  - has_state_read: 0.834811
-  - has_hardcoded_address: 0.701888
-  - hardcoded_address_near_call: 0.564214
-  - has_state_write: 0.532794
-  - has_external_call: 0.520020
-  - value_or_gas_sensitive_call: 0.498124
-  - call_with_return_check: 0.481891
-  - sensitive_call_without_auth_guard: 0.468453
+  - has_state_read: 0.813675
+  - has_hardcoded_address: 0.700364
+  - hardcoded_address_near_call: 0.569623
+  - has_state_write: 0.532394
+  - has_external_call: 0.520806
+  - value_or_gas_sensitive_call: 0.494144
+  - call_with_return_check: 0.478816
+  - div_before_mul: 0.450393
   top predicted-positive patterns:
-  - has_state_read: 0.836028
-  - has_hardcoded_address: 0.709880
-  - hardcoded_address_near_call: 0.578190
-  - has_external_call: 0.535608
-  - has_state_write: 0.531416
-  - value_or_gas_sensitive_call: 0.518749
-  - call_with_return_check: 0.498633
-  - sensitive_call_without_auth_guard: 0.487009
+  - has_state_read: 0.824871
+  - has_hardcoded_address: 0.722609
+  - hardcoded_address_near_call: 0.597145
+  - has_external_call: 0.563396
+  - value_or_gas_sensitive_call: 0.541882
+  - has_state_write: 0.529650
+  - call_with_return_check: 0.524192
+  - sensitive_call_without_auth_guard: 0.483538
+  top true-positive relations:
+  - call_then_return_check: 0.299564
+  - div_then_mul: 0.180593
+  - state_write_then_auth_guard: 0.169139
+  - call_then_state_write: 0.148556
+  - state_write_then_call: 0.124015
+  - env_then_branch: 0.078142
 
-Integer overflow or underflow: true=1840 pred=2084 tp_pred=1442
+Integer overflow or underflow: true=1840 pred=2504 tp_pred=1424
+  mean VEP/template for true positives: vep=0.242553 template=0.451470
+  mean VEP/template for predicted positives: vep=0.241837 template=0.449557
   top true-positive patterns:
-  - has_state_read: 0.789435
-  - has_state_write: 0.657186
-  - has_hardcoded_address: 0.619527
-  - state_write_without_auth_guard: 0.567621
-  - hardcoded_address_near_call: 0.440066
-  - div_before_mul: 0.353942
-  - state_write_with_auth_guard: 0.314771
-  - has_external_call: 0.304184
+  - has_state_read: 0.762142
+  - has_state_write: 0.656830
+  - has_hardcoded_address: 0.617295
+  - state_write_without_auth_guard: 0.575236
+  - hardcoded_address_near_call: 0.446117
+  - div_before_mul: 0.359953
+  - state_write_with_auth_guard: 0.315408
+  - has_external_call: 0.308816
   top predicted-positive patterns:
-  - has_state_read: 0.785142
-  - has_state_write: 0.655704
-  - has_hardcoded_address: 0.635033
-  - state_write_without_auth_guard: 0.569127
-  - hardcoded_address_near_call: 0.448798
-  - div_before_mul: 0.353176
-  - state_write_with_auth_guard: 0.314784
-  - has_external_call: 0.292960
+  - has_state_read: 0.756340
+  - has_state_write: 0.657356
+  - has_hardcoded_address: 0.628624
+  - state_write_without_auth_guard: 0.586762
+  - hardcoded_address_near_call: 0.444826
+  - div_before_mul: 0.367337
+  - state_write_with_auth_guard: 0.304010
+  - has_external_call: 0.259111
+  top true-positive relations:
+  - call_then_return_check: 0.219003
+  - div_then_mul: 0.216040
+  - state_write_then_auth_guard: 0.214371
+  - call_then_state_write: 0.145980
+  - env_then_branch: 0.103931
+  - state_write_then_call: 0.100683
 
-Timestamp dependence: true=82 pred=286 tp_pred=68
+Timestamp dependence: true=82 pred=286 tp_pred=66
+  mean VEP/template for true positives: vep=0.059010 template=0.406779
+  mean VEP/template for predicted positives: vep=0.054126 template=0.407117
   top true-positive patterns:
-  - has_state_read: 0.878952
-  - has_hardcoded_address: 0.777928
-  - has_state_write: 0.687158
-  - hardcoded_address_near_call: 0.566416
-  - has_external_call: 0.562114
-  - sensitive_call_without_auth_guard: 0.537916
-  - call_with_return_check: 0.535689
-  - state_write_without_auth_guard: 0.535086
+  - has_state_read: 0.834044
+  - has_hardcoded_address: 0.776006
+  - has_state_write: 0.687592
+  - hardcoded_address_near_call: 0.570603
+  - has_external_call: 0.567511
+  - sensitive_call_without_auth_guard: 0.539830
+  - state_write_without_auth_guard: 0.538808
+  - call_with_return_check: 0.533486
   top predicted-positive patterns:
-  - has_state_read: 0.891589
-  - has_hardcoded_address: 0.793515
-  - has_state_write: 0.701956
-  - sensitive_call_without_auth_guard: 0.587252
-  - hardcoded_address_near_call: 0.581047
-  - has_external_call: 0.577945
-  - value_or_gas_sensitive_call: 0.558360
-  - call_with_return_check: 0.554402
+  - has_state_read: 0.842176
+  - has_hardcoded_address: 0.787306
+  - has_state_write: 0.694633
+  - sensitive_call_without_auth_guard: 0.597767
+  - has_external_call: 0.589806
+  - hardcoded_address_near_call: 0.581901
+  - value_or_gas_sensitive_call: 0.563646
+  - call_with_return_check: 0.558365
+  top true-positive relations:
+  - call_then_return_check: 0.306821
+  - call_then_state_write: 0.164974
+  - state_write_then_auth_guard: 0.160744
+  - div_then_mul: 0.136824
+  - state_write_then_call: 0.134488
+  - env_then_branch: 0.096187
 
-DoS with failed call: true=66 pred=201 tp_pred=50
+DoS with failed call: true=66 pred=195 tp_pred=49
+  mean VEP/template for true positives: vep=0.159453 template=0.274919
+  mean VEP/template for predicted positives: vep=0.200739 template=0.323026
   top true-positive patterns:
-  - has_state_read: 0.934422
-  - has_external_call: 0.816646
-  - value_or_gas_sensitive_call: 0.801986
-  - sensitive_call_with_auth_guard: 0.691812
-  - has_hardcoded_address: 0.671738
-  - call_with_return_check: 0.650858
-  - hardcoded_address_near_call: 0.642513
-  - sensitive_call_without_auth_guard: 0.639759
+  - has_state_read: 0.925263
+  - has_external_call: 0.815835
+  - value_or_gas_sensitive_call: 0.795350
+  - sensitive_call_with_auth_guard: 0.689622
+  - has_hardcoded_address: 0.671670
+  - hardcoded_address_near_call: 0.646234
+  - call_with_return_check: 0.632840
+  - has_state_write: 0.626014
   top predicted-positive patterns:
-  - has_state_read: 0.978761
-  - has_external_call: 0.885706
-  - value_or_gas_sensitive_call: 0.882686
-  - sensitive_call_with_auth_guard: 0.841997
-  - has_hardcoded_address: 0.670700
-  - call_with_return_check: 0.669966
-  - hardcoded_address_near_call: 0.663091
-  - sensitive_call_without_auth_guard: 0.654434
+  - has_state_read: 0.986779
+  - has_external_call: 0.903038
+  - value_or_gas_sensitive_call: 0.894432
+  - sensitive_call_with_auth_guard: 0.864730
+  - has_hardcoded_address: 0.673425
+  - hardcoded_address_near_call: 0.667657
+  - call_with_return_check: 0.661867
+  - has_state_write: 0.649019
+  top true-positive relations:
+  - call_then_return_check: 0.328207
+  - state_write_then_call: 0.214328
+  - call_then_state_write: 0.174756
+  - state_write_then_auth_guard: 0.115129
+  - div_then_mul: 0.111403
+  - env_then_branch: 0.056185
 
-Assert violation: true=94 pred=314 tp_pred=68
+Assert violation: true=94 pred=312 tp_pred=66
+  mean VEP/template for true positives: vep=0.118324 template=0.466336
+  mean VEP/template for predicted positives: vep=0.134911 template=0.476164
   top true-positive patterns:
-  - has_state_read: 0.859528
-  - has_hardcoded_address: 0.774668
-  - has_state_write: 0.703899
-  - hardcoded_address_near_call: 0.572641
-  - state_write_without_auth_guard: 0.549006
-  - sensitive_call_without_auth_guard: 0.492627
-  - has_external_call: 0.492317
-  - call_with_return_check: 0.460824
+  - has_state_read: 0.812968
+  - has_hardcoded_address: 0.772475
+  - has_state_write: 0.703587
+  - hardcoded_address_near_call: 0.575127
+  - state_write_without_auth_guard: 0.554334
+  - has_external_call: 0.498753
+  - sensitive_call_without_auth_guard: 0.490270
+  - call_with_return_check: 0.460230
   top predicted-positive patterns:
-  - has_state_read: 0.889355
-  - has_hardcoded_address: 0.807778
-  - has_state_write: 0.712012
-  - hardcoded_address_near_call: 0.586549
-  - sensitive_call_without_auth_guard: 0.564854
-  - state_write_without_auth_guard: 0.537140
-  - has_external_call: 0.534693
-  - value_or_gas_sensitive_call: 0.519088
+  - has_state_read: 0.841721
+  - has_hardcoded_address: 0.808442
+  - has_state_write: 0.702792
+  - sensitive_call_without_auth_guard: 0.608113
+  - hardcoded_address_near_call: 0.601344
+  - has_external_call: 0.583805
+  - value_or_gas_sensitive_call: 0.557129
+  - call_with_return_check: 0.554659
+  top true-positive relations:
+  - call_then_return_check: 0.291948
+  - state_write_then_auth_guard: 0.176324
+  - div_then_mul: 0.156704
+  - call_then_state_write: 0.154821
+  - state_write_then_call: 0.120190
+  - env_then_branch: 0.100043
 
-Unchecked call return value: true=741 pred=629 tp_pred=484
+Unchecked call return value: true=741 pred=607 tp_pred=436
+  mean VEP/template for true positives: vep=0.199376 template=0.165114
+  mean VEP/template for predicted positives: vep=0.229965 template=0.189756
   top true-positive patterns:
-  - has_state_read: 0.831775
-  - has_state_write: 0.638031
-  - has_hardcoded_address: 0.588488
-  - has_external_call: 0.508357
-  - hardcoded_address_near_call: 0.481636
-  - value_or_gas_sensitive_call: 0.479222
-  - state_write_with_auth_guard: 0.471702
-  - call_with_return_check: 0.432905
+  - has_state_read: 0.813117
+  - has_state_write: 0.636553
+  - has_hardcoded_address: 0.586793
+  - has_external_call: 0.510959
+  - hardcoded_address_near_call: 0.487732
+  - value_or_gas_sensitive_call: 0.474709
+  - state_write_with_auth_guard: 0.471105
+  - call_with_return_check: 0.429398
   top predicted-positive patterns:
-  - has_state_read: 0.842597
-  - has_state_write: 0.659821
-  - has_hardcoded_address: 0.609088
-  - has_external_call: 0.540172
-  - value_or_gas_sensitive_call: 0.512958
-  - hardcoded_address_near_call: 0.512189
-  - state_write_with_auth_guard: 0.510401
-  - call_with_return_check: 0.454247
+  - has_state_read: 0.832865
+  - has_state_write: 0.651798
+  - has_hardcoded_address: 0.607047
+  - has_external_call: 0.581912
+  - value_or_gas_sensitive_call: 0.546205
+  - state_write_with_auth_guard: 0.523712
+  - hardcoded_address_near_call: 0.521663
+  - call_with_return_check: 0.490591
+  top true-positive relations:
+  - call_then_return_check: 0.262087
+  - state_write_then_auth_guard: 0.179203
+  - call_then_state_write: 0.170673
+  - div_then_mul: 0.162640
+  - state_write_then_call: 0.142196
+  - env_then_branch: 0.083202
 
-Unsafe send: true=123 pred=97 tp_pred=83
+Unsafe send: true=123 pred=79 tp_pred=68
+  mean VEP/template for true positives: vep=0.185428 template=0.372339
+  mean VEP/template for predicted positives: vep=0.269183 template=0.488885
   top true-positive patterns:
-  - has_state_read: 0.902185
-  - has_state_write: 0.819356
-  - state_write_without_auth_guard: 0.763666
-  - has_hardcoded_address: 0.749103
-  - has_external_call: 0.711704
-  - call_with_return_check: 0.701648
-  - value_or_gas_sensitive_call: 0.694955
-  - hardcoded_address_near_call: 0.690066
+  - has_state_read: 0.892075
+  - has_state_write: 0.817089
+  - state_write_without_auth_guard: 0.770626
+  - has_hardcoded_address: 0.748383
+  - hardcoded_address_near_call: 0.693817
+  - value_or_gas_sensitive_call: 0.689108
+  - call_with_return_check: 0.684767
+  - sensitive_call_without_auth_guard: 0.647432
   top predicted-positive patterns:
-  - has_state_read: 0.919973
-  - has_state_write: 0.882304
-  - has_hardcoded_address: 0.858659
-  - state_write_without_auth_guard: 0.855608
-  - hardcoded_address_near_call: 0.801711
-  - has_external_call: 0.795755
-  - call_with_return_check: 0.784922
-  - value_or_gas_sensitive_call: 0.781194
+  - has_state_read: 0.957371
+  - has_hardcoded_address: 0.945480
+  - has_state_write: 0.940087
+  - hardcoded_address_near_call: 0.911059
+  - state_write_without_auth_guard: 0.911054
+  - value_or_gas_sensitive_call: 0.887756
+  - sensitive_call_without_auth_guard: 0.879411
+  - call_with_return_check: 0.876706
+  top true-positive relations:
+  - call_then_return_check: 0.398973
+  - div_then_mul: 0.159980
+  - state_write_then_auth_guard: 0.149944
+  - call_then_state_write: 0.124443
+  - state_write_then_call: 0.084086
+  - env_then_branch: 0.082572
 
-Multiplication after division: true=201 pred=195 tp_pred=123
+Multiplication after division: true=201 pred=122 tp_pred=74
+  mean VEP/template for true positives: vep=0.169514 template=0.379003
+  mean VEP/template for predicted positives: vep=0.169711 template=0.364132
   top true-positive patterns:
-  - has_state_read: 0.800285
-  - has_state_write: 0.668092
-  - state_write_without_auth_guard: 0.572733
-  - has_hardcoded_address: 0.465061
-  - state_write_with_auth_guard: 0.359189
-  - has_external_call: 0.356799
-  - div_before_mul: 0.355158
-  - hardcoded_address_near_call: 0.350306
+  - has_state_read: 0.779345
+  - has_state_write: 0.667050
+  - state_write_without_auth_guard: 0.582950
+  - has_hardcoded_address: 0.462871
+  - div_before_mul: 0.364293
+  - state_write_with_auth_guard: 0.364108
+  - has_external_call: 0.361106
+  - hardcoded_address_near_call: 0.356462
   top predicted-positive patterns:
-  - has_state_read: 0.799533
-  - has_state_write: 0.677107
-  - state_write_without_auth_guard: 0.584220
-  - has_hardcoded_address: 0.468199
-  - state_write_with_auth_guard: 0.370520
-  - hardcoded_address_near_call: 0.358449
-  - has_external_call: 0.348026
-  - div_before_mul: 0.334410
+  - has_state_read: 0.784667
+  - has_state_write: 0.661292
+  - state_write_without_auth_guard: 0.584087
+  - state_write_with_auth_guard: 0.398654
+  - has_external_call: 0.359902
+  - call_with_return_check: 0.335265
+  - div_before_mul: 0.329121
+  - has_hardcoded_address: 0.303048
+  top true-positive relations:
+  - call_then_return_check: 0.216632
+  - state_write_then_auth_guard: 0.203915
+  - div_then_mul: 0.192937
+  - call_then_state_write: 0.174074
+  - env_then_branch: 0.106558
+  - state_write_then_call: 0.105883
 
-Extra gas consumption: true=578 pred=577 tp_pred=384
+Extra gas consumption: true=578 pred=625 tp_pred=318
+  mean VEP/template for true positives: vep=0.177886 template=0.339518
+  mean VEP/template for predicted positives: vep=0.186377 template=0.352586
   top true-positive patterns:
-  - has_state_read: 0.773129
-  - has_state_write: 0.603917
-  - has_hardcoded_address: 0.506994
-  - state_write_without_auth_guard: 0.493929
-  - has_external_call: 0.391391
-  - hardcoded_address_near_call: 0.381302
-  - call_with_return_check: 0.361034
-  - value_or_gas_sensitive_call: 0.348243
+  - has_state_read: 0.750321
+  - has_state_write: 0.602935
+  - state_write_without_auth_guard: 0.505389
+  - has_hardcoded_address: 0.504348
+  - has_external_call: 0.392892
+  - hardcoded_address_near_call: 0.390631
+  - call_with_return_check: 0.361013
+  - value_or_gas_sensitive_call: 0.343395
   top predicted-positive patterns:
-  - has_state_read: 0.764554
-  - has_state_write: 0.602427
-  - has_hardcoded_address: 0.531003
-  - state_write_without_auth_guard: 0.494123
-  - hardcoded_address_near_call: 0.405943
-  - has_external_call: 0.405278
-  - call_with_return_check: 0.382348
-  - value_or_gas_sensitive_call: 0.366988
+  - has_state_read: 0.748065
+  - has_state_write: 0.610621
+  - has_hardcoded_address: 0.528018
+  - state_write_without_auth_guard: 0.507304
+  - has_external_call: 0.440684
+  - call_with_return_check: 0.415141
+  - hardcoded_address_near_call: 0.414836
+  - value_or_gas_sensitive_call: 0.388171
+  top true-positive relations:
+  - call_then_return_check: 0.252390
+  - state_write_then_auth_guard: 0.192390
+  - div_then_mul: 0.188843
+  - call_then_state_write: 0.163752
+  - state_write_then_call: 0.102323
+  - env_then_branch: 0.100303

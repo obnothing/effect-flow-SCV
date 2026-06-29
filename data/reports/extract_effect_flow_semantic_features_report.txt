@@ -3,7 +3,9 @@ Effect-flow semantic cache extraction report
 experiment_name: extract_dive_effect_flow_semantics_stride256_max64
 output_dir: data/features/effect_flow_semantics/dive_random_stride256_max64
 hf_model_path: checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model
-reference_feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256_max64
+reference_feature_dir: data/features/effect_flow_evm_bert_dive_random_stride256_max64
+ontology_path: configs/effect_flow_ontology.yaml
+template_path: configs/vulnerability_templates_dive.yaml
 max_len: 512
 chunk_stride: 256
 max_chunks_per_contract: 64
@@ -22,16 +24,29 @@ splits:
   p95_coverage_ratio: 1.0
   efpp_shape: [20134, 64, 22]
   etp_distribution_shape: [20134, 64, 16]
+  relation_distribution_shape: [20134, 64, 6]
+  vulnerability_evidence_probs_shape: [20134, 64, 17]
+  template_match_scores_shape: [20134, 64, 17]
   dtype: torch.float16
   efpp_nan_count: 0
   efpp_inf_count: 0
   etp_nan_count: 0
   etp_inf_count: 0
+  relation_nan_count: 0
+  relation_inf_count: 0
+  vep_nan_count: 0
+  vep_inf_count: 0
+  vtm_nan_count: 0
+  vtm_inf_count: 0
   hf_model_path: checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model
   num_effect_types: 16
   num_efpp_patterns: 22
-  reference_feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256_max64
-  disk_size_bytes: 101554125
+  num_relation_types: 6
+  num_vulnerability_templates: 17
+  reference_feature_dir: data/features/effect_flow_evm_bert_dive_random_stride256_max64
+  ontology_path: configs/effect_flow_ontology.yaml
+  template_path: configs/vulnerability_templates_dive.yaml
+  disk_size_bytes: 381258282
 - valid:
   split: valid
   samples: 2233
@@ -45,16 +60,29 @@ splits:
   p95_coverage_ratio: 1.0
   efpp_shape: [2233, 64, 22]
   etp_distribution_shape: [2233, 64, 16]
+  relation_distribution_shape: [2233, 64, 6]
+  vulnerability_evidence_probs_shape: [2233, 64, 17]
+  template_match_scores_shape: [2233, 64, 17]
   dtype: torch.float16
   efpp_nan_count: 0
   efpp_inf_count: 0
   etp_nan_count: 0
   etp_inf_count: 0
+  relation_nan_count: 0
+  relation_inf_count: 0
+  vep_nan_count: 0
+  vep_inf_count: 0
+  vtm_nan_count: 0
+  vtm_inf_count: 0
   hf_model_path: checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model
   num_effect_types: 16
   num_efpp_patterns: 22
-  reference_feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256_max64
-  disk_size_bytes: 11261197
+  num_relation_types: 6
+  num_vulnerability_templates: 17
+  reference_feature_dir: data/features/effect_flow_evm_bert_dive_random_stride256_max64
+  ontology_path: configs/effect_flow_ontology.yaml
+  template_path: configs/vulnerability_templates_dive.yaml
+  disk_size_bytes: 42284650
 - test:
   split: test
   samples: 2233
@@ -68,13 +96,26 @@ splits:
   p95_coverage_ratio: 1.0
   efpp_shape: [2233, 64, 22]
   etp_distribution_shape: [2233, 64, 16]
+  relation_distribution_shape: [2233, 64, 6]
+  vulnerability_evidence_probs_shape: [2233, 64, 17]
+  template_match_scores_shape: [2233, 64, 17]
   dtype: torch.float16
   efpp_nan_count: 0
   efpp_inf_count: 0
   etp_nan_count: 0
   etp_inf_count: 0
+  relation_nan_count: 0
+  relation_inf_count: 0
+  vep_nan_count: 0
+  vep_inf_count: 0
+  vtm_nan_count: 0
+  vtm_inf_count: 0
   hf_model_path: checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model
   num_effect_types: 16
   num_efpp_patterns: 22
-  reference_feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256_max64
-  disk_size_bytes: 11261190
+  num_relation_types: 6
+  num_vulnerability_templates: 17
+  reference_feature_dir: data/features/effect_flow_evm_bert_dive_random_stride256_max64
+  ontology_path: configs/effect_flow_ontology.yaml
+  template_path: configs/vulnerability_templates_dive.yaml
+  disk_size_bytes: 42284637

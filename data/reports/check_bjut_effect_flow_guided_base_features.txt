@@ -1,13 +1,13 @@
 EVM-BERT chunk feature cache check
 
 status: ok
-feature_dir: data/features/continued_dive_evm_bert_bjut_random_stride256
+feature_dir: data/features/effect_flow_evm_bert_bjut_random_stride256
 expected_max_chunks: 32
 expected_feature_dim: 768
 expected_num_labels: 10
 train:
   split: train
-  path: data/features/continued_dive_evm_bert_bjut_random_stride256/train.pt
+  path: data/features/effect_flow_evm_bert_bjut_random_stride256/train.pt
   exists: True
   samples: 121481
   expected_samples: 121481
@@ -24,11 +24,11 @@ train:
   mean_real_chunks: 9.377318382263184
   sample_count_matches_jsonl: True
   disk_size_bytes: 5994389087
-  source_report: {'pooling': 'masked_mean', 'max_chunks_per_contract': 32, 'generated_chunks': 1139166, 'mean_chunks_per_contract': 9.377318263761412, 'truncated_contract_count': 4866, 'mean_coverage_ratio': 0.9904518749466638, 'p50_coverage_ratio': 1.0, 'p90_coverage_ratio': 1.0, 'p95_coverage_ratio': 1.0, 'hf_model_path': 'checkpoints/continue_pretrain_evm_bert_dive_train_only/hf_model', 'is_transductive_pretraining': True}
+  source_report: {'pooling': 'masked_mean', 'max_chunks_per_contract': 32, 'generated_chunks': 1139166, 'mean_chunks_per_contract': 9.377318263761412, 'truncated_contract_count': 4866, 'mean_coverage_ratio': 0.9904518749466638, 'p50_coverage_ratio': 1.0, 'p90_coverage_ratio': 1.0, 'p95_coverage_ratio': 1.0, 'hf_model_path': 'checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model', 'is_transductive_pretraining': True}
   num_labels: 10
 valid:
   split: valid
-  path: data/features/continued_dive_evm_bert_bjut_random_stride256/valid.pt
+  path: data/features/effect_flow_evm_bert_bjut_random_stride256/valid.pt
   exists: True
   samples: 14838
   expected_samples: 14838
@@ -45,11 +45,11 @@ valid:
   mean_real_chunks: 9.358606338500977
   sample_count_matches_jsonl: True
   disk_size_bytes: 732166995
-  source_report: {'pooling': 'masked_mean', 'max_chunks_per_contract': 32, 'generated_chunks': 138863, 'mean_chunks_per_contract': 9.358606281169969, 'truncated_contract_count': 603, 'mean_coverage_ratio': 0.9906395705162453, 'p50_coverage_ratio': 1.0, 'p90_coverage_ratio': 1.0, 'p95_coverage_ratio': 1.0, 'hf_model_path': 'checkpoints/continue_pretrain_evm_bert_dive_train_only/hf_model', 'is_transductive_pretraining': True}
+  source_report: {'pooling': 'masked_mean', 'max_chunks_per_contract': 32, 'generated_chunks': 138863, 'mean_chunks_per_contract': 9.358606281169969, 'truncated_contract_count': 603, 'mean_coverage_ratio': 0.9906395705162453, 'p50_coverage_ratio': 1.0, 'p90_coverage_ratio': 1.0, 'p95_coverage_ratio': 1.0, 'hf_model_path': 'checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model', 'is_transductive_pretraining': True}
   num_labels: 10
 test:
   split: test
-  path: data/features/continued_dive_evm_bert_bjut_random_stride256/test.pt
+  path: data/features/effect_flow_evm_bert_bjut_random_stride256/test.pt
   exists: True
   samples: 14839
   expected_samples: 14839
@@ -66,5 +66,5 @@ test:
   mean_real_chunks: 9.443089485168457
   sample_count_matches_jsonl: True
   disk_size_bytes: 732216461
-  source_report: {'pooling': 'masked_mean', 'max_chunks_per_contract': 32, 'generated_chunks': 140126, 'mean_chunks_per_contract': 9.443089156951277, 'truncated_contract_count': 606, 'mean_coverage_ratio': 0.9902682427365672, 'p50_coverage_ratio': 1.0, 'p90_coverage_ratio': 1.0, 'p95_coverage_ratio': 1.0, 'hf_model_path': 'checkpoints/continue_pretrain_evm_bert_dive_train_only/hf_model', 'is_transductive_pretraining': True}
+  source_report: {'pooling': 'masked_mean', 'max_chunks_per_contract': 32, 'generated_chunks': 140126, 'mean_chunks_per_contract': 9.443089156951277, 'truncated_contract_count': 606, 'mean_coverage_ratio': 0.9902682427365672, 'p50_coverage_ratio': 1.0, 'p90_coverage_ratio': 1.0, 'p95_coverage_ratio': 1.0, 'hf_model_path': 'checkpoints/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/hf_model', 'is_transductive_pretraining': True}
   num_labels: 10
