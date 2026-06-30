@@ -10,7 +10,11 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from chunk_feature_dataset import ChunkFeatureDataset
-from evm_chunk_mil_model import EVMChunkMILClassifier, EffectFlowGuidedChunkMIL
+from evm_chunk_mil_model import (
+    EVEFMVDV2SideEvidenceMIL,
+    EVMChunkMILClassifier,
+    EffectFlowGuidedChunkMIL,
+)
 from metrics import (
     binary_detection_metrics,
     compute_metrics,
@@ -19,6 +23,12 @@ from metrics import (
     sigmoid,
 )
 from train_chunk_mil import collate_batch, compute_pos_weight_from_feature_cache, label_table
+
+
+EFFECT_FLOW_MODEL_TYPES = {
+    "effect_flow_guided_chunk_mil",
+    "evef_mvd_v2_side_evidence_mil",
+}
 
 
 def parse_args():
@@ -82,8 +92,11 @@ def make_loader(dataset, config):
 
 
 def load_model(config, checkpoint, device):
-    if config.get("model_type", "evm_chunk_mil") == "effect_flow_guided_chunk_mil":
+    model_type = config.get("model_type", "evm_chunk_mil")
+    if model_type == "effect_flow_guided_chunk_mil":
         model = EffectFlowGuidedChunkMIL(config).to(device)
+    elif model_type == "evef_mvd_v2_side_evidence_mil":
+        model = EVEFMVDV2SideEvidenceMIL(config).to(device)
     else:
         model = EVMChunkMILClassifier(config).to(device)
     if config.get("use_pos_weight", False):
@@ -91,6 +104,8 @@ def load_model(config, checkpoint, device):
         model.set_recognition_pos_weight(pos_weight.to(device))
     state = torch.load(checkpoint, map_location="cpu")
     model.load_state_dict(state["model_state_dict"])
+    if hasattr(model, "set_training_epoch") and state.get("epoch") is not None:
+        model.set_training_epoch(int(state["epoch"]))
     if config.get("use_data_parallel", False) and torch.cuda.device_count() >= 2:
         print(
             "[INFO] evaluation uses one GPU; DataParallel is limited to training "
@@ -387,6 +402,8 @@ def load_best_global_macro_threshold(path):
 
 
 def model_description(config):
+    if config.get("model_type") == "evef_mvd_v2_side_evidence_mil":
+        return "evef_mvd_v2_strong_backbone_side_evidence_label_gated_MIL"
     if config.get("model_type") == "effect_flow_guided_chunk_mil":
         return "effect_flow_guided_chunk_context_transformer_label_gated_attention_MIL"
     if config.get("use_chunk_context", False):
@@ -607,10 +624,17 @@ def write_threshold_calibration_report(
         "recognition_aggregation": config.get("recognition_aggregation"),
         "feature_dir": config["feature_dir"],
         "semantic_feature_dir": config.get("semantic_feature_dir"),
-        "use_effect_flow_semantics": config.get("model_type") == "effect_flow_guided_chunk_mil",
+        "use_effect_flow_semantics": config.get("model_type") in EFFECT_FLOW_MODEL_TYPES,
+        "effect_flow_semantic_mode": config.get("effect_flow_semantic_mode"),
         "is_transductive_pretraining": bool(config.get("is_transductive_pretraining", True)),
         "threshold_source": "validation set",
         "evaluated_samples": len(predictions["ids"]),
+        "single_gpu_evaluation": True,
+        "batch_size": int(config["batch_size"]),
+        "max_chunks": int(config["max_chunks"]),
+        "effective_chunks_per_batch": int(config["batch_size"])
+        * int(config["max_chunks"]),
+        "num_workers": int(config.get("num_workers", 0)),
         "loss": predictions["loss"],
         "threshold_0_5_baseline": baseline,
         "best_global_threshold_result": best_global,
@@ -808,8 +832,15 @@ def main():
         "encoder_frozen": True,
         "feature_dir": config["feature_dir"],
         "semantic_feature_dir": config.get("semantic_feature_dir"),
-        "use_effect_flow_semantics": config.get("model_type") == "effect_flow_guided_chunk_mil",
+        "use_effect_flow_semantics": config.get("model_type") in EFFECT_FLOW_MODEL_TYPES,
+        "effect_flow_semantic_mode": config.get("effect_flow_semantic_mode"),
         "evaluated_samples": len(dataset),
+        "single_gpu_evaluation": True,
+        "batch_size": int(config["batch_size"]),
+        "max_chunks": int(config["max_chunks"]),
+        "effective_chunks_per_batch": int(config["batch_size"])
+        * int(config["max_chunks"]),
+        "num_workers": int(config.get("num_workers", 0)),
         "loss": predictions["loss"],
         "detection_precision": metrics["detection_precision"],
         "detection_recall": metrics["detection_recall"],

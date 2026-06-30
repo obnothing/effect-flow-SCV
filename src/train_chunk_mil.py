@@ -1,6 +1,7 @@
 import argparse
 import json
 import math
+import os
 import random
 from pathlib import Path
 
@@ -12,8 +13,18 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from chunk_feature_dataset import build_chunk_feature_datasets
-from evm_chunk_mil_model import EVMChunkMILClassifier, EffectFlowGuidedChunkMIL
+from evm_chunk_mil_model import (
+    EVEFMVDV2SideEvidenceMIL,
+    EVMChunkMILClassifier,
+    EffectFlowGuidedChunkMIL,
+)
 from metrics import compute_metrics
+
+
+EFFECT_FLOW_MODEL_TYPES = {
+    "effect_flow_guided_chunk_mil",
+    "evef_mvd_v2_side_evidence_mil",
+}
 
 
 def parse_args():
@@ -171,9 +182,27 @@ def build_model(config):
     model_type = config.get("model_type", "evm_chunk_mil")
     if model_type == "effect_flow_guided_chunk_mil":
         return EffectFlowGuidedChunkMIL(config)
+    if model_type == "evef_mvd_v2_side_evidence_mil":
+        return EVEFMVDV2SideEvidenceMIL(config)
     if model_type == "evm_chunk_mil":
         return EVMChunkMILClassifier(config)
     raise ValueError(f"Unsupported chunk MIL model_type: {model_type}")
+
+
+def set_model_epoch(model, epoch):
+    target = model.module if isinstance(model, nn.DataParallel) else model
+    if hasattr(target, "set_training_epoch"):
+        target.set_training_epoch(epoch)
+
+
+def cuda_peak_memory_mb(device):
+    if device.type != "cuda":
+        return 0.0, 0.0
+    torch.cuda.synchronize(device)
+    return (
+        torch.cuda.max_memory_allocated(device) / (1024**2),
+        torch.cuda.max_memory_reserved(device) / (1024**2),
+    )
 
 
 def train_one_epoch(model, loader, optimizer, config, device):
@@ -280,7 +309,8 @@ def write_epoch_history(path_json, path_txt, history):
         lines.append(
             "epoch {epoch}/{epochs} train_loss={train_loss:.6f} "
             "valid_loss={valid_loss:.6f} micro_f1={micro:.6f} macro_f1={macro:.6f} "
-            "predicted_positive_total={pred}".format(
+            "predicted_positive_total={pred} max_memory_allocated_mb={alloc:.2f} "
+            "max_memory_reserved_mb={reserved:.2f}".format(
                 epoch=row["epoch"],
                 epochs=row["epochs"],
                 train_loss=row["train_loss"],
@@ -288,6 +318,8 @@ def write_epoch_history(path_json, path_txt, history):
                 micro=row["recognition_micro_f1"],
                 macro=row["recognition_macro_f1"],
                 pred=row["predicted_positive_total"],
+                alloc=float(row.get("max_memory_allocated_mb", 0.0)),
+                reserved=float(row.get("max_memory_reserved_mb", 0.0)),
             )
         )
         lines.append(f"per_label_f1: {[round(v, 6) for v in row['per_label_f1']]}")
@@ -402,8 +434,13 @@ def main():
     best_valid_loss_for_macro = None
 
     for epoch in range(1, int(config["epochs"]) + 1):
+        set_model_epoch(model, epoch)
+        if device.type == "cuda":
+            torch.cuda.reset_peak_memory_stats(device)
         train_loss = train_one_epoch(model, train_loader, optimizer, config, device)
+        set_model_epoch(model, epoch)
         valid_loss, metrics = evaluate(model, valid_loader, config, device)
+        max_memory_allocated_mb, max_memory_reserved_mb = cuda_peak_memory_mb(device)
         micro_threshold, best_epoch_micro = best_threshold_from_scan(
             metrics.get("threshold_scan", {}),
             "micro_f1",
@@ -430,6 +467,8 @@ def main():
             "per_label_recall": metrics["per_label_recall"],
             "per_label_support": metrics["per_label_support"],
             "threshold_scan": metrics["threshold_scan"],
+            "max_memory_allocated_mb": max_memory_allocated_mb,
+            "max_memory_reserved_mb": max_memory_reserved_mb,
         }
         history.append(record)
         payload = checkpoint_payload(model, optimizer, epoch, config, valid_loss, metrics)
@@ -455,7 +494,9 @@ def main():
         print(
             f"epoch {epoch}/{config['epochs']} train_loss={train_loss:.6f} "
             f"valid_loss={valid_loss:.6f} micro_f1={best_epoch_micro:.6f} "
-            f"macro_f1={best_epoch_macro:.6f} pred={metrics['predicted_positive_total']}"
+            f"macro_f1={best_epoch_macro:.6f} pred={metrics['predicted_positive_total']} "
+            f"max_memory_allocated_mb={max_memory_allocated_mb:.2f} "
+            f"max_memory_reserved_mb={max_memory_reserved_mb:.2f}"
         )
         if patience_counter >= patience:
             print(f"[INFO] early stopping at epoch {epoch}")
@@ -473,19 +514,38 @@ def main():
     )
     best_metrics = best_metrics or metrics
     baseline = config.get("baseline_comparison", {})
+    max_allocated_mb = max(
+        [float(row.get("max_memory_allocated_mb", 0.0)) for row in history] or [0.0]
+    )
+    max_reserved_mb = max(
+        [float(row.get("max_memory_reserved_mb", 0.0)) for row in history] or [0.0]
+    )
+    batch_size = int(config["batch_size"])
+    max_chunks = int(config["max_chunks"])
     summary = {
         "experiment_name": config["experiment_name"],
         "model_type": config.get("model_type", "evm_chunk_mil"),
         "encoder_frozen": True,
         "feature_dir": config["feature_dir"],
         "semantic_feature_dir": config.get("semantic_feature_dir"),
-        "use_effect_flow_semantics": config.get("model_type") == "effect_flow_guided_chunk_mil",
+        "use_effect_flow_semantics": config.get("model_type") in EFFECT_FLOW_MODEL_TYPES,
+        "effect_flow_semantic_mode": config.get("effect_flow_semantic_mode"),
         "efpp_dim": int(config.get("efpp_dim", 0)),
         "etp_dim": int(config.get("etp_dim", 0)),
+        "relation_dim": int(config.get("relation_dim", 0)),
         "semantic_projection_dim": int(config.get("semantic_projection_dim", 0)),
         "semantic_fusion": config.get("semantic_fusion"),
+        "semantic_dropout": float(config.get("semantic_dropout", 0.0)),
+        "lambda_gate": float(config.get("lambda_gate", 0.0)),
+        "warmup_epochs_neural_only": int(config.get("warmup_epochs_neural_only", 0)),
+        "enable_reliable_semantic_epoch": int(
+            config.get("enable_reliable_semantic_epoch", 0)
+        ),
+        "use_weak_semantic_features": bool(
+            config.get("use_weak_semantic_features", False)
+        ),
         "feature_pooling": config.get("feature_pooling"),
-        "max_chunks": config["max_chunks"],
+        "max_chunks": max_chunks,
         "feature_dim": config["feature_dim"],
         "hidden_dim": config["hidden_dim"],
         "use_chunk_context": bool(config.get("use_chunk_context", False)),
@@ -493,12 +553,25 @@ def main():
         "chunk_context_num_heads": int(config.get("chunk_context_num_heads", 0)),
         "chunk_context_dropout": float(config.get("chunk_context_dropout", 0.0)),
         "use_data_parallel": use_data_parallel,
-        "visible_cuda_devices": available_gpus,
-        "total_batch_size": int(config["batch_size"]),
+        "single_gpu_training": not use_data_parallel,
+        "visible_cuda_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
+        "visible_cuda_device_count": available_gpus,
+        "batch_size": batch_size,
+        "total_batch_size": batch_size,
+        "effective_chunks_per_batch": batch_size * max_chunks,
+        "num_workers": int(config.get("num_workers", 0)),
+        "gradient_accumulation_steps": int(
+            config.get("gradient_accumulation_steps", 1)
+        ),
+        "batch_size_fallback_due_to_oom": bool(
+            config.get("batch_size_fallback_due_to_oom", False)
+        ),
+        "max_memory_allocated_mb": max_allocated_mb,
+        "max_memory_reserved_mb": max_reserved_mb,
         "approx_batch_per_gpu": (
-            int(config["batch_size"]) // len(requested_devices)
+            batch_size // len(requested_devices)
             if use_data_parallel
-            else int(config["batch_size"])
+            else batch_size
         ),
         "recognition_aggregation": config["recognition_aggregation"],
         "top_k": int(config.get("top_k", 2)),
@@ -528,6 +601,9 @@ def main():
         "valid_samples": len(datasets["valid"]),
         "per_label_table": label_table(config, best_metrics),
     }
+    final_model = model.module if isinstance(model, nn.DataParallel) else model
+    if hasattr(final_model, "gate_values"):
+        summary["gate_values"] = final_model.gate_values()
     write_summary(
         result_dir / "checkpoint_summary.json",
         result_dir / "checkpoint_summary.txt",

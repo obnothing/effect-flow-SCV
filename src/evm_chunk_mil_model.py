@@ -587,3 +587,342 @@ class EffectFlowGuidedChunkMIL(EVMChunkMILClassifier):
             "missing_check_evidence_scores": template_outputs["missing_check_evidence_scores"],
             "final_evidence_scores": template_outputs["final_evidence_scores"],
         }
+
+
+class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
+    """Strong-feature MIL with effect-flow side evidence.
+
+    v2.1 keeps the strong chunk feature stream as the main representation. The
+    effect-flow signals only bias label-wise attention and add a small
+    label-specific evidence logit. VEP/VTM cache fields are intentionally not
+    used because they are weak pseudo targets rather than reliable side
+    evidence for this stage.
+    """
+
+    def __init__(self, config):
+        super().__init__(config)
+        efpp_dim = int(config.get("efpp_dim", 22))
+        etp_dim = int(config.get("etp_dim", 16))
+        relation_dim = int(config.get("relation_dim", 6))
+        self.semantic_dropout_p = float(config.get("semantic_dropout", 0.2))
+        self.lambda_gate = float(config.get("lambda_gate", 1e-4))
+        self.warmup_epochs_neural_only = int(
+            config.get("warmup_epochs_neural_only", 3)
+        )
+        self.enable_reliable_semantic_epoch = int(
+            config.get(
+                "enable_reliable_semantic_epoch",
+                self.warmup_epochs_neural_only + 1,
+            )
+        )
+        self.use_weak_semantic_features = bool(
+            config.get("use_weak_semantic_features", False)
+        )
+        if self.use_weak_semantic_features:
+            raise ValueError(
+                "EVEFMVDV2SideEvidenceMIL v2.1 keeps VEP/VTM disabled. "
+                "Set use_weak_semantic_features=false."
+            )
+        self.risk_weight = float(config.get("risk_evidence_weight", 1.0))
+        self.missing_weight = float(config.get("missing_check_evidence_weight", 1.0))
+        self.protective_weight = float(config.get("protective_evidence_weight", 1.0))
+        self.effect_weight = float(config.get("effect_type_evidence_weight", 0.5))
+        self.relation_weight = float(config.get("relation_evidence_weight", 0.5))
+
+        ontology_path = self._resolve_config_path(config["ontology_path"])
+        template_path = self._resolve_config_path(config["template_path"])
+        ontology = load_ontology(ontology_path)
+        label_names = config.get(
+            "label_names",
+            [f"label_{idx}" for idx in range(self.num_labels)],
+        )
+        templates = load_vulnerability_templates(
+            template_path,
+            ontology,
+            expected_label_names=label_names,
+        )
+        template_bundle = build_template_tensor_bundle(label_names, templates, ontology)
+        pattern_subset_path = self._resolve_config_path(
+            config.get(
+                "efpp_pattern_config",
+                "configs/effect_flow_efpp_conservative_22.json",
+            )
+        )
+        pattern_subset = json.loads(pattern_subset_path.read_text(encoding="utf-8"))
+        pattern_index = {
+            name: idx for idx, name in enumerate(template_bundle["pattern_names"])
+        }
+        included_pattern_indices = [
+            pattern_index[name] for name in pattern_subset["included_pattern_names"]
+        ]
+        for key in (
+            "role_risk_patterns",
+            "role_protective_patterns",
+            "role_missing_check_patterns",
+            "required_patterns",
+            "optional_patterns",
+            "forbidden_or_counter_patterns",
+            "weak_patterns",
+        ):
+            template_bundle[key] = template_bundle[key][:, included_pattern_indices]
+        template_bundle["pattern_names"] = pattern_subset["included_pattern_names"]
+
+        if len(template_bundle["pattern_names"]) != efpp_dim:
+            raise ValueError(
+                f"EFPP template width {len(template_bundle['pattern_names'])} "
+                f"does not match efpp_dim={efpp_dim}"
+            )
+        if template_bundle["required_effect_types"].shape[1] != etp_dim:
+            raise ValueError("ETP template width does not match etp_dim")
+        if template_bundle["critical_relations"].shape[1] != relation_dim:
+            raise ValueError("ERR template width does not match relation_dim")
+
+        active_global_indices = [
+            GLOBAL_VULNERABILITY_LABELS.index(label_name)
+            for label_name in label_names
+        ]
+        self.register_buffer(
+            "active_global_indices",
+            torch.tensor(active_global_indices, dtype=torch.long),
+        )
+        for name, tensor in template_bundle.items():
+            if isinstance(tensor, torch.Tensor):
+                self.register_buffer(f"template_{name}", tensor.float())
+
+        beta_init = float(config.get("beta_reliable_init", 0.1))
+        gamma_init = float(config.get("gamma_reliable_init", 0.1))
+        self.beta_reliable_raw = nn.Parameter(
+            torch.full((self.num_labels,), self._softplus_inverse(beta_init))
+        )
+        self.gamma_reliable_raw = nn.Parameter(
+            torch.full((self.num_labels,), self._softplus_inverse(gamma_init))
+        )
+        self.evidence_logit_weight = nn.Parameter(torch.zeros(self.num_labels, 2))
+        self.evidence_logit_bias = nn.Parameter(torch.zeros(self.num_labels))
+        self.current_epoch = 10**9
+
+    @staticmethod
+    def _resolve_config_path(path):
+        path = Path(path)
+        if path.is_absolute():
+            return path
+        return Path(__file__).resolve().parents[1] / path
+
+    @staticmethod
+    def _softplus_inverse(value):
+        value = float(value)
+        if value <= 0:
+            raise ValueError("softplus inverse requires a positive value")
+        return torch.log(torch.expm1(torch.tensor(value))).item()
+
+    @staticmethod
+    def _prior_mean(values, prior):
+        weights = prior.unsqueeze(0).unsqueeze(0).to(values.dtype)
+        denom = weights.sum(dim=-1).clamp_min(1.0)
+        return (values.unsqueeze(2) * weights).sum(dim=-1) / denom
+
+    def set_training_epoch(self, epoch):
+        self.current_epoch = int(epoch)
+
+    def semantic_enabled(self):
+        return int(self.current_epoch) >= self.enable_reliable_semantic_epoch
+
+    def _semantic_dropout(self, values):
+        if not self.training or self.semantic_dropout_p <= 0:
+            return values
+        keep = torch.rand_like(values) >= self.semantic_dropout_p
+        return values * keep.type_as(values)
+
+    def encode_strong_chunks(self, chunk_features, chunk_mask):
+        if self.use_chunk_context:
+            return self.chunk_context_encoder(chunk_features, chunk_mask)
+        return self.chunk_projection(chunk_features)
+
+    def compute_reliable_evidence(
+        self,
+        efpp_probs,
+        etp_distribution,
+        relation_distribution,
+        chunk_mask,
+    ):
+        if efpp_probs is None or etp_distribution is None or relation_distribution is None:
+            raise ValueError(
+                "EVEFMVDV2SideEvidenceMIL requires efpp_probs, "
+                "etp_distribution, and relation_distribution."
+            )
+        if efpp_probs.shape[:2] != chunk_mask.shape:
+            raise ValueError("efpp_probs [B, C] prefix must match chunk_mask")
+        if etp_distribution.shape[:2] != chunk_mask.shape:
+            raise ValueError("etp_distribution [B, C] prefix must match chunk_mask")
+        if relation_distribution.shape[:2] != chunk_mask.shape:
+            raise ValueError("relation_distribution [B, C] prefix must match chunk_mask")
+        efpp_probs = self._semantic_dropout(efpp_probs.float())
+        etp_distribution = self._semantic_dropout(etp_distribution.float())
+        relation_distribution = self._semantic_dropout(relation_distribution.float())
+
+        risk_pattern = self._prior_mean(efpp_probs, self.template_role_risk_patterns)
+        protective = self._prior_mean(
+            efpp_probs,
+            self.template_role_protective_patterns,
+        )
+        missing = self._prior_mean(
+            efpp_probs,
+            self.template_role_missing_check_patterns,
+        )
+        required_effect = self._prior_mean(
+            etp_distribution,
+            self.template_required_effect_types,
+        )
+        relation = self._prior_mean(
+            relation_distribution,
+            self.template_critical_relations,
+        )
+        risk_total = (
+            risk_pattern
+            + self.effect_weight * required_effect
+            + self.relation_weight * relation
+        )
+        final = (
+            self.risk_weight * risk_total
+            + self.missing_weight * missing
+            - self.protective_weight * protective
+        )
+        valid = chunk_mask.unsqueeze(-1)
+        return {
+            "risk_evidence_scores": risk_total.masked_fill(~valid, 0.0),
+            "protective_evidence_scores": protective.masked_fill(~valid, 0.0),
+            "missing_check_evidence_scores": missing.masked_fill(~valid, 0.0),
+            "final_evidence_scores": final.masked_fill(~valid, 0.0),
+        }
+
+    def gate_values(self):
+        return {
+            "beta_reliable": F.softplus(self.beta_reliable_raw).detach(),
+            "gamma_reliable": F.softplus(self.gamma_reliable_raw).detach(),
+        }
+
+    def forward(
+        self,
+        chunk_features,
+        chunk_mask,
+        efpp_probs=None,
+        etp_distribution=None,
+        relation_distribution=None,
+        vulnerability_evidence_probs=None,
+        template_match_scores=None,
+        binary_label=None,
+        multi_labels=None,
+        chunk_vulnerability_evidence=None,
+        vulnerability_template_matches=None,
+        active_vulnerability_label_mask=None,
+    ):
+        del vulnerability_evidence_probs
+        del template_match_scores
+        del chunk_vulnerability_evidence
+        del vulnerability_template_matches
+        del active_vulnerability_label_mask
+
+        chunk_mask = chunk_mask.bool()
+        h = self.encode_strong_chunks(chunk_features, chunk_mask)
+        evidence = self.compute_reliable_evidence(
+            efpp_probs,
+            etp_distribution,
+            relation_distribution,
+            chunk_mask,
+        )
+        phi = evidence["final_evidence_scores"].to(dtype=h.dtype)
+
+        v = torch.tanh(self.attn_v(h))
+        u = torch.sigmoid(self.attn_u(h))
+        gated = v * u
+        neural_attn_logits = torch.einsum("bca,ka->bck", gated, self.label_attn)
+        beta = F.softplus(self.beta_reliable_raw).to(dtype=h.dtype)
+        gamma = F.softplus(self.gamma_reliable_raw).to(dtype=h.dtype)
+        if not self.semantic_enabled():
+            beta = torch.zeros_like(beta)
+            gamma = torch.zeros_like(gamma)
+        attn_logits = neural_attn_logits + beta.view(1, 1, -1) * phi
+        attn_logits = attn_logits.masked_fill(~chunk_mask.unsqueeze(-1), -1e9)
+        attn_weights = torch.softmax(attn_logits, dim=1)
+        z = torch.einsum("bck,bch->bkh", attn_weights, h)
+        neural_logits = (
+            z * self.label_out.unsqueeze(0)
+        ).sum(dim=-1) + self.label_bias
+
+        attended_phi = (attn_weights * phi).sum(dim=1)
+        masked_phi = phi.masked_fill(~chunk_mask.unsqueeze(-1), -1e9)
+        k = min(self.top_k, phi.shape[1])
+        top_phi = torch.topk(masked_phi, k=k, dim=1).values
+        valid_top = top_phi > -1e8
+        topk_phi = (
+            top_phi.masked_fill(~valid_top, 0.0).sum(dim=1)
+            / valid_top.sum(dim=1).clamp_min(1).to(dtype=h.dtype)
+        )
+        evidence_features = torch.stack([attended_phi, topk_phi], dim=-1)
+        evidence_logits = (
+            evidence_features * self.evidence_logit_weight.unsqueeze(0).to(dtype=h.dtype)
+        ).sum(dim=-1) + self.evidence_logit_bias.unsqueeze(0).to(dtype=h.dtype)
+        recognition_logits = neural_logits + gamma.view(1, -1) * evidence_logits
+
+        global_h = self.masked_mean(h, chunk_mask)
+        detection_logits = self.detection_classifier(global_h).squeeze(-1)
+        chunk_scores = torch.sigmoid(
+            attn_logits.masked_fill(~chunk_mask.unsqueeze(-1), -30.0)
+        ).masked_fill(~chunk_mask.unsqueeze(-1), 0.0)
+
+        loss = None
+        detection_loss = None
+        recognition_loss = None
+        gate_regularization_loss = None
+        if binary_label is not None and multi_labels is not None:
+            detection_loss = self.detection_loss_fn(
+                detection_logits,
+                binary_label.float(),
+            )
+            if self.recognition_pos_weight is None:
+                recognition_loss = F.binary_cross_entropy_with_logits(
+                    recognition_logits,
+                    multi_labels.float(),
+                )
+            else:
+                recognition_loss = F.binary_cross_entropy_with_logits(
+                    recognition_logits,
+                    multi_labels.float(),
+                    pos_weight=self.recognition_pos_weight,
+                )
+            active_beta = F.softplus(self.beta_reliable_raw)
+            active_gamma = F.softplus(self.gamma_reliable_raw)
+            gate_regularization_loss = (
+                active_beta.pow(2).mean() + active_gamma.pow(2).mean()
+            )
+            loss = (
+                (detection_loss + recognition_loss) / 2
+                + self.lambda_gate * gate_regularization_loss
+            ).reshape(1)
+
+        return {
+            "loss": loss,
+            "detection_loss": detection_loss,
+            "recognition_loss": recognition_loss,
+            "gate_regularization_loss": gate_regularization_loss,
+            "detection_logits": detection_logits,
+            "recognition_logits": recognition_logits,
+            "chunk_logits": attn_logits,
+            "chunk_scores": chunk_scores,
+            "attn_weights": attn_weights,
+            "neural_attention_logits": neural_attn_logits,
+            "neural_logits": neural_logits,
+            "evidence_logits": evidence_logits,
+            "beta_reliable": beta,
+            "gamma_reliable": gamma,
+            "semantic_enabled": torch.tensor(
+                bool(self.semantic_enabled()),
+                device=h.device,
+            ),
+            "risk_evidence_scores": evidence["risk_evidence_scores"],
+            "protective_evidence_scores": evidence["protective_evidence_scores"],
+            "missing_check_evidence_scores": evidence[
+                "missing_check_evidence_scores"
+            ],
+            "final_evidence_scores": evidence["final_evidence_scores"],
+        }
