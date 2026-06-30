@@ -525,6 +525,10 @@ def main():
     summary = {
         "experiment_name": config["experiment_name"],
         "model_type": config.get("model_type", "evm_chunk_mil"),
+        "ablation_dataset": config.get("ablation_dataset"),
+        "ablation_variant": config.get("ablation_variant"),
+        "side_evidence_enabled": bool(config.get("side_evidence_enabled", False)),
+        "coefficient_scale": config.get("coefficient_scale"),
         "encoder_frozen": True,
         "feature_dir": config["feature_dir"],
         "semantic_feature_dir": config.get("semantic_feature_dir"),
@@ -537,6 +541,13 @@ def main():
         "semantic_fusion": config.get("semantic_fusion"),
         "semantic_dropout": float(config.get("semantic_dropout", 0.0)),
         "lambda_gate": float(config.get("lambda_gate", 0.0)),
+        "risk_evidence_weight": config.get("risk_evidence_weight"),
+        "missing_check_evidence_weight": config.get("missing_check_evidence_weight"),
+        "protective_evidence_weight": config.get("protective_evidence_weight"),
+        "effect_type_evidence_weight": config.get("effect_type_evidence_weight"),
+        "relation_evidence_weight": config.get("relation_evidence_weight"),
+        "beta_reliable_init": config.get("beta_reliable_init"),
+        "gamma_reliable_init": config.get("gamma_reliable_init"),
         "warmup_epochs_neural_only": int(config.get("warmup_epochs_neural_only", 0)),
         "enable_reliable_semantic_epoch": int(
             config.get("enable_reliable_semantic_epoch", 0)
