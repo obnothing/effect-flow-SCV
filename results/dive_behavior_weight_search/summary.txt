@@ -1,0 +1,46 @@
+DIVE behavior weight search summary
+
+variant | micro_f1 | macro_f1 | detection_f1 | macro_delta_vs_side_scale_200 | predicted_positive_total
+----------------------------------------------------------------------------------------------------------------------
+front_conservative | 0.818622 | 0.719938 | 0.946610 | -0.019962 | 6286
+relation_split | 0.814412 | 0.717785 | 0.946322 | -0.022115 | 6283
+access_counter | 0.814226 | 0.716220 | 0.942943 | -0.023680 | 6212
+
+Focus label diagnostics:
+
+[front_conservative]
+- Access Control: f1=0.896819, precision=0.838159, recall=0.964307, tp_minus_fp=-0.057682, tp_minus_fn=0.040266, tp_final=0.829998, fp_final=0.887680, fn_final=0.789732
+- Front Running: f1=0.432000, precision=0.360000, recall=0.540000, tp_minus_fp=-0.477619, tp_minus_fn=-1.065172, tp_final=0.154895, fp_final=0.632514, fn_final=1.220067
+  warnings:
+  - Access Control: TP final <= FP final
+  - Arithmetic: TP final <= FN final
+  - Unchecked Return Values: TP final <= FN final
+  - DoS: TP final <= FP final
+  - DoS: TP final <= FN final
+  - Front Running: TP final <= FP final
+  - Front Running: TP final <= FN final
+
+[relation_split]
+- Access Control: f1=0.895175, precision=0.838442, recall=0.960143, tp_minus_fp=-0.054146, tp_minus_fn=0.023608, tp_final=0.817743, fp_final=0.871889, fn_final=0.794135
+- Front Running: f1=0.455285, precision=0.383562, recall=0.560000, tp_minus_fp=-0.267787, tp_minus_fn=-0.846136, tp_final=0.945314, fp_final=1.213102, fn_final=1.791450
+  warnings:
+  - Access Control: TP final <= FP final
+  - Arithmetic: TP final <= FN final
+  - Unchecked Return Values: TP final <= FN final
+  - DoS: TP final <= FN final
+  - Front Running: TP final <= FP final
+  - Front Running: TP final <= FN final
+
+[access_counter]
+- Access Control: f1=0.895580, precision=0.835998, recall=0.964307, tp_minus_fp=-0.144612, tp_minus_fn=-0.085627, tp_final=-0.080634, fp_final=0.063978, fn_final=0.004992
+- Front Running: f1=0.425197, precision=0.350649, recall=0.540000, tp_minus_fp=-0.402499, tp_minus_fn=-1.009012, tp_final=0.183968, fp_final=0.586467, fn_final=1.192980
+  warnings:
+  - Access Control: TP final <= FP final
+  - Access Control: TP final <= FN final
+  - Arithmetic: TP final <= FN final
+  - Unchecked Return Values: TP final <= FN final
+  - DoS: TP final <= FP final
+  - DoS: TP final <= FN final
+  - Front Running: TP final <= FP final
+  - Front Running: TP final <= FN final
+
