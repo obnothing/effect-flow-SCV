@@ -322,6 +322,18 @@ def write_epoch_history(path_json, path_txt, history):
                 reserved=float(row.get("max_memory_reserved_mb", 0.0)),
             )
         )
+        lines.append(
+            f"per_label_precision: {[round(v, 6) for v in row['per_label_precision']]}"
+        )
+        lines.append(
+            f"per_label_recall: {[round(v, 6) for v in row['per_label_recall']]}"
+        )
+        lines.append(
+            f"per_label_accuracy: {[round(v, 6) for v in row['per_label_accuracy']]}"
+        )
+        lines.append(
+            f"per_label_number_vulnerability: {row['per_label_number_vulnerability']}"
+        )
         lines.append(f"per_label_f1: {[round(v, 6) for v in row['per_label_f1']]}")
         for threshold, metrics in row["threshold_scan"].items():
             lines.append(
@@ -343,7 +355,8 @@ def write_summary(path_json, path_txt, summary):
             for row in value:
                 lines.append(
                     f"- {row['label_name']}: precision={row['precision']:.6f} "
-                    f"recall={row['recall']:.6f} f1={row['f1']:.6f} "
+                    f"recall={row['recall']:.6f} accuracy={row['accuracy']:.6f} "
+                    f"f1={row['f1']:.6f} "
                     f"support={row['support']}"
                 )
         else:
@@ -362,6 +375,7 @@ def label_table(config, metrics):
             "label_name": names[idx],
             "precision": metrics["per_label_precision"][idx],
             "recall": metrics["per_label_recall"][idx],
+            "accuracy": metrics["per_label_accuracy"][idx],
             "f1": metrics["per_label_f1"][idx],
             "support": metrics["per_label_support"][idx],
             "predicted_positive_count": metrics["per_label_predicted_positive_count"][idx],
@@ -465,7 +479,9 @@ def main():
             "per_label_f1": metrics["per_label_f1"],
             "per_label_precision": metrics["per_label_precision"],
             "per_label_recall": metrics["per_label_recall"],
+            "per_label_accuracy": metrics["per_label_accuracy"],
             "per_label_support": metrics["per_label_support"],
+            "per_label_number_vulnerability": metrics["per_label_support"],
             "threshold_scan": metrics["threshold_scan"],
             "max_memory_allocated_mb": max_memory_allocated_mb,
             "max_memory_reserved_mb": max_memory_reserved_mb,
@@ -498,6 +514,20 @@ def main():
             f"max_memory_allocated_mb={max_memory_allocated_mb:.2f} "
             f"max_memory_reserved_mb={max_memory_reserved_mb:.2f}"
         )
+        print(
+            f"per_label_precision: "
+            f"{[round(v, 6) for v in metrics['per_label_precision']]}"
+        )
+        print(
+            f"per_label_recall: "
+            f"{[round(v, 6) for v in metrics['per_label_recall']]}"
+        )
+        print(
+            f"per_label_accuracy: "
+            f"{[round(v, 6) for v in metrics['per_label_accuracy']]}"
+        )
+        print(f"per_label_number_vulnerability: {metrics['per_label_support']}")
+        print(f"per_label_f1: {[round(v, 6) for v in metrics['per_label_f1']]}")
         if patience_counter >= patience:
             print(f"[INFO] early stopping at epoch {epoch}")
             break
@@ -546,6 +576,8 @@ def main():
         "protective_evidence_weight": config.get("protective_evidence_weight"),
         "effect_type_evidence_weight": config.get("effect_type_evidence_weight"),
         "relation_evidence_weight": config.get("relation_evidence_weight"),
+        "behavior_weight_path": config.get("behavior_weight_path"),
+        "use_weighted_behavior_scoring": bool(config.get("behavior_weight_path")),
         "beta_reliable_init": config.get("beta_reliable_init"),
         "gamma_reliable_init": config.get("gamma_reliable_init"),
         "warmup_epochs_neural_only": int(config.get("warmup_epochs_neural_only", 0)),

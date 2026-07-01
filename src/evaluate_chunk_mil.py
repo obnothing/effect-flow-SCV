@@ -466,7 +466,8 @@ def write_report(prefix, report):
                 lines.append(
                     f"{row['label_id']} | {row['label_name']} | "
                     f"precision={row['precision']:.6f} recall={row['recall']:.6f} "
-                    f"f1={row['f1']:.6f} support={row['support']} "
+                    f"accuracy={row['accuracy']:.6f} f1={row['f1']:.6f} "
+                    f"support={row['support']} "
                     f"predicted={row['predicted_positive_count']}"
                 )
         else:
@@ -635,6 +636,8 @@ def write_threshold_calibration_report(
         "protective_evidence_weight": config.get("protective_evidence_weight"),
         "effect_type_evidence_weight": config.get("effect_type_evidence_weight"),
         "relation_evidence_weight": config.get("relation_evidence_weight"),
+        "behavior_weight_path": config.get("behavior_weight_path"),
+        "use_weighted_behavior_scoring": bool(config.get("behavior_weight_path")),
         "beta_reliable_init": config.get("beta_reliable_init"),
         "gamma_reliable_init": config.get("gamma_reliable_init"),
         "is_transductive_pretraining": bool(config.get("is_transductive_pretraining", True)),
@@ -854,6 +857,8 @@ def main():
         "protective_evidence_weight": config.get("protective_evidence_weight"),
         "effect_type_evidence_weight": config.get("effect_type_evidence_weight"),
         "relation_evidence_weight": config.get("relation_evidence_weight"),
+        "behavior_weight_path": config.get("behavior_weight_path"),
+        "use_weighted_behavior_scoring": bool(config.get("behavior_weight_path")),
         "beta_reliable_init": config.get("beta_reliable_init"),
         "gamma_reliable_init": config.get("gamma_reliable_init"),
         "evaluated_samples": len(dataset),

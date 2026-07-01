@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from pathlib import Path
 import json
+import yaml
 
 from effect_flow_ontology import (
     build_template_tensor_bundle,
@@ -689,6 +690,17 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             if isinstance(tensor, torch.Tensor):
                 self.register_buffer(f"template_{name}", tensor.float())
 
+        self.behavior_weight_path = config.get("behavior_weight_path")
+        self.use_weighted_behavior_scoring = bool(self.behavior_weight_path)
+        if self.use_weighted_behavior_scoring:
+            behavior_weights = self._load_behavior_weights(
+                self.behavior_weight_path,
+                label_names,
+                template_bundle,
+            )
+            for name, tensor in behavior_weights.items():
+                self.register_buffer(f"behavior_{name}", tensor.float())
+
         beta_init = float(config.get("beta_reliable_init", 0.1))
         gamma_init = float(config.get("gamma_reliable_init", 0.1))
         self.beta_reliable_raw = nn.Parameter(
@@ -720,6 +732,89 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         weights = prior.unsqueeze(0).unsqueeze(0).to(values.dtype)
         denom = weights.sum(dim=-1).clamp_min(1.0)
         return (values.unsqueeze(2) * weights).sum(dim=-1) / denom
+
+    def _load_behavior_weights(self, path, label_names, template_bundle):
+        path = self._resolve_config_path(path)
+        payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise ValueError(f"{path} must contain a YAML mapping.")
+        if bool(payload.get("learnable", False)):
+            raise ValueError("DIVE behavior weights must be fixed: learnable=false.")
+        if payload.get("score_normalization", "none") != "none":
+            raise ValueError("Only score_normalization=none is supported.")
+        label_specs = payload.get("labels")
+        if not isinstance(label_specs, dict):
+            raise ValueError(f"{path} missing top-level labels mapping.")
+
+        missing_labels = [name for name in label_names if name not in label_specs]
+        extra_labels = sorted(set(label_specs) - set(label_names))
+        if missing_labels or extra_labels:
+            raise ValueError(
+                "Behavior weight labels must exactly match config label_names. "
+                f"missing={missing_labels}, extra={extra_labels}"
+            )
+
+        pattern_vocab = list(template_bundle["pattern_names"])
+        effect_vocab = list(template_bundle["effect_type_names"])
+        relation_vocab = list(template_bundle["relation_names"])
+        matrices = {
+            "risk_pattern_weights": torch.zeros(
+                (len(label_names), len(pattern_vocab)), dtype=torch.float32
+            ),
+            "missing_pattern_weights": torch.zeros(
+                (len(label_names), len(pattern_vocab)), dtype=torch.float32
+            ),
+            "protective_pattern_weights": torch.zeros(
+                (len(label_names), len(pattern_vocab)), dtype=torch.float32
+            ),
+            "effect_weights": torch.zeros(
+                (len(label_names), len(effect_vocab)), dtype=torch.float32
+            ),
+            "relation_weights": torch.zeros(
+                (len(label_names), len(relation_vocab)), dtype=torch.float32
+            ),
+        }
+        field_specs = {
+            "risk_patterns": ("risk_pattern_weights", pattern_vocab),
+            "missing_check_patterns": ("missing_pattern_weights", pattern_vocab),
+            "protective_patterns": ("protective_pattern_weights", pattern_vocab),
+            "effect_types": ("effect_weights", effect_vocab),
+            "relations": ("relation_weights", relation_vocab),
+        }
+        for label_idx, label_name in enumerate(label_names):
+            spec = label_specs[label_name]
+            if not isinstance(spec, dict):
+                raise ValueError(f"{label_name} behavior weight spec must be a mapping.")
+            for field, (matrix_name, vocab) in field_specs.items():
+                if field not in spec:
+                    raise ValueError(f"{label_name} missing behavior weight field: {field}")
+                entries = spec[field]
+                if entries is None:
+                    entries = {}
+                if not isinstance(entries, dict):
+                    raise ValueError(
+                        f"{label_name}.{field} must be a name-to-weight mapping."
+                    )
+                vocab_index = {name: idx for idx, name in enumerate(vocab)}
+                unknown = sorted(set(entries) - set(vocab_index))
+                if unknown:
+                    raise ValueError(
+                        f"{label_name}.{field} contains unknown names: {unknown}"
+                    )
+                for name, weight in entries.items():
+                    try:
+                        value = float(weight)
+                    except (TypeError, ValueError) as exc:
+                        raise ValueError(
+                            f"{label_name}.{field}.{name} weight must be numeric."
+                        ) from exc
+                    matrices[matrix_name][label_idx, vocab_index[name]] = value
+
+        return matrices
+
+    @staticmethod
+    def _weighted_sum(values, weights):
+        return torch.einsum("bcd,ld->bcl", values, weights.to(values.dtype))
 
     def set_training_epoch(self, epoch):
         self.current_epoch = int(epoch)
@@ -760,33 +855,57 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         etp_distribution = self._semantic_dropout(etp_distribution.float())
         relation_distribution = self._semantic_dropout(relation_distribution.float())
 
-        risk_pattern = self._prior_mean(efpp_probs, self.template_role_risk_patterns)
-        protective = self._prior_mean(
-            efpp_probs,
-            self.template_role_protective_patterns,
-        )
-        missing = self._prior_mean(
-            efpp_probs,
-            self.template_role_missing_check_patterns,
-        )
-        required_effect = self._prior_mean(
-            etp_distribution,
-            self.template_required_effect_types,
-        )
-        relation = self._prior_mean(
-            relation_distribution,
-            self.template_critical_relations,
-        )
-        risk_total = (
-            risk_pattern
-            + self.effect_weight * required_effect
-            + self.relation_weight * relation
-        )
-        final = (
-            self.risk_weight * risk_total
-            + self.missing_weight * missing
-            - self.protective_weight * protective
-        )
+        if self.use_weighted_behavior_scoring:
+            risk_pattern = self._weighted_sum(
+                efpp_probs,
+                self.behavior_risk_pattern_weights,
+            )
+            protective = self._weighted_sum(
+                efpp_probs,
+                self.behavior_protective_pattern_weights,
+            )
+            missing = self._weighted_sum(
+                efpp_probs,
+                self.behavior_missing_pattern_weights,
+            )
+            required_effect = self._weighted_sum(
+                etp_distribution,
+                self.behavior_effect_weights,
+            )
+            relation = self._weighted_sum(
+                relation_distribution,
+                self.behavior_relation_weights,
+            )
+            risk_total = risk_pattern + required_effect + relation
+            final = risk_total + missing - protective
+        else:
+            risk_pattern = self._prior_mean(efpp_probs, self.template_role_risk_patterns)
+            protective = self._prior_mean(
+                efpp_probs,
+                self.template_role_protective_patterns,
+            )
+            missing = self._prior_mean(
+                efpp_probs,
+                self.template_role_missing_check_patterns,
+            )
+            required_effect = self._prior_mean(
+                etp_distribution,
+                self.template_required_effect_types,
+            )
+            relation = self._prior_mean(
+                relation_distribution,
+                self.template_critical_relations,
+            )
+            risk_total = (
+                risk_pattern
+                + self.effect_weight * required_effect
+                + self.relation_weight * relation
+            )
+            final = (
+                self.risk_weight * risk_total
+                + self.missing_weight * missing
+                - self.protective_weight * protective
+            )
         valid = chunk_mask.unsqueeze(-1)
         return {
             "risk_evidence_scores": risk_total.masked_fill(~valid, 0.0),
