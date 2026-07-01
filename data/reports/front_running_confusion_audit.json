@@ -1,0 +1,952 @@
+{
+  "sources": {
+    "data": "data/processed/DIVE_random_split/test.jsonl",
+    "predictions": "results/dive_side_scale_search/train_dive_side_scale_150_ep50/test_predictions_per_label.jsonl",
+    "top_chunks": "results/dive_side_scale_search/train_dive_side_scale_150_ep50/top_chunks_test_calibrated.jsonl",
+    "pattern_config": "configs/effect_flow_efpp_conservative_22.json",
+    "semantic_cache": "data/features/effect_flow_semantics/dive_random_stride256_max64/test.pt"
+  },
+  "semantic_cache_status": "semantic cache not found: data/features/effect_flow_semantics/dive_random_stride256_max64/test.pt",
+  "label_names": [
+    "Reentrancy",
+    "Access Control",
+    "Arithmetic",
+    "Unchecked Return Values",
+    "DoS",
+    "Bad Randomness",
+    "Front Running",
+    "Time manipulation"
+  ],
+  "front_label_id": 6,
+  "confusion_labels": [
+    "Access Control",
+    "Reentrancy",
+    "Time manipulation"
+  ],
+  "chunking": {
+    "chunk_size": 512,
+    "chunk_stride": 256,
+    "max_chunks": 64
+  },
+  "front_running_metrics": {
+    "tp": 28,
+    "fp": 26,
+    "fn": 22,
+    "tn": 2157,
+    "precision": 0.5185185185185185,
+    "recall": 0.56,
+    "f1": 0.5384615384615384
+  },
+  "confusion_summary": {
+    "tp": {
+      "count": 28,
+      "labels": {
+        "Access Control": {
+          "true_positive_label_count": 27,
+          "predicted_positive_label_count": 26,
+          "true_and_predicted_positive_label_count": 26,
+          "true_rate_in_group": 0.9642857142857143,
+          "predicted_rate_in_group": 0.9285714285714286,
+          "mean_probability": 0.9269243961456856
+        },
+        "Reentrancy": {
+          "true_positive_label_count": 19,
+          "predicted_positive_label_count": 18,
+          "true_and_predicted_positive_label_count": 18,
+          "true_rate_in_group": 0.6785714285714286,
+          "predicted_rate_in_group": 0.6428571428571429,
+          "mean_probability": 0.5855643965740975
+        },
+        "Time manipulation": {
+          "true_positive_label_count": 5,
+          "predicted_positive_label_count": 5,
+          "true_and_predicted_positive_label_count": 3,
+          "true_rate_in_group": 0.17857142857142858,
+          "predicted_rate_in_group": 0.17857142857142858,
+          "mean_probability": 0.1681958495155251
+        }
+      }
+    },
+    "fp": {
+      "count": 26,
+      "labels": {
+        "Access Control": {
+          "true_positive_label_count": 24,
+          "predicted_positive_label_count": 25,
+          "true_and_predicted_positive_label_count": 23,
+          "true_rate_in_group": 0.9230769230769231,
+          "predicted_rate_in_group": 0.9615384615384616,
+          "mean_probability": 0.8538105516479566
+        },
+        "Reentrancy": {
+          "true_positive_label_count": 16,
+          "predicted_positive_label_count": 16,
+          "true_and_predicted_positive_label_count": 12,
+          "true_rate_in_group": 0.6153846153846154,
+          "predicted_rate_in_group": 0.6153846153846154,
+          "mean_probability": 0.6213195057693716
+        },
+        "Time manipulation": {
+          "true_positive_label_count": 6,
+          "predicted_positive_label_count": 8,
+          "true_and_predicted_positive_label_count": 3,
+          "true_rate_in_group": 0.23076923076923078,
+          "predicted_rate_in_group": 0.3076923076923077,
+          "mean_probability": 0.3203693335354781
+        }
+      }
+    },
+    "fn": {
+      "count": 22,
+      "labels": {
+        "Access Control": {
+          "true_positive_label_count": 21,
+          "predicted_positive_label_count": 20,
+          "true_and_predicted_positive_label_count": 19,
+          "true_rate_in_group": 0.9545454545454546,
+          "predicted_rate_in_group": 0.9090909090909091,
+          "mean_probability": 0.825801820113239
+        },
+        "Reentrancy": {
+          "true_positive_label_count": 17,
+          "predicted_positive_label_count": 17,
+          "true_and_predicted_positive_label_count": 15,
+          "true_rate_in_group": 0.7727272727272727,
+          "predicted_rate_in_group": 0.7727272727272727,
+          "mean_probability": 0.697253496791084
+        },
+        "Time manipulation": {
+          "true_positive_label_count": 13,
+          "predicted_positive_label_count": 12,
+          "true_and_predicted_positive_label_count": 10,
+          "true_rate_in_group": 0.5909090909090909,
+          "predicted_rate_in_group": 0.5454545454545454,
+          "mean_probability": 0.549342395486416
+        }
+      }
+    },
+    "tn": {
+      "count": 2157,
+      "labels": {
+        "Access Control": {
+          "true_positive_label_count": 1609,
+          "predicted_positive_label_count": 1876,
+          "true_and_predicted_positive_label_count": 1551,
+          "true_rate_in_group": 0.7459434399629115,
+          "predicted_rate_in_group": 0.8697264719517849,
+          "mean_probability": 0.7594132799162701
+        },
+        "Reentrancy": {
+          "true_positive_label_count": 1087,
+          "predicted_positive_label_count": 1307,
+          "true_and_predicted_positive_label_count": 995,
+          "true_rate_in_group": 0.5039406583217432,
+          "predicted_rate_in_group": 0.6059341678256838,
+          "mean_probability": 0.5200824779863502
+        },
+        "Time manipulation": {
+          "true_positive_label_count": 615,
+          "predicted_positive_label_count": 705,
+          "true_and_predicted_positive_label_count": 531,
+          "true_rate_in_group": 0.2851182197496523,
+          "predicted_rate_in_group": 0.32684283727399166,
+          "mean_probability": 0.3009676124923232
+        }
+      }
+    }
+  },
+  "pattern_summary": {
+    "tp::Front Running": {
+      "front_group": "tp",
+      "audited_label": "Front Running",
+      "contracts_with_top_chunks": 28,
+      "top_chunk_count": 56,
+      "front_chunk_overlap_contracts": 0,
+      "front_chunk_overlap_rate": 0.0,
+      "pattern_hit_rate": {
+        "has_external_call": 0.875,
+        "has_delegatecall": 0.0,
+        "has_state_read": 0.9821428571428571,
+        "has_state_write": 0.8392857142857143,
+        "call_before_state_write": 0.35714285714285715,
+        "state_write_before_call": 0.6428571428571429,
+        "call_without_return_check": 0.0,
+        "call_with_return_check": 0.875,
+        "state_write_with_auth_guard": 0.7678571428571429,
+        "state_write_without_auth_guard": 0.07142857142857142,
+        "sensitive_call_with_auth_guard": 0.8035714285714286,
+        "sensitive_call_without_auth_guard": 0.07142857142857142,
+        "env_used_in_condition": 0.19642857142857142,
+        "env_used_in_arithmetic_or_hash": 0.19642857142857142,
+        "div_before_mul": 0.75,
+        "has_hardcoded_address": 0.9107142857142857,
+        "hardcoded_address_near_call": 0.5,
+        "value_or_gas_sensitive_call": 0.26785714285714285,
+        "dense_storage_or_call_ops": 0.9285714285714286,
+        "panic_selector_present": 0.0,
+        "selfdestruct_present": 0.10714285714285714,
+        "create_contract_present": 0.0
+      },
+      "mean_opcode_counts": {
+        "external_call_count": 1.3214285714285714,
+        "state_read_count": 9.214285714285714,
+        "state_write_count": 2.0535714285714284,
+        "env_opcode_count": 0.25,
+        "auth_hint_count": 3.6964285714285716,
+        "guard_opcode_count": 26.964285714285715,
+        "gas_or_value_count": 0.8214285714285714,
+        "dense_storage_or_call_count": 12.589285714285714
+      }
+    },
+    "tp::Access Control": {
+      "front_group": "tp",
+      "audited_label": "Access Control",
+      "contracts_with_top_chunks": 27,
+      "top_chunk_count": 54,
+      "front_chunk_overlap_contracts": 11,
+      "front_chunk_overlap_rate": 0.4074074074074074,
+      "pattern_hit_rate": {
+        "has_external_call": 0.6111111111111112,
+        "has_delegatecall": 0.0,
+        "has_state_read": 0.8518518518518519,
+        "has_state_write": 0.6666666666666666,
+        "call_before_state_write": 0.2962962962962963,
+        "state_write_before_call": 0.35185185185185186,
+        "call_without_return_check": 0.0,
+        "call_with_return_check": 0.6111111111111112,
+        "state_write_with_auth_guard": 0.48148148148148145,
+        "state_write_without_auth_guard": 0.18518518518518517,
+        "sensitive_call_with_auth_guard": 0.46296296296296297,
+        "sensitive_call_without_auth_guard": 0.14814814814814814,
+        "env_used_in_condition": 0.14814814814814814,
+        "env_used_in_arithmetic_or_hash": 0.14814814814814814,
+        "div_before_mul": 0.48148148148148145,
+        "has_hardcoded_address": 0.9074074074074074,
+        "hardcoded_address_near_call": 0.2962962962962963,
+        "value_or_gas_sensitive_call": 0.35185185185185186,
+        "dense_storage_or_call_ops": 0.7222222222222222,
+        "panic_selector_present": 0.018518518518518517,
+        "selfdestruct_present": 0.037037037037037035,
+        "create_contract_present": 0.0
+      },
+      "mean_opcode_counts": {
+        "external_call_count": 1.2777777777777777,
+        "state_read_count": 6.555555555555555,
+        "state_write_count": 1.8703703703703705,
+        "env_opcode_count": 0.2037037037037037,
+        "auth_hint_count": 2.425925925925926,
+        "guard_opcode_count": 28.296296296296298,
+        "gas_or_value_count": 2.3333333333333335,
+        "dense_storage_or_call_count": 9.703703703703704
+      }
+    },
+    "tp::Reentrancy": {
+      "front_group": "tp",
+      "audited_label": "Reentrancy",
+      "contracts_with_top_chunks": 19,
+      "top_chunk_count": 38,
+      "front_chunk_overlap_contracts": 10,
+      "front_chunk_overlap_rate": 0.5263157894736842,
+      "pattern_hit_rate": {
+        "has_external_call": 0.868421052631579,
+        "has_delegatecall": 0.0,
+        "has_state_read": 1.0,
+        "has_state_write": 0.8421052631578947,
+        "call_before_state_write": 0.5789473684210527,
+        "state_write_before_call": 0.5526315789473685,
+        "call_without_return_check": 0.0,
+        "call_with_return_check": 0.868421052631579,
+        "state_write_with_auth_guard": 0.6052631578947368,
+        "state_write_without_auth_guard": 0.23684210526315788,
+        "sensitive_call_with_auth_guard": 0.6578947368421053,
+        "sensitive_call_without_auth_guard": 0.21052631578947367,
+        "env_used_in_condition": 0.18421052631578946,
+        "env_used_in_arithmetic_or_hash": 0.18421052631578946,
+        "div_before_mul": 0.7105263157894737,
+        "has_hardcoded_address": 0.8947368421052632,
+        "hardcoded_address_near_call": 0.42105263157894735,
+        "value_or_gas_sensitive_call": 0.6842105263157895,
+        "dense_storage_or_call_ops": 0.9473684210526315,
+        "panic_selector_present": 0.0,
+        "selfdestruct_present": 0.0,
+        "create_contract_present": 0.0
+      },
+      "mean_opcode_counts": {
+        "external_call_count": 1.6842105263157894,
+        "state_read_count": 9.078947368421053,
+        "state_write_count": 2.5526315789473686,
+        "env_opcode_count": 0.23684210526315788,
+        "auth_hint_count": 2.6315789473684212,
+        "guard_opcode_count": 28.710526315789473,
+        "gas_or_value_count": 1.368421052631579,
+        "dense_storage_or_call_count": 13.31578947368421
+      }
+    },
+    "tp::Time manipulation": {
+      "front_group": "tp",
+      "audited_label": "Time manipulation",
+      "contracts_with_top_chunks": 7,
+      "top_chunk_count": 14,
+      "front_chunk_overlap_contracts": 2,
+      "front_chunk_overlap_rate": 0.2857142857142857,
+      "pattern_hit_rate": {
+        "has_external_call": 0.2857142857142857,
+        "has_delegatecall": 0.0,
+        "has_state_read": 0.9285714285714286,
+        "has_state_write": 0.7857142857142857,
+        "call_before_state_write": 0.2857142857142857,
+        "state_write_before_call": 0.14285714285714285,
+        "call_without_return_check": 0.0,
+        "call_with_return_check": 0.2857142857142857,
+        "state_write_with_auth_guard": 0.7857142857142857,
+        "state_write_without_auth_guard": 0.0,
+        "sensitive_call_with_auth_guard": 0.2857142857142857,
+        "sensitive_call_without_auth_guard": 0.0,
+        "env_used_in_condition": 0.5714285714285714,
+        "env_used_in_arithmetic_or_hash": 0.5714285714285714,
+        "div_before_mul": 0.7142857142857143,
+        "has_hardcoded_address": 0.8571428571428571,
+        "hardcoded_address_near_call": 0.14285714285714285,
+        "value_or_gas_sensitive_call": 0.21428571428571427,
+        "dense_storage_or_call_ops": 0.8571428571428571,
+        "panic_selector_present": 0.0,
+        "selfdestruct_present": 0.0,
+        "create_contract_present": 0.0
+      },
+      "mean_opcode_counts": {
+        "external_call_count": 0.42857142857142855,
+        "state_read_count": 9.571428571428571,
+        "state_write_count": 1.6428571428571428,
+        "env_opcode_count": 1.1428571428571428,
+        "auth_hint_count": 2.642857142857143,
+        "guard_opcode_count": 33.285714285714285,
+        "gas_or_value_count": 2.7857142857142856,
+        "dense_storage_or_call_count": 11.642857142857142
+      }
+    },
+    "fp::Front Running": {
+      "front_group": "fp",
+      "audited_label": "Front Running",
+      "contracts_with_top_chunks": 26,
+      "top_chunk_count": 52,
+      "front_chunk_overlap_contracts": 0,
+      "front_chunk_overlap_rate": 0.0,
+      "pattern_hit_rate": {
+        "has_external_call": 0.8461538461538461,
+        "has_delegatecall": 0.0,
+        "has_state_read": 0.9230769230769231,
+        "has_state_write": 0.8653846153846154,
+        "call_before_state_write": 0.5961538461538461,
+        "state_write_before_call": 0.5384615384615384,
+        "call_without_return_check": 0.019230769230769232,
+        "call_with_return_check": 0.8269230769230769,
+        "state_write_with_auth_guard": 0.7884615384615384,
+        "state_write_without_auth_guard": 0.07692307692307693,
+        "sensitive_call_with_auth_guard": 0.7692307692307693,
+        "sensitive_call_without_auth_guard": 0.07692307692307693,
+        "env_used_in_condition": 0.25,
+        "env_used_in_arithmetic_or_hash": 0.25,
+        "div_before_mul": 0.5769230769230769,
+        "has_hardcoded_address": 0.8461538461538461,
+        "hardcoded_address_near_call": 0.40384615384615385,
+        "value_or_gas_sensitive_call": 0.46153846153846156,
+        "dense_storage_or_call_ops": 0.9038461538461539,
+        "panic_selector_present": 0.0,
+        "selfdestruct_present": 0.0,
+        "create_contract_present": 0.0
+      },
+      "mean_opcode_counts": {
+        "external_call_count": 1.2884615384615385,
+        "state_read_count": 9.038461538461538,
+        "state_write_count": 2.576923076923077,
+        "env_opcode_count": 0.4423076923076923,
+        "auth_hint_count": 3.480769230769231,
+        "guard_opcode_count": 26.78846153846154,
+        "gas_or_value_count": 2.230769230769231,
+        "dense_storage_or_call_count": 12.903846153846153
+      }
+    },
+    "fp::Access Control": {
+      "front_group": "fp",
+      "audited_label": "Access Control",
+      "contracts_with_top_chunks": 26,
+      "top_chunk_count": 52,
+      "front_chunk_overlap_contracts": 18,
+      "front_chunk_overlap_rate": 0.6923076923076923,
+      "pattern_hit_rate": {
+        "has_external_call": 0.8269230769230769,
+        "has_delegatecall": 0.0,
+        "has_state_read": 0.9807692307692307,
+        "has_state_write": 0.8461538461538461,
+        "call_before_state_write": 0.5,
+        "state_write_before_call": 0.5,
+        "call_without_return_check": 0.019230769230769232,
+        "call_with_return_check": 0.8076923076923077,
+        "state_write_with_auth_guard": 0.6730769230769231,
+        "state_write_without_auth_guard": 0.17307692307692307,
+        "sensitive_call_with_auth_guard": 0.7115384615384616,
+        "sensitive_call_without_auth_guard": 0.11538461538461539,
+        "env_used_in_condition": 0.23076923076923078,
+        "env_used_in_arithmetic_or_hash": 0.23076923076923078,
+        "div_before_mul": 0.5961538461538461,
+        "has_hardcoded_address": 0.8461538461538461,
+        "hardcoded_address_near_call": 0.34615384615384615,
+        "value_or_gas_sensitive_call": 0.6153846153846154,
+        "dense_storage_or_call_ops": 0.8653846153846154,
+        "panic_selector_present": 0.0,
+        "selfdestruct_present": 0.0,
+        "create_contract_present": 0.0
+      },
+      "mean_opcode_counts": {
+        "external_call_count": 1.3076923076923077,
+        "state_read_count": 8.923076923076923,
+        "state_write_count": 2.4038461538461537,
+        "env_opcode_count": 0.3269230769230769,
+        "auth_hint_count": 3.019230769230769,
+        "guard_opcode_count": 28.403846153846153,
+        "gas_or_value_count": 2.3846153846153846,
+        "dense_storage_or_call_count": 12.634615384615385
+      }
+    },
+    "fp::Reentrancy": {
+      "front_group": "fp",
+      "audited_label": "Reentrancy",
+      "contracts_with_top_chunks": 20,
+      "top_chunk_count": 40,
+      "front_chunk_overlap_contracts": 8,
+      "front_chunk_overlap_rate": 0.4,
+      "pattern_hit_rate": {
+        "has_external_call": 0.9,
+        "has_delegatecall": 0.0,
+        "has_state_read": 1.0,
+        "has_state_write": 0.925,
+        "call_before_state_write": 0.625,
+        "state_write_before_call": 0.575,
+        "call_without_return_check": 0.0,
+        "call_with_return_check": 0.9,
+        "state_write_with_auth_guard": 0.725,
+        "state_write_without_auth_guard": 0.2,
+        "sensitive_call_with_auth_guard": 0.7,
+        "sensitive_call_without_auth_guard": 0.2,
+        "env_used_in_condition": 0.325,
+        "env_used_in_arithmetic_or_hash": 0.325,
+        "div_before_mul": 0.55,
+        "has_hardcoded_address": 0.85,
+        "hardcoded_address_near_call": 0.2,
+        "value_or_gas_sensitive_call": 0.8,
+        "dense_storage_or_call_ops": 0.975,
+        "panic_selector_present": 0.0,
+        "selfdestruct_present": 0.0,
+        "create_contract_present": 0.0
+      },
+      "mean_opcode_counts": {
+        "external_call_count": 1.525,
+        "state_read_count": 10.075,
+        "state_write_count": 3.15,
+        "env_opcode_count": 0.65,
+        "auth_hint_count": 2.425,
+        "guard_opcode_count": 29.925,
+        "gas_or_value_count": 2.375,
+        "dense_storage_or_call_count": 14.75
+      }
+    },
+    "fp::Time manipulation": {
+      "front_group": "fp",
+      "audited_label": "Time manipulation",
+      "contracts_with_top_chunks": 11,
+      "top_chunk_count": 22,
+      "front_chunk_overlap_contracts": 5,
+      "front_chunk_overlap_rate": 0.45454545454545453,
+      "pattern_hit_rate": {
+        "has_external_call": 0.7272727272727273,
+        "has_delegatecall": 0.0,
+        "has_state_read": 0.9545454545454546,
+        "has_state_write": 0.8636363636363636,
+        "call_before_state_write": 0.5,
+        "state_write_before_call": 0.5454545454545454,
+        "call_without_return_check": 0.0,
+        "call_with_return_check": 0.7272727272727273,
+        "state_write_with_auth_guard": 0.5909090909090909,
+        "state_write_without_auth_guard": 0.2727272727272727,
+        "sensitive_call_with_auth_guard": 0.5,
+        "sensitive_call_without_auth_guard": 0.22727272727272727,
+        "env_used_in_condition": 0.5909090909090909,
+        "env_used_in_arithmetic_or_hash": 0.5909090909090909,
+        "div_before_mul": 0.8181818181818182,
+        "has_hardcoded_address": 0.7727272727272727,
+        "hardcoded_address_near_call": 0.2727272727272727,
+        "value_or_gas_sensitive_call": 0.6363636363636364,
+        "dense_storage_or_call_ops": 0.9090909090909091,
+        "panic_selector_present": 0.0,
+        "selfdestruct_present": 0.045454545454545456,
+        "create_contract_present": 0.0
+      },
+      "mean_opcode_counts": {
+        "external_call_count": 1.1363636363636365,
+        "state_read_count": 10.409090909090908,
+        "state_write_count": 3.0454545454545454,
+        "env_opcode_count": 1.4090909090909092,
+        "auth_hint_count": 2.8636363636363638,
+        "guard_opcode_count": 34.77272727272727,
+        "gas_or_value_count": 4.181818181818182,
+        "dense_storage_or_call_count": 14.590909090909092
+      }
+    },
+    "fn::Front Running": {
+      "front_group": "fn",
+      "audited_label": "Front Running",
+      "contracts_with_top_chunks": 22,
+      "top_chunk_count": 44,
+      "front_chunk_overlap_contracts": 0,
+      "front_chunk_overlap_rate": 0.0,
+      "pattern_hit_rate": {
+        "has_external_call": 0.4772727272727273,
+        "has_delegatecall": 0.022727272727272728,
+        "has_state_read": 0.9090909090909091,
+        "has_state_write": 0.8863636363636364,
+        "call_before_state_write": 0.3409090909090909,
+        "state_write_before_call": 0.29545454545454547,
+        "call_without_return_check": 0.022727272727272728,
+        "call_with_return_check": 0.45454545454545453,
+        "state_write_with_auth_guard": 0.7272727272727273,
+        "state_write_without_auth_guard": 0.1590909090909091,
+        "sensitive_call_with_auth_guard": 0.4318181818181818,
+        "sensitive_call_without_auth_guard": 0.045454545454545456,
+        "env_used_in_condition": 0.4318181818181818,
+        "env_used_in_arithmetic_or_hash": 0.4318181818181818,
+        "div_before_mul": 0.6136363636363636,
+        "has_hardcoded_address": 0.8409090909090909,
+        "hardcoded_address_near_call": 0.18181818181818182,
+        "value_or_gas_sensitive_call": 0.3181818181818182,
+        "dense_storage_or_call_ops": 0.8636363636363636,
+        "panic_selector_present": 0.0,
+        "selfdestruct_present": 0.022727272727272728,
+        "create_contract_present": 0.045454545454545456
+      },
+      "mean_opcode_counts": {
+        "external_call_count": 0.7272727272727273,
+        "state_read_count": 10.295454545454545,
+        "state_write_count": 2.522727272727273,
+        "env_opcode_count": 1.1136363636363635,
+        "auth_hint_count": 2.8181818181818183,
+        "guard_opcode_count": 24.613636363636363,
+        "gas_or_value_count": 0.5909090909090909,
+        "dense_storage_or_call_count": 13.545454545454545
+      }
+    },
+    "fn::Access Control": {
+      "front_group": "fn",
+      "audited_label": "Access Control",
+      "contracts_with_top_chunks": 22,
+      "top_chunk_count": 44,
+      "front_chunk_overlap_contracts": 5,
+      "front_chunk_overlap_rate": 0.22727272727272727,
+      "pattern_hit_rate": {
+        "has_external_call": 0.75,
+        "has_delegatecall": 0.045454545454545456,
+        "has_state_read": 0.9318181818181818,
+        "has_state_write": 0.8636363636363636,
+        "call_before_state_write": 0.4318181818181818,
+        "state_write_before_call": 0.5454545454545454,
+        "call_without_return_check": 0.0,
+        "call_with_return_check": 0.75,
+        "state_write_with_auth_guard": 0.75,
+        "state_write_without_auth_guard": 0.11363636363636363,
+        "sensitive_call_with_auth_guard": 0.6363636363636364,
+        "sensitive_call_without_auth_guard": 0.11363636363636363,
+        "env_used_in_condition": 0.29545454545454547,
+        "env_used_in_arithmetic_or_hash": 0.29545454545454547,
+        "div_before_mul": 0.6590909090909091,
+        "has_hardcoded_address": 0.9318181818181818,
+        "hardcoded_address_near_call": 0.36363636363636365,
+        "value_or_gas_sensitive_call": 0.5454545454545454,
+        "dense_storage_or_call_ops": 0.9090909090909091,
+        "panic_selector_present": 0.0,
+        "selfdestruct_present": 0.06818181818181818,
+        "create_contract_present": 0.0
+      },
+      "mean_opcode_counts": {
+        "external_call_count": 1.2954545454545454,
+        "state_read_count": 9.431818181818182,
+        "state_write_count": 2.4545454545454546,
+        "env_opcode_count": 0.4318181818181818,
+        "auth_hint_count": 2.272727272727273,
+        "guard_opcode_count": 28.40909090909091,
+        "gas_or_value_count": 1.7954545454545454,
+        "dense_storage_or_call_count": 13.181818181818182
+      }
+    },
+    "fn::Reentrancy": {
+      "front_group": "fn",
+      "audited_label": "Reentrancy",
+      "contracts_with_top_chunks": 19,
+      "top_chunk_count": 38,
+      "front_chunk_overlap_contracts": 6,
+      "front_chunk_overlap_rate": 0.3157894736842105,
+      "pattern_hit_rate": {
+        "has_external_call": 0.7894736842105263,
+        "has_delegatecall": 0.05263157894736842,
+        "has_state_read": 0.9473684210526315,
+        "has_state_write": 0.868421052631579,
+        "call_before_state_write": 0.5,
+        "state_write_before_call": 0.5263157894736842,
+        "call_without_return_check": 0.0,
+        "call_with_return_check": 0.7894736842105263,
+        "state_write_with_auth_guard": 0.7105263157894737,
+        "state_write_without_auth_guard": 0.15789473684210525,
+        "sensitive_call_with_auth_guard": 0.631578947368421,
+        "sensitive_call_without_auth_guard": 0.15789473684210525,
+        "env_used_in_condition": 0.3157894736842105,
+        "env_used_in_arithmetic_or_hash": 0.3157894736842105,
+        "div_before_mul": 0.6052631578947368,
+        "has_hardcoded_address": 0.8947368421052632,
+        "hardcoded_address_near_call": 0.3684210526315789,
+        "value_or_gas_sensitive_call": 0.6842105263157895,
+        "dense_storage_or_call_ops": 0.8947368421052632,
+        "panic_selector_present": 0.0,
+        "selfdestruct_present": 0.05263157894736842,
+        "create_contract_present": 0.02631578947368421
+      },
+      "mean_opcode_counts": {
+        "external_call_count": 1.736842105263158,
+        "state_read_count": 7.631578947368421,
+        "state_write_count": 2.236842105263158,
+        "env_opcode_count": 0.6842105263157895,
+        "auth_hint_count": 2.3157894736842106,
+        "guard_opcode_count": 29.07894736842105,
+        "gas_or_value_count": 1.6842105263157894,
+        "dense_storage_or_call_count": 11.605263157894736
+      }
+    },
+    "fn::Time manipulation": {
+      "front_group": "fn",
+      "audited_label": "Time manipulation",
+      "contracts_with_top_chunks": 15,
+      "top_chunk_count": 30,
+      "front_chunk_overlap_contracts": 6,
+      "front_chunk_overlap_rate": 0.4,
+      "pattern_hit_rate": {
+        "has_external_call": 0.4,
+        "has_delegatecall": 0.0,
+        "has_state_read": 0.9666666666666667,
+        "has_state_write": 0.7333333333333333,
+        "call_before_state_write": 0.1,
+        "state_write_before_call": 0.2,
+        "call_without_return_check": 0.0,
+        "call_with_return_check": 0.4,
+        "state_write_with_auth_guard": 0.5333333333333333,
+        "state_write_without_auth_guard": 0.2,
+        "sensitive_call_with_auth_guard": 0.3333333333333333,
+        "sensitive_call_without_auth_guard": 0.06666666666666667,
+        "env_used_in_condition": 0.7333333333333333,
+        "env_used_in_arithmetic_or_hash": 0.7333333333333333,
+        "div_before_mul": 0.4,
+        "has_hardcoded_address": 0.7666666666666667,
+        "hardcoded_address_near_call": 0.1,
+        "value_or_gas_sensitive_call": 0.3,
+        "dense_storage_or_call_ops": 0.8666666666666667,
+        "panic_selector_present": 0.0,
+        "selfdestruct_present": 0.0,
+        "create_contract_present": 0.0
+      },
+      "mean_opcode_counts": {
+        "external_call_count": 0.4666666666666667,
+        "state_read_count": 12.733333333333333,
+        "state_write_count": 2.9,
+        "env_opcode_count": 2.0,
+        "auth_hint_count": 2.2,
+        "guard_opcode_count": 32.43333333333333,
+        "gas_or_value_count": 2.066666666666667,
+        "dense_storage_or_call_count": 16.1
+      }
+    },
+    "tn::Access Control": {
+      "front_group": "tn",
+      "audited_label": "Access Control",
+      "contracts_with_top_chunks": 1934,
+      "top_chunk_count": 3858,
+      "front_chunk_overlap_contracts": 0,
+      "front_chunk_overlap_rate": 0.0,
+      "pattern_hit_rate": {
+        "has_external_call": 0.5269569725246241,
+        "has_delegatecall": 0.006480041472265423,
+        "has_state_read": 0.885692068429238,
+        "has_state_write": 0.7786417833074132,
+        "call_before_state_write": 0.24857439087610161,
+        "state_write_before_call": 0.3263348885432867,
+        "call_without_return_check": 0.014515292897874546,
+        "call_with_return_check": 0.5124416796267496,
+        "state_write_with_auth_guard": 0.44686365992742355,
+        "state_write_without_auth_guard": 0.33177812337998963,
+        "sensitive_call_with_auth_guard": 0.24209434940383617,
+        "sensitive_call_without_auth_guard": 0.28486262312078797,
+        "env_used_in_condition": 0.25997926386728876,
+        "env_used_in_arithmetic_or_hash": 0.26620010368066355,
+        "div_before_mul": 0.3849144634525661,
+        "has_hardcoded_address": 0.8900984966303784,
+        "hardcoded_address_near_call": 0.17522032141005703,
+        "value_or_gas_sensitive_call": 0.4556765163297045,
+        "dense_storage_or_call_ops": 0.7822706065318819,
+        "panic_selector_present": 0.04510108864696734,
+        "selfdestruct_present": 0.007257646448937273,
+        "create_contract_present": 0.007776049766718507
+      },
+      "mean_opcode_counts": {
+        "external_call_count": 0.9748574390876101,
+        "state_read_count": 7.075168481078279,
+        "state_write_count": 2.3237428719543805,
+        "env_opcode_count": 0.5007776049766719,
+        "auth_hint_count": 2.0824261275272162,
+        "guard_opcode_count": 20.069466044582686,
+        "gas_or_value_count": 1.2783825816485226,
+        "dense_storage_or_call_count": 10.37376879212027
+      }
+    },
+    "tn::Reentrancy": {
+      "front_group": "tn",
+      "audited_label": "Reentrancy",
+      "contracts_with_top_chunks": 1399,
+      "top_chunk_count": 2793,
+      "front_chunk_overlap_contracts": 0,
+      "front_chunk_overlap_rate": 0.0,
+      "pattern_hit_rate": {
+        "has_external_call": 0.8145363408521303,
+        "has_delegatecall": 0.005728607232366631,
+        "has_state_read": 0.9616899391335482,
+        "has_state_write": 0.8385248836376656,
+        "call_before_state_write": 0.43107769423558895,
+        "state_write_before_call": 0.5159326888650196,
+        "call_without_return_check": 0.00966702470461869,
+        "call_with_return_check": 0.8048693161475117,
+        "state_write_with_auth_guard": 0.3433583959899749,
+        "state_write_without_auth_guard": 0.49516648764769067,
+        "sensitive_call_with_auth_guard": 0.3372717508055854,
+        "sensitive_call_without_auth_guard": 0.4772645900465449,
+        "env_used_in_condition": 0.40852130325814534,
+        "env_used_in_arithmetic_or_hash": 0.4095954171142141,
+        "div_before_mul": 0.36555674901539564,
+        "has_hardcoded_address": 0.8668098818474759,
+        "hardcoded_address_near_call": 0.20014321518080916,
+        "value_or_gas_sensitive_call": 0.7629788757608307,
+        "dense_storage_or_call_ops": 0.8968850698174007,
+        "panic_selector_present": 0.02040816326530612,
+        "selfdestruct_present": 0.004296455424274973,
+        "create_contract_present": 0.006802721088435374
+      },
+      "mean_opcode_counts": {
+        "external_call_count": 1.6279985678481919,
+        "state_read_count": 7.972073039742213,
+        "state_write_count": 2.7923379878267096,
+        "env_opcode_count": 0.5277479412817758,
+        "auth_hint_count": 1.28499820981024,
+        "guard_opcode_count": 21.238811313999285,
+        "gas_or_value_count": 1.5961331901181526,
+        "dense_storage_or_call_count": 12.392409595417114
+      }
+    },
+    "tn::Time manipulation": {
+      "front_group": "tn",
+      "audited_label": "Time manipulation",
+      "contracts_with_top_chunks": 789,
+      "top_chunk_count": 1577,
+      "front_chunk_overlap_contracts": 0,
+      "front_chunk_overlap_rate": 0.0,
+      "pattern_hit_rate": {
+        "has_external_call": 0.34559289790741915,
+        "has_delegatecall": 0.0050729232720355105,
+        "has_state_read": 0.8972733037412809,
+        "has_state_write": 0.7951807228915663,
+        "call_before_state_write": 0.17184527584020293,
+        "state_write_before_call": 0.22828154724159797,
+        "call_without_return_check": 0.008877615726062143,
+        "call_with_return_check": 0.336715282181357,
+        "state_write_with_auth_guard": 0.36715282181357006,
+        "state_write_without_auth_guard": 0.4280279010779962,
+        "sensitive_call_with_auth_guard": 0.17374762206721622,
+        "sensitive_call_without_auth_guard": 0.17184527584020293,
+        "env_used_in_condition": 0.6252377932783767,
+        "env_used_in_arithmetic_or_hash": 0.6271401395053899,
+        "div_before_mul": 0.3138871274571972,
+        "has_hardcoded_address": 0.7932783766645529,
+        "hardcoded_address_near_call": 0.11540900443880786,
+        "value_or_gas_sensitive_call": 0.3284717818642993,
+        "dense_storage_or_call_ops": 0.8344958782498415,
+        "panic_selector_present": 0.04185161699429296,
+        "selfdestruct_present": 0.011414077362079899,
+        "create_contract_present": 0.017755231452124286
+      },
+      "mean_opcode_counts": {
+        "external_call_count": 0.6322130627774255,
+        "state_read_count": 10.157894736842104,
+        "state_write_count": 3.1540900443880786,
+        "env_opcode_count": 1.3449587824984146,
+        "auth_hint_count": 1.3506658211794547,
+        "guard_opcode_count": 26.430564362714016,
+        "gas_or_value_count": 1.6068484464172479,
+        "dense_storage_or_call_count": 13.94419784400761
+      }
+    }
+  },
+  "front_fp_minus_tp_pattern_deltas": [
+    {
+      "pattern": "call_before_state_write",
+      "fp_rate": 0.5961538461538461,
+      "tp_rate": 0.35714285714285715,
+      "delta": 0.239010989010989
+    },
+    {
+      "pattern": "value_or_gas_sensitive_call",
+      "fp_rate": 0.46153846153846156,
+      "tp_rate": 0.26785714285714285,
+      "delta": 0.19368131868131871
+    },
+    {
+      "pattern": "div_before_mul",
+      "fp_rate": 0.5769230769230769,
+      "tp_rate": 0.75,
+      "delta": -0.17307692307692313
+    },
+    {
+      "pattern": "selfdestruct_present",
+      "fp_rate": 0.0,
+      "tp_rate": 0.10714285714285714,
+      "delta": -0.10714285714285714
+    },
+    {
+      "pattern": "state_write_before_call",
+      "fp_rate": 0.5384615384615384,
+      "tp_rate": 0.6428571428571429,
+      "delta": -0.10439560439560447
+    },
+    {
+      "pattern": "hardcoded_address_near_call",
+      "fp_rate": 0.40384615384615385,
+      "tp_rate": 0.5,
+      "delta": -0.09615384615384615
+    },
+    {
+      "pattern": "has_hardcoded_address",
+      "fp_rate": 0.8461538461538461,
+      "tp_rate": 0.9107142857142857,
+      "delta": -0.06456043956043955
+    },
+    {
+      "pattern": "has_state_read",
+      "fp_rate": 0.9230769230769231,
+      "tp_rate": 0.9821428571428571,
+      "delta": -0.05906593406593397
+    },
+    {
+      "pattern": "env_used_in_condition",
+      "fp_rate": 0.25,
+      "tp_rate": 0.19642857142857142,
+      "delta": 0.053571428571428575
+    },
+    {
+      "pattern": "env_used_in_arithmetic_or_hash",
+      "fp_rate": 0.25,
+      "tp_rate": 0.19642857142857142,
+      "delta": 0.053571428571428575
+    },
+    {
+      "pattern": "call_with_return_check",
+      "fp_rate": 0.8269230769230769,
+      "tp_rate": 0.875,
+      "delta": -0.04807692307692313
+    },
+    {
+      "pattern": "sensitive_call_with_auth_guard",
+      "fp_rate": 0.7692307692307693,
+      "tp_rate": 0.8035714285714286,
+      "delta": -0.03434065934065933
+    }
+  ],
+  "front_fn_minus_tp_pattern_deltas": [
+    {
+      "pattern": "call_with_return_check",
+      "fn_rate": 0.45454545454545453,
+      "tp_rate": 0.875,
+      "delta": -0.42045454545454547
+    },
+    {
+      "pattern": "has_external_call",
+      "fn_rate": 0.4772727272727273,
+      "tp_rate": 0.875,
+      "delta": -0.3977272727272727
+    },
+    {
+      "pattern": "sensitive_call_with_auth_guard",
+      "fn_rate": 0.4318181818181818,
+      "tp_rate": 0.8035714285714286,
+      "delta": -0.3717532467532468
+    },
+    {
+      "pattern": "state_write_before_call",
+      "fn_rate": 0.29545454545454547,
+      "tp_rate": 0.6428571428571429,
+      "delta": -0.34740259740259744
+    },
+    {
+      "pattern": "hardcoded_address_near_call",
+      "fn_rate": 0.18181818181818182,
+      "tp_rate": 0.5,
+      "delta": -0.3181818181818182
+    },
+    {
+      "pattern": "env_used_in_condition",
+      "fn_rate": 0.4318181818181818,
+      "tp_rate": 0.19642857142857142,
+      "delta": 0.2353896103896104
+    },
+    {
+      "pattern": "env_used_in_arithmetic_or_hash",
+      "fn_rate": 0.4318181818181818,
+      "tp_rate": 0.19642857142857142,
+      "delta": 0.2353896103896104
+    },
+    {
+      "pattern": "div_before_mul",
+      "fn_rate": 0.6136363636363636,
+      "tp_rate": 0.75,
+      "delta": -0.13636363636363635
+    },
+    {
+      "pattern": "state_write_without_auth_guard",
+      "fn_rate": 0.1590909090909091,
+      "tp_rate": 0.07142857142857142,
+      "delta": 0.08766233766233766
+    },
+    {
+      "pattern": "selfdestruct_present",
+      "fn_rate": 0.022727272727272728,
+      "tp_rate": 0.10714285714285714,
+      "delta": -0.08441558441558442
+    },
+    {
+      "pattern": "has_state_read",
+      "fn_rate": 0.9090909090909091,
+      "tp_rate": 0.9821428571428571,
+      "delta": -0.07305194805194803
+    },
+    {
+      "pattern": "has_hardcoded_address",
+      "fn_rate": 0.8409090909090909,
+      "tp_rate": 0.9107142857142857,
+      "delta": -0.06980519480519476
+    }
+  ],
+  "example_count": 60,
+  "interpretation": [
+    "Front Running FP contracts frequently carry other positive labels: Access Control true_rate=0.923077, Reentrancy true_rate=0.615385, Time manipulation true_rate=0.230769.",
+    "Front Running FN contracts also overlap with high-prevalence labels: Access Control true_rate=0.954545, Reentrancy true_rate=0.772727, Time manipulation true_rate=0.590909.",
+    "Patterns higher in Front Running FP than TP suggest false-positive drivers: call_before_state_write, value_or_gas_sensitive_call.",
+    "Patterns lower in Front Running FN than TP suggest missing true-positive signals: call_with_return_check, has_external_call, sensitive_call_with_auth_guard, state_write_before_call, hardcoded_address_near_call.",
+    "Front Running FP top chunks contain generic risk evidence (has_external_call), which is not specific enough to distinguish transaction-order dependence from Access/Reentrancy/Time behavior.",
+    "Recommended next step: keep Front Running risk evidence conservative and add more specific order/value/state-update proxies before increasing its side-evidence weight."
+  ],
+  "artifacts": {
+    "json": "data/reports/front_running_confusion_audit.json",
+    "txt": "data/reports/front_running_confusion_audit.txt",
+    "top_chunks_jsonl": "data/reports/front_running_confusion_audit_top_chunks.jsonl"
+  }
+}

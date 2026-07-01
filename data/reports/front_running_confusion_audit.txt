@@ -1,0 +1,82 @@
+Front Running FP/FN top-chunk confusion audit
+
+Sources
+- data: data/processed/DIVE_random_split/test.jsonl
+- predictions: results/dive_side_scale_search/train_dive_side_scale_150_ep50/test_predictions_per_label.jsonl
+- top_chunks: results/dive_side_scale_search/train_dive_side_scale_150_ep50/top_chunks_test_calibrated.jsonl
+- pattern_config: configs/effect_flow_efpp_conservative_22.json
+- semantic_cache: data/features/effect_flow_semantics/dive_random_stride256_max64/test.pt
+- semantic_cache_status: semantic cache not found: data/features/effect_flow_semantics/dive_random_stride256_max64/test.pt
+
+Front Running contract-level metrics
+TP=28 FP=26 FN=22 TN=2157 precision=0.518519 recall=0.560000 f1=0.538462
+
+Confusion-label co-occurrence inside Front Running groups
+front_group | count | label | true_count | true_rate | pred_count | pred_rate | mean_prob
+tp | 28 | Access Control | 27 | 0.964286 | 26 | 0.928571 | 0.926924
+tp | 28 | Reentrancy | 19 | 0.678571 | 18 | 0.642857 | 0.585564
+tp | 28 | Time manipulation | 5 | 0.178571 | 5 | 0.178571 | 0.168196
+fp | 26 | Access Control | 24 | 0.923077 | 25 | 0.961538 | 0.853811
+fp | 26 | Reentrancy | 16 | 0.615385 | 16 | 0.615385 | 0.621320
+fp | 26 | Time manipulation | 6 | 0.230769 | 8 | 0.307692 | 0.320369
+fn | 22 | Access Control | 21 | 0.954545 | 20 | 0.909091 | 0.825802
+fn | 22 | Reentrancy | 17 | 0.772727 | 17 | 0.772727 | 0.697253
+fn | 22 | Time manipulation | 13 | 0.590909 | 12 | 0.545455 | 0.549342
+tn | 2157 | Access Control | 1609 | 0.745943 | 1876 | 0.869726 | 0.759413
+tn | 2157 | Reentrancy | 1087 | 0.503941 | 1307 | 0.605934 | 0.520082
+tn | 2157 | Time manipulation | 615 | 0.285118 | 705 | 0.326843 | 0.300968
+
+Front Running top-chunk opcode/effect-flow pattern hit rates
+group | chunks | contracts | top patterns
+tp | 56 | 28 | has_state_read=0.982, dense_storage_or_call_ops=0.929, has_hardcoded_address=0.911, has_external_call=0.875, call_with_return_check=0.875, has_state_write=0.839, sensitive_call_with_auth_guard=0.804, state_write_with_auth_guard=0.768, div_before_mul=0.750, state_write_before_call=0.643
+fp | 52 | 26 | has_state_read=0.923, dense_storage_or_call_ops=0.904, has_state_write=0.865, has_external_call=0.846, has_hardcoded_address=0.846, call_with_return_check=0.827, state_write_with_auth_guard=0.788, sensitive_call_with_auth_guard=0.769, call_before_state_write=0.596, div_before_mul=0.577
+fn | 44 | 22 | has_state_read=0.909, has_state_write=0.886, dense_storage_or_call_ops=0.864, has_hardcoded_address=0.841, state_write_with_auth_guard=0.727, div_before_mul=0.614, has_external_call=0.477, call_with_return_check=0.455, sensitive_call_with_auth_guard=0.432, env_used_in_condition=0.432
+
+Front Running FP vs TP largest pattern deltas
+- call_before_state_write: FP=0.596, TP=0.357, delta=0.239
+- value_or_gas_sensitive_call: FP=0.462, TP=0.268, delta=0.194
+- div_before_mul: FP=0.577, TP=0.750, delta=-0.173
+- selfdestruct_present: FP=0.000, TP=0.107, delta=-0.107
+- state_write_before_call: FP=0.538, TP=0.643, delta=-0.104
+- hardcoded_address_near_call: FP=0.404, TP=0.500, delta=-0.096
+- has_hardcoded_address: FP=0.846, TP=0.911, delta=-0.065
+- has_state_read: FP=0.923, TP=0.982, delta=-0.059
+- env_used_in_condition: FP=0.250, TP=0.196, delta=0.054
+- env_used_in_arithmetic_or_hash: FP=0.250, TP=0.196, delta=0.054
+- call_with_return_check: FP=0.827, TP=0.875, delta=-0.048
+- sensitive_call_with_auth_guard: FP=0.769, TP=0.804, delta=-0.034
+
+Front Running FN vs TP missing-signal deltas
+- call_with_return_check: FN=0.455, TP=0.875, delta=-0.420
+- has_external_call: FN=0.477, TP=0.875, delta=-0.398
+- sensitive_call_with_auth_guard: FN=0.432, TP=0.804, delta=-0.372
+- state_write_before_call: FN=0.295, TP=0.643, delta=-0.347
+- hardcoded_address_near_call: FN=0.182, TP=0.500, delta=-0.318
+- env_used_in_condition: FN=0.432, TP=0.196, delta=0.235
+- env_used_in_arithmetic_or_hash: FN=0.432, TP=0.196, delta=0.235
+- div_before_mul: FN=0.614, TP=0.750, delta=-0.136
+- state_write_without_auth_guard: FN=0.159, TP=0.071, delta=0.088
+- selfdestruct_present: FN=0.023, TP=0.107, delta=-0.084
+- has_state_read: FN=0.909, TP=0.982, delta=-0.073
+- has_hardcoded_address: FN=0.841, TP=0.911, delta=-0.070
+
+Confusion label top-chunk overlap on Front Running FP/FN contracts
+group | label | contracts | overlap_with_front_top_chunks | overlap_rate | top patterns
+fp | Access Control | 26 | 18 | 0.692308 | has_state_read=0.981, dense_storage_or_call_ops=0.865, has_state_write=0.846, has_hardcoded_address=0.846, has_external_call=0.827, call_with_return_check=0.808, sensitive_call_with_auth_guard=0.712, state_write_with_auth_guard=0.673
+fp | Reentrancy | 20 | 8 | 0.400000 | has_state_read=1.000, dense_storage_or_call_ops=0.975, has_state_write=0.925, has_external_call=0.900, call_with_return_check=0.900, has_hardcoded_address=0.850, value_or_gas_sensitive_call=0.800, state_write_with_auth_guard=0.725
+fp | Time manipulation | 11 | 5 | 0.454545 | has_state_read=0.955, dense_storage_or_call_ops=0.909, has_state_write=0.864, div_before_mul=0.818, has_hardcoded_address=0.773, has_external_call=0.727, call_with_return_check=0.727, value_or_gas_sensitive_call=0.636
+fn | Access Control | 22 | 5 | 0.227273 | has_state_read=0.932, has_hardcoded_address=0.932, dense_storage_or_call_ops=0.909, has_state_write=0.864, has_external_call=0.750, call_with_return_check=0.750, state_write_with_auth_guard=0.750, div_before_mul=0.659
+fn | Reentrancy | 19 | 6 | 0.315789 | has_state_read=0.947, has_hardcoded_address=0.895, dense_storage_or_call_ops=0.895, has_state_write=0.868, has_external_call=0.789, call_with_return_check=0.789, state_write_with_auth_guard=0.711, value_or_gas_sensitive_call=0.684
+fn | Time manipulation | 15 | 6 | 0.400000 | has_state_read=0.967, dense_storage_or_call_ops=0.867, has_hardcoded_address=0.767, has_state_write=0.733, env_used_in_condition=0.733, env_used_in_arithmetic_or_hash=0.733, state_write_with_auth_guard=0.533, has_external_call=0.400
+
+Interpretation
+- Front Running FP contracts frequently carry other positive labels: Access Control true_rate=0.923077, Reentrancy true_rate=0.615385, Time manipulation true_rate=0.230769.
+- Front Running FN contracts also overlap with high-prevalence labels: Access Control true_rate=0.954545, Reentrancy true_rate=0.772727, Time manipulation true_rate=0.590909.
+- Patterns higher in Front Running FP than TP suggest false-positive drivers: call_before_state_write, value_or_gas_sensitive_call.
+- Patterns lower in Front Running FN than TP suggest missing true-positive signals: call_with_return_check, has_external_call, sensitive_call_with_auth_guard, state_write_before_call, hardcoded_address_near_call.
+- Front Running FP top chunks contain generic risk evidence (has_external_call), which is not specific enough to distinguish transaction-order dependence from Access/Reentrancy/Time behavior.
+- Recommended next step: keep Front Running risk evidence conservative and add more specific order/value/state-update proxies before increasing its side-evidence weight.
+
+Artifacts
+- json: data/reports/front_running_confusion_audit.json
+- top_chunks_jsonl: data/reports/front_running_confusion_audit_top_chunks.jsonl
