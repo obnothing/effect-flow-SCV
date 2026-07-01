@@ -1,0 +1,84 @@
+EVM chunk MIL training report
+
+experiment_name: train_dive_side_scale_200
+model_type: evef_mvd_v2_side_evidence_mil
+ablation_dataset: DIVE
+ablation_variant: side_scale_200
+side_evidence_enabled: True
+coefficient_scale: 2.0
+encoder_frozen: True
+feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256_max64
+semantic_feature_dir: data/features/effect_flow_semantics/dive_random_stride256_max64
+use_effect_flow_semantics: True
+effect_flow_semantic_mode: reliable_side_evidence
+efpp_dim: 22
+etp_dim: 16
+relation_dim: 6
+semantic_projection_dim: 0
+semantic_fusion: side_evidence_bias
+semantic_dropout: 0.2
+lambda_gate: 0.0001
+risk_evidence_weight: 2.0
+missing_check_evidence_weight: 2.0
+protective_evidence_weight: 2.0
+effect_type_evidence_weight: 1.0
+relation_evidence_weight: 1.0
+beta_reliable_init: 0.15
+gamma_reliable_init: 0.15
+warmup_epochs_neural_only: 3
+enable_reliable_semantic_epoch: 4
+use_weak_semantic_features: False
+feature_pooling: masked_mean
+max_chunks: 64
+feature_dim: 768
+hidden_dim: 512
+use_chunk_context: True
+chunk_context_num_layers: 2
+chunk_context_num_heads: 8
+chunk_context_dropout: 0.1
+use_data_parallel: False
+single_gpu_training: True
+visible_cuda_devices: 0
+visible_cuda_device_count: 1
+batch_size: 1024
+total_batch_size: 1024
+effective_chunks_per_batch: 65536
+num_workers: 4
+gradient_accumulation_steps: 1
+batch_size_fallback_due_to_oom: False
+max_memory_allocated_mb: 6945.11767578125
+max_memory_reserved_mb: 7472.0
+approx_batch_per_gpu: 1024
+recognition_aggregation: label_gated_attention
+top_k: 2
+use_pos_weight: True
+pos_weight_rows: [{'label_id': 0, 'label_name': 'Reentrancy', 'positive_count': 10780, 'negative_count': 9354, 'raw_ratio': 0.8677179962894248, 'sqrt_ratio': 0.9315138196985726, 'final_pos_weight': 1.0}, {'label_id': 1, 'label_name': 'Access Control', 'positive_count': 15449, 'negative_count': 4685, 'raw_ratio': 0.3032558741666127, 'sqrt_ratio': 0.5506867296082344, 'final_pos_weight': 1.0}, {'label_id': 2, 'label_name': 'Arithmetic', 'positive_count': 8723, 'negative_count': 11411, 'raw_ratio': 1.3081508655279148, 'sqrt_ratio': 1.1437442308173251, 'final_pos_weight': 1.1437442308173251}, {'label_id': 3, 'label_name': 'Unchecked Return Values', 'positive_count': 5298, 'negative_count': 14836, 'raw_ratio': 2.8003020007550017, 'sqrt_ratio': 1.673410290620624, 'final_pos_weight': 1.673410290620624}, {'label_id': 4, 'label_name': 'DoS', 'positive_count': 4003, 'negative_count': 16131, 'raw_ratio': 4.029727704221834, 'sqrt_ratio': 2.007418168748563, 'final_pos_weight': 2.007418168748563}, {'label_id': 5, 'label_name': 'Bad Randomness', 'positive_count': 1787, 'negative_count': 18347, 'raw_ratio': 10.266927811975378, 'sqrt_ratio': 3.2042047081881924, 'final_pos_weight': 3.2042047081881924}, {'label_id': 6, 'label_name': 'Front Running', 'positive_count': 1787, 'negative_count': 18347, 'raw_ratio': 10.266927811975378, 'sqrt_ratio': 3.2042047081881924, 'final_pos_weight': 3.2042047081881924}, {'label_id': 7, 'label_name': 'Time manipulation', 'positive_count': 5919, 'negative_count': 14215, 'raw_ratio': 2.401588106099003, 'sqrt_ratio': 1.5497058127589904, 'final_pos_weight': 1.5497058127589904}]
+best_loss_epoch: 12
+best_loss_value: 0.3308822810649872
+best_micro_f1_epoch: 27
+best_micro_f1_value: 0.8272260423013318
+best_macro_f1_epoch: 27
+best_macro_f1_value: 0.7695989931971161
+best_macro_f1_threshold: 0.55
+valid_loss_at_best_macro: 0.4231148560841878
+valid_micro_f1: 0.826852090308181
+valid_macro_f1: 0.7681561895217053
+detection_f1: 0.9454454454454455
+predicted_positive_total: 6194
+baseline_comparison: {'random_chunk_context_micro_f1': 0.813258, 'random_chunk_context_macro_f1': 0.715227, 'random_chunk_context_detection_f1': 0.949902, 'previous_guided_micro_f1': 0.8309, 'previous_guided_macro_f1': 0.7424, 'previous_guided_detection_f1': 0.9459}
+improves_evm_bert_first512_macro_f1: False
+is_transductive_pretraining: True
+train_samples: 20134
+valid_samples: 2233
+per_label_table:
+- Reentrancy: precision=0.790094 recall=0.896521 f1=0.839950 support=1121
+- Access Control: precision=0.847944 recall=0.941141 f1=0.892115 support=1665
+- Arithmetic: precision=0.753388 recall=0.861570 f1=0.803855 support=968
+- Unchecked Return Values: precision=0.713904 recall=0.917526 f1=0.803008 support=582
+- DoS: precision=0.664103 recall=0.701897 f1=0.682477 support=369
+- Bad Randomness: precision=0.596774 recall=0.698113 f1=0.643478 support=53
+- Front Running: precision=0.745455 recall=0.621212 f1=0.677686 support=66
+- Time manipulation: precision=0.757022 recall=0.854200 f1=0.802681 support=631
+gate_values: {'beta_reliable': tensor([0.1385, 0.1430, 0.1448, 0.1430, 0.1386, 0.1521, 0.1406, 0.1587],
+       device='cuda:0'), 'gamma_reliable': tensor([0.1390, 0.1441, 0.1434, 0.1508, 0.1431, 0.1445, 0.1438, 0.1539],
+       device='cuda:0')}

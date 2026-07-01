@@ -1,0 +1,81 @@
+EVM chunk MIL training report
+
+experiment_name: train_dive_no_side
+model_type: evm_chunk_mil
+ablation_dataset: DIVE
+ablation_variant: no_side
+side_evidence_enabled: False
+coefficient_scale: None
+encoder_frozen: True
+feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256_max64
+semantic_feature_dir: None
+use_effect_flow_semantics: False
+effect_flow_semantic_mode: None
+efpp_dim: 22
+etp_dim: 16
+relation_dim: 6
+semantic_projection_dim: 0
+semantic_fusion: None
+semantic_dropout: 0.2
+lambda_gate: 0.0001
+risk_evidence_weight: 1.0
+missing_check_evidence_weight: 1.0
+protective_evidence_weight: 1.0
+effect_type_evidence_weight: 0.5
+relation_evidence_weight: 0.5
+beta_reliable_init: 0.1
+gamma_reliable_init: 0.1
+warmup_epochs_neural_only: 3
+enable_reliable_semantic_epoch: 4
+use_weak_semantic_features: False
+feature_pooling: masked_mean
+max_chunks: 64
+feature_dim: 768
+hidden_dim: 512
+use_chunk_context: True
+chunk_context_num_layers: 2
+chunk_context_num_heads: 8
+chunk_context_dropout: 0.1
+use_data_parallel: False
+single_gpu_training: True
+visible_cuda_devices: 0
+visible_cuda_device_count: 1
+batch_size: 1024
+total_batch_size: 1024
+effective_chunks_per_batch: 65536
+num_workers: 4
+gradient_accumulation_steps: 1
+batch_size_fallback_due_to_oom: False
+max_memory_allocated_mb: 6899.96240234375
+max_memory_reserved_mb: 7430.0
+approx_batch_per_gpu: 1024
+recognition_aggregation: label_gated_attention
+top_k: 2
+use_pos_weight: True
+pos_weight_rows: [{'label_id': 0, 'label_name': 'Reentrancy', 'positive_count': 10780, 'negative_count': 9354, 'raw_ratio': 0.8677179962894248, 'sqrt_ratio': 0.9315138196985726, 'final_pos_weight': 1.0}, {'label_id': 1, 'label_name': 'Access Control', 'positive_count': 15449, 'negative_count': 4685, 'raw_ratio': 0.3032558741666127, 'sqrt_ratio': 0.5506867296082344, 'final_pos_weight': 1.0}, {'label_id': 2, 'label_name': 'Arithmetic', 'positive_count': 8723, 'negative_count': 11411, 'raw_ratio': 1.3081508655279148, 'sqrt_ratio': 1.1437442308173251, 'final_pos_weight': 1.1437442308173251}, {'label_id': 3, 'label_name': 'Unchecked Return Values', 'positive_count': 5298, 'negative_count': 14836, 'raw_ratio': 2.8003020007550017, 'sqrt_ratio': 1.673410290620624, 'final_pos_weight': 1.673410290620624}, {'label_id': 4, 'label_name': 'DoS', 'positive_count': 4003, 'negative_count': 16131, 'raw_ratio': 4.029727704221834, 'sqrt_ratio': 2.007418168748563, 'final_pos_weight': 2.007418168748563}, {'label_id': 5, 'label_name': 'Bad Randomness', 'positive_count': 1787, 'negative_count': 18347, 'raw_ratio': 10.266927811975378, 'sqrt_ratio': 3.2042047081881924, 'final_pos_weight': 3.2042047081881924}, {'label_id': 6, 'label_name': 'Front Running', 'positive_count': 1787, 'negative_count': 18347, 'raw_ratio': 10.266927811975378, 'sqrt_ratio': 3.2042047081881924, 'final_pos_weight': 3.2042047081881924}, {'label_id': 7, 'label_name': 'Time manipulation', 'positive_count': 5919, 'negative_count': 14215, 'raw_ratio': 2.401588106099003, 'sqrt_ratio': 1.5497058127589904, 'final_pos_weight': 1.5497058127589904}]
+best_loss_epoch: 13
+best_loss_value: 0.3289540509382884
+best_micro_f1_epoch: 18
+best_micro_f1_value: 0.8211437298489733
+best_macro_f1_epoch: 14
+best_macro_f1_value: 0.7529602291527008
+best_macro_f1_threshold: 0.45
+valid_loss_at_best_macro: 0.33842382828394574
+valid_micro_f1: 0.8189099773637472
+valid_macro_f1: 0.7495802176963215
+detection_f1: 0.9375634517766497
+predicted_positive_total: 6031
+baseline_comparison: {'random_chunk_context_micro_f1': 0.813258, 'random_chunk_context_macro_f1': 0.715227, 'random_chunk_context_detection_f1': 0.949902, 'previous_guided_micro_f1': 0.8309, 'previous_guided_macro_f1': 0.7424, 'previous_guided_detection_f1': 0.9459}
+improves_evm_bert_first512_macro_f1: False
+is_transductive_pretraining: True
+train_samples: 20134
+valid_samples: 2233
+per_label_table:
+- Reentrancy: precision=0.782132 recall=0.890277 f1=0.832708 support=1121
+- Access Control: precision=0.858124 recall=0.900901 f1=0.878992 support=1665
+- Arithmetic: precision=0.745045 recall=0.854339 f1=0.795958 support=968
+- Unchecked Return Values: precision=0.794349 recall=0.869416 f1=0.830189 support=582
+- DoS: precision=0.663073 recall=0.666667 f1=0.664865 support=369
+- Bad Randomness: precision=0.545455 recall=0.679245 f1=0.605042 support=53
+- Front Running: precision=0.523256 recall=0.681818 f1=0.592105 support=66
+- Time manipulation: precision=0.739484 recall=0.863708 f1=0.796784 support=631

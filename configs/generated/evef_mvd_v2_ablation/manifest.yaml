@@ -1,4 +1,4 @@
-matrix: configs\evef_mvd_v2_side_evidence_ablation.yaml
+matrix: configs/evef_mvd_v2_side_evidence_ablation.yaml
 output_config_dir: configs/generated/evef_mvd_v2_ablation
 configs:
 - dataset: BJUT

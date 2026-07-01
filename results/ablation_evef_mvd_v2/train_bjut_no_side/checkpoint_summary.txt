@@ -1,0 +1,83 @@
+EVM chunk MIL training report
+
+experiment_name: train_bjut_no_side
+model_type: evm_chunk_mil
+ablation_dataset: BJUT
+ablation_variant: no_side
+side_evidence_enabled: False
+coefficient_scale: None
+encoder_frozen: True
+feature_dir: data/features/continued_dive_evm_bert_bjut_random_stride256
+semantic_feature_dir: None
+use_effect_flow_semantics: False
+effect_flow_semantic_mode: None
+efpp_dim: 22
+etp_dim: 16
+relation_dim: 6
+semantic_projection_dim: 0
+semantic_fusion: None
+semantic_dropout: 0.2
+lambda_gate: 0.0001
+risk_evidence_weight: 1.0
+missing_check_evidence_weight: 1.0
+protective_evidence_weight: 1.0
+effect_type_evidence_weight: 0.5
+relation_evidence_weight: 0.5
+beta_reliable_init: 0.1
+gamma_reliable_init: 0.1
+warmup_epochs_neural_only: 3
+enable_reliable_semantic_epoch: 4
+use_weak_semantic_features: False
+feature_pooling: masked_mean
+max_chunks: 32
+feature_dim: 768
+hidden_dim: 512
+use_chunk_context: True
+chunk_context_num_layers: 2
+chunk_context_num_heads: 8
+chunk_context_dropout: 0.1
+use_data_parallel: False
+single_gpu_training: True
+visible_cuda_devices: 0
+visible_cuda_device_count: 1
+batch_size: 2048
+total_batch_size: 2048
+effective_chunks_per_batch: 65536
+num_workers: 4
+gradient_accumulation_steps: 1
+batch_size_fallback_due_to_oom: False
+max_memory_allocated_mb: 6613.40380859375
+max_memory_reserved_mb: 7208.0
+approx_batch_per_gpu: 2048
+recognition_aggregation: label_gated_attention
+top_k: 2
+use_pos_weight: True
+pos_weight_rows: [{'label_id': 0, 'label_name': 'Reentrancy', 'positive_count': 3900, 'negative_count': 117581, 'raw_ratio': 30.14897435897436, 'sqrt_ratio': 5.490808169930394, 'final_pos_weight': 5.0}, {'label_id': 1, 'label_name': 'Contract contains unknown address', 'positive_count': 16768, 'negative_count': 104713, 'raw_ratio': 6.244811545801527, 'sqrt_ratio': 2.498962093710412, 'final_pos_weight': 2.498962093710412}, {'label_id': 2, 'label_name': 'Integer overflow or underflow', 'positive_count': 15883, 'negative_count': 105598, 'raw_ratio': 6.648492098470062, 'sqrt_ratio': 2.578467005503476, 'final_pos_weight': 2.578467005503476}, {'label_id': 3, 'label_name': 'Timestamp dependence', 'positive_count': 1776, 'negative_count': 119705, 'raw_ratio': 67.40146396396396, 'sqrt_ratio': 8.209839460303957, 'final_pos_weight': 5.0}, {'label_id': 4, 'label_name': 'DoS with failed call', 'positive_count': 1859, 'negative_count': 119622, 'raw_ratio': 64.34749865519096, 'sqrt_ratio': 8.021689264437445, 'final_pos_weight': 5.0}, {'label_id': 5, 'label_name': 'Assert violation', 'positive_count': 1732, 'negative_count': 119749, 'raw_ratio': 69.1391454965358, 'sqrt_ratio': 8.314995219273177, 'final_pos_weight': 5.0}, {'label_id': 6, 'label_name': 'Unchecked call return value', 'positive_count': 6772, 'negative_count': 114709, 'raw_ratio': 16.938718251624337, 'sqrt_ratio': 4.115667412659135, 'final_pos_weight': 4.115667412659135}, {'label_id': 7, 'label_name': 'Unsafe send', 'positive_count': 1269, 'negative_count': 120212, 'raw_ratio': 94.72970843183609, 'sqrt_ratio': 9.73291880331055, 'final_pos_weight': 5.0}, {'label_id': 8, 'label_name': 'Multiplication after division', 'positive_count': 1573, 'negative_count': 119908, 'raw_ratio': 76.22886204704386, 'sqrt_ratio': 8.7309141587261, 'final_pos_weight': 5.0}, {'label_id': 9, 'label_name': 'Extra gas consumption', 'positive_count': 4501, 'negative_count': 116980, 'raw_ratio': 25.98978004887803, 'sqrt_ratio': 5.098017266435847, 'final_pos_weight': 5.0}]
+best_loss_epoch: 10
+best_loss_value: 0.17071244679391384
+best_micro_f1_epoch: 26
+best_micro_f1_value: 0.6987197724039829
+best_macro_f1_epoch: 30
+best_macro_f1_value: 0.5647047452159697
+best_macro_f1_threshold: 0.75
+valid_loss_at_best_macro: 0.21320795826613903
+valid_micro_f1: 0.6822183761005343
+valid_macro_f1: 0.5531410683657277
+detection_f1: 0.8093726379440666
+predicted_positive_total: 7741
+baseline_comparison: {'random_chunk_context_micro_f1': 0.686971, 'random_chunk_context_macro_f1': 0.575692, 'random_chunk_context_detection_f1': 0.787745, 'previous_guided_micro_f1': 0.6875, 'previous_guided_macro_f1': 0.5712, 'previous_guided_detection_f1': 0.797}
+improves_evm_bert_first512_macro_f1: False
+is_transductive_pretraining: True
+train_samples: 121481
+valid_samples: 14838
+per_label_table:
+- Reentrancy: precision=0.188581 recall=0.851562 f1=0.308782 support=128
+- Contract contains unknown address: precision=0.741322 recall=0.844071 f1=0.789367 support=1847
+- Integer overflow or underflow: precision=0.646393 recall=0.863789 f1=0.739443 support=1784
+- Timestamp dependence: precision=0.212544 recall=0.835616 f1=0.338889 support=73
+- DoS with failed call: precision=0.171717 recall=0.708333 f1=0.276423 support=48
+- Assert violation: precision=0.239726 recall=0.721649 f1=0.359897 support=97
+- Unchecked call return value: precision=0.628329 recall=0.754360 f1=0.685601 support=688
+- Unsafe send: precision=0.809091 recall=0.794643 f1=0.801802 support=112
+- Multiplication after division: precision=0.536170 recall=0.620690 f1=0.575342 support=203
+- Extra gas consumption: precision=0.583791 recall=0.748239 f1=0.655864 support=568

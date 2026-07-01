@@ -1,0 +1,14 @@
+Validation-selected per-label thresholds
+
+label_name | support | best_threshold | valid_precision | valid_recall | valid_f1 | predicted_positive_count
+----------------------------------------------------------------------------------------------------------------
+Reentrancy | 128 | 0.75 | 0.196565 | 0.804688 | 0.315951 | 524
+Contract contains unknown address | 1847 | 0.60 | 0.792432 | 0.793720 | 0.793075 | 1850
+Integer overflow or underflow | 1784 | 0.75 | 0.718995 | 0.770179 | 0.743708 | 1911
+Timestamp dependence | 73 | 0.55 | 0.232143 | 0.890411 | 0.368272 | 280
+DoS with failed call | 48 | 0.15 | 0.162281 | 0.770833 | 0.268116 | 228
+Assert violation | 97 | 0.30 | 0.238710 | 0.762887 | 0.363636 | 310
+Unchecked call return value | 688 | 0.75 | 0.738617 | 0.636628 | 0.683841 | 593
+Unsafe send | 112 | 0.90 | 0.945055 | 0.767857 | 0.847291 | 91
+Multiplication after division | 203 | 0.70 | 0.717105 | 0.536946 | 0.614085 | 152
+Extra gas consumption | 568 | 0.80 | 0.674956 | 0.669014 | 0.671972 | 563
