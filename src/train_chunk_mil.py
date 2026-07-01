@@ -9,7 +9,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import yaml
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, WeightedRandomSampler
 from tqdm import tqdm
 
 from chunk_feature_dataset import build_chunk_feature_datasets
@@ -103,6 +103,67 @@ def compute_pos_weight_from_feature_cache(config):
     return torch.tensor(weights, dtype=torch.float32), rows
 
 
+def build_label_balanced_sampler(dataset, config):
+    labels = dataset.multi_labels[dataset.indices].float()
+    positives = labels.sum(dim=0)
+    positive_nonzero = positives[positives > 0]
+    if positive_nonzero.numel() == 0:
+        raise ValueError("label-balanced sampler requires at least one positive label")
+
+    max_pos = positive_nonzero.max()
+    label_weights = torch.ones_like(positives)
+    valid_labels = positives > 0
+    label_weights[valid_labels] = torch.sqrt(max_pos / positives[valid_labels])
+    label_weights = label_weights.clamp(max=float(config.get("sampler_max_sample_weight", 10.0)))
+
+    positive_mask = labels > 0
+    weighted_labels = positive_mask.float() * label_weights.unsqueeze(0)
+    sample_weights = weighted_labels.max(dim=1).values
+    sample_weights = torch.where(
+        positive_mask.any(dim=1),
+        sample_weights,
+        torch.ones_like(sample_weights),
+    )
+    sample_weights = sample_weights.clamp(
+        min=1e-6,
+        max=float(config.get("sampler_max_sample_weight", 10.0)),
+    )
+    num_samples = int(config.get("sampler_num_samples") or len(dataset))
+    generator = torch.Generator()
+    generator.manual_seed(int(config.get("seed", 42)))
+    sampler = WeightedRandomSampler(
+        weights=sample_weights.double(),
+        num_samples=num_samples,
+        replacement=True,
+        generator=generator,
+    )
+    label_names = config.get(
+        "label_names",
+        [f"label_{idx}" for idx in range(labels.shape[1])],
+    )
+    stats = {
+        "train_sampler": "label_balanced",
+        "sampler_num_samples": num_samples,
+        "sampler_max_sample_weight": float(config.get("sampler_max_sample_weight", 10.0)),
+        "sampler_label_positive_counts": [
+            int(value) for value in positives.tolist()
+        ],
+        "sampler_label_weights": [
+            {
+                "label_id": idx,
+                "label_name": label_names[idx],
+                "positive_count": int(positives[idx].item()),
+                "weight": float(label_weights[idx].item()),
+            }
+            for idx in range(labels.shape[1])
+        ],
+        "sampler_sample_weight_min": float(sample_weights.min().item()),
+        "sampler_sample_weight_mean": float(sample_weights.mean().item()),
+        "sampler_sample_weight_max": float(sample_weights.max().item()),
+    }
+    return sampler, stats
+
+
 def best_threshold_from_scan(threshold_scan, metric_name):
     if not threshold_scan:
         return None, None
@@ -148,11 +209,12 @@ def collate_batch(batch):
     return collated
 
 
-def make_loader(dataset, config, shuffle):
+def make_loader(dataset, config, shuffle, sampler=None):
     return DataLoader(
         dataset,
         batch_size=int(config["batch_size"]),
-        shuffle=shuffle,
+        shuffle=False if sampler is not None else shuffle,
+        sampler=sampler,
         num_workers=int(config.get("num_workers", 0)),
         pin_memory=torch.cuda.is_available(),
         collate_fn=collate_batch,
@@ -395,9 +457,27 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     datasets = build_chunk_feature_datasets(config)
-    train_loader = make_loader(datasets["train"], config, shuffle=True)
+    train_sampler_stats = {
+        "train_sampler": config.get("train_sampler", "shuffle"),
+    }
+    train_sampler = None
+    if config.get("train_sampler") == "label_balanced":
+        train_sampler, train_sampler_stats = build_label_balanced_sampler(
+            datasets["train"],
+            config,
+        )
+    elif config.get("train_sampler") not in (None, "", "shuffle"):
+        raise ValueError(f"Unsupported train_sampler: {config.get('train_sampler')}")
+    train_loader = make_loader(
+        datasets["train"],
+        config,
+        shuffle=train_sampler is None,
+        sampler=train_sampler,
+    )
     valid_loader = make_loader(datasets["valid"], config, shuffle=False)
     model = build_model(config).to(device)
+    if config.get("recognition_loss_type") == "asl" and config.get("use_pos_weight", False):
+        raise ValueError("ASL experiments must set use_pos_weight=false")
     pos_weight_rows = None
     if config.get("use_pos_weight", False):
         pos_weight, pos_weight_rows = compute_pos_weight_from_feature_cache(config)
@@ -620,6 +700,12 @@ def main():
         "top_k": int(config.get("top_k", 2)),
         "use_pos_weight": config.get("use_pos_weight", False),
         "pos_weight_rows": pos_weight_rows,
+        "recognition_loss_type": config.get("recognition_loss_type", "bce"),
+        "asl_gamma_neg": config.get("asl_gamma_neg"),
+        "asl_gamma_pos": config.get("asl_gamma_pos"),
+        "asl_clip": config.get("asl_clip"),
+        "asl_eps": config.get("asl_eps"),
+        **train_sampler_stats,
         "best_loss_epoch": best_loss_epoch,
         "best_loss_value": best_loss,
         "best_micro_f1_epoch": best_micro_epoch,

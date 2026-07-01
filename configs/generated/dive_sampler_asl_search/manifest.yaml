@@ -1,0 +1,24 @@
+matrix: configs/evef_mvd_dive_sampler_asl_search.yaml
+output_config_dir: configs/generated/dive_sampler_asl_search
+configs:
+- dataset: DIVE
+  variant: side_scale_150_sampler_bce
+  side_evidence: true
+  config: configs/generated/dive_sampler_asl_search/train_dive_side_scale_150_sampler_bce.yaml
+  experiment_name: train_dive_side_scale_150_sampler_bce
+  checkpoint_dir: checkpoints/dive_sampler_asl_search/train_dive_side_scale_150_sampler_bce
+  result_dir: results/dive_sampler_asl_search/train_dive_side_scale_150_sampler_bce
+- dataset: DIVE
+  variant: side_scale_150_asl
+  side_evidence: true
+  config: configs/generated/dive_sampler_asl_search/train_dive_side_scale_150_asl.yaml
+  experiment_name: train_dive_side_scale_150_asl
+  checkpoint_dir: checkpoints/dive_sampler_asl_search/train_dive_side_scale_150_asl
+  result_dir: results/dive_sampler_asl_search/train_dive_side_scale_150_asl
+- dataset: DIVE
+  variant: side_scale_150_sampler_asl
+  side_evidence: true
+  config: configs/generated/dive_sampler_asl_search/train_dive_side_scale_150_sampler_asl.yaml
+  experiment_name: train_dive_side_scale_150_sampler_asl
+  checkpoint_dir: checkpoints/dive_sampler_asl_search/train_dive_side_scale_150_sampler_asl
+  result_dir: results/dive_sampler_asl_search/train_dive_side_scale_150_sampler_asl

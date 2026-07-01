@@ -13,6 +13,33 @@ from effect_flow_ontology import (
 from effect_flow_utils import GLOBAL_VULNERABILITY_LABELS
 
 
+def asymmetric_multilabel_loss(
+    logits,
+    targets,
+    gamma_neg=4.0,
+    gamma_pos=0.0,
+    clip=0.05,
+    eps=1e-8,
+):
+    targets = targets.float()
+    probs_pos = torch.sigmoid(logits)
+    probs_neg = 1.0 - probs_pos
+    if clip and clip > 0:
+        probs_neg = (probs_neg + float(clip)).clamp(max=1.0)
+
+    log_pos = torch.log(probs_pos.clamp(min=float(eps)))
+    log_neg = torch.log(probs_neg.clamp(min=float(eps)))
+    loss = targets * log_pos + (1.0 - targets) * log_neg
+
+    gamma_neg = float(gamma_neg)
+    gamma_pos = float(gamma_pos)
+    if gamma_neg > 0 or gamma_pos > 0:
+        pt = probs_pos * targets + probs_neg * (1.0 - targets)
+        gamma = gamma_pos * targets + gamma_neg * (1.0 - targets)
+        loss = loss * torch.pow((1.0 - pt).clamp(min=0.0), gamma)
+    return -loss.mean()
+
+
 class ChunkContextEncoder(nn.Module):
     def __init__(
         self,
@@ -105,6 +132,15 @@ class EVMChunkMILClassifier(nn.Module):
         self.recognition_aggregation = config.get("recognition_aggregation", "topk_mean")
         self.top_k = int(config.get("top_k", 2))
         self.use_chunk_context = bool(config.get("use_chunk_context", False))
+        self.recognition_loss_type = config.get("recognition_loss_type", "bce")
+        if self.recognition_loss_type not in {"bce", "asl"}:
+            raise ValueError(
+                f"Unsupported recognition_loss_type: {self.recognition_loss_type}"
+            )
+        self.asl_gamma_neg = float(config.get("asl_gamma_neg", 4.0))
+        self.asl_gamma_pos = float(config.get("asl_gamma_pos", 0.0))
+        self.asl_clip = float(config.get("asl_clip", 0.05))
+        self.asl_eps = float(config.get("asl_eps", 1e-8))
 
         if self.use_chunk_context:
             self.chunk_context_encoder = ChunkContextEncoder(
@@ -144,6 +180,27 @@ class EVMChunkMILClassifier(nn.Module):
 
     def set_recognition_pos_weight(self, pos_weight):
         self.recognition_pos_weight = pos_weight
+
+    def compute_recognition_loss(self, recognition_logits, multi_labels):
+        if self.recognition_loss_type == "asl":
+            return asymmetric_multilabel_loss(
+                recognition_logits,
+                multi_labels.float(),
+                gamma_neg=self.asl_gamma_neg,
+                gamma_pos=self.asl_gamma_pos,
+                clip=self.asl_clip,
+                eps=self.asl_eps,
+            )
+        if self.recognition_pos_weight is None:
+            return F.binary_cross_entropy_with_logits(
+                recognition_logits,
+                multi_labels.float(),
+            )
+        return F.binary_cross_entropy_with_logits(
+            recognition_logits,
+            multi_labels.float(),
+            pos_weight=self.recognition_pos_weight,
+        )
 
     def masked_mean(self, h, chunk_mask):
         mask = chunk_mask.unsqueeze(-1).type_as(h)
@@ -208,17 +265,10 @@ class EVMChunkMILClassifier(nn.Module):
         loss = None
         if binary_label is not None and multi_labels is not None:
             detection_loss = self.detection_loss_fn(detection_logits, binary_label.float())
-            if self.recognition_pos_weight is None:
-                recognition_loss = F.binary_cross_entropy_with_logits(
-                    recognition_logits,
-                    multi_labels.float(),
-                )
-            else:
-                recognition_loss = F.binary_cross_entropy_with_logits(
-                    recognition_logits,
-                    multi_labels.float(),
-                    pos_weight=self.recognition_pos_weight,
-                )
+            recognition_loss = self.compute_recognition_loss(
+                recognition_logits,
+                multi_labels,
+            )
             loss = ((detection_loss + recognition_loss) / 2).reshape(1)
         return {
             "loss": loss,
@@ -518,17 +568,10 @@ class EffectFlowGuidedChunkMIL(EVMChunkMILClassifier):
         template_consistency_loss = None
         if binary_label is not None and multi_labels is not None:
             detection_loss = self.detection_loss_fn(detection_logits, binary_label.float())
-            if self.recognition_pos_weight is None:
-                recognition_loss = F.binary_cross_entropy_with_logits(
-                    recognition_logits,
-                    multi_labels.float(),
-                )
-            else:
-                recognition_loss = F.binary_cross_entropy_with_logits(
-                    recognition_logits,
-                    multi_labels.float(),
-                    pos_weight=self.recognition_pos_weight,
-                )
+            recognition_loss = self.compute_recognition_loss(
+                recognition_logits,
+                multi_labels,
+            )
             if chunk_vulnerability_evidence is None or vulnerability_template_matches is None:
                 raise ValueError(
                     "EffectFlowGuidedChunkMIL requires pseudo evidence/template targets"
@@ -1046,17 +1089,10 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
                 detection_logits,
                 binary_label.float(),
             )
-            if self.recognition_pos_weight is None:
-                recognition_loss = F.binary_cross_entropy_with_logits(
-                    recognition_logits,
-                    multi_labels.float(),
-                )
-            else:
-                recognition_loss = F.binary_cross_entropy_with_logits(
-                    recognition_logits,
-                    multi_labels.float(),
-                    pos_weight=self.recognition_pos_weight,
-                )
+            recognition_loss = self.compute_recognition_loss(
+                recognition_logits,
+                multi_labels,
+            )
             active_beta = F.softplus(self.beta_reliable_raw)
             active_gamma = F.softplus(self.gamma_reliable_raw)
             gate_regularization_loss = (
