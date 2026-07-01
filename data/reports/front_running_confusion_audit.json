@@ -6,7 +6,7 @@
     "pattern_config": "configs/effect_flow_efpp_conservative_22.json",
     "semantic_cache": "data/features/effect_flow_semantics/dive_random_stride256_max64/test.pt"
   },
-  "semantic_cache_status": "semantic cache not found: data/features/effect_flow_semantics/dive_random_stride256_max64/test.pt",
+  "semantic_cache_status": "semantic cache exists but torch import failed: No module named 'torch'",
   "label_names": [
     "Reentrancy",
     "Access Control",

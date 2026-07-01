@@ -6,7 +6,7 @@ Sources
 - top_chunks: results/dive_side_scale_search/train_dive_side_scale_150_ep50/top_chunks_test_calibrated.jsonl
 - pattern_config: configs/effect_flow_efpp_conservative_22.json
 - semantic_cache: data/features/effect_flow_semantics/dive_random_stride256_max64/test.pt
-- semantic_cache_status: semantic cache not found: data/features/effect_flow_semantics/dive_random_stride256_max64/test.pt
+- semantic_cache_status: semantic cache exists but torch import failed: No module named 'torch'
 
 Front Running contract-level metrics
 TP=28 FP=26 FN=22 TN=2157 precision=0.518519 recall=0.560000 f1=0.538462
