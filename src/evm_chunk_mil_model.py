@@ -770,7 +770,13 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             "effect_weights": torch.zeros(
                 (len(label_names), len(effect_vocab)), dtype=torch.float32
             ),
-            "relation_weights": torch.zeros(
+            "risk_relation_weights": torch.zeros(
+                (len(label_names), len(relation_vocab)), dtype=torch.float32
+            ),
+            "missing_relation_weights": torch.zeros(
+                (len(label_names), len(relation_vocab)), dtype=torch.float32
+            ),
+            "protective_relation_weights": torch.zeros(
                 (len(label_names), len(relation_vocab)), dtype=torch.float32
             ),
         }
@@ -779,16 +785,32 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             "missing_check_patterns": ("missing_pattern_weights", pattern_vocab),
             "protective_patterns": ("protective_pattern_weights", pattern_vocab),
             "effect_types": ("effect_weights", effect_vocab),
-            "relations": ("relation_weights", relation_vocab),
+            "risk_relations": ("risk_relation_weights", relation_vocab),
+            "missing_relations": ("missing_relation_weights", relation_vocab),
+            "protective_relations": ("protective_relation_weights", relation_vocab),
         }
+        relation_schema = payload.get("relation_schema", "legacy")
         for label_idx, label_name in enumerate(label_names):
             spec = label_specs[label_name]
             if not isinstance(spec, dict):
                 raise ValueError(f"{label_name} behavior weight spec must be a mapping.")
             for field, (matrix_name, vocab) in field_specs.items():
-                if field not in spec:
+                missing_field_allowed = (
+                    relation_schema != "split"
+                    and field in {"missing_relations", "protective_relations"}
+                )
+                legacy_risk_relations_allowed = (
+                    field == "risk_relations" and "relations" in spec
+                )
+                if field not in spec and not (
+                    missing_field_allowed or legacy_risk_relations_allowed
+                ):
                     raise ValueError(f"{label_name} missing behavior weight field: {field}")
-                entries = spec[field]
+                entries = spec.get(field)
+                if entries is None and field == "risk_relations":
+                    # Backward compatibility for v1 weight files. In v1 all
+                    # relations were treated as risk-side evidence.
+                    entries = spec.get("relations")
                 if entries is None:
                     entries = {}
                 if not isinstance(entries, dict):
@@ -809,6 +831,22 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
                             f"{label_name}.{field}.{name} weight must be numeric."
                         ) from exc
                     matrices[matrix_name][label_idx, vocab_index[name]] = value
+
+            if relation_schema == "split":
+                missing_relation_fields = [
+                    field
+                    for field in (
+                        "risk_relations",
+                        "missing_relations",
+                        "protective_relations",
+                    )
+                    if field not in spec
+                ]
+                if missing_relation_fields:
+                    raise ValueError(
+                        f"{label_name} missing split relation fields: "
+                        f"{missing_relation_fields}"
+                    )
 
         return matrices
 
@@ -872,11 +910,21 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
                 etp_distribution,
                 self.behavior_effect_weights,
             )
-            relation = self._weighted_sum(
+            risk_relation = self._weighted_sum(
                 relation_distribution,
-                self.behavior_relation_weights,
+                self.behavior_risk_relation_weights,
             )
-            risk_total = risk_pattern + required_effect + relation
+            missing_relation = self._weighted_sum(
+                relation_distribution,
+                self.behavior_missing_relation_weights,
+            )
+            protective_relation = self._weighted_sum(
+                relation_distribution,
+                self.behavior_protective_relation_weights,
+            )
+            risk_total = risk_pattern + required_effect + risk_relation
+            missing = missing + missing_relation
+            protective = protective + protective_relation
             final = risk_total + missing - protective
         else:
             risk_pattern = self._prior_mean(efpp_probs, self.template_role_risk_patterns)
