@@ -1,0 +1,114 @@
+output_config_dir: configs/generated/dive_side_scale_200_batch_search
+output_root: results/dive_side_scale_200_batch_search
+checkpoint_root: checkpoints/dive_side_scale_200_batch_search
+
+datasets:
+  DIVE:
+    base_config: configs/train_dive_evef_mvd_v2_side_evidence.yaml
+    experiment_prefix: train_dive
+
+variants:
+  - name: side_scale_200_batch64_ep50
+    description: DIVE side_scale_200, 50 epochs, batch size 64.
+    side_evidence: true
+    coefficient_scale: 2.00
+    overrides:
+      epochs: 50
+      early_stopping_patience: 10
+      batch_size: 64
+      gradient_accumulation_steps: 1
+      risk_evidence_weight: 2.0
+      missing_check_evidence_weight: 2.0
+      protective_evidence_weight: 2.0
+      effect_type_evidence_weight: 1.0
+      relation_evidence_weight: 1.0
+      beta_reliable_init: 0.15
+      gamma_reliable_init: 0.15
+      behavior_weight_path:
+      weighted_behavior_scoring:
+      batch_size_search: true
+      batch_size_search_reference: side_scale_200_ep50_batch1024
+
+  - name: side_scale_200_batch128_ep50
+    description: DIVE side_scale_200, 50 epochs, batch size 128.
+    side_evidence: true
+    coefficient_scale: 2.00
+    overrides:
+      epochs: 50
+      early_stopping_patience: 10
+      batch_size: 128
+      gradient_accumulation_steps: 1
+      risk_evidence_weight: 2.0
+      missing_check_evidence_weight: 2.0
+      protective_evidence_weight: 2.0
+      effect_type_evidence_weight: 1.0
+      relation_evidence_weight: 1.0
+      beta_reliable_init: 0.15
+      gamma_reliable_init: 0.15
+      behavior_weight_path:
+      weighted_behavior_scoring:
+      batch_size_search: true
+      batch_size_search_reference: side_scale_200_ep50_batch1024
+
+  - name: side_scale_200_batch256_ep50
+    description: DIVE side_scale_200, 50 epochs, batch size 256.
+    side_evidence: true
+    coefficient_scale: 2.00
+    overrides:
+      epochs: 50
+      early_stopping_patience: 10
+      batch_size: 256
+      gradient_accumulation_steps: 1
+      risk_evidence_weight: 2.0
+      missing_check_evidence_weight: 2.0
+      protective_evidence_weight: 2.0
+      effect_type_evidence_weight: 1.0
+      relation_evidence_weight: 1.0
+      beta_reliable_init: 0.15
+      gamma_reliable_init: 0.15
+      behavior_weight_path:
+      weighted_behavior_scoring:
+      batch_size_search: true
+      batch_size_search_reference: side_scale_200_ep50_batch1024
+
+  - name: side_scale_200_batch512_ep50
+    description: DIVE side_scale_200, 50 epochs, batch size 512.
+    side_evidence: true
+    coefficient_scale: 2.00
+    overrides:
+      epochs: 50
+      early_stopping_patience: 10
+      batch_size: 512
+      gradient_accumulation_steps: 1
+      risk_evidence_weight: 2.0
+      missing_check_evidence_weight: 2.0
+      protective_evidence_weight: 2.0
+      effect_type_evidence_weight: 1.0
+      relation_evidence_weight: 1.0
+      beta_reliable_init: 0.15
+      gamma_reliable_init: 0.15
+      behavior_weight_path:
+      weighted_behavior_scoring:
+      batch_size_search: true
+      batch_size_search_reference: side_scale_200_ep50_batch1024
+
+  - name: side_scale_200_batch1024_ep50
+    description: DIVE side_scale_200, 50 epochs, batch size 1024.
+    side_evidence: true
+    coefficient_scale: 2.00
+    overrides:
+      epochs: 50
+      early_stopping_patience: 10
+      batch_size: 1024
+      gradient_accumulation_steps: 1
+      risk_evidence_weight: 2.0
+      missing_check_evidence_weight: 2.0
+      protective_evidence_weight: 2.0
+      effect_type_evidence_weight: 1.0
+      relation_evidence_weight: 1.0
+      beta_reliable_init: 0.15
+      gamma_reliable_init: 0.15
+      behavior_weight_path:
+      weighted_behavior_scoring:
+      batch_size_search: true
+      batch_size_search_reference: side_scale_200_ep50_batch1024
