@@ -1,0 +1,99 @@
+EVM chunk MIL training report
+
+experiment_name: train_dive_side_scale_150_sampler_asl
+model_type: evef_mvd_v2_side_evidence_mil
+ablation_dataset: DIVE
+ablation_variant: side_scale_150_sampler_asl
+side_evidence_enabled: True
+coefficient_scale: 1.5
+encoder_frozen: True
+feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256_max64
+semantic_feature_dir: data/features/effect_flow_semantics/dive_random_stride256_max64
+use_effect_flow_semantics: True
+effect_flow_semantic_mode: reliable_side_evidence
+efpp_dim: 22
+etp_dim: 16
+relation_dim: 6
+semantic_projection_dim: 0
+semantic_fusion: side_evidence_bias
+semantic_dropout: 0.2
+lambda_gate: 0.0001
+risk_evidence_weight: 1.5
+missing_check_evidence_weight: 1.5
+protective_evidence_weight: 1.5
+effect_type_evidence_weight: 0.75
+relation_evidence_weight: 0.75
+behavior_weight_path: None
+use_weighted_behavior_scoring: False
+beta_reliable_init: 0.125
+gamma_reliable_init: 0.125
+warmup_epochs_neural_only: 3
+enable_reliable_semantic_epoch: 4
+use_weak_semantic_features: False
+feature_pooling: masked_mean
+max_chunks: 64
+feature_dim: 768
+hidden_dim: 512
+use_chunk_context: True
+chunk_context_num_layers: 2
+chunk_context_num_heads: 8
+chunk_context_dropout: 0.1
+use_data_parallel: False
+single_gpu_training: True
+visible_cuda_devices: 0
+visible_cuda_device_count: 1
+batch_size: 1024
+total_batch_size: 1024
+effective_chunks_per_batch: 65536
+num_workers: 4
+gradient_accumulation_steps: 1
+batch_size_fallback_due_to_oom: False
+max_memory_allocated_mb: 6929.6171875
+max_memory_reserved_mb: 7402.0
+approx_batch_per_gpu: 1024
+recognition_aggregation: label_gated_attention
+top_k: 2
+use_pos_weight: False
+pos_weight_rows: None
+recognition_loss_type: asl
+asl_gamma_neg: 4.0
+asl_gamma_pos: 0.0
+asl_clip: 0.05
+asl_eps: 1e-08
+train_sampler: label_balanced
+sampler_num_samples: 20134
+sampler_max_sample_weight: 10.0
+sampler_label_positive_counts: [10780, 15449, 8723, 5298, 4003, 1787, 1787, 5919]
+sampler_label_weights: [{'label_id': 0, 'label_name': 'Reentrancy', 'positive_count': 10780, 'weight': 1.1971286535263062}, {'label_id': 1, 'label_name': 'Access Control', 'positive_count': 15449, 'weight': 1.0}, {'label_id': 2, 'label_name': 'Arithmetic', 'positive_count': 8723, 'weight': 1.3308136463165283}, {'label_id': 3, 'label_name': 'Unchecked Return Values', 'positive_count': 5298, 'weight': 1.7076317071914673}, {'label_id': 4, 'label_name': 'DoS', 'positive_count': 4003, 'weight': 1.964524269104004}, {'label_id': 5, 'label_name': 'Bad Randomness', 'positive_count': 1787, 'weight': 2.940274715423584}, {'label_id': 6, 'label_name': 'Front Running', 'positive_count': 1787, 'weight': 2.940274715423584}, {'label_id': 7, 'label_name': 'Time manipulation', 'positive_count': 5919, 'weight': 1.6155709028244019}]
+sampler_sample_weight_min: 1.0
+sampler_sample_weight_mean: 1.6918278932571411
+sampler_sample_weight_max: 2.940274715423584
+best_loss_epoch: 21
+best_loss_value: 0.22037091851234436
+best_micro_f1_epoch: 50
+best_micro_f1_value: 0.8229330536619471
+best_macro_f1_epoch: 46
+best_macro_f1_value: 0.7539558403426949
+best_macro_f1_threshold: 0.75
+valid_loss_at_best_macro: 0.33254414796829224
+valid_micro_f1: 0.8078754135399016
+valid_macro_f1: 0.7238432807044416
+detection_f1: 0.9423220973782772
+predicted_positive_total: 6938
+baseline_comparison: {'random_chunk_context_micro_f1': 0.813258, 'random_chunk_context_macro_f1': 0.715227, 'random_chunk_context_detection_f1': 0.949902, 'previous_guided_micro_f1': 0.8309, 'previous_guided_macro_f1': 0.7424, 'previous_guided_detection_f1': 0.9459}
+improves_evm_bert_first512_macro_f1: False
+is_transductive_pretraining: True
+train_samples: 20134
+valid_samples: 2233
+per_label_table:
+- Reentrancy: precision=0.715803 recall=0.961641 accuracy=0.789073 f1=0.820708 support=1121
+- Access Control: precision=0.830986 recall=0.956757 accuracy=0.822660 f1=0.889447 support=1665
+- Arithmetic: precision=0.714992 recall=0.896694 accuracy=0.800269 f1=0.795600 support=968
+- Unchecked Return Values: precision=0.725601 recall=0.881443 accuracy=0.882221 f1=0.795966 support=582
+- DoS: precision=0.516779 recall=0.834688 accuracy=0.843708 f1=0.638342 support=369
+- Bad Randomness: precision=0.398058 recall=0.773585 accuracy=0.966861 f1=0.525641 support=53
+- Front Running: precision=0.453608 recall=0.666667 accuracy=0.966413 f1=0.539877 support=66
+- Time manipulation: precision=0.703008 recall=0.889065 accuracy=0.862517 f1=0.785164 support=631
+gate_values: {'beta_reliable': tensor([0.1169, 0.1183, 0.1201, 0.1233, 0.1177, 0.1322, 0.1116, 0.1392],
+       device='cuda:0'), 'gamma_reliable': tensor([0.1141, 0.1232, 0.1151, 0.1301, 0.1189, 0.1234, 0.1134, 0.1313],
+       device='cuda:0')}

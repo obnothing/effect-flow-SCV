@@ -1,0 +1,25 @@
+DIVE label-balanced sampler + ASL summary
+
+baseline: side_scale_150_ep50
+baseline_micro_f1: 0.824086
+baseline_macro_f1: 0.745272
+baseline_detection_f1: 0.946504
+
+best_variant_by_macro_f1: side_scale_150_ep50_reference
+best_micro_f1: 0.824086
+best_macro_f1: 0.745272
+best_detection_f1: 0.946504
+
+variant | sampler | loss | pos_weight | micro_f1 | macro_f1 | detection_f1 | macro_delta | pred_pos | bad_rand_f1 | front_running_f1
+------------------------------------------------------------------------------------------------------------------------------------------------------
+side_scale_150_ep50_reference | shuffle | bce | True | 0.824086 | 0.745272 | 0.946504 | 0.000000 | 6356 | 0.5882352941176471 | 0.5384615384615384
+side_scale_150_sampler_bce | label_balanced | bce | True | 0.826257 | 0.735630 | 0.946951 | -0.009642 | 6291 | 0.5671641791044777 | 0.48648648648648646
+side_scale_150_sampler_asl | label_balanced | asl | False | 0.816726 | 0.725588 | 0.951816 | -0.019685 | 6066 | 0.5416666666666666 | 0.5046728971962616
+side_scale_150_asl | shuffle | asl | False | 0.819819 | 0.716271 | 0.943094 | -0.029002 | 6120 | 0.5507246376811594 | 0.38655462184873945
+
+Focus label precision/recall/F1:
+
+side_scale_150_ep50_reference: Bad Randomness P/R/F1=0.7446808510638298/0.4861111111111111/0.5882352941176471; Front Running P/R/F1=0.5185185185185185/0.56/0.5384615384615384
+side_scale_150_sampler_bce: Bad Randomness P/R/F1=0.6129032258064516/0.5277777777777778/0.5671641791044777; Front Running P/R/F1=0.4426229508196721/0.54/0.48648648648648646
+side_scale_150_sampler_asl: Bad Randomness P/R/F1=0.5416666666666666/0.5416666666666666/0.5416666666666666; Front Running P/R/F1=0.47368421052631576/0.54/0.5046728971962616
+side_scale_150_asl: Bad Randomness P/R/F1=0.5757575757575758/0.5277777777777778/0.5507246376811594; Front Running P/R/F1=0.3333333333333333/0.46/0.38655462184873945
