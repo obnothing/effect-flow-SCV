@@ -744,6 +744,77 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             for name, tensor in behavior_weights.items():
                 self.register_buffer(f"behavior_{name}", tensor.float())
 
+        self.front_running_special_enabled = bool(
+            config.get("front_running_special_enabled", False)
+        )
+        self.front_running_label_name = config.get(
+            "front_running_label_name",
+            "Front Running",
+        )
+        self.front_running_label_id = (
+            label_names.index(self.front_running_label_name)
+            if self.front_running_label_name in label_names
+            else None
+        )
+        if self.front_running_special_enabled and self.front_running_label_id is None:
+            raise ValueError(
+                f"front_running_label_name={self.front_running_label_name} "
+                "is not present in label_names"
+            )
+        self.front_running_generic_pattern_scale = float(
+            config.get("front_running_generic_pattern_scale", 0.25)
+        )
+        self.front_running_special_risk_weight = float(
+            config.get("front_running_special_risk_weight", 1.0)
+        )
+        self.front_running_special_protective_weight = float(
+            config.get("front_running_special_protective_weight", 1.0)
+        )
+        self.front_running_confounder_suppression_weight = float(
+            config.get("front_running_confounder_suppression_weight", 0.0)
+        )
+        self.front_running_confounder_margin = float(
+            config.get("front_running_confounder_margin", 0.1)
+        )
+        self.front_special_feature_names = list(
+            config.get("front_special_feature_names", [])
+        )
+        self.front_special_feature_dim = int(
+            config.get("front_special_feature_dim", len(self.front_special_feature_names))
+            or len(self.front_special_feature_names)
+        )
+        self.front_hard_negative_loss_enabled = bool(
+            config.get("front_hard_negative_loss_enabled", False)
+        )
+        self.front_hard_negative_lambda = float(
+            config.get("front_hard_negative_lambda", 0.0)
+        )
+        self.front_hard_negative_prob_threshold = float(
+            config.get("front_hard_negative_prob_threshold", 0.5)
+        )
+        self.front_hard_negative_margin_logit = float(
+            config.get("front_hard_negative_margin_logit", 0.0)
+        )
+        confounder_names = list(
+            config.get(
+                "front_running_confounder_labels",
+                ["Access Control", "Reentrancy"],
+            )
+        )
+        hard_negative_confounder_names = list(
+            config.get("front_hard_negative_confounder_labels", confounder_names)
+        )
+        self.front_running_confounder_label_ids = [
+            label_names.index(name) for name in confounder_names if name in label_names
+        ]
+        self.front_hard_negative_confounder_label_ids = [
+            label_names.index(name)
+            for name in hard_negative_confounder_names
+            if name in label_names
+        ]
+        if self.front_running_special_enabled:
+            self._init_front_special_feature_masks()
+
         beta_init = float(config.get("beta_reliable_init", 0.1))
         gamma_init = float(config.get("gamma_reliable_init", 0.1))
         self.beta_reliable_raw = nn.Parameter(
@@ -755,6 +826,57 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         self.evidence_logit_weight = nn.Parameter(torch.zeros(self.num_labels, 2))
         self.evidence_logit_bias = nn.Parameter(torch.zeros(self.num_labels))
         self.current_epoch = 10**9
+
+    def _init_front_special_feature_masks(self):
+        if self.front_special_feature_dim <= 0:
+            raise ValueError(
+                "front_running_special_enabled=true requires front_special_feature_names"
+            )
+        if len(self.front_special_feature_names) != self.front_special_feature_dim:
+            raise ValueError(
+                "front_special_feature_names length must match front_special_feature_dim"
+            )
+        risk_names = {
+            "approve_selector",
+            "transfer_from_selector",
+            "transfer_selector",
+            "allowance_selector",
+            "balance_of_selector",
+            "swap_selector_family",
+            "buy_sell_bid_order_text",
+            "price_amount_balance_text",
+            "calldata_to_state_write",
+            "calldata_to_external_call",
+            "external_call_then_state_write",
+            "state_write_then_external_call",
+        }
+        protective_names = {
+            "deadline_or_time_guard_text",
+            "slippage_or_min_amount_text",
+            "commit_reveal_text",
+        }
+        unknown_risk = sorted(risk_names - set(self.front_special_feature_names))
+        unknown_protective = sorted(
+            protective_names - set(self.front_special_feature_names)
+        )
+        if unknown_risk or unknown_protective:
+            raise ValueError(
+                "front_special_feature_names missing required features: "
+                f"risk={unknown_risk}, protective={unknown_protective}"
+            )
+        risk_mask = torch.tensor(
+            [1.0 if name in risk_names else 0.0 for name in self.front_special_feature_names],
+            dtype=torch.float32,
+        )
+        protective_mask = torch.tensor(
+            [
+                1.0 if name in protective_names else 0.0
+                for name in self.front_special_feature_names
+            ],
+            dtype=torch.float32,
+        )
+        self.register_buffer("front_special_risk_mask", risk_mask)
+        self.register_buffer("front_special_protective_mask", protective_mask)
 
     @staticmethod
     def _resolve_config_path(path):
@@ -1005,6 +1127,98 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             "final_evidence_scores": final.masked_fill(~valid, 0.0),
         }
 
+    def compute_front_special_scores(self, front_special_features, chunk_mask):
+        if not self.front_running_special_enabled:
+            return None
+        if front_special_features is None:
+            raise ValueError(
+                "front_running_special_enabled=true requires front_special_features"
+            )
+        if front_special_features.shape[:2] != chunk_mask.shape:
+            raise ValueError(
+                "front_special_features [B, C] prefix must match chunk_mask"
+            )
+        if front_special_features.shape[-1] != self.front_special_feature_dim:
+            raise ValueError(
+                f"front_special_features width {front_special_features.shape[-1]} "
+                f"does not match front_special_feature_dim={self.front_special_feature_dim}"
+            )
+        values = front_special_features.float()
+        risk_mask = self.front_special_risk_mask.to(values.dtype)
+        protective_mask = self.front_special_protective_mask.to(values.dtype)
+        risk_denom = risk_mask.sum().clamp_min(1.0)
+        protective_denom = protective_mask.sum().clamp_min(1.0)
+        risk_score = (values * risk_mask.view(1, 1, -1)).sum(dim=-1) / risk_denom
+        protective_score = (
+            values * protective_mask.view(1, 1, -1)
+        ).sum(dim=-1) / protective_denom
+        risk_score = risk_score.masked_fill(~chunk_mask, 0.0)
+        protective_score = protective_score.masked_fill(~chunk_mask, 0.0)
+        final_score = risk_score - protective_score
+        return {
+            "front_special_risk": risk_score,
+            "front_special_protective": protective_score,
+            "front_special_final": final_score.masked_fill(~chunk_mask, 0.0),
+        }
+
+    def apply_front_running_special_evidence(
+        self,
+        evidence,
+        front_special_features,
+        chunk_mask,
+    ):
+        if not self.front_running_special_enabled:
+            return evidence, {}
+        front_scores = self.compute_front_special_scores(
+            front_special_features,
+            chunk_mask,
+        )
+        front_id = int(self.front_running_label_id)
+        adjusted = {
+            key: value.clone()
+            for key, value in evidence.items()
+        }
+        final = adjusted["final_evidence_scores"]
+        risk = adjusted["risk_evidence_scores"]
+        protective = adjusted["protective_evidence_scores"]
+        missing = adjusted["missing_check_evidence_scores"]
+        front_specific = front_scores["front_special_final"].to(final.dtype)
+        front_risk = front_scores["front_special_risk"].to(final.dtype)
+        front_protective = front_scores["front_special_protective"].to(final.dtype)
+        if self.front_running_confounder_label_ids:
+            confounder_phi = final[:, :, self.front_running_confounder_label_ids]
+            confounder_max = confounder_phi.max(dim=-1).values
+        else:
+            confounder_max = torch.zeros_like(front_specific)
+        suppression = F.relu(
+            confounder_max - front_specific - self.front_running_confounder_margin
+        )
+        adjusted_front = (
+            self.front_running_generic_pattern_scale * final[:, :, front_id]
+            + self.front_running_special_risk_weight * front_specific
+            - self.front_running_confounder_suppression_weight * suppression
+        )
+        final[:, :, front_id] = adjusted_front
+        risk[:, :, front_id] = (
+            self.front_running_generic_pattern_scale * risk[:, :, front_id]
+            + self.front_running_special_risk_weight * front_risk
+        )
+        protective[:, :, front_id] = (
+            self.front_running_generic_pattern_scale * protective[:, :, front_id]
+            + self.front_running_special_protective_weight * front_protective
+            + self.front_running_confounder_suppression_weight * suppression
+        )
+        missing[:, :, front_id] = (
+            self.front_running_generic_pattern_scale * missing[:, :, front_id]
+        )
+        diagnostics = {
+            "front_special_risk_scores": front_risk.masked_fill(~chunk_mask, 0.0),
+            "front_special_protective_scores": front_protective.masked_fill(~chunk_mask, 0.0),
+            "front_special_final_scores": front_specific.masked_fill(~chunk_mask, 0.0),
+            "front_confounder_suppression_scores": suppression.masked_fill(~chunk_mask, 0.0),
+        }
+        return adjusted, diagnostics
+
     def gate_values(self):
         return {
             "beta_reliable": F.softplus(self.beta_reliable_raw).detach(),
@@ -1025,6 +1239,7 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         chunk_vulnerability_evidence=None,
         vulnerability_template_matches=None,
         active_vulnerability_label_mask=None,
+        front_special_features=None,
     ):
         del vulnerability_evidence_probs
         del template_match_scores
@@ -1038,6 +1253,11 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             efpp_probs,
             etp_distribution,
             relation_distribution,
+            chunk_mask,
+        )
+        evidence, front_diagnostics = self.apply_front_running_special_evidence(
+            evidence,
+            front_special_features,
             chunk_mask,
         )
         phi = evidence["final_evidence_scores"].to(dtype=h.dtype)
@@ -1084,6 +1304,8 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         detection_loss = None
         recognition_loss = None
         gate_regularization_loss = None
+        front_hard_negative_loss = None
+        front_hard_negative_active_count = torch.tensor(0.0, device=h.device)
         if binary_label is not None and multi_labels is not None:
             detection_loss = self.detection_loss_fn(
                 detection_logits,
@@ -1098,16 +1320,43 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             gate_regularization_loss = (
                 active_beta.pow(2).mean() + active_gamma.pow(2).mean()
             )
+            front_hard_negative_loss = recognition_logits.sum() * 0.0
+            if (
+                self.training
+                and self.front_hard_negative_loss_enabled
+                and self.front_hard_negative_lambda > 0
+                and self.front_running_label_id is not None
+                and self.front_hard_negative_confounder_label_ids
+            ):
+                front_id = int(self.front_running_label_id)
+                front_logits = recognition_logits[:, front_id]
+                front_probs = torch.sigmoid(front_logits)
+                confounder_labels = multi_labels[
+                    :,
+                    self.front_hard_negative_confounder_label_ids,
+                ].float()
+                confounder_positive = confounder_labels.max(dim=1).values > 0.5
+                front_negative = multi_labels[:, front_id].float() < 0.5
+                high_front_prob = front_probs >= self.front_hard_negative_prob_threshold
+                hard_mask = front_negative & confounder_positive & high_front_prob
+                front_hard_negative_active_count = hard_mask.float().sum()
+                if bool(hard_mask.any()):
+                    front_hard_negative_loss = F.softplus(
+                        front_logits[hard_mask] - self.front_hard_negative_margin_logit
+                    ).mean()
             loss = (
                 (detection_loss + recognition_loss) / 2
                 + self.lambda_gate * gate_regularization_loss
+                + self.front_hard_negative_lambda * front_hard_negative_loss
             ).reshape(1)
 
-        return {
+        outputs = {
             "loss": loss,
             "detection_loss": detection_loss,
             "recognition_loss": recognition_loss,
             "gate_regularization_loss": gate_regularization_loss,
+            "front_hard_negative_loss": front_hard_negative_loss,
+            "front_hard_negative_active_count": front_hard_negative_active_count,
             "detection_logits": detection_logits,
             "recognition_logits": recognition_logits,
             "chunk_logits": attn_logits,
@@ -1129,3 +1378,5 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             ],
             "final_evidence_scores": evidence["final_evidence_scores"],
         }
+        outputs.update(front_diagnostics)
+        return outputs

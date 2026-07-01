@@ -206,6 +206,10 @@ def collate_batch(batch):
         collated["active_vulnerability_label_mask"] = torch.stack(
             [item["active_vulnerability_label_mask"] for item in batch]
         )
+    if "front_special_features" in batch[0]:
+        collated["front_special_features"] = torch.stack(
+            [item["front_special_features"] for item in batch]
+        )
     return collated
 
 
@@ -237,6 +241,8 @@ def move_batch(batch, device):
         moved["chunk_vulnerability_evidence"] = batch["chunk_vulnerability_evidence"].to(device)
         moved["vulnerability_template_matches"] = batch["vulnerability_template_matches"].to(device)
         moved["active_vulnerability_label_mask"] = batch["active_vulnerability_label_mask"].to(device)
+    if "front_special_features" in batch:
+        moved["front_special_features"] = batch["front_special_features"].to(device)
     return moved
 
 
@@ -271,12 +277,24 @@ def train_one_epoch(model, loader, optimizer, config, device):
     model.train()
     total_loss = 0.0
     steps = 0
+    hard_negative_loss_sum = 0.0
+    hard_negative_active_sum = 0.0
+    hard_negative_batches = 0
     grad_accum = int(config.get("gradient_accumulation_steps", 1))
     optimizer.zero_grad(set_to_none=True)
     for step, batch in enumerate(tqdm(loader, desc="train", leave=False), start=1):
         model_inputs = move_batch(batch, device)
         outputs = model(**model_inputs)
         batch_loss = outputs["loss"].mean()
+        hard_loss = outputs.get("front_hard_negative_loss")
+        hard_count = outputs.get("front_hard_negative_active_count")
+        if hard_loss is not None:
+            hard_negative_loss_sum += float(hard_loss.detach().cpu().item())
+        if hard_count is not None:
+            current_count = float(hard_count.detach().cpu().item())
+            hard_negative_active_sum += current_count
+            if current_count > 0:
+                hard_negative_batches += 1
         loss = batch_loss / grad_accum
         loss.backward()
         if step % grad_accum == 0:
@@ -297,7 +315,12 @@ def train_one_epoch(model, loader, optimizer, config, device):
             )
         optimizer.step()
         optimizer.zero_grad(set_to_none=True)
-    return total_loss / max(steps, 1)
+    return {
+        "loss": total_loss / max(steps, 1),
+        "front_hard_negative_loss": hard_negative_loss_sum / max(steps, 1),
+        "front_hard_negative_active_count": hard_negative_active_sum,
+        "front_hard_negative_batches": hard_negative_batches,
+    }
 
 
 @torch.no_grad()
@@ -531,7 +554,8 @@ def main():
         set_model_epoch(model, epoch)
         if device.type == "cuda":
             torch.cuda.reset_peak_memory_stats(device)
-        train_loss = train_one_epoch(model, train_loader, optimizer, config, device)
+        train_stats = train_one_epoch(model, train_loader, optimizer, config, device)
+        train_loss = train_stats["loss"]
         set_model_epoch(model, epoch)
         valid_loss, metrics = evaluate(model, valid_loader, config, device)
         max_memory_allocated_mb, max_memory_reserved_mb = cuda_peak_memory_mb(device)
@@ -565,6 +589,15 @@ def main():
             "threshold_scan": metrics["threshold_scan"],
             "max_memory_allocated_mb": max_memory_allocated_mb,
             "max_memory_reserved_mb": max_memory_reserved_mb,
+            "front_hard_negative_loss": train_stats.get("front_hard_negative_loss", 0.0),
+            "front_hard_negative_active_count": train_stats.get(
+                "front_hard_negative_active_count",
+                0.0,
+            ),
+            "front_hard_negative_batches": train_stats.get(
+                "front_hard_negative_batches",
+                0,
+            ),
         }
         history.append(record)
         payload = checkpoint_payload(model, optimizer, epoch, config, valid_loss, metrics)
@@ -592,7 +625,9 @@ def main():
             f"valid_loss={valid_loss:.6f} micro_f1={best_epoch_micro:.6f} "
             f"macro_f1={best_epoch_macro:.6f} pred={metrics['predicted_positive_total']} "
             f"max_memory_allocated_mb={max_memory_allocated_mb:.2f} "
-            f"max_memory_reserved_mb={max_memory_reserved_mb:.2f}"
+            f"max_memory_reserved_mb={max_memory_reserved_mb:.2f} "
+            f"front_hn_active={train_stats.get('front_hard_negative_active_count', 0.0):.0f} "
+            f"front_hn_loss={train_stats.get('front_hard_negative_loss', 0.0):.6f}"
         )
         print(
             f"per_label_precision: "
@@ -658,6 +693,35 @@ def main():
         "relation_evidence_weight": config.get("relation_evidence_weight"),
         "behavior_weight_path": config.get("behavior_weight_path"),
         "use_weighted_behavior_scoring": bool(config.get("behavior_weight_path")),
+        "front_special_feature_dir": config.get("front_special_feature_dir"),
+        "front_running_special_enabled": bool(
+            config.get("front_running_special_enabled", False)
+        ),
+        "front_running_generic_pattern_scale": config.get(
+            "front_running_generic_pattern_scale"
+        ),
+        "front_running_special_risk_weight": config.get(
+            "front_running_special_risk_weight"
+        ),
+        "front_running_special_protective_weight": config.get(
+            "front_running_special_protective_weight"
+        ),
+        "front_running_confounder_suppression_weight": config.get(
+            "front_running_confounder_suppression_weight"
+        ),
+        "front_running_confounder_margin": config.get(
+            "front_running_confounder_margin"
+        ),
+        "front_hard_negative_loss_enabled": bool(
+            config.get("front_hard_negative_loss_enabled", False)
+        ),
+        "front_hard_negative_lambda": config.get("front_hard_negative_lambda"),
+        "front_hard_negative_prob_threshold": config.get(
+            "front_hard_negative_prob_threshold"
+        ),
+        "front_hard_negative_margin_logit": config.get(
+            "front_hard_negative_margin_logit"
+        ),
         "beta_reliable_init": config.get("beta_reliable_init"),
         "gamma_reliable_init": config.get("gamma_reliable_init"),
         "warmup_epochs_neural_only": int(config.get("warmup_epochs_neural_only", 0)),
@@ -730,6 +794,15 @@ def main():
         "valid_samples": len(datasets["valid"]),
         "per_label_table": label_table(config, best_metrics),
     }
+    if history:
+        summary["front_hard_negative_active_count_total"] = sum(
+            float(row.get("front_hard_negative_active_count", 0.0))
+            for row in history
+        )
+        summary["front_hard_negative_loss_mean"] = sum(
+            float(row.get("front_hard_negative_loss", 0.0))
+            for row in history
+        ) / len(history)
     final_model = model.module if isinstance(model, nn.DataParallel) else model
     if hasattr(final_model, "gate_values"):
         summary["gate_values"] = final_model.gate_values()

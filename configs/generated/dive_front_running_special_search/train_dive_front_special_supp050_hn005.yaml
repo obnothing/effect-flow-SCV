@@ -1,0 +1,152 @@
+experiment_name: train_dive_front_special_supp050_hn005
+model_type: evef_mvd_v2_side_evidence_mil
+feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256_max64
+semantic_feature_dir: data/features/effect_flow_semantics/dive_random_stride256_max64
+checkpoint_dir: checkpoints/dive_front_running_special_search/train_dive_front_special_supp050_hn005
+result_dir: results/dive_front_running_special_search/train_dive_front_special_supp050_hn005
+report_dir: data/reports
+log_dir: logs
+ontology_path: configs/effect_flow_ontology.yaml
+template_path: configs/vulnerability_templates_dive.yaml
+efpp_pattern_config: configs/effect_flow_efpp_conservative_22.json
+num_labels: 8
+feature_dim: 768
+hidden_dim: 512
+attn_dim: 256
+max_chunks: 64
+efpp_dim: 22
+etp_dim: 16
+relation_dim: 6
+effect_flow_semantic_mode: reliable_side_evidence
+semantic_fusion: side_evidence_bias
+semantic_dropout: 0.2
+lambda_gate: 0.0001
+warmup_epochs_neural_only: 3
+enable_reliable_semantic_epoch: 4
+use_weak_semantic_features: false
+beta_reliable_init: 0.125
+gamma_reliable_init: 0.125
+risk_evidence_weight: 1.5
+missing_check_evidence_weight: 1.5
+protective_evidence_weight: 1.5
+effect_type_evidence_weight: 0.75
+relation_evidence_weight: 0.75
+dropout: 0.1
+feature_pooling: masked_mean
+chunk_stride: 256
+recognition_aggregation: label_gated_attention
+top_k: 2
+use_chunk_context: true
+chunk_context_num_layers: 2
+chunk_context_num_heads: 8
+chunk_context_dropout: 0.1
+batch_size: 1024
+gradient_accumulation_steps: 1
+use_data_parallel: false
+data_parallel_device_ids: null
+epochs: 50
+learning_rate: 0.0003
+weight_decay: 0.01
+early_stopping_patience: 10
+gradient_clip_norm: 1.0
+use_pos_weight: true
+pos_weight_source: train_mlsmote
+pos_weight_mode: sqrt_ratio
+max_pos_weight: 5.0
+threshold: 0.5
+thresholds:
+- 0.05
+- 0.1
+- 0.15
+- 0.2
+- 0.25
+- 0.3
+- 0.35
+- 0.4
+- 0.45
+- 0.5
+- 0.55
+- 0.6
+- 0.65
+- 0.7
+- 0.75
+- 0.8
+- 0.85
+- 0.9
+- 0.95
+seed: 42
+num_workers: 4
+batch_size_fallback_due_to_oom: false
+is_transductive_pretraining: true
+encoder_frozen: true
+data_dir: data/processed/DIVE_random_split
+split_policy: random_sample_split
+leakage_status: warning
+baseline_comparison:
+  random_chunk_context_micro_f1: 0.813258
+  random_chunk_context_macro_f1: 0.715227
+  random_chunk_context_detection_f1: 0.949902
+  previous_guided_micro_f1: 0.8309
+  previous_guided_macro_f1: 0.7424
+  previous_guided_detection_f1: 0.9459
+label_names:
+- Reentrancy
+- Access Control
+- Arithmetic
+- Unchecked Return Values
+- DoS
+- Bad Randomness
+- Front Running
+- Time manipulation
+ablation_dataset: DIVE
+ablation_variant: front_special_supp050_hn005
+ablation_description: Front Running special evidence with stronger suppression and
+  weak hard-negative loss.
+side_evidence_enabled: true
+coefficient_scale: 1.5
+ablation_control:
+  same_feature_cache: true
+  same_random_split: true
+  same_batch_size: true
+  same_seed: true
+  dataset: DIVE
+  variant: front_special_supp050_hn005
+behavior_weight_path: null
+weighted_behavior_scoring: null
+generated_from: configs/evef_mvd_v2_side_evidence_ablation.yaml
+generated_dataset_key: dive
+front_special_feature_dir: data/features/front_running_special/dive_random_stride256_max64
+front_running_special_enabled: true
+front_running_label_name: Front Running
+front_running_generic_pattern_scale: 0.25
+front_running_special_risk_weight: 1.0
+front_running_special_protective_weight: 1.0
+front_running_confounder_suppression_weight: 0.5
+front_running_confounder_margin: 0.1
+front_running_confounder_labels:
+- Access Control
+- Reentrancy
+front_hard_negative_loss_enabled: true
+front_hard_negative_lambda: 0.05
+front_hard_negative_prob_threshold: 0.5
+front_hard_negative_margin_logit: 0.0
+front_hard_negative_confounder_labels:
+- Access Control
+- Reentrancy
+front_special_feature_dim: 15
+front_special_feature_names:
+- approve_selector
+- transfer_from_selector
+- transfer_selector
+- allowance_selector
+- balance_of_selector
+- swap_selector_family
+- buy_sell_bid_order_text
+- price_amount_balance_text
+- calldata_to_state_write
+- calldata_to_external_call
+- external_call_then_state_write
+- state_write_then_external_call
+- deadline_or_time_guard_text
+- slippage_or_min_amount_text
+- commit_reveal_text

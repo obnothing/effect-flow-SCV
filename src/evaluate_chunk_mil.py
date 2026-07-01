@@ -143,6 +143,8 @@ def collect_predictions(model, loader, device):
             inputs["chunk_vulnerability_evidence"] = batch["chunk_vulnerability_evidence"].to(device)
             inputs["vulnerability_template_matches"] = batch["vulnerability_template_matches"].to(device)
             inputs["active_vulnerability_label_mask"] = batch["active_vulnerability_label_mask"].to(device)
+        if "front_special_features" in batch:
+            inputs["front_special_features"] = batch["front_special_features"].to(device)
         outputs = model(**inputs)
         losses.append(float(outputs["loss"].mean().detach().cpu().item()))
         ids.extend(batch["id"])
@@ -638,6 +640,20 @@ def write_threshold_calibration_report(
         "relation_evidence_weight": config.get("relation_evidence_weight"),
         "behavior_weight_path": config.get("behavior_weight_path"),
         "use_weighted_behavior_scoring": bool(config.get("behavior_weight_path")),
+        "front_special_feature_dir": config.get("front_special_feature_dir"),
+        "front_running_special_enabled": bool(
+            config.get("front_running_special_enabled", False)
+        ),
+        "front_running_generic_pattern_scale": config.get(
+            "front_running_generic_pattern_scale"
+        ),
+        "front_running_confounder_suppression_weight": config.get(
+            "front_running_confounder_suppression_weight"
+        ),
+        "front_hard_negative_loss_enabled": bool(
+            config.get("front_hard_negative_loss_enabled", False)
+        ),
+        "front_hard_negative_lambda": config.get("front_hard_negative_lambda"),
         "beta_reliable_init": config.get("beta_reliable_init"),
         "gamma_reliable_init": config.get("gamma_reliable_init"),
         "is_transductive_pretraining": bool(config.get("is_transductive_pretraining", True)),
@@ -720,11 +736,15 @@ def main():
     semantic_path = None
     if config.get("semantic_feature_dir"):
         semantic_path = Path(config["semantic_feature_dir"]) / f"{args.split}.pt"
+    front_special_path = None
+    if config.get("front_special_feature_dir"):
+        front_special_path = Path(config["front_special_feature_dir"]) / f"{args.split}.pt"
     dataset = ChunkFeatureDataset(
         feature_path(config, args.split),
         seed=config.get("seed", 42),
         num_labels=config.get("num_labels"),
         semantic_path=semantic_path,
+        front_special_path=front_special_path,
     )
     loader = make_loader(dataset, config)
     model, checkpoint = load_model(config, args.checkpoint, device)
@@ -859,6 +879,20 @@ def main():
         "relation_evidence_weight": config.get("relation_evidence_weight"),
         "behavior_weight_path": config.get("behavior_weight_path"),
         "use_weighted_behavior_scoring": bool(config.get("behavior_weight_path")),
+        "front_special_feature_dir": config.get("front_special_feature_dir"),
+        "front_running_special_enabled": bool(
+            config.get("front_running_special_enabled", False)
+        ),
+        "front_running_generic_pattern_scale": config.get(
+            "front_running_generic_pattern_scale"
+        ),
+        "front_running_confounder_suppression_weight": config.get(
+            "front_running_confounder_suppression_weight"
+        ),
+        "front_hard_negative_loss_enabled": bool(
+            config.get("front_hard_negative_loss_enabled", False)
+        ),
+        "front_hard_negative_lambda": config.get("front_hard_negative_lambda"),
         "beta_reliable_init": config.get("beta_reliable_init"),
         "gamma_reliable_init": config.get("gamma_reliable_init"),
         "evaluated_samples": len(dataset),

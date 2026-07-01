@@ -167,6 +167,8 @@ def aggregate_contributions(model, loader, device, thresholds, num_labels):
             inputs["active_vulnerability_label_mask"] = batch[
                 "active_vulnerability_label_mask"
             ].to(device)
+        if "front_special_features" in batch:
+            inputs["front_special_features"] = batch["front_special_features"].to(device)
         outputs = model(**inputs)
         missing = [key for key in SCORE_KEYS if key not in outputs]
         if missing:
@@ -333,11 +335,15 @@ def main():
     semantic_path = None
     if config.get("semantic_feature_dir"):
         semantic_path = resolve_path(config["semantic_feature_dir"]) / f"{args.split}.pt"
+    front_special_path = None
+    if config.get("front_special_feature_dir"):
+        front_special_path = resolve_path(config["front_special_feature_dir"]) / f"{args.split}.pt"
     dataset = ChunkFeatureDataset(
         resolve_path(feature_path(config, args.split)),
         seed=config.get("seed", 42),
         num_labels=config.get("num_labels"),
         semantic_path=semantic_path,
+        front_special_path=front_special_path,
     )
     loader = make_loader(dataset, config)
     model, checkpoint = load_model(config, resolve_path(args.checkpoint), device)

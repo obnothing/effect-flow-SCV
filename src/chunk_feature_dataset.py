@@ -13,6 +13,7 @@ class ChunkFeatureDataset(Dataset):
         seed=42,
         num_labels=None,
         semantic_path=None,
+        front_special_path=None,
     ):
         self.path = Path(path)
         if not self.path.exists():
@@ -27,6 +28,7 @@ class ChunkFeatureDataset(Dataset):
         self.metadata = payload.get("metadata", [{} for _ in self.ids])
         self.report = payload.get("report", {})
         self.semantic_path = Path(semantic_path) if semantic_path else None
+        self.front_special_path = Path(front_special_path) if front_special_path else None
         self.efpp_probs = None
         self.etp_distribution = None
         self.relation_distribution = None
@@ -38,6 +40,11 @@ class ChunkFeatureDataset(Dataset):
         self.semantic_report = {}
         if self.semantic_path is not None:
             self._load_semantic_cache()
+        self.front_special_features = None
+        self.front_special_feature_names = []
+        self.front_special_report = {}
+        if self.front_special_path is not None:
+            self._load_front_special_cache()
         self.indices = list(range(len(self.ids)))
         if debug_num_samples is not None:
             rng = random.Random(int(seed))
@@ -102,6 +109,44 @@ class ChunkFeatureDataset(Dataset):
         self.active_vulnerability_label_mask = payload["active_vulnerability_label_mask"].float()
         self.semantic_report = payload.get("report", {})
 
+    def _load_front_special_cache(self):
+        if not self.front_special_path.exists():
+            raise FileNotFoundError(
+                f"Front Running special cache not found: {self.front_special_path}"
+            )
+        payload = torch.load(self.front_special_path, map_location="cpu")
+        special_ids = payload["ids"]
+        if len(special_ids) != len(self.ids):
+            raise ValueError(
+                f"Front special cache/id count mismatch: {self.front_special_path} has "
+                f"{len(special_ids)}, feature cache has {len(self.ids)}"
+            )
+        mismatch = [
+            idx for idx, (left, right) in enumerate(zip(self.ids, special_ids))
+            if str(left) != str(right)
+        ]
+        if mismatch:
+            first = mismatch[0]
+            raise ValueError(
+                f"Front special cache ids are not aligned at index {first}: "
+                f"{self.ids[first]} != {special_ids[first]}"
+            )
+        special_mask = payload["chunk_mask"].bool()
+        if special_mask.shape != self.chunk_mask.shape:
+            raise ValueError(
+                f"Front special chunk_mask shape {tuple(special_mask.shape)} does not "
+                f"match feature chunk_mask {tuple(self.chunk_mask.shape)}"
+            )
+        if not torch.equal(special_mask, self.chunk_mask):
+            raise ValueError(
+                f"Front special chunk_mask does not match feature cache: {self.front_special_path}"
+            )
+        if "front_special_features" not in payload:
+            raise ValueError(f"{self.front_special_path} missing front_special_features")
+        self.front_special_features = payload["front_special_features"].float()
+        self.front_special_feature_names = list(payload.get("feature_names", []))
+        self.front_special_report = payload.get("report", {})
+
     def _validate(self):
         n = len(self.ids)
         if self.features.ndim != 3:
@@ -148,6 +193,24 @@ class ChunkFeatureDataset(Dataset):
                 raise ValueError(f"{self.semantic_path} contains NaN/Inf vulnerability_evidence_probs")
             if torch.isnan(self.template_match_scores).any() or torch.isinf(self.template_match_scores).any():
                 raise ValueError(f"{self.semantic_path} contains NaN/Inf template_match_scores")
+        if self.front_special_features is not None:
+            if self.front_special_features.shape[:2] != self.features.shape[:2]:
+                raise ValueError(
+                    "front_special_features must have the same [N, C] prefix as features"
+                )
+            if self.front_special_features.ndim != 3:
+                raise ValueError("front_special_features must be [N, C, K]")
+            if torch.isnan(self.front_special_features).any() or torch.isinf(self.front_special_features).any():
+                raise ValueError(
+                    f"{self.front_special_path} contains NaN/Inf front_special_features"
+                )
+            if (
+                self.front_special_feature_names
+                and len(self.front_special_feature_names) != self.front_special_features.shape[-1]
+            ):
+                raise ValueError(
+                    "front_special feature_names length does not match feature width"
+                )
 
     def __len__(self):
         return len(self.indices)
@@ -171,15 +234,25 @@ class ChunkFeatureDataset(Dataset):
             item["chunk_vulnerability_evidence"] = self.chunk_vulnerability_evidence[real_idx]
             item["vulnerability_template_matches"] = self.vulnerability_template_matches[real_idx]
             item["active_vulnerability_label_mask"] = self.active_vulnerability_label_mask[real_idx]
+        if self.front_special_features is not None:
+            item["front_special_features"] = self.front_special_features[real_idx]
         return item
 
 
 def build_chunk_feature_datasets(config):
     feature_dir = Path(config["feature_dir"])
     semantic_dir = Path(config["semantic_feature_dir"]) if config.get("semantic_feature_dir") else None
+    front_special_dir = (
+        Path(config["front_special_feature_dir"])
+        if config.get("front_special_feature_dir")
+        else None
+    )
     seed = config.get("seed", 42)
     def semantic_path(split):
         return semantic_dir / f"{split}.pt" if semantic_dir is not None else None
+
+    def front_special_path(split):
+        return front_special_dir / f"{split}.pt" if front_special_dir is not None else None
 
     return {
         "train": ChunkFeatureDataset(
@@ -188,6 +261,7 @@ def build_chunk_feature_datasets(config):
             seed=seed,
             num_labels=config.get("num_labels"),
             semantic_path=semantic_path("train"),
+            front_special_path=front_special_path("train"),
         ),
         "valid": ChunkFeatureDataset(
             feature_dir / "valid.pt",
@@ -195,11 +269,13 @@ def build_chunk_feature_datasets(config):
             seed=seed,
             num_labels=config.get("num_labels"),
             semantic_path=semantic_path("valid"),
+            front_special_path=front_special_path("valid"),
         ),
         "test": ChunkFeatureDataset(
             feature_dir / "test.pt",
             seed=seed,
             num_labels=config.get("num_labels"),
             semantic_path=semantic_path("test"),
+            front_special_path=front_special_path("test"),
         ),
     }
