@@ -1,0 +1,28 @@
+DIVE side_scale_200 batch-size search summary
+
+baseline_old_batch1024_side_scale_200_macro_f1: 0.739891
+baseline_old_batch1024_side_scale_200_micro_f1: 0.824963
+
+best_batch_by_test_macro_f1: 128
+best_macro_f1: 0.732721
+best_micro_f1: 0.820723
+best_detection_f1: 0.944347
+
+fastest_batch_by_seconds_per_epoch: 128
+fastest_seconds_per_epoch: 12.791666666666666
+
+batch | eff_chunks | epoch | micro_f1 | macro_f1 | detection_f1 | train_minutes | sec_per_epoch | max_alloc_mb | max_reserved_mb | pred_pos
+------------------------------------------------------------------------------------------------------------------------------------------------------
+64 | 4096 | 20 | 0.825535 | 0.726900 | 0.951437 | 5.05 | 15.15 | 548.255859375 | 610.0 | 6013
+128 | 8192 | 24 | 0.820723 | 0.732721 | 0.944347 | 5.116666666666666 | 12.791666666666666 | 985.529296875 | 1008.0 | 6251
+256 | 16384 | 14 | 0.819599 | 0.728095 | 0.948148 | 3.55 | 15.214285714285714 | 1850.95263671875 | 1960.0 | 6128
+512 | 32768 | 16 | 0.819465 | 0.725148 | 0.943556 | 3.7666666666666666 | 14.125 | 3545.67431640625 | 3800.0 | 6208
+1024 | 65536 | 21 | 0.821645 | 0.728580 | 0.940497 | 4.6 | 13.142857142857142 | 6929.61767578125 | 7402.0 | 6250
+
+Focus per-label F1:
+
+batch=64: DoS=0.667529107373868, Bad Randomness=0.5565217391304347, Front Running=0.4468085106382979, Time manipulation=0.7789142407553108
+batch=128: DoS=0.681107099879663, Bad Randomness=0.5942028985507246, Front Running=0.47619047619047616, Time manipulation=0.7801418439716311
+batch=256: DoS=0.6795366795366794, Bad Randomness=0.5390070921985816, Front Running=0.48648648648648646, Time manipulation=0.7974230493915534
+batch=512: DoS=0.6624843161856963, Bad Randomness=0.5365853658536585, Front Running=0.4705882352941177, Time manipulation=0.7975460122699386
+batch=1024: DoS=0.6758793969849246, Bad Randomness=0.5217391304347826, Front Running=0.5045045045045045, Time manipulation=0.7940298507462686

@@ -1,0 +1,49 @@
+EVM chunk MIL evaluation report
+
+split: test
+checkpoint: checkpoints/dive_side_scale_200_batch_search/train_dive_side_scale_200_batch128_ep50/best_macro_f1.pt
+checkpoint_epoch: 24
+model: evef_mvd_v2_strong_backbone_side_evidence_label_gated_MIL
+ablation_dataset: DIVE
+ablation_variant: side_scale_200_batch128_ep50
+side_evidence_enabled: True
+coefficient_scale: 2.0
+use_chunk_context: True
+chunk_context_num_layers: 2
+chunk_context_num_heads: 8
+feature_pooling: masked_mean
+recognition_aggregation: label_gated_attention
+feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256_max64
+semantic_feature_dir: data/features/effect_flow_semantics/dive_random_stride256_max64
+use_effect_flow_semantics: True
+effect_flow_semantic_mode: reliable_side_evidence
+risk_evidence_weight: 2.0
+missing_check_evidence_weight: 2.0
+protective_evidence_weight: 2.0
+effect_type_evidence_weight: 1.0
+relation_evidence_weight: 1.0
+behavior_weight_path: None
+use_weighted_behavior_scoring: False
+beta_reliable_init: 0.15
+gamma_reliable_init: 0.15
+is_transductive_pretraining: True
+threshold_source: validation set
+evaluated_samples: 2233
+single_gpu_evaluation: True
+batch_size: 128
+max_chunks: 64
+effective_chunks_per_batch: 8192
+num_workers: 4
+loss: 0.4015692389673657
+threshold_0_5_baseline: {'threshold_mode': 'global', 'threshold_source': 'fixed_0.5_baseline', 'thresholds': 0.5, 'detection_accuracy': 0.9010300044782803, 'detection_precision': 0.9389083625438157, 'detection_recall': 0.9498480243161094, 'detection_f1': 0.9443465122135482, 'recognition_micro_precision': 0.7873895309313392, 'recognition_micro_recall': 0.8446672743846855, 'recognition_micro_f1': 0.8150233089981529, 'recognition_macro_precision': 0.7032612132032263, 'recognition_macro_recall': 0.7634612827816392, 'recognition_macro_f1': 0.730611247772553, 'predicted_positive_total': 5884, 'per_label_predicted_positive_count': [1191, 1814, 911, 643, 484, 69, 60, 712], 'per_label_true_positive_count': [1139, 1681, 949, 581, 374, 72, 50, 639], 'per_label_mean_pred_prob': [0.5080272555351257, 0.7628456950187683, 0.38849595189094543, 0.28004366159439087, 0.22795778512954712, 0.03340639919042587, 0.029191939160227776, 0.3219490349292755], 'macro_f1_change_over_threshold_0_5': 0.0, 'micro_f1_change_over_threshold_0_5': 0.0, 'macro_f1_change_over_evm_bert_first512': 0.730611247772553, 'macro_f1_change_over_legacy_weighted_baseline': 0.730611247772553}
+best_global_threshold_result: {'threshold_mode': 'global', 'threshold_source': 'validation_best_macro_f1', 'thresholds': 0.55, 'detection_accuracy': 0.9010300044782803, 'detection_precision': 0.9389083625438157, 'detection_recall': 0.9498480243161094, 'detection_f1': 0.9443465122135482, 'recognition_micro_precision': 0.7940094587493431, 'recognition_micro_recall': 0.8264357338195077, 'recognition_micro_f1': 0.809898159728426, 'recognition_macro_precision': 0.7106781690296209, 'recognition_macro_recall': 0.7495255214745636, 'recognition_macro_f1': 0.7278693923134005, 'predicted_positive_total': 5709, 'per_label_predicted_positive_count': [1156, 1777, 863, 627, 466, 67, 60, 693], 'per_label_true_positive_count': [1139, 1681, 949, 581, 374, 72, 50, 639], 'per_label_mean_pred_prob': [0.5080272555351257, 0.7628456950187683, 0.38849595189094543, 0.28004366159439087, 0.22795778512954712, 0.03340639919042587, 0.029191939160227776, 0.3219490349292755], 'macro_f1_change_over_threshold_0_5': -0.002741855459152509, 'micro_f1_change_over_threshold_0_5': -0.0051251492697268475, 'macro_f1_change_over_evm_bert_first512': 0.7278693923134005, 'macro_f1_change_over_legacy_weighted_baseline': 0.7278693923134005}
+per_label_threshold_result: {'threshold_mode': 'per_label', 'threshold_source': 'validation_selected_per_label', 'thresholds': [0.25, 0.35, 0.1, 0.7, 0.6, 0.6, 0.7, 0.7], 'detection_accuracy': 0.9010300044782803, 'detection_precision': 0.9389083625438157, 'detection_recall': 0.9498480243161094, 'detection_f1': 0.9443465122135482, 'recognition_micro_precision': 0.7704367301231803, 'recognition_micro_recall': 0.8780309936189608, 'recognition_micro_f1': 0.8207225630538513, 'recognition_macro_precision': 0.7012469701930678, 'recognition_macro_recall': 0.7719745977985388, 'recognition_macro_f1': 0.7327211990663487, 'predicted_positive_total': 6251, 'per_label_predicted_positive_count': [1363, 1883, 1220, 577, 457, 66, 55, 630], 'per_label_true_positive_count': [1139, 1681, 949, 581, 374, 72, 50, 639], 'per_label_mean_pred_prob': [0.5080272555351257, 0.7628456950187683, 0.38849595189094543, 0.28004366159439087, 0.22795778512954712, 0.03340639919042587, 0.029191939160227776, 0.3219490349292755], 'macro_f1_change_over_threshold_0_5': 0.0021099512937956533, 'micro_f1_change_over_threshold_0_5': 0.005699254055698377, 'macro_f1_change_over_evm_bert_first512': 0.7327211990663487, 'macro_f1_change_over_legacy_weighted_baseline': 0.7327211990663487}
+per_label_metrics: [{'label_id': 0, 'label_name': 'Reentrancy', 'precision': 0.7747615553925165, 'recall': 0.9271290605794557, 'accuracy': 0.825347066726377, 'f1': 0.844124700239808, 'support': 1139, 'predicted_positive_count': 1363, 'true_positive_count': 1139}, {'label_id': 1, 'label_name': 'Access Control', 'precision': 0.8539564524694636, 'recall': 0.9565734681737061, 'accuracy': 0.8441558441558441, 'f1': 0.9023569023569024, 'support': 1681, 'predicted_positive_count': 1883, 'true_positive_count': 1681}, {'label_id': 2, 'label_name': 'Arithmetic', 'precision': 0.6877049180327869, 'recall': 0.8840885142255005, 'accuracy': 0.7801164352888491, 'f1': 0.7736284001844167, 'support': 949, 'predicted_positive_count': 1220, 'true_positive_count': 949}, {'label_id': 3, 'label_name': 'Unchecked Return Values', 'precision': 0.8128249566724437, 'recall': 0.8072289156626506, 'accuracy': 0.9014778325123153, 'f1': 0.8100172711571676, 'support': 581, 'predicted_positive_count': 577, 'true_positive_count': 581}, {'label_id': 4, 'label_name': 'DoS', 'precision': 0.6192560175054704, 'recall': 0.7566844919786097, 'accuracy': 0.8813255709807434, 'f1': 0.681107099879663, 'support': 374, 'predicted_positive_count': 457, 'true_positive_count': 374}, {'label_id': 5, 'label_name': 'Bad Randomness', 'precision': 0.6212121212121212, 'recall': 0.5694444444444444, 'accuracy': 0.9749216300940439, 'f1': 0.5942028985507246, 'support': 72, 'predicted_positive_count': 66, 'true_positive_count': 72}, {'label_id': 6, 'label_name': 'Front Running', 'precision': 0.45454545454545453, 'recall': 0.5, 'accuracy': 0.9753694581280788, 'f1': 0.47619047619047616, 'support': 50, 'predicted_positive_count': 55, 'true_positive_count': 50}, {'label_id': 7, 'label_name': 'Time manipulation', 'precision': 0.7857142857142857, 'recall': 0.7746478873239436, 'accuracy': 0.8750559785042543, 'f1': 0.7801418439716311, 'support': 639, 'predicted_positive_count': 630, 'true_positive_count': 639}]
+per_label_thresholds: [{'label_id': 0, 'label_name': 'Reentrancy', 'threshold': 0.25}, {'label_id': 1, 'label_name': 'Access Control', 'threshold': 0.35}, {'label_id': 2, 'label_name': 'Arithmetic', 'threshold': 0.1}, {'label_id': 3, 'label_name': 'Unchecked Return Values', 'threshold': 0.7}, {'label_id': 4, 'label_name': 'DoS', 'threshold': 0.6}, {'label_id': 5, 'label_name': 'Bad Randomness', 'threshold': 0.6}, {'label_id': 6, 'label_name': 'Front Running', 'threshold': 0.7}, {'label_id': 7, 'label_name': 'Time manipulation', 'threshold': 0.7}]
+comparison_baselines: {'nonoverlap_labelattn_calibrated': {'micro_f1': 0.5918, 'macro_f1': 0.4421}, 'nonoverlap_labelattn_threshold_0_5': {'micro_f1': 0.5823, 'macro_f1': 0.4375, 'detection_f1': 0.6752}, 'weighted_global_threshold_0_5': {'micro_f1': 0.5823, 'macro_f1': 0.4375, 'detection_f1': 0.6752, 'predicted_positive_total': 7106}, 'evm_bert_first512_weighted': {'micro_f1': 0.5659, 'macro_f1': 0.4326, 'detection_f1': 0.6895, 'predicted_positive_total': 5806}, 'legacy_weighted_baseline': {'micro_f1': 0.5604, 'macro_f1': 0.4215, 'detection_f1': 0.643}}
+warnings: ['Reentrancy predicts too many positives: 1363/2233', 'Access Control predicts too many positives: 1883/2233', 'Arithmetic predicts too many positives: 1220/2233']
+top_chunks_test_calibrated: results/dive_side_scale_200_batch_search/train_dive_side_scale_200_batch128_ep50/top_chunks_test_calibrated.jsonl
+fixed_threshold_prediction_path: results/dive_side_scale_200_batch_search/train_dive_side_scale_200_batch128_ep50/test_predictions_threshold_0_5.jsonl
+best_global_prediction_path: results/dive_side_scale_200_batch_search/train_dive_side_scale_200_batch128_ep50/test_predictions_best_global.jsonl
+prediction_path: results/dive_side_scale_200_batch_search/train_dive_side_scale_200_batch128_ep50/test_predictions.jsonl
+per_label_prediction_path: results/dive_side_scale_200_batch_search/train_dive_side_scale_200_batch128_ep50/test_predictions_per_label.jsonl
