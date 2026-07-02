@@ -1,0 +1,12 @@
+DIVE seed ensemble validation-selected per-label thresholds
+
+label_name | support | best_threshold | valid_precision | valid_recall | valid_f1 | predicted_positive_count | selection_reason
+------------------------------------------------------------------------------------------------------------------------------------------------------
+Reentrancy | 1121 | 0.45 | 0.800157 | 0.907226 | 0.850334 | 1271 | max_valid_f1_then_nearest_0_5
+Access Control | 1665 | 0.45 | 0.850000 | 0.949550 | 0.897021 | 1860 | max_valid_f1_then_nearest_0_5
+Arithmetic | 968 | 0.40 | 0.754978 | 0.900826 | 0.821479 | 1155 | max_valid_f1_then_nearest_0_5
+Unchecked Return Values | 582 | 0.65 | 0.821963 | 0.848797 | 0.835165 | 601 | max_valid_f1_then_nearest_0_5
+DoS | 369 | 0.45 | 0.665158 | 0.796748 | 0.725031 | 442 | max_valid_f1_then_nearest_0_5
+Bad Randomness | 53 | 0.65 | 0.791667 | 0.716981 | 0.752475 | 48 | rare_bootstrap_mean_f1_minus_0_5_std_then_precision
+Front Running | 66 | 0.40 | 0.666667 | 0.696970 | 0.681481 | 69 | rare_bootstrap_mean_f1_minus_0_5_std_then_precision
+Time manipulation | 631 | 0.60 | 0.828299 | 0.825674 | 0.826984 | 629 | max_valid_f1_then_nearest_0_5

@@ -1,0 +1,36 @@
+DIVE seed ensemble validation metrics
+
+split: valid
+checkpoint_name: best_macro_f1.pt
+threshold_mode: per_label
+threshold_source: validation_ensemble_stable
+thresholds: [0.45, 0.45, 0.4, 0.65, 0.45, 0.65, 0.4, 0.6]
+member_count: 5
+evaluated_samples: 2233
+detection_accuracy: 0.903269144648455
+detection_precision: 0.921760391198044
+detection_recall: 0.9711488923235445
+detection_f1: 0.9458103361766182
+recognition_micro_precision: 0.8004938271604938
+recognition_micro_recall: 0.8914757103574702
+recognition_micro_f1: 0.8435385949696443
+recognition_macro_precision: 0.7723612121537331
+recognition_macro_recall: 0.8303464085793004
+recognition_macro_f1: 0.7987464101434578
+predicted_positive_total: 6075
+per_label_predicted_positive_count: [1271, 1860, 1155, 601, 442, 48, 69, 629]
+per_label_support: [1121, 1665, 968, 582, 369, 53, 66, 631]
+per_label_true_positive_count: [1017, 1581, 872, 494, 294, 38, 46, 521]
+per_label_false_positive_count: [254, 279, 283, 107, 148, 10, 23, 108]
+per_label_false_negative_count: [104, 84, 96, 88, 75, 15, 20, 110]
+per_label_true_negative_count: [858, 289, 982, 1544, 1716, 2170, 2144, 1494]
+per_label_mean_pred_prob: [0.5237758755683899, 0.7610651254653931, 0.4651481807231903, 0.2903066575527191, 0.2044154703617096, 0.03332715108990669, 0.033675868064165115, 0.3138081729412079]
+Per-label metrics:
+0 | Reentrancy | precision=0.800157 recall=0.907226 f1=0.850334 support=1121 predicted=1271 tp=1017 fp=254 fn=104
+1 | Access Control | precision=0.850000 recall=0.949550 f1=0.897021 support=1665 predicted=1860 tp=1581 fp=279 fn=84
+2 | Arithmetic | precision=0.754978 recall=0.900826 f1=0.821479 support=968 predicted=1155 tp=872 fp=283 fn=96
+3 | Unchecked Return Values | precision=0.821963 recall=0.848797 f1=0.835165 support=582 predicted=601 tp=494 fp=107 fn=88
+4 | DoS | precision=0.665158 recall=0.796748 f1=0.725031 support=369 predicted=442 tp=294 fp=148 fn=75
+5 | Bad Randomness | precision=0.791667 recall=0.716981 f1=0.752475 support=53 predicted=48 tp=38 fp=10 fn=15
+6 | Front Running | precision=0.666667 recall=0.696970 f1=0.681481 support=66 predicted=69 tp=46 fp=23 fn=20
+7 | Time manipulation | precision=0.828299 recall=0.825674 f1=0.826984 support=631 predicted=629 tp=521 fp=108 fn=110

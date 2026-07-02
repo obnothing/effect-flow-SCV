@@ -1,0 +1,24 @@
+DIVE seed ensemble summary
+
+title: DIVE seed ensemble summary
+baseline: {'micro_f1': 0.8240858035638883, 'macro_f1': 0.7452721843450687, 'detection_f1': 0.9465041054988804, 'front_f1': 0.5384615384615384, 'bad_randomness_f1': 0.5882352941176471}
+member_count: 2
+test_micro_f1: 0.6180716679556587
+test_macro_f1: 0.4562911725172375
+test_detection_f1: 0.9384359400998336
+front_running_f1: 0.14035087719298245
+front_running_tp: 12
+front_running_fp: 109
+front_running_fn: 38
+bad_randomness_f1: 0.11450381679389313
+bad_randomness_tp: 15
+bad_randomness_fp: 175
+bad_randomness_fn: 57
+rare_mean_f1: 0.12742734699343777
+baseline_rare_mean_f1: 0.5633484162895928
+macro_delta_vs_baseline: -0.2889810118278312
+micro_delta_vs_baseline: -0.20601413560822956
+acceptance: {'macro_improves': False, 'micro_drop_within_0_002': False, 'rare_mean_not_lower': False, 'main_candidate': False, 'adopt_as_main': False}
+valid_macro_f1: 0.4693897127489416
+valid_micro_f1: 0.6199328685773302
+label_names: ['Reentrancy', 'Access Control', 'Arithmetic', 'Unchecked Return Values', 'DoS', 'Bad Randomness', 'Front Running', 'Time manipulation']

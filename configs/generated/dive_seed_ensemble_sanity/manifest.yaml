@@ -1,0 +1,23 @@
+base_config: configs/generated/dive_side_scale_search/train_dive_side_scale_150_ep50.yaml
+output_config_dir: configs/generated/dive_seed_ensemble_sanity
+checkpoint_root: checkpoints/dive_seed_ensemble_sanity
+result_root: results/dive_seed_ensemble/sanity/members
+ensemble_group: dive_seed_ensemble_sanity
+seeds:
+- 42
+- 123
+configs:
+- dataset: DIVE
+  variant: sanity_side_scale_150_ep50_seed42
+  seed: 42
+  config: configs/generated/dive_seed_ensemble_sanity/sanity_train_dive_side_scale_150_seed42.yaml
+  experiment_name: sanity_train_dive_side_scale_150_seed42
+  checkpoint_dir: checkpoints/dive_seed_ensemble_sanity/sanity_train_dive_side_scale_150_seed42
+  result_dir: results/dive_seed_ensemble/sanity/members/sanity_train_dive_side_scale_150_seed42
+- dataset: DIVE
+  variant: sanity_side_scale_150_ep50_seed123
+  seed: 123
+  config: configs/generated/dive_seed_ensemble_sanity/sanity_train_dive_side_scale_150_seed123.yaml
+  experiment_name: sanity_train_dive_side_scale_150_seed123
+  checkpoint_dir: checkpoints/dive_seed_ensemble_sanity/sanity_train_dive_side_scale_150_seed123
+  result_dir: results/dive_seed_ensemble/sanity/members/sanity_train_dive_side_scale_150_seed123
