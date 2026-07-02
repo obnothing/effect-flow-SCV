@@ -280,6 +280,11 @@ def train_one_epoch(model, loader, optimizer, config, device):
     hard_negative_loss_sum = 0.0
     hard_negative_active_sum = 0.0
     hard_negative_batches = 0
+    contrastive_loss_sum = 0.0
+    contrastive_anchor_sum = 0.0
+    contrastive_positive_sum = 0.0
+    contrastive_hard_negative_sum = 0.0
+    contrastive_active_batches = 0
     grad_accum = int(config.get("gradient_accumulation_steps", 1))
     optimizer.zero_grad(set_to_none=True)
     for step, batch in enumerate(tqdm(loader, desc="train", leave=False), start=1):
@@ -295,6 +300,29 @@ def train_one_epoch(model, loader, optimizer, config, device):
             hard_negative_active_sum += current_count
             if current_count > 0:
                 hard_negative_batches += 1
+        contrastive_loss = outputs.get("front_contrastive_loss")
+        contrastive_anchor_count = outputs.get("front_contrastive_anchor_count")
+        contrastive_positive_count = outputs.get("front_contrastive_positive_count")
+        contrastive_hard_negative_count = outputs.get(
+            "front_contrastive_hard_negative_count"
+        )
+        if contrastive_loss is not None:
+            contrastive_loss_sum += float(contrastive_loss.detach().cpu().item())
+        if contrastive_anchor_count is not None:
+            current_anchor_count = float(
+                contrastive_anchor_count.detach().cpu().item()
+            )
+            contrastive_anchor_sum += current_anchor_count
+            if current_anchor_count > 0:
+                contrastive_active_batches += 1
+        if contrastive_positive_count is not None:
+            contrastive_positive_sum += float(
+                contrastive_positive_count.detach().cpu().item()
+            )
+        if contrastive_hard_negative_count is not None:
+            contrastive_hard_negative_sum += float(
+                contrastive_hard_negative_count.detach().cpu().item()
+            )
         loss = batch_loss / grad_accum
         loss.backward()
         if step % grad_accum == 0:
@@ -320,6 +348,11 @@ def train_one_epoch(model, loader, optimizer, config, device):
         "front_hard_negative_loss": hard_negative_loss_sum / max(steps, 1),
         "front_hard_negative_active_count": hard_negative_active_sum,
         "front_hard_negative_batches": hard_negative_batches,
+        "front_contrastive_loss": contrastive_loss_sum / max(steps, 1),
+        "front_contrastive_anchor_count": contrastive_anchor_sum,
+        "front_contrastive_positive_count": contrastive_positive_sum,
+        "front_contrastive_hard_negative_count": contrastive_hard_negative_sum,
+        "front_contrastive_active_batches": contrastive_active_batches,
     }
 
 
@@ -601,6 +634,26 @@ def main():
                 "front_hard_negative_batches",
                 0,
             ),
+            "front_contrastive_loss": train_stats.get(
+                "front_contrastive_loss",
+                0.0,
+            ),
+            "front_contrastive_anchor_count": train_stats.get(
+                "front_contrastive_anchor_count",
+                0.0,
+            ),
+            "front_contrastive_positive_count": train_stats.get(
+                "front_contrastive_positive_count",
+                0.0,
+            ),
+            "front_contrastive_hard_negative_count": train_stats.get(
+                "front_contrastive_hard_negative_count",
+                0.0,
+            ),
+            "front_contrastive_active_batches": train_stats.get(
+                "front_contrastive_active_batches",
+                0,
+            ),
         }
         history.append(record)
         payload = checkpoint_payload(model, optimizer, epoch, config, valid_loss, metrics)
@@ -630,7 +683,9 @@ def main():
             f"max_memory_allocated_mb={max_memory_allocated_mb:.2f} "
             f"max_memory_reserved_mb={max_memory_reserved_mb:.2f} "
             f"front_hn_active={train_stats.get('front_hard_negative_active_count', 0.0):.0f} "
-            f"front_hn_loss={train_stats.get('front_hard_negative_loss', 0.0):.6f}"
+            f"front_hn_loss={train_stats.get('front_hard_negative_loss', 0.0):.6f} "
+            f"front_ctr_active={train_stats.get('front_contrastive_anchor_count', 0.0):.0f} "
+            f"front_ctr_loss={train_stats.get('front_contrastive_loss', 0.0):.6f}"
         )
         print(
             f"per_label_precision: "
@@ -725,6 +780,18 @@ def main():
         "front_hard_negative_margin_logit": config.get(
             "front_hard_negative_margin_logit"
         ),
+        "front_contrastive_loss_enabled": bool(
+            config.get("front_contrastive_loss_enabled", False)
+        ),
+        "front_contrastive_lambda": config.get("front_contrastive_lambda"),
+        "front_contrastive_temperature": config.get("front_contrastive_temperature"),
+        "front_contrastive_dim": config.get("front_contrastive_dim"),
+        "front_contrastive_enable_epoch": config.get(
+            "front_contrastive_enable_epoch"
+        ),
+        "front_contrastive_confounder_labels": config.get(
+            "front_contrastive_confounder_labels"
+        ),
         "beta_reliable_init": config.get("beta_reliable_init"),
         "gamma_reliable_init": config.get("gamma_reliable_init"),
         "warmup_epochs_neural_only": int(config.get("warmup_epochs_neural_only", 0)),
@@ -804,6 +871,26 @@ def main():
         )
         summary["front_hard_negative_loss_mean"] = sum(
             float(row.get("front_hard_negative_loss", 0.0))
+            for row in history
+        ) / len(history)
+        summary["front_contrastive_anchor_count_total"] = sum(
+            float(row.get("front_contrastive_anchor_count", 0.0))
+            for row in history
+        )
+        summary["front_contrastive_positive_count_total"] = sum(
+            float(row.get("front_contrastive_positive_count", 0.0))
+            for row in history
+        )
+        summary["front_contrastive_hard_negative_count_total"] = sum(
+            float(row.get("front_contrastive_hard_negative_count", 0.0))
+            for row in history
+        )
+        summary["front_contrastive_active_batches_total"] = sum(
+            int(row.get("front_contrastive_active_batches", 0))
+            for row in history
+        )
+        summary["front_contrastive_loss_mean"] = sum(
+            float(row.get("front_contrastive_loss", 0.0))
             for row in history
         ) / len(history)
     final_model = model.module if isinstance(model, nn.DataParallel) else model

@@ -129,6 +129,7 @@ class EVMChunkMILClassifier(nn.Module):
         hidden_dim = int(config.get("hidden_dim", 512))
         attn_dim = int(config.get("attn_dim", 256))
         dropout = float(config.get("dropout", 0.1))
+        self.hidden_dim = hidden_dim
         self.recognition_aggregation = config.get("recognition_aggregation", "topk_mean")
         self.top_k = int(config.get("top_k", 2))
         self.use_chunk_context = bool(config.get("use_chunk_context", False))
@@ -812,6 +813,56 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             for name in hard_negative_confounder_names
             if name in label_names
         ]
+        self.front_contrastive_loss_enabled = bool(
+            config.get("front_contrastive_loss_enabled", False)
+        )
+        self.front_contrastive_lambda = float(
+            config.get("front_contrastive_lambda", 0.0)
+        )
+        self.front_contrastive_temperature = float(
+            config.get("front_contrastive_temperature", 0.1)
+        )
+        if self.front_contrastive_temperature <= 0:
+            raise ValueError("front_contrastive_temperature must be positive")
+        self.front_contrastive_enable_epoch = int(
+            config.get("front_contrastive_enable_epoch", self.enable_reliable_semantic_epoch)
+        )
+        contrastive_confounder_names = list(
+            config.get(
+                "front_contrastive_confounder_labels",
+                ["Access Control", "Reentrancy", "Time manipulation"],
+            )
+        )
+        self.front_contrastive_confounder_label_ids = [
+            label_names.index(name)
+            for name in contrastive_confounder_names
+            if name in label_names
+        ]
+        if self.front_contrastive_loss_enabled and self.front_running_label_id is None:
+            raise ValueError(
+                f"front_running_label_name={self.front_running_label_name} "
+                "is not present in label_names"
+            )
+        if self.front_contrastive_loss_enabled and not self.front_contrastive_confounder_label_ids:
+            raise ValueError(
+                "front_contrastive_loss_enabled=true requires at least one "
+                "front_contrastive_confounder_label present in label_names"
+            )
+        if self.front_contrastive_loss_enabled and self.front_hard_negative_loss_enabled:
+            raise ValueError(
+                "front_contrastive_loss_enabled and front_hard_negative_loss_enabled "
+                "must not be enabled together"
+            )
+        contrastive_dim = int(config.get("front_contrastive_dim", 128))
+        if contrastive_dim <= 0:
+            raise ValueError("front_contrastive_dim must be positive")
+        self.front_contrastive_projector = None
+        if self.front_contrastive_loss_enabled:
+            self.front_contrastive_projector = nn.Sequential(
+                nn.Linear(self.hidden_dim, contrastive_dim),
+                nn.GELU(),
+                nn.Linear(contrastive_dim, contrastive_dim),
+            )
         if self.front_running_special_enabled:
             self._init_front_special_feature_masks()
 
@@ -1225,6 +1276,72 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             "gamma_reliable": F.softplus(self.gamma_reliable_raw).detach(),
         }
 
+    def compute_front_contrastive_loss(self, label_representations, multi_labels):
+        front_z = label_representations[:, int(self.front_running_label_id), :]
+        zero_loss = front_z.sum() * 0.0
+        zero_count = torch.tensor(0.0, device=front_z.device)
+        stats = {
+            "loss": zero_loss,
+            "anchor_count": zero_count,
+            "positive_count": zero_count,
+            "hard_negative_count": zero_count,
+        }
+        if (
+            not self.training
+            or not self.front_contrastive_loss_enabled
+            or self.front_contrastive_lambda <= 0
+            or int(self.current_epoch) < self.front_contrastive_enable_epoch
+        ):
+            return stats
+
+        labels = multi_labels.float()
+        front_positive = labels[:, int(self.front_running_label_id)] > 0.5
+        confounder_positive = (
+            labels[:, self.front_contrastive_confounder_label_ids].max(dim=1).values
+            > 0.5
+        )
+        hard_negative = (~front_positive) & confounder_positive
+        front_positive_count = front_positive.float().sum()
+        hard_negative_count = hard_negative.float().sum()
+        if bool(front_positive_count < 2) or bool(hard_negative_count < 1):
+            stats["hard_negative_count"] = hard_negative_count
+            return stats
+
+        projected = self.front_contrastive_projector(front_z)
+        projected = F.normalize(projected, dim=-1)
+        logits = torch.matmul(projected, projected.transpose(0, 1))
+        logits = logits / self.front_contrastive_temperature
+
+        batch_size = logits.shape[0]
+        eye = torch.eye(batch_size, device=logits.device, dtype=torch.bool)
+        positive_mask = front_positive.unsqueeze(0).expand(batch_size, batch_size) & ~eye
+        hard_negative_mask = hard_negative.unsqueeze(0).expand(batch_size, batch_size)
+        denominator_mask = positive_mask | hard_negative_mask
+
+        row_mask = front_positive
+        row_logits = logits[row_mask]
+        row_positive_mask = positive_mask[row_mask]
+        row_denominator_mask = denominator_mask[row_mask]
+        fill_value = torch.finfo(row_logits.dtype).min
+        log_positive = torch.logsumexp(
+            row_logits.masked_fill(~row_positive_mask, fill_value),
+            dim=1,
+        )
+        log_denominator = torch.logsumexp(
+            row_logits.masked_fill(~row_denominator_mask, fill_value),
+            dim=1,
+        )
+        loss = -(log_positive - log_denominator).mean()
+        stats.update(
+            {
+                "loss": loss,
+                "anchor_count": row_mask.float().sum(),
+                "positive_count": row_positive_mask.float().sum(),
+                "hard_negative_count": hard_negative_count,
+            }
+        )
+        return stats
+
     def forward(
         self,
         chunk_features,
@@ -1306,6 +1423,10 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         gate_regularization_loss = None
         front_hard_negative_loss = None
         front_hard_negative_active_count = torch.tensor(0.0, device=h.device)
+        front_contrastive_loss = None
+        front_contrastive_anchor_count = torch.tensor(0.0, device=h.device)
+        front_contrastive_positive_count = torch.tensor(0.0, device=h.device)
+        front_contrastive_hard_negative_count = torch.tensor(0.0, device=h.device)
         if binary_label is not None and multi_labels is not None:
             detection_loss = self.detection_loss_fn(
                 detection_logits,
@@ -1344,10 +1465,24 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
                     front_hard_negative_loss = F.softplus(
                         front_logits[hard_mask] - self.front_hard_negative_margin_logit
                     ).mean()
+            front_contrastive_loss = recognition_logits.sum() * 0.0
+            if (
+                self.front_contrastive_loss_enabled
+                and self.front_contrastive_lambda > 0
+                and self.front_running_label_id is not None
+            ):
+                contrastive_stats = self.compute_front_contrastive_loss(z, multi_labels)
+                front_contrastive_loss = contrastive_stats["loss"]
+                front_contrastive_anchor_count = contrastive_stats["anchor_count"]
+                front_contrastive_positive_count = contrastive_stats["positive_count"]
+                front_contrastive_hard_negative_count = contrastive_stats[
+                    "hard_negative_count"
+                ]
             loss = (
                 (detection_loss + recognition_loss) / 2
                 + self.lambda_gate * gate_regularization_loss
                 + self.front_hard_negative_lambda * front_hard_negative_loss
+                + self.front_contrastive_lambda * front_contrastive_loss
             ).reshape(1)
 
         outputs = {
@@ -1357,6 +1492,10 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             "gate_regularization_loss": gate_regularization_loss,
             "front_hard_negative_loss": front_hard_negative_loss,
             "front_hard_negative_active_count": front_hard_negative_active_count,
+            "front_contrastive_loss": front_contrastive_loss,
+            "front_contrastive_anchor_count": front_contrastive_anchor_count,
+            "front_contrastive_positive_count": front_contrastive_positive_count,
+            "front_contrastive_hard_negative_count": front_contrastive_hard_negative_count,
             "detection_logits": detection_logits,
             "recognition_logits": recognition_logits,
             "chunk_logits": attn_logits,

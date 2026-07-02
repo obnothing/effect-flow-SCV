@@ -44,6 +44,11 @@ def parse_args():
     )
     parser.add_argument("--threshold_file", default=None)
     parser.add_argument("--global_threshold_file", default=None)
+    parser.add_argument(
+        "--result_dir_override",
+        default=None,
+        help="Write evaluation artifacts to this directory instead of config result_dir.",
+    )
     parser.add_argument("--output_prefix", default=None)
     parser.add_argument(
         "--save_predictions",
@@ -664,6 +669,12 @@ def write_threshold_calibration_report(
             config.get("front_hard_negative_loss_enabled", False)
         ),
         "front_hard_negative_lambda": config.get("front_hard_negative_lambda"),
+        "front_contrastive_loss_enabled": bool(
+            config.get("front_contrastive_loss_enabled", False)
+        ),
+        "front_contrastive_lambda": config.get("front_contrastive_lambda"),
+        "front_contrastive_temperature": config.get("front_contrastive_temperature"),
+        "front_contrastive_enable_epoch": config.get("front_contrastive_enable_epoch"),
         "beta_reliable_init": config.get("beta_reliable_init"),
         "gamma_reliable_init": config.get("gamma_reliable_init"),
         "is_transductive_pretraining": bool(config.get("is_transductive_pretraining", True)),
@@ -758,7 +769,8 @@ def main():
     )
     loader = make_loader(dataset, config)
     model, checkpoint = load_model(config, args.checkpoint, device)
-    result_dir = Path(config["result_dir"])
+    result_dir = Path(args.result_dir_override or config["result_dir"])
+    result_dir.mkdir(parents=True, exist_ok=True)
     if args.threshold == "auto":
         threshold = checkpoint.get("best_threshold_by_macro_f1") or config.get("threshold", 0.5)
         threshold_source = "checkpoint_best_threshold_by_macro_f1"
@@ -903,6 +915,12 @@ def main():
             config.get("front_hard_negative_loss_enabled", False)
         ),
         "front_hard_negative_lambda": config.get("front_hard_negative_lambda"),
+        "front_contrastive_loss_enabled": bool(
+            config.get("front_contrastive_loss_enabled", False)
+        ),
+        "front_contrastive_lambda": config.get("front_contrastive_lambda"),
+        "front_contrastive_temperature": config.get("front_contrastive_temperature"),
+        "front_contrastive_enable_epoch": config.get("front_contrastive_enable_epoch"),
         "beta_reliable_init": config.get("beta_reliable_init"),
         "gamma_reliable_init": config.get("gamma_reliable_init"),
         "evaluated_samples": len(dataset),
