@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=dive_seed_ens
-#SBATCH --partition=gpu-a10
+#SBATCH --partition=gpu-l20
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-task=4
 #SBATCH --time=120:00:00
 #SBATCH --output=logs/slurm_dive_seed_ensemble_%j.out
 #SBATCH --error=logs/slurm_dive_seed_ensemble_%j.err
@@ -23,17 +23,13 @@ export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
 export OMP_NUM_THREADS="${OMP_NUM_THREADS:-4}"
 
 SEEDS="${SEEDS:-42 123 777 2024 3407}"
-SANITY_SEEDS="${SANITY_SEEDS:-42 123}"
-RUN_SANITY="${RUN_SANITY:-1}"
 CHECKPOINT_NAME="${CHECKPOINT_NAME:-best_macro_f1.pt}"
 BOOTSTRAP_ITERATIONS="${BOOTSTRAP_ITERATIONS:-500}"
-SANITY_BOOTSTRAP_ITERATIONS="${SANITY_BOOTSTRAP_ITERATIONS:-50}"
 
 echo "[INFO] current dir: $(pwd)"
 echo "[INFO] python: $(which python)"
 echo "[INFO] CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}"
 echo "[INFO] SEEDS=${SEEDS}"
-echo "[INFO] RUN_SANITY=${RUN_SANITY}"
 echo "[INFO] CHECKPOINT_NAME=${CHECKPOINT_NAME}"
 nvidia-smi || true
 
@@ -100,33 +96,7 @@ run_manifest_training() {
   done
 }
 
-if [[ "${RUN_SANITY}" == "1" ]]; then
-  echo "[DIVE 3/5] generate and run sanity seed ensemble"
-  python scripts/generate_dive_seed_ensemble_configs.py \
-    --output_config_dir configs/generated/dive_seed_ensemble_sanity \
-    --checkpoint_root checkpoints/dive_seed_ensemble_sanity \
-    --result_root results/dive_seed_ensemble/sanity/members \
-    --experiment_prefix sanity_train_dive_side_scale_150 \
-    --variant_prefix sanity_side_scale_150_ep50 \
-    --ensemble_group dive_seed_ensemble_sanity \
-    --seeds ${SANITY_SEEDS} \
-    --debug_num_train_samples 512 \
-    --debug_num_valid_samples 512 \
-    --batch_size 512 \
-    --epochs 1 \
-    --early_stopping_patience 1 \
-    --num_workers 4
-  run_manifest_training configs/generated/dive_seed_ensemble_sanity/manifest.yaml
-  python scripts/evaluate_dive_seed_ensemble.py \
-    --manifest configs/generated/dive_seed_ensemble_sanity/manifest.yaml \
-    --checkpoint_name "${CHECKPOINT_NAME}" \
-    --result_dir results/dive_seed_ensemble/sanity/ensemble_best_macro \
-    --bootstrap_iterations "${SANITY_BOOTSTRAP_ITERATIONS}"
-else
-  echo "[DIVE 3/5] sanity skipped"
-fi
-
-echo "[DIVE 4/5] generate and train full seed ensemble"
+echo "[DIVE 3/4] generate and train full seed ensemble"
 python scripts/generate_dive_seed_ensemble_configs.py \
   --output_config_dir configs/generated/dive_seed_ensemble \
   --checkpoint_root checkpoints/dive_seed_ensemble \
@@ -141,7 +111,7 @@ run_manifest_training configs/generated/dive_seed_ensemble/manifest.yaml
 
 CHECKPOINT_TAG="${CHECKPOINT_NAME%.pt}"
 
-echo "[DIVE 5/5] evaluate full seed ensemble"
+echo "[DIVE 4/4] evaluate full seed ensemble"
 python scripts/evaluate_dive_seed_ensemble.py \
   --manifest configs/generated/dive_seed_ensemble/manifest.yaml \
   --checkpoint_name "${CHECKPOINT_NAME}" \
