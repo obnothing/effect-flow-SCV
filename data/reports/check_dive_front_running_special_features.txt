@@ -1,0 +1,72 @@
+Front Running special feature cache check
+
+status: ok
+
+[train]
+path: data/features/front_running_special/dive_random_stride256_max64/train.pt
+shape: [20134, 64, 15]
+ids_match: True
+chunk_mask_match: True
+labels_match: True
+positive_chunk_counts:
+  approve_selector: 25372 active_rate=0.058307
+  transfer_from_selector: 22491 active_rate=0.051686
+  transfer_selector: 24432 active_rate=0.056147
+  allowance_selector: 15073 active_rate=0.034639
+  balance_of_selector: 28413 active_rate=0.065295
+  swap_selector_family: 194 active_rate=0.000446
+  buy_sell_bid_order_text: 13747 active_rate=0.031592
+  price_amount_balance_text: 56546 active_rate=0.129947
+  calldata_to_state_write: 8060 active_rate=0.018522
+  calldata_to_external_call: 13736 active_rate=0.031566
+  external_call_then_state_write: 28735 active_rate=0.066035
+  state_write_then_external_call: 28747 active_rate=0.066063
+  deadline_or_time_guard_text: 1214 active_rate=0.002790
+  slippage_or_min_amount_text: 7418 active_rate=0.017047
+  commit_reveal_text: 101 active_rate=0.000232
+
+[valid]
+path: data/features/front_running_special/dive_random_stride256_max64/valid.pt
+shape: [2233, 64, 15]
+ids_match: True
+chunk_mask_match: True
+labels_match: True
+positive_chunk_counts:
+  approve_selector: 2918 active_rate=0.059384
+  transfer_from_selector: 2612 active_rate=0.053156
+  transfer_selector: 2720 active_rate=0.055354
+  allowance_selector: 1757 active_rate=0.035756
+  balance_of_selector: 3318 active_rate=0.067524
+  swap_selector_family: 39 active_rate=0.000794
+  buy_sell_bid_order_text: 1730 active_rate=0.035207
+  price_amount_balance_text: 6855 active_rate=0.139505
+  calldata_to_state_write: 821 active_rate=0.016708
+  calldata_to_external_call: 1535 active_rate=0.031239
+  external_call_then_state_write: 2980 active_rate=0.060646
+  state_write_then_external_call: 3047 active_rate=0.062009
+  deadline_or_time_guard_text: 195 active_rate=0.003968
+  slippage_or_min_amount_text: 864 active_rate=0.017583
+  commit_reveal_text: 4 active_rate=0.000081
+
+[test]
+path: data/features/front_running_special/dive_random_stride256_max64/test.pt
+shape: [2233, 64, 15]
+ids_match: True
+chunk_mask_match: True
+labels_match: True
+positive_chunk_counts:
+  approve_selector: 2964 active_rate=0.059222
+  transfer_from_selector: 2705 active_rate=0.054047
+  transfer_selector: 2726 active_rate=0.054467
+  allowance_selector: 1703 active_rate=0.034027
+  balance_of_selector: 3277 active_rate=0.065476
+  swap_selector_family: 22 active_rate=0.000440
+  buy_sell_bid_order_text: 1651 active_rate=0.032988
+  price_amount_balance_text: 6923 active_rate=0.138324
+  calldata_to_state_write: 821 active_rate=0.016404
+  calldata_to_external_call: 1580 active_rate=0.031569
+  external_call_then_state_write: 3142 active_rate=0.062778
+  state_write_then_external_call: 3240 active_rate=0.064737
+  deadline_or_time_guard_text: 157 active_rate=0.003137
+  slippage_or_min_amount_text: 895 active_rate=0.017882
+  commit_reveal_text: 6 active_rate=0.000120

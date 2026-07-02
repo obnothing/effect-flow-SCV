@@ -1,0 +1,40 @@
+DIVE Front Running special evidence search summary
+
+baseline side_scale_150_ep50:
+micro_f1=0.824086
+macro_f1=0.745272
+detection_f1=0.946504
+front_f1=0.538462
+
+best_variant_by_front_f1: front_special_supp025
+best_front_f1: 0.509091
+best_macro_f1: 0.738954
+
+variant | micro_f1 | macro_f1 | detection_f1 | front_p | front_r | front_f1 | front_tp | front_fp | front_fn | front_delta | macro_delta | hn_active
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+front_special_supp025 | 0.825688 | 0.738954 | 0.944333 | 0.466667 | 0.560000 | 0.509091 | 50 | 10 | 0 | -0.029371 | -0.006318 | 0.0
+front_special_only | 0.823964 | 0.736353 | 0.948959 | 0.459016 | 0.560000 | 0.504505 | 50 | 11 | 0 | -0.033957 | -0.008920 | 0.0
+front_special_supp050_hn005 | 0.827374 | 0.722251 | 0.947421 | 0.531250 | 0.340000 | 0.414634 | 50 | -18 | 0 | -0.123827 | -0.023021 | 3445.0
+front_special_supp050_hn010 | 0.813406 | 0.701708 | 0.938197 | 0.326923 | 0.340000 | 0.333333 | 50 | 2 | 0 | -0.205128 | -0.043564 | 2642.0
+
+Front special feature means by TP/FP/FN:
+
+[front_special_supp025]
+tp: count=28 balance_of_selector=0.7857, transfer_selector=0.7500, approve_selector=0.6429, transfer_from_selector=0.6429, allowance_selector=0.6429, state_write_then_external_call=0.5714, external_call_then_state_write=0.4643, calldata_to_state_write=0.3929
+fp: count=32 balance_of_selector=0.6562, transfer_selector=0.5938, state_write_then_external_call=0.5000, transfer_from_selector=0.4688, external_call_then_state_write=0.4688, approve_selector=0.4062, allowance_selector=0.4062, calldata_to_state_write=0.4062
+fn: count=22 transfer_selector=0.7273, balance_of_selector=0.6818, state_write_then_external_call=0.6364, approve_selector=0.5000, transfer_from_selector=0.5000, calldata_to_state_write=0.5000, allowance_selector=0.4545, external_call_then_state_write=0.2273
+
+[front_special_only]
+tp: count=28 transfer_selector=0.7500, balance_of_selector=0.7500, transfer_from_selector=0.6786, approve_selector=0.6429, allowance_selector=0.6429, state_write_then_external_call=0.5714, external_call_then_state_write=0.4643, calldata_to_state_write=0.4286
+fp: count=33 balance_of_selector=0.6364, transfer_selector=0.5758, transfer_from_selector=0.5152, calldata_to_state_write=0.5152, state_write_then_external_call=0.4848, approve_selector=0.4545, allowance_selector=0.4242, external_call_then_state_write=0.3939
+fn: count=22 transfer_selector=0.7273, balance_of_selector=0.7273, state_write_then_external_call=0.6364, approve_selector=0.5000, transfer_from_selector=0.4545, allowance_selector=0.4545, calldata_to_state_write=0.4545, external_call_then_state_write=0.2273
+
+[front_special_supp050_hn005]
+tp: count=17 transfer_selector=0.7647, balance_of_selector=0.7647, approve_selector=0.6471, state_write_then_external_call=0.6471, transfer_from_selector=0.5882, allowance_selector=0.5882, calldata_to_state_write=0.2941, external_call_then_state_write=0.2353
+fp: count=15 transfer_selector=0.6667, balance_of_selector=0.6667, state_write_then_external_call=0.6667, external_call_then_state_write=0.6000, transfer_from_selector=0.5333, calldata_to_state_write=0.5333, allowance_selector=0.4667, approve_selector=0.4000
+fn: count=33 transfer_selector=0.7273, balance_of_selector=0.7273, transfer_from_selector=0.5758, state_write_then_external_call=0.5758, approve_selector=0.5455, allowance_selector=0.5455, calldata_to_state_write=0.5152, external_call_then_state_write=0.4242
+
+[front_special_supp050_hn010]
+tp: count=17 approve_selector=0.8824, transfer_selector=0.8824, allowance_selector=0.8824, balance_of_selector=0.8824, transfer_from_selector=0.8235, state_write_then_external_call=0.6471, calldata_to_state_write=0.4118, external_call_then_state_write=0.2941
+fp: count=35 state_write_then_external_call=0.5429, external_call_then_state_write=0.4857, balance_of_selector=0.4571, calldata_to_state_write=0.4571, transfer_selector=0.4286, transfer_from_selector=0.3429, approve_selector=0.2857, allowance_selector=0.2857
+fn: count=33 transfer_selector=0.6667, balance_of_selector=0.6667, state_write_then_external_call=0.5758, transfer_from_selector=0.4545, calldata_to_state_write=0.4545, approve_selector=0.4242, allowance_selector=0.3939, external_call_then_state_write=0.3939
