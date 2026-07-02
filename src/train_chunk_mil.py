@@ -465,6 +465,9 @@ def label_table(config, metrics):
             "support": metrics["per_label_support"][idx],
             "predicted_positive_count": metrics["per_label_predicted_positive_count"][idx],
             "true_positive_count": metrics["per_label_true_positive_count"][idx],
+            "false_positive_count": metrics.get("per_label_false_positive_count", [None] * len(names))[idx],
+            "false_negative_count": metrics.get("per_label_false_negative_count", [None] * len(names))[idx],
+            "true_negative_count": metrics.get("per_label_true_negative_count", [None] * len(names))[idx],
         }
         for idx in range(len(names))
     ]

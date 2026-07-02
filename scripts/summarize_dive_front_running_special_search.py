@@ -48,7 +48,39 @@ def read_jsonl(path):
     return rows
 
 
-def front_metric_row(test_report):
+def front_metric_row(test_report, predictions=None, label_names=None):
+    if predictions and label_names and FRONT_LABEL in label_names:
+        front_id = label_names.index(FRONT_LABEL)
+        tp = fp = fn = 0
+        support = predicted = 0
+        for row in predictions:
+            true = int(row["multi_true"][front_id])
+            pred = int(row["multi_pred"][front_id])
+            support += true
+            predicted += pred
+            if true == 1 and pred == 1:
+                tp += 1
+            elif true == 0 and pred == 1:
+                fp += 1
+            elif true == 1 and pred == 0:
+                fn += 1
+        precision = tp / (tp + fp) if tp + fp else 0.0
+        recall = tp / (tp + fn) if tp + fn else 0.0
+        f1 = (
+            2 * precision * recall / (precision + recall)
+            if precision + recall
+            else 0.0
+        )
+        return {
+            "front_precision": precision,
+            "front_recall": recall,
+            "front_f1": f1,
+            "front_support": support,
+            "front_predicted_positive_count": predicted,
+            "front_tp": tp,
+            "front_fp": fp,
+            "front_fn": fn,
+        }
     for row in test_report.get("per_label_metrics", []):
         if row["label_name"] == FRONT_LABEL:
             tp = int(row.get("true_positive_count", round(row["recall"] * row["support"])))
@@ -170,9 +202,16 @@ def collect_row(item):
             ),
         }
     )
-    row.update(front_metric_row(test_report))
-    row["front_f1_delta_vs_baseline"] = row["front_f1"] - BASELINE["front_f1"]
     prediction_path = result_dir / "test_predictions_per_label.jsonl"
+    prediction_rows = read_jsonl(prediction_path)
+    row.update(
+        front_metric_row(
+            test_report,
+            predictions=prediction_rows,
+            label_names=config.get("label_names", []),
+        )
+    )
+    row["front_f1_delta_vs_baseline"] = row["front_f1"] - BASELINE["front_f1"]
     row["front_special_feature_mean_by_tp_fp_fn"] = feature_means_by_front_group(
         config,
         prediction_path,

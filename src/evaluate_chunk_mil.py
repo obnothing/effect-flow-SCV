@@ -221,7 +221,17 @@ def metric_summary(metrics, threshold_mode, threshold_source, thresholds):
         "per_label_predicted_positive_count": metrics[
             "per_label_predicted_positive_count"
         ],
+        "per_label_support": metrics["per_label_support"],
         "per_label_true_positive_count": metrics["per_label_true_positive_count"],
+        "per_label_false_positive_count": metrics.get(
+            "per_label_false_positive_count", []
+        ),
+        "per_label_false_negative_count": metrics.get(
+            "per_label_false_negative_count", []
+        ),
+        "per_label_true_negative_count": metrics.get(
+            "per_label_true_negative_count", []
+        ),
         "per_label_mean_pred_prob": metrics["per_label_mean_pred_prob"],
     }
 

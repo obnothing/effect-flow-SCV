@@ -62,6 +62,10 @@ def multilabel_metrics(logits, labels, threshold=0.5):
     per_label_precision = []
     per_label_recall = []
     per_label_f1 = []
+    per_label_tp = []
+    per_label_fp = []
+    per_label_fn = []
+    per_label_tn = []
     for label_idx in range(labels.shape[1]):
         label_preds = preds[:, label_idx]
         label_targets = labels[:, label_idx]
@@ -75,6 +79,10 @@ def multilabel_metrics(logits, labels, threshold=0.5):
         per_label_precision.append(precision)
         per_label_recall.append(recall)
         per_label_f1.append(f1)
+        per_label_tp.append(label_tp)
+        per_label_fp.append(label_fp)
+        per_label_fn.append(label_fn)
+        per_label_tn.append(label_tn)
 
     return {
         "micro_precision": micro_precision,
@@ -92,6 +100,10 @@ def multilabel_metrics(logits, labels, threshold=0.5):
         "per_label_recall": [float(value) for value in per_label_recall],
         "per_label_f1": [float(value) for value in per_label_f1],
         "per_label_support": [int(value) for value in labels.sum(axis=0)],
+        "per_label_true_positive_count": per_label_tp,
+        "per_label_false_positive_count": per_label_fp,
+        "per_label_false_negative_count": per_label_fn,
+        "per_label_true_negative_count": per_label_tn,
     }
 
 
@@ -108,6 +120,10 @@ def multilabel_metrics_from_predictions(preds, labels):
     per_label_precision = []
     per_label_recall = []
     per_label_f1 = []
+    per_label_tp = []
+    per_label_fp = []
+    per_label_fn = []
+    per_label_tn = []
     for label_idx in range(labels.shape[1]):
         label_preds = preds[:, label_idx]
         label_targets = labels[:, label_idx]
@@ -121,6 +137,10 @@ def multilabel_metrics_from_predictions(preds, labels):
         per_label_precision.append(precision)
         per_label_recall.append(recall)
         per_label_f1.append(f1)
+        per_label_tp.append(label_tp)
+        per_label_fp.append(label_fp)
+        per_label_fn.append(label_fn)
+        per_label_tn.append(label_tn)
 
     return {
         "recognition_micro_precision": micro_precision,
@@ -140,6 +160,10 @@ def multilabel_metrics_from_predictions(preds, labels):
         "per_label_recall": [float(value) for value in per_label_recall],
         "per_label_f1": [float(value) for value in per_label_f1],
         "per_label_support": [int(value) for value in labels.sum(axis=0)],
+        "per_label_true_positive_count": per_label_tp,
+        "per_label_false_positive_count": per_label_fp,
+        "per_label_false_negative_count": per_label_fn,
+        "per_label_true_negative_count": per_label_tn,
     }
 
 
@@ -147,13 +171,26 @@ def prediction_distribution_from_predictions(preds, labels, probs):
     preds = np.asarray(preds).astype(int)
     labels = np.asarray(labels).astype(int)
     probs = np.asarray(probs)
+    true_positive = ((preds == 1) & (labels == 1)).sum(axis=0)
+    false_positive = ((preds == 1) & (labels == 0)).sum(axis=0)
+    false_negative = ((preds == 0) & (labels == 1)).sum(axis=0)
+    true_negative = ((preds == 0) & (labels == 0)).sum(axis=0)
     return {
         "predicted_positive_total": int(preds.sum()),
         "per_label_predicted_positive_count": [
             int(value) for value in preds.sum(axis=0)
         ],
         "per_label_true_positive_count": [
-            int(value) for value in labels.sum(axis=0)
+            int(value) for value in true_positive
+        ],
+        "per_label_false_positive_count": [
+            int(value) for value in false_positive
+        ],
+        "per_label_false_negative_count": [
+            int(value) for value in false_negative
+        ],
+        "per_label_true_negative_count": [
+            int(value) for value in true_negative
         ],
         "per_label_mean_pred_prob": [
             float(value) for value in probs.mean(axis=0)
@@ -267,13 +304,26 @@ def prediction_distribution(logits, labels, threshold=0.5):
     probs = sigmoid(logits)
     preds = (probs >= threshold).astype(int)
     labels = np.asarray(labels).astype(int)
+    true_positive = ((preds == 1) & (labels == 1)).sum(axis=0)
+    false_positive = ((preds == 1) & (labels == 0)).sum(axis=0)
+    false_negative = ((preds == 0) & (labels == 1)).sum(axis=0)
+    true_negative = ((preds == 0) & (labels == 0)).sum(axis=0)
     return {
         "predicted_positive_total": int(preds.sum()),
         "per_label_predicted_positive_count": [
             int(value) for value in preds.sum(axis=0)
         ],
         "per_label_true_positive_count": [
-            int(value) for value in labels.sum(axis=0)
+            int(value) for value in true_positive
+        ],
+        "per_label_false_positive_count": [
+            int(value) for value in false_positive
+        ],
+        "per_label_false_negative_count": [
+            int(value) for value in false_negative
+        ],
+        "per_label_true_negative_count": [
+            int(value) for value in true_negative
         ],
         "per_label_mean_pred_prob": [
             float(value) for value in probs.mean(axis=0)
