@@ -150,6 +150,9 @@ def collect_predictions(model, loader, device):
             inputs["active_vulnerability_label_mask"] = batch["active_vulnerability_label_mask"].to(device)
         if "front_special_features" in batch:
             inputs["front_special_features"] = batch["front_special_features"].to(device)
+        if "graph_contract_evidence" in batch:
+            inputs["graph_contract_evidence"] = batch["graph_contract_evidence"].to(device)
+            inputs["graph_chunk_evidence"] = batch["graph_chunk_evidence"].to(device)
         outputs = model(**inputs)
         losses.append(float(outputs["loss"].mean().detach().cpu().item()))
         ids.extend(batch["id"])
@@ -687,6 +690,15 @@ def write_threshold_calibration_report(
         "front_contrastive_hard_negative_max_k": config.get(
             "front_contrastive_hard_negative_max_k"
         ),
+        "graph_evidence_enabled": bool(config.get("graph_evidence_enabled", False)),
+        "graph_evidence_dir": config.get("graph_evidence_dir"),
+        "graph_evidence_dim": config.get("graph_evidence_dim"),
+        "graph_evidence_scale": config.get("graph_evidence_scale"),
+        "graph_evidence_attention_scale": config.get(
+            "graph_evidence_attention_scale"
+        ),
+        "graph_evidence_logit_scale": config.get("graph_evidence_logit_scale"),
+        "graph_evidence_enable_epoch": config.get("graph_evidence_enable_epoch"),
         "beta_reliable_init": config.get("beta_reliable_init"),
         "gamma_reliable_init": config.get("gamma_reliable_init"),
         "is_transductive_pretraining": bool(config.get("is_transductive_pretraining", True)),
@@ -772,12 +784,16 @@ def main():
     front_special_path = None
     if config.get("front_special_feature_dir"):
         front_special_path = Path(config["front_special_feature_dir"]) / f"{args.split}.pt"
+    graph_evidence_path = None
+    if config.get("graph_evidence_dir"):
+        graph_evidence_path = Path(config["graph_evidence_dir"]) / f"{args.split}.pt"
     dataset = ChunkFeatureDataset(
         feature_path(config, args.split),
         seed=config.get("seed", 42),
         num_labels=config.get("num_labels"),
         semantic_path=semantic_path,
         front_special_path=front_special_path,
+        graph_evidence_path=graph_evidence_path,
     )
     loader = make_loader(dataset, config)
     model, checkpoint = load_model(config, args.checkpoint, device)
@@ -945,6 +961,15 @@ def main():
         "front_contrastive_hard_negative_max_k": config.get(
             "front_contrastive_hard_negative_max_k"
         ),
+        "graph_evidence_enabled": bool(config.get("graph_evidence_enabled", False)),
+        "graph_evidence_dir": config.get("graph_evidence_dir"),
+        "graph_evidence_dim": config.get("graph_evidence_dim"),
+        "graph_evidence_scale": config.get("graph_evidence_scale"),
+        "graph_evidence_attention_scale": config.get(
+            "graph_evidence_attention_scale"
+        ),
+        "graph_evidence_logit_scale": config.get("graph_evidence_logit_scale"),
+        "graph_evidence_enable_epoch": config.get("graph_evidence_enable_epoch"),
         "beta_reliable_init": config.get("beta_reliable_init"),
         "gamma_reliable_init": config.get("gamma_reliable_init"),
         "evaluated_samples": len(dataset),

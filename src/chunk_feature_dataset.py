@@ -14,6 +14,7 @@ class ChunkFeatureDataset(Dataset):
         num_labels=None,
         semantic_path=None,
         front_special_path=None,
+        graph_evidence_path=None,
     ):
         self.path = Path(path)
         if not self.path.exists():
@@ -29,6 +30,7 @@ class ChunkFeatureDataset(Dataset):
         self.report = payload.get("report", {})
         self.semantic_path = Path(semantic_path) if semantic_path else None
         self.front_special_path = Path(front_special_path) if front_special_path else None
+        self.graph_evidence_path = Path(graph_evidence_path) if graph_evidence_path else None
         self.efpp_probs = None
         self.etp_distribution = None
         self.relation_distribution = None
@@ -45,6 +47,12 @@ class ChunkFeatureDataset(Dataset):
         self.front_special_report = {}
         if self.front_special_path is not None:
             self._load_front_special_cache()
+        self.graph_contract_evidence = None
+        self.graph_chunk_evidence = None
+        self.graph_feature_names = []
+        self.graph_evidence_report = {}
+        if self.graph_evidence_path is not None:
+            self._load_graph_evidence_cache()
         self.indices = list(range(len(self.ids)))
         if debug_num_samples is not None:
             rng = random.Random(int(seed))
@@ -147,6 +155,57 @@ class ChunkFeatureDataset(Dataset):
         self.front_special_feature_names = list(payload.get("feature_names", []))
         self.front_special_report = payload.get("report", {})
 
+    def _load_graph_evidence_cache(self):
+        if not self.graph_evidence_path.exists():
+            raise FileNotFoundError(
+                f"Graph evidence cache not found: {self.graph_evidence_path}"
+            )
+        payload = torch.load(self.graph_evidence_path, map_location="cpu")
+        graph_ids = payload["ids"]
+        if len(graph_ids) != len(self.ids):
+            raise ValueError(
+                f"Graph evidence cache/id count mismatch: {self.graph_evidence_path} has "
+                f"{len(graph_ids)}, feature cache has {len(self.ids)}"
+            )
+        mismatch = [
+            idx for idx, (left, right) in enumerate(zip(self.ids, graph_ids))
+            if str(left) != str(right)
+        ]
+        if mismatch:
+            first = mismatch[0]
+            raise ValueError(
+                f"Graph evidence ids are not aligned at index {first}: "
+                f"{self.ids[first]} != {graph_ids[first]}"
+            )
+        graph_mask = payload["chunk_mask"].bool()
+        if graph_mask.shape != self.chunk_mask.shape:
+            raise ValueError(
+                f"Graph chunk_mask shape {tuple(graph_mask.shape)} does not "
+                f"match feature chunk_mask {tuple(self.chunk_mask.shape)}"
+            )
+        if not torch.equal(graph_mask, self.chunk_mask):
+            raise ValueError(
+                f"Graph chunk_mask does not match feature cache: {self.graph_evidence_path}"
+            )
+        if not torch.equal(payload["binary_labels"].float(), self.binary_labels):
+            raise ValueError(
+                f"Graph binary labels do not match feature cache: {self.graph_evidence_path}"
+            )
+        if not torch.equal(payload["multi_labels"].float(), self.multi_labels):
+            raise ValueError(
+                f"Graph multi-labels do not match feature cache: {self.graph_evidence_path}"
+            )
+        required = ["graph_contract_evidence", "graph_chunk_evidence"]
+        missing = [key for key in required if key not in payload]
+        if missing:
+            raise ValueError(
+                f"{self.graph_evidence_path} missing graph evidence fields: {missing}"
+            )
+        self.graph_contract_evidence = payload["graph_contract_evidence"].float()
+        self.graph_chunk_evidence = payload["graph_chunk_evidence"].float()
+        self.graph_feature_names = list(payload.get("graph_feature_names", []))
+        self.graph_evidence_report = payload.get("report", {})
+
     def _validate(self):
         n = len(self.ids)
         if self.features.ndim != 3:
@@ -211,6 +270,39 @@ class ChunkFeatureDataset(Dataset):
                 raise ValueError(
                     "front_special feature_names length does not match feature width"
                 )
+        if self.graph_contract_evidence is not None:
+            if self.graph_contract_evidence.ndim != 3:
+                raise ValueError("graph_contract_evidence must be [N, L, D]")
+            if self.graph_contract_evidence.shape[:2] != (
+                self.features.shape[0],
+                self.num_labels,
+            ):
+                raise ValueError(
+                    "graph_contract_evidence must have shape [N, num_labels, D]"
+                )
+            if self.graph_chunk_evidence.shape != (
+                self.features.shape[0],
+                self.features.shape[1],
+                self.num_labels,
+            ):
+                raise ValueError(
+                    "graph_chunk_evidence must have shape [N, max_chunks, num_labels]"
+                )
+            if torch.isnan(self.graph_contract_evidence).any() or torch.isinf(self.graph_contract_evidence).any():
+                raise ValueError(
+                    f"{self.graph_evidence_path} contains NaN/Inf graph_contract_evidence"
+                )
+            if torch.isnan(self.graph_chunk_evidence).any() or torch.isinf(self.graph_chunk_evidence).any():
+                raise ValueError(
+                    f"{self.graph_evidence_path} contains NaN/Inf graph_chunk_evidence"
+                )
+            if (
+                self.graph_feature_names
+                and len(self.graph_feature_names) != self.graph_contract_evidence.shape[-1]
+            ):
+                raise ValueError(
+                    "graph feature_names length does not match graph evidence width"
+                )
 
     def __len__(self):
         return len(self.indices)
@@ -236,6 +328,9 @@ class ChunkFeatureDataset(Dataset):
             item["active_vulnerability_label_mask"] = self.active_vulnerability_label_mask[real_idx]
         if self.front_special_features is not None:
             item["front_special_features"] = self.front_special_features[real_idx]
+        if self.graph_contract_evidence is not None:
+            item["graph_contract_evidence"] = self.graph_contract_evidence[real_idx]
+            item["graph_chunk_evidence"] = self.graph_chunk_evidence[real_idx]
         return item
 
 
@@ -247,12 +342,20 @@ def build_chunk_feature_datasets(config):
         if config.get("front_special_feature_dir")
         else None
     )
+    graph_evidence_dir = (
+        Path(config["graph_evidence_dir"])
+        if config.get("graph_evidence_dir")
+        else None
+    )
     seed = config.get("seed", 42)
     def semantic_path(split):
         return semantic_dir / f"{split}.pt" if semantic_dir is not None else None
 
     def front_special_path(split):
         return front_special_dir / f"{split}.pt" if front_special_dir is not None else None
+
+    def graph_evidence_path(split):
+        return graph_evidence_dir / f"{split}.pt" if graph_evidence_dir is not None else None
 
     return {
         "train": ChunkFeatureDataset(
@@ -262,6 +365,7 @@ def build_chunk_feature_datasets(config):
             num_labels=config.get("num_labels"),
             semantic_path=semantic_path("train"),
             front_special_path=front_special_path("train"),
+            graph_evidence_path=graph_evidence_path("train"),
         ),
         "valid": ChunkFeatureDataset(
             feature_dir / "valid.pt",
@@ -270,6 +374,7 @@ def build_chunk_feature_datasets(config):
             num_labels=config.get("num_labels"),
             semantic_path=semantic_path("valid"),
             front_special_path=front_special_path("valid"),
+            graph_evidence_path=graph_evidence_path("valid"),
         ),
         "test": ChunkFeatureDataset(
             feature_dir / "test.pt",
@@ -277,5 +382,6 @@ def build_chunk_feature_datasets(config):
             num_labels=config.get("num_labels"),
             semantic_path=semantic_path("test"),
             front_special_path=front_special_path("test"),
+            graph_evidence_path=graph_evidence_path("test"),
         ),
     }

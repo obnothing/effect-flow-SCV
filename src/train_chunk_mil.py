@@ -210,6 +210,13 @@ def collate_batch(batch):
         collated["front_special_features"] = torch.stack(
             [item["front_special_features"] for item in batch]
         )
+    if "graph_contract_evidence" in batch[0]:
+        collated["graph_contract_evidence"] = torch.stack(
+            [item["graph_contract_evidence"] for item in batch]
+        )
+        collated["graph_chunk_evidence"] = torch.stack(
+            [item["graph_chunk_evidence"] for item in batch]
+        )
     return collated
 
 
@@ -243,6 +250,9 @@ def move_batch(batch, device):
         moved["active_vulnerability_label_mask"] = batch["active_vulnerability_label_mask"].to(device)
     if "front_special_features" in batch:
         moved["front_special_features"] = batch["front_special_features"].to(device)
+    if "graph_contract_evidence" in batch:
+        moved["graph_contract_evidence"] = batch["graph_contract_evidence"].to(device)
+        moved["graph_chunk_evidence"] = batch["graph_chunk_evidence"].to(device)
     return moved
 
 
@@ -869,6 +879,15 @@ def main():
         "front_contrastive_hard_negative_max_k": config.get(
             "front_contrastive_hard_negative_max_k"
         ),
+        "graph_evidence_enabled": bool(config.get("graph_evidence_enabled", False)),
+        "graph_evidence_dir": config.get("graph_evidence_dir"),
+        "graph_evidence_dim": int(config.get("graph_evidence_dim", 0)),
+        "graph_evidence_scale": config.get("graph_evidence_scale"),
+        "graph_evidence_attention_scale": config.get(
+            "graph_evidence_attention_scale"
+        ),
+        "graph_evidence_logit_scale": config.get("graph_evidence_logit_scale"),
+        "graph_evidence_enable_epoch": config.get("graph_evidence_enable_epoch"),
         "beta_reliable_init": config.get("beta_reliable_init"),
         "gamma_reliable_init": config.get("gamma_reliable_init"),
         "warmup_epochs_neural_only": int(config.get("warmup_epochs_neural_only", 0)),

@@ -907,6 +907,45 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         )
         self.evidence_logit_weight = nn.Parameter(torch.zeros(self.num_labels, 2))
         self.evidence_logit_bias = nn.Parameter(torch.zeros(self.num_labels))
+        self.graph_evidence_enabled = bool(config.get("graph_evidence_enabled", False))
+        self.graph_evidence_dim = int(config.get("graph_evidence_dim", 0))
+        self.graph_evidence_scale = float(config.get("graph_evidence_scale", 1.0))
+        self.graph_evidence_attention_scale = float(
+            config.get("graph_evidence_attention_scale", self.graph_evidence_scale)
+        )
+        self.graph_evidence_logit_scale = float(
+            config.get("graph_evidence_logit_scale", self.graph_evidence_scale)
+        )
+        self.graph_evidence_enable_epoch = int(
+            config.get("graph_evidence_enable_epoch", self.enable_reliable_semantic_epoch)
+        )
+        graph_beta_init = float(config.get("beta_graph_init", beta_init))
+        graph_gamma_init = float(config.get("gamma_graph_init", gamma_init))
+        self.graph_contract_mlp = None
+        self.beta_graph_raw = None
+        self.gamma_graph_raw = None
+        if self.graph_evidence_enabled:
+            if self.graph_evidence_dim <= 0:
+                raise ValueError(
+                    "graph_evidence_enabled=true requires graph_evidence_dim > 0"
+                )
+            graph_hidden_dim = int(config.get("graph_evidence_hidden_dim", 32))
+            if graph_hidden_dim <= 0:
+                raise ValueError("graph_evidence_hidden_dim must be positive")
+            graph_dropout = float(config.get("graph_evidence_dropout", 0.1))
+            self.graph_contract_mlp = nn.Sequential(
+                nn.LayerNorm(self.graph_evidence_dim),
+                nn.Linear(self.graph_evidence_dim, graph_hidden_dim),
+                nn.GELU(),
+                nn.Dropout(graph_dropout),
+                nn.Linear(graph_hidden_dim, 1),
+            )
+            self.beta_graph_raw = nn.Parameter(
+                torch.full((self.num_labels,), self._softplus_inverse(graph_beta_init))
+            )
+            self.gamma_graph_raw = nn.Parameter(
+                torch.full((self.num_labels,), self._softplus_inverse(graph_gamma_init))
+            )
         self.current_epoch = 10**9
 
     def _init_front_special_feature_masks(self):
@@ -1107,6 +1146,12 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
     def semantic_enabled(self):
         return int(self.current_epoch) >= self.enable_reliable_semantic_epoch
 
+    def graph_enabled(self):
+        return (
+            self.graph_evidence_enabled
+            and int(self.current_epoch) >= self.graph_evidence_enable_epoch
+        )
+
     def _semantic_dropout(self, values):
         if not self.training or self.semantic_dropout_p <= 0:
             return values
@@ -1117,6 +1162,99 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         if self.use_chunk_context:
             return self.chunk_context_encoder(chunk_features, chunk_mask)
         return self.chunk_projection(chunk_features)
+
+    def compute_graph_evidence(
+        self,
+        graph_contract_evidence,
+        graph_chunk_evidence,
+        chunk_mask,
+        dtype,
+    ):
+        zero_chunk = torch.zeros(
+            (*chunk_mask.shape, self.num_labels),
+            device=chunk_mask.device,
+            dtype=dtype,
+        )
+        zero_contract = torch.zeros(
+            (chunk_mask.shape[0], self.num_labels),
+            device=chunk_mask.device,
+            dtype=dtype,
+        )
+        zero_label = torch.zeros(self.num_labels, device=chunk_mask.device, dtype=dtype)
+        if not self.graph_evidence_enabled:
+            return {
+                "attention_bias": zero_chunk,
+                "contract_logits": zero_contract,
+                "raw_contract_logits": zero_contract,
+                "chunk_scores": zero_chunk,
+                "beta_graph": zero_label,
+                "gamma_graph": zero_label,
+                "enabled": False,
+            }
+        if graph_contract_evidence is None or graph_chunk_evidence is None:
+            raise ValueError(
+                "graph_evidence_enabled=true requires graph_contract_evidence "
+                "and graph_chunk_evidence"
+            )
+        if graph_contract_evidence.shape[:2] != (
+            chunk_mask.shape[0],
+            self.num_labels,
+        ):
+            raise ValueError(
+                "graph_contract_evidence must have shape [B, num_labels, D]"
+            )
+        if graph_contract_evidence.shape[-1] != self.graph_evidence_dim:
+            raise ValueError(
+                f"graph_contract_evidence width {graph_contract_evidence.shape[-1]} "
+                f"does not match graph_evidence_dim={self.graph_evidence_dim}"
+            )
+        if graph_chunk_evidence.shape != (
+            chunk_mask.shape[0],
+            chunk_mask.shape[1],
+            self.num_labels,
+        ):
+            raise ValueError(
+                "graph_chunk_evidence must have shape [B, max_chunks, num_labels]"
+            )
+        if not self.graph_enabled():
+            return {
+                "attention_bias": zero_chunk,
+                "contract_logits": zero_contract,
+                "raw_contract_logits": zero_contract,
+                "chunk_scores": zero_chunk,
+                "beta_graph": zero_label,
+                "gamma_graph": zero_label,
+                "enabled": False,
+            }
+        chunk_scores = graph_chunk_evidence.to(dtype=dtype).clamp(0.0, 1.0)
+        chunk_scores = chunk_scores.masked_fill(~chunk_mask.unsqueeze(-1), 0.0)
+        beta_graph = F.softplus(self.beta_graph_raw).to(dtype=dtype)
+        gamma_graph = F.softplus(self.gamma_graph_raw).to(dtype=dtype)
+        attention_bias = (
+            self.graph_evidence_attention_scale
+            * beta_graph.view(1, 1, -1)
+            * chunk_scores
+        )
+        contract_values = graph_contract_evidence.to(dtype=dtype).clamp(0.0, 1.0)
+        flat = contract_values.reshape(-1, self.graph_evidence_dim)
+        raw_logits = self.graph_contract_mlp(flat).reshape(
+            chunk_mask.shape[0],
+            self.num_labels,
+        )
+        contract_logits = (
+            self.graph_evidence_logit_scale
+            * gamma_graph.view(1, -1)
+            * raw_logits
+        )
+        return {
+            "attention_bias": attention_bias,
+            "contract_logits": contract_logits,
+            "raw_contract_logits": raw_logits,
+            "chunk_scores": chunk_scores,
+            "beta_graph": beta_graph,
+            "gamma_graph": gamma_graph,
+            "enabled": True,
+        }
 
     def compute_reliable_evidence(
         self,
@@ -1302,10 +1440,14 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         return adjusted, diagnostics
 
     def gate_values(self):
-        return {
+        values = {
             "beta_reliable": F.softplus(self.beta_reliable_raw).detach(),
             "gamma_reliable": F.softplus(self.gamma_reliable_raw).detach(),
         }
+        if self.graph_evidence_enabled:
+            values["beta_graph"] = F.softplus(self.beta_graph_raw).detach()
+            values["gamma_graph"] = F.softplus(self.gamma_graph_raw).detach()
+        return values
 
     def compute_front_contrastive_loss(
         self,
@@ -1441,6 +1583,8 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         vulnerability_template_matches=None,
         active_vulnerability_label_mask=None,
         front_special_features=None,
+        graph_contract_evidence=None,
+        graph_chunk_evidence=None,
     ):
         del vulnerability_evidence_probs
         del template_match_scores
@@ -1462,6 +1606,12 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             chunk_mask,
         )
         phi = evidence["final_evidence_scores"].to(dtype=h.dtype)
+        graph_outputs = self.compute_graph_evidence(
+            graph_contract_evidence,
+            graph_chunk_evidence,
+            chunk_mask,
+            h.dtype,
+        )
 
         v = torch.tanh(self.attn_v(h))
         u = torch.sigmoid(self.attn_u(h))
@@ -1472,7 +1622,11 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         if not self.semantic_enabled():
             beta = torch.zeros_like(beta)
             gamma = torch.zeros_like(gamma)
-        attn_logits = neural_attn_logits + beta.view(1, 1, -1) * phi
+        attn_logits = (
+            neural_attn_logits
+            + beta.view(1, 1, -1) * phi
+            + graph_outputs["attention_bias"]
+        )
         attn_logits = attn_logits.masked_fill(~chunk_mask.unsqueeze(-1), -1e9)
         attn_weights = torch.softmax(attn_logits, dim=1)
         z = torch.einsum("bck,bch->bkh", attn_weights, h)
@@ -1493,7 +1647,11 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         evidence_logits = (
             evidence_features * self.evidence_logit_weight.unsqueeze(0).to(dtype=h.dtype)
         ).sum(dim=-1) + self.evidence_logit_bias.unsqueeze(0).to(dtype=h.dtype)
-        recognition_logits = neural_logits + gamma.view(1, -1) * evidence_logits
+        recognition_logits = (
+            neural_logits
+            + gamma.view(1, -1) * evidence_logits
+            + graph_outputs["contract_logits"]
+        )
 
         global_h = self.masked_mean(h, chunk_mask)
         detection_logits = self.detection_classifier(global_h).squeeze(-1)
@@ -1529,6 +1687,13 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             gate_regularization_loss = (
                 active_beta.pow(2).mean() + active_gamma.pow(2).mean()
             )
+            if self.graph_evidence_enabled:
+                active_beta_graph = F.softplus(self.beta_graph_raw)
+                active_gamma_graph = F.softplus(self.gamma_graph_raw)
+                gate_regularization_loss = gate_regularization_loss + (
+                    active_beta_graph.pow(2).mean()
+                    + active_gamma_graph.pow(2).mean()
+                )
             front_hard_negative_loss = recognition_logits.sum() * 0.0
             if (
                 self.training
@@ -1612,6 +1777,15 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             "neural_attention_logits": neural_attn_logits,
             "neural_logits": neural_logits,
             "evidence_logits": evidence_logits,
+            "graph_contract_logits": graph_outputs["contract_logits"],
+            "graph_raw_contract_logits": graph_outputs["raw_contract_logits"],
+            "graph_chunk_scores": graph_outputs["chunk_scores"],
+            "beta_graph": graph_outputs["beta_graph"],
+            "gamma_graph": graph_outputs["gamma_graph"],
+            "graph_enabled": torch.tensor(
+                bool(graph_outputs["enabled"]),
+                device=h.device,
+            ),
             "beta_reliable": beta,
             "gamma_reliable": gamma,
             "semantic_enabled": torch.tensor(
