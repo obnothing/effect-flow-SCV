@@ -19,6 +19,11 @@ LABEL_NAMES = [
 ]
 FRONT_ID = LABEL_NAMES.index("Front Running")
 BAD_RANDOMNESS_ID = LABEL_NAMES.index("Bad Randomness")
+FRONT_FP_CONFOUNDER_IDS = {
+    "front_fp_access_control": LABEL_NAMES.index("Access Control"),
+    "front_fp_reentrancy": LABEL_NAMES.index("Reentrancy"),
+    "front_fp_time_manipulation": LABEL_NAMES.index("Time manipulation"),
+}
 BASELINE = {
     "micro_f1": 0.8240858035638883,
     "macro_f1": 0.7452721843450687,
@@ -35,6 +40,14 @@ def resolve(path):
     return PROJECT_ROOT / path
 
 
+def display_path(path):
+    path = Path(path)
+    try:
+        return path.relative_to(PROJECT_ROOT)
+    except ValueError:
+        return path
+
+
 def load_yaml(path):
     return yaml.safe_load(resolve(path).read_text(encoding="utf-8"))
 
@@ -44,6 +57,55 @@ def load_json(path):
     if not path.exists():
         return None
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def parse_per_label_thresholds_txt(path):
+    path = resolve(path)
+    if not path.exists():
+        return []
+    rows = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        parts = [part.strip() for part in line.split("|")]
+        if len(parts) < 6 or parts[0] not in LABEL_NAMES:
+            continue
+        rows.append(
+            {
+                "label_name": parts[0],
+                "support": int(parts[1]),
+                "best_threshold": float(parts[2]),
+                "best_valid_precision": float(parts[3]),
+                "best_valid_recall": float(parts[4]),
+                "best_valid_f1": float(parts[5]),
+            }
+        )
+    return rows
+
+
+def valid_per_label_rows(eval_dir):
+    selection = load_json(eval_dir / "per_label_thresholds_valid.json")
+    if selection and selection.get("per_label"):
+        return selection["per_label"]
+    return parse_per_label_thresholds_txt(eval_dir / "per_label_thresholds_valid.txt")
+
+
+def valid_macro_f1(eval_dir):
+    rows = valid_per_label_rows(eval_dir)
+    if not rows:
+        return 0.0
+    return sum(float(row.get("best_valid_f1", 0.0)) for row in rows) / len(rows)
+
+
+def valid_global_micro_f1(eval_dir):
+    report = load_json(eval_dir / "valid_global_threshold_scan.json")
+    if report:
+        return float(report.get("best_micro_f1_value", 0.0))
+    txt_path = resolve(eval_dir / "valid_global_threshold_scan.txt")
+    if not txt_path.exists():
+        return 0.0
+    for line in txt_path.read_text(encoding="utf-8").splitlines():
+        if line.startswith("best_micro_f1_value:"):
+            return float(line.split(":", 1)[1].strip())
+    return 0.0
 
 
 def read_jsonl(path):
@@ -153,6 +215,25 @@ def metrics_from_predictions(predictions):
         )
     micro_precision, micro_recall, micro_f1 = prf(sum(tp), sum(fp), sum(fn))
     _, _, detection_f1 = prf(binary_tp, binary_fp, binary_fn)
+    front_fp_confounders = {
+        "front_fp_confounder_any": 0,
+        "front_fp_no_confounder": 0,
+        **{key: 0 for key in FRONT_FP_CONFOUNDER_IDS},
+    }
+    for row in predictions:
+        y_true = [int(value) for value in row["multi_true"]]
+        y_pred = [int(value) for value in row["multi_pred"]]
+        if y_true[FRONT_ID] or not y_pred[FRONT_ID]:
+            continue
+        has_confounder = False
+        for key, label_id in FRONT_FP_CONFOUNDER_IDS.items():
+            if y_true[label_id]:
+                front_fp_confounders[key] += 1
+                has_confounder = True
+        if has_confounder:
+            front_fp_confounders["front_fp_confounder_any"] += 1
+        else:
+            front_fp_confounders["front_fp_no_confounder"] += 1
     return {
         "micro_precision": micro_precision,
         "micro_recall": micro_recall,
@@ -162,16 +243,14 @@ def metrics_from_predictions(predictions):
         "per_label": per_label,
         "front": per_label[FRONT_ID],
         "bad_randomness": per_label[BAD_RANDOMNESS_ID],
+        "front_fp_confounders": front_fp_confounders,
     }
 
 
 def valid_front_f1(eval_dir):
-    valid_report = load_json(eval_dir / "valid_threshold_metrics.json")
-    if not valid_report:
-        return 0.0
-    for row in valid_report.get("per_label_metrics", []):
+    for row in valid_per_label_rows(eval_dir):
         if row.get("label_name") == "Front Running":
-            return float(row.get("f1", 0.0))
+            return float(row.get("best_valid_f1", 0.0))
     return 0.0
 
 
@@ -188,7 +267,9 @@ def collect_eval_row(item, checkpoint_tag, mode, filename):
         }
     metrics = metrics_from_predictions(predictions)
     train_summary = load_json(resolve(item["train_result_dir"]) / "checkpoint_summary.json") or {}
-    valid_report = load_json(eval_dir / "valid_threshold_metrics.json") or {}
+    valid_macro = valid_macro_f1(eval_dir)
+    valid_micro = valid_global_micro_f1(eval_dir)
+    front_fp_confounders = metrics["front_fp_confounders"]
     row = {
         "status": "ok",
         "variant": item["variant"],
@@ -197,8 +278,8 @@ def collect_eval_row(item, checkpoint_tag, mode, filename):
         "checkpoint_tag": checkpoint_tag,
         "threshold_mode": mode,
         "eval_dir": str(eval_dir.relative_to(PROJECT_ROOT)).replace("\\", "/"),
-        "valid_macro_f1": valid_report.get("recognition_macro_f1"),
-        "valid_micro_f1": valid_report.get("recognition_micro_f1"),
+        "valid_macro_f1": valid_macro,
+        "valid_micro_f1": valid_micro,
         "valid_front_f1": valid_front_f1(eval_dir),
         "micro_f1": metrics["micro_f1"],
         "macro_f1": metrics["macro_f1"],
@@ -211,6 +292,13 @@ def collect_eval_row(item, checkpoint_tag, mode, filename):
         "front_fn": metrics["front"]["fn"],
         "front_ap": metrics["front"]["ap"],
         "front_auc": metrics["front"]["auc"],
+        "front_fp_confounder_any": front_fp_confounders["front_fp_confounder_any"],
+        "front_fp_access_control": front_fp_confounders["front_fp_access_control"],
+        "front_fp_reentrancy": front_fp_confounders["front_fp_reentrancy"],
+        "front_fp_time_manipulation": front_fp_confounders[
+            "front_fp_time_manipulation"
+        ],
+        "front_fp_no_confounder": front_fp_confounders["front_fp_no_confounder"],
         "bad_randomness_f1": metrics["bad_randomness"]["f1"],
         "bad_randomness_tp": metrics["bad_randomness"]["tp"],
         "bad_randomness_fp": metrics["bad_randomness"]["fp"],
@@ -234,6 +322,18 @@ def collect_eval_row(item, checkpoint_tag, mode, filename):
         ),
         "front_contrastive_hard_negative_count_total": train_summary.get(
             "front_contrastive_hard_negative_count_total"
+        ),
+        "front_contrastive_candidate_negative_count_total": train_summary.get(
+            "front_contrastive_candidate_negative_count_total"
+        ),
+        "front_contrastive_selected_hard_negative_count_total": train_summary.get(
+            "front_contrastive_selected_hard_negative_count_total"
+        ),
+        "front_contrastive_selected_prob_mean": train_summary.get(
+            "front_contrastive_selected_prob_mean"
+        ),
+        "front_contrastive_selected_prob_max": train_summary.get(
+            "front_contrastive_selected_prob_max"
         ),
         "front_contrastive_active_batches_total": train_summary.get(
             "front_contrastive_active_batches_total"
@@ -330,8 +430,8 @@ def write_outputs(rows, output_prefix):
         f"bad_randomness_f1={BASELINE['bad_randomness_f1']:.6f}",
         "",
         "variant | checkpoint | mode | valid_macro | micro | macro | detection | "
-        "front_f1 | front_tp | front_fp | front_fn | front_ap | bad_f1 | "
-        "rare_mean | winner",
+        "front_f1 | front_tp | front_fp | front_fn | front_fp_conf | "
+        "front_fp_none | front_ap | bad_f1 | rare_mean | winner",
         "-" * 180,
     ]
     for row in ok_rows:
@@ -341,13 +441,14 @@ def write_outputs(rows, output_prefix):
             f"{row['micro_f1']:.6f} | {row['macro_f1']:.6f} | "
             f"{row['detection_f1']:.6f} | {row['front_f1']:.6f} | "
             f"{row['front_tp']} | {row['front_fp']} | {row['front_fn']} | "
+            f"{row['front_fp_confounder_any']} | {row['front_fp_no_confounder']} | "
             f"{row['front_ap']:.6f} | {row['bad_randomness_f1']:.6f} | "
             f"{row['rare_mean_f1']:.6f} | {row['validation_winner']}"
         )
     txt_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"[OK] wrote {txt_path.relative_to(PROJECT_ROOT)}")
-    print(f"[OK] wrote {json_path.relative_to(PROJECT_ROOT)}")
-    print(f"[OK] wrote {csv_path.relative_to(PROJECT_ROOT)}")
+    print(f"[OK] wrote {display_path(txt_path)}")
+    print(f"[OK] wrote {display_path(json_path)}")
+    print(f"[OK] wrote {display_path(csv_path)}")
 
 
 def parse_args():

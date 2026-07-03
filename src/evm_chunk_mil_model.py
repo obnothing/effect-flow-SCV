@@ -838,6 +838,37 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             for name in contrastive_confounder_names
             if name in label_names
         ]
+        self.front_contrastive_negative_mining = str(
+            config.get("front_contrastive_negative_mining", "all")
+        )
+        if self.front_contrastive_negative_mining not in {"all", "front_prob_topk"}:
+            raise ValueError(
+                "front_contrastive_negative_mining must be one of: "
+                "all, front_prob_topk"
+            )
+        self.front_contrastive_hard_negative_ratio = float(
+            config.get("front_contrastive_hard_negative_ratio", 2.0)
+        )
+        self.front_contrastive_hard_negative_min_k = int(
+            config.get("front_contrastive_hard_negative_min_k", 16)
+        )
+        self.front_contrastive_hard_negative_max_k = int(
+            config.get("front_contrastive_hard_negative_max_k", 128)
+        )
+        if self.front_contrastive_hard_negative_ratio <= 0:
+            raise ValueError("front_contrastive_hard_negative_ratio must be positive")
+        if self.front_contrastive_hard_negative_min_k <= 0:
+            raise ValueError("front_contrastive_hard_negative_min_k must be positive")
+        if self.front_contrastive_hard_negative_max_k <= 0:
+            raise ValueError("front_contrastive_hard_negative_max_k must be positive")
+        if (
+            self.front_contrastive_hard_negative_max_k
+            < self.front_contrastive_hard_negative_min_k
+        ):
+            raise ValueError(
+                "front_contrastive_hard_negative_max_k must be >= "
+                "front_contrastive_hard_negative_min_k"
+            )
         if self.front_contrastive_loss_enabled and self.front_running_label_id is None:
             raise ValueError(
                 f"front_running_label_name={self.front_running_label_name} "
@@ -1276,7 +1307,12 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             "gamma_reliable": F.softplus(self.gamma_reliable_raw).detach(),
         }
 
-    def compute_front_contrastive_loss(self, label_representations, multi_labels):
+    def compute_front_contrastive_loss(
+        self,
+        label_representations,
+        multi_labels,
+        recognition_logits=None,
+    ):
         front_z = label_representations[:, int(self.front_running_label_id), :]
         zero_loss = front_z.sum() * 0.0
         zero_count = torch.tensor(0.0, device=front_z.device)
@@ -1284,7 +1320,11 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             "loss": zero_loss,
             "anchor_count": zero_count,
             "positive_count": zero_count,
+            "candidate_negative_count": zero_count,
             "hard_negative_count": zero_count,
+            "selected_hard_negative_count": zero_count,
+            "selected_prob_mean": zero_count,
+            "selected_prob_max": zero_count,
         }
         if (
             not self.training
@@ -1300,11 +1340,46 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             labels[:, self.front_contrastive_confounder_label_ids].max(dim=1).values
             > 0.5
         )
-        hard_negative = (~front_positive) & confounder_positive
+        candidate_negative = (~front_positive) & confounder_positive
         front_positive_count = front_positive.float().sum()
-        hard_negative_count = hard_negative.float().sum()
-        if bool(front_positive_count < 2) or bool(hard_negative_count < 1):
-            stats["hard_negative_count"] = hard_negative_count
+        candidate_negative_count = candidate_negative.float().sum()
+        stats["candidate_negative_count"] = candidate_negative_count
+        if bool(front_positive_count < 2) or bool(candidate_negative_count < 1):
+            return stats
+
+        selected_negative = candidate_negative
+        selected_scores = None
+        if self.front_contrastive_negative_mining == "front_prob_topk":
+            if recognition_logits is None:
+                raise ValueError(
+                    "front_prob_topk mining requires recognition_logits"
+                )
+            front_logits = recognition_logits[:, int(self.front_running_label_id)]
+            front_probs = torch.sigmoid(front_logits).detach()
+            candidate_indices = candidate_negative.nonzero(as_tuple=False).flatten()
+            anchor_count = int(front_positive_count.detach().cpu().item())
+            candidate_count = int(candidate_negative_count.detach().cpu().item())
+            target_k = max(
+                self.front_contrastive_hard_negative_min_k,
+                int(torch.ceil(front_positive_count * self.front_contrastive_hard_negative_ratio).detach().cpu().item()),
+            )
+            k = min(candidate_count, self.front_contrastive_hard_negative_max_k, target_k)
+            selected_negative = torch.zeros_like(candidate_negative)
+            if k > 0:
+                candidate_scores = front_probs[candidate_indices]
+                topk = torch.topk(candidate_scores, k=k, largest=True)
+                selected_indices = candidate_indices[topk.indices]
+                selected_negative[selected_indices] = True
+                selected_scores = topk.values
+            if anchor_count < 2 or k < 1:
+                return stats
+        elif recognition_logits is not None:
+            front_logits = recognition_logits[:, int(self.front_running_label_id)]
+            front_probs = torch.sigmoid(front_logits).detach()
+            selected_scores = front_probs[selected_negative]
+
+        selected_negative_count = selected_negative.float().sum()
+        if bool(selected_negative_count < 1):
             return stats
 
         projected = self.front_contrastive_projector(front_z)
@@ -1315,7 +1390,7 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         batch_size = logits.shape[0]
         eye = torch.eye(batch_size, device=logits.device, dtype=torch.bool)
         positive_mask = front_positive.unsqueeze(0).expand(batch_size, batch_size) & ~eye
-        hard_negative_mask = hard_negative.unsqueeze(0).expand(batch_size, batch_size)
+        hard_negative_mask = selected_negative.unsqueeze(0).expand(batch_size, batch_size)
         denominator_mask = positive_mask | hard_negative_mask
 
         row_mask = front_positive
@@ -1332,12 +1407,21 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             dim=1,
         )
         loss = -(log_positive - log_denominator).mean()
+        selected_prob_mean = zero_count
+        selected_prob_max = zero_count
+        if selected_scores is not None and selected_scores.numel() > 0:
+            selected_prob_mean = selected_scores.mean()
+            selected_prob_max = selected_scores.max()
         stats.update(
             {
                 "loss": loss,
                 "anchor_count": row_mask.float().sum(),
                 "positive_count": row_positive_mask.float().sum(),
-                "hard_negative_count": hard_negative_count,
+                "candidate_negative_count": candidate_negative_count,
+                "hard_negative_count": selected_negative_count,
+                "selected_hard_negative_count": selected_negative_count,
+                "selected_prob_mean": selected_prob_mean,
+                "selected_prob_max": selected_prob_max,
             }
         )
         return stats
@@ -1426,7 +1510,11 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         front_contrastive_loss = None
         front_contrastive_anchor_count = torch.tensor(0.0, device=h.device)
         front_contrastive_positive_count = torch.tensor(0.0, device=h.device)
+        front_contrastive_candidate_negative_count = torch.tensor(0.0, device=h.device)
         front_contrastive_hard_negative_count = torch.tensor(0.0, device=h.device)
+        front_contrastive_selected_hard_negative_count = torch.tensor(0.0, device=h.device)
+        front_contrastive_selected_prob_mean = torch.tensor(0.0, device=h.device)
+        front_contrastive_selected_prob_max = torch.tensor(0.0, device=h.device)
         if binary_label is not None and multi_labels is not None:
             detection_loss = self.detection_loss_fn(
                 detection_logits,
@@ -1471,12 +1559,28 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
                 and self.front_contrastive_lambda > 0
                 and self.front_running_label_id is not None
             ):
-                contrastive_stats = self.compute_front_contrastive_loss(z, multi_labels)
+                contrastive_stats = self.compute_front_contrastive_loss(
+                    z,
+                    multi_labels,
+                    recognition_logits=recognition_logits,
+                )
                 front_contrastive_loss = contrastive_stats["loss"]
                 front_contrastive_anchor_count = contrastive_stats["anchor_count"]
                 front_contrastive_positive_count = contrastive_stats["positive_count"]
+                front_contrastive_candidate_negative_count = contrastive_stats[
+                    "candidate_negative_count"
+                ]
                 front_contrastive_hard_negative_count = contrastive_stats[
                     "hard_negative_count"
+                ]
+                front_contrastive_selected_hard_negative_count = contrastive_stats[
+                    "selected_hard_negative_count"
+                ]
+                front_contrastive_selected_prob_mean = contrastive_stats[
+                    "selected_prob_mean"
+                ]
+                front_contrastive_selected_prob_max = contrastive_stats[
+                    "selected_prob_max"
                 ]
             loss = (
                 (detection_loss + recognition_loss) / 2
@@ -1495,7 +1599,11 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             "front_contrastive_loss": front_contrastive_loss,
             "front_contrastive_anchor_count": front_contrastive_anchor_count,
             "front_contrastive_positive_count": front_contrastive_positive_count,
+            "front_contrastive_candidate_negative_count": front_contrastive_candidate_negative_count,
             "front_contrastive_hard_negative_count": front_contrastive_hard_negative_count,
+            "front_contrastive_selected_hard_negative_count": front_contrastive_selected_hard_negative_count,
+            "front_contrastive_selected_prob_mean": front_contrastive_selected_prob_mean,
+            "front_contrastive_selected_prob_max": front_contrastive_selected_prob_max,
             "detection_logits": detection_logits,
             "recognition_logits": recognition_logits,
             "chunk_logits": attn_logits,

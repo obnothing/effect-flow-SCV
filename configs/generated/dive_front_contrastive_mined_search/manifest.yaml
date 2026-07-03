@@ -1,0 +1,40 @@
+base_config: configs/generated/dive_side_scale_search/train_dive_side_scale_150_ep50.yaml
+output_config_dir: configs/generated/dive_front_contrastive_mined_search
+checkpoint_root: checkpoints/dive_front_contrastive_mined_search
+result_root: results/dive_front_contrastive_mined_search
+seed: 42
+negative_mining: front_prob_topk
+hard_negative_ratio: 2.0
+hard_negative_min_k: 16
+hard_negative_max_k: 128
+configs:
+- dataset: DIVE
+  variant: front_ctr_mined_lam0005_tau010
+  lambda: 0.005
+  temperature: 0.1
+  negative_mining: front_prob_topk
+  config: configs/generated/dive_front_contrastive_mined_search/train_dive_front_ctr_mined_lam0005_tau010.yaml
+  experiment_name: train_dive_front_ctr_mined_lam0005_tau010
+  checkpoint_dir: checkpoints/dive_front_contrastive_mined_search/front_ctr_mined_lam0005_tau010
+  train_result_dir: results/dive_front_contrastive_mined_search/front_ctr_mined_lam0005_tau010/train
+  eval_result_root: results/dive_front_contrastive_mined_search/front_ctr_mined_lam0005_tau010
+- dataset: DIVE
+  variant: front_ctr_mined_lam0010_tau010
+  lambda: 0.01
+  temperature: 0.1
+  negative_mining: front_prob_topk
+  config: configs/generated/dive_front_contrastive_mined_search/train_dive_front_ctr_mined_lam0010_tau010.yaml
+  experiment_name: train_dive_front_ctr_mined_lam0010_tau010
+  checkpoint_dir: checkpoints/dive_front_contrastive_mined_search/front_ctr_mined_lam0010_tau010
+  train_result_dir: results/dive_front_contrastive_mined_search/front_ctr_mined_lam0010_tau010/train
+  eval_result_root: results/dive_front_contrastive_mined_search/front_ctr_mined_lam0010_tau010
+- dataset: DIVE
+  variant: front_ctr_mined_lam0020_tau010
+  lambda: 0.02
+  temperature: 0.1
+  negative_mining: front_prob_topk
+  config: configs/generated/dive_front_contrastive_mined_search/train_dive_front_ctr_mined_lam0020_tau010.yaml
+  experiment_name: train_dive_front_ctr_mined_lam0020_tau010
+  checkpoint_dir: checkpoints/dive_front_contrastive_mined_search/front_ctr_mined_lam0020_tau010
+  train_result_dir: results/dive_front_contrastive_mined_search/front_ctr_mined_lam0020_tau010/train
+  eval_result_root: results/dive_front_contrastive_mined_search/front_ctr_mined_lam0020_tau010

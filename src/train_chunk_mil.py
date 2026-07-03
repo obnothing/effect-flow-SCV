@@ -283,7 +283,12 @@ def train_one_epoch(model, loader, optimizer, config, device):
     contrastive_loss_sum = 0.0
     contrastive_anchor_sum = 0.0
     contrastive_positive_sum = 0.0
+    contrastive_candidate_negative_sum = 0.0
     contrastive_hard_negative_sum = 0.0
+    contrastive_selected_hard_negative_sum = 0.0
+    contrastive_selected_prob_mean_sum = 0.0
+    contrastive_selected_prob_mean_batches = 0
+    contrastive_selected_prob_max_epoch = 0.0
     contrastive_active_batches = 0
     grad_accum = int(config.get("gradient_accumulation_steps", 1))
     optimizer.zero_grad(set_to_none=True)
@@ -303,8 +308,20 @@ def train_one_epoch(model, loader, optimizer, config, device):
         contrastive_loss = outputs.get("front_contrastive_loss")
         contrastive_anchor_count = outputs.get("front_contrastive_anchor_count")
         contrastive_positive_count = outputs.get("front_contrastive_positive_count")
+        contrastive_candidate_negative_count = outputs.get(
+            "front_contrastive_candidate_negative_count"
+        )
         contrastive_hard_negative_count = outputs.get(
             "front_contrastive_hard_negative_count"
+        )
+        contrastive_selected_hard_negative_count = outputs.get(
+            "front_contrastive_selected_hard_negative_count"
+        )
+        contrastive_selected_prob_mean = outputs.get(
+            "front_contrastive_selected_prob_mean"
+        )
+        contrastive_selected_prob_max = outputs.get(
+            "front_contrastive_selected_prob_max"
         )
         if contrastive_loss is not None:
             contrastive_loss_sum += float(contrastive_loss.detach().cpu().item())
@@ -319,9 +336,32 @@ def train_one_epoch(model, loader, optimizer, config, device):
             contrastive_positive_sum += float(
                 contrastive_positive_count.detach().cpu().item()
             )
+        if contrastive_candidate_negative_count is not None:
+            contrastive_candidate_negative_sum += float(
+                contrastive_candidate_negative_count.detach().cpu().item()
+            )
         if contrastive_hard_negative_count is not None:
             contrastive_hard_negative_sum += float(
                 contrastive_hard_negative_count.detach().cpu().item()
+            )
+        if contrastive_selected_hard_negative_count is not None:
+            contrastive_selected_hard_negative_sum += float(
+                contrastive_selected_hard_negative_count.detach().cpu().item()
+            )
+        selected_count = (
+            float(contrastive_selected_hard_negative_count.detach().cpu().item())
+            if contrastive_selected_hard_negative_count is not None
+            else 0.0
+        )
+        if selected_count > 0 and contrastive_selected_prob_mean is not None:
+            contrastive_selected_prob_mean_sum += float(
+                contrastive_selected_prob_mean.detach().cpu().item()
+            )
+            contrastive_selected_prob_mean_batches += 1
+        if selected_count > 0 and contrastive_selected_prob_max is not None:
+            contrastive_selected_prob_max_epoch = max(
+                contrastive_selected_prob_max_epoch,
+                float(contrastive_selected_prob_max.detach().cpu().item()),
             )
         loss = batch_loss / grad_accum
         loss.backward()
@@ -351,7 +391,14 @@ def train_one_epoch(model, loader, optimizer, config, device):
         "front_contrastive_loss": contrastive_loss_sum / max(steps, 1),
         "front_contrastive_anchor_count": contrastive_anchor_sum,
         "front_contrastive_positive_count": contrastive_positive_sum,
+        "front_contrastive_candidate_negative_count": contrastive_candidate_negative_sum,
         "front_contrastive_hard_negative_count": contrastive_hard_negative_sum,
+        "front_contrastive_selected_hard_negative_count": contrastive_selected_hard_negative_sum,
+        "front_contrastive_selected_prob_mean": (
+            contrastive_selected_prob_mean_sum
+            / max(contrastive_selected_prob_mean_batches, 1)
+        ),
+        "front_contrastive_selected_prob_max": contrastive_selected_prob_max_epoch,
         "front_contrastive_active_batches": contrastive_active_batches,
     }
 
@@ -646,8 +693,24 @@ def main():
                 "front_contrastive_positive_count",
                 0.0,
             ),
+            "front_contrastive_candidate_negative_count": train_stats.get(
+                "front_contrastive_candidate_negative_count",
+                0.0,
+            ),
             "front_contrastive_hard_negative_count": train_stats.get(
                 "front_contrastive_hard_negative_count",
+                0.0,
+            ),
+            "front_contrastive_selected_hard_negative_count": train_stats.get(
+                "front_contrastive_selected_hard_negative_count",
+                0.0,
+            ),
+            "front_contrastive_selected_prob_mean": train_stats.get(
+                "front_contrastive_selected_prob_mean",
+                0.0,
+            ),
+            "front_contrastive_selected_prob_max": train_stats.get(
+                "front_contrastive_selected_prob_max",
                 0.0,
             ),
             "front_contrastive_active_batches": train_stats.get(
@@ -685,6 +748,8 @@ def main():
             f"front_hn_active={train_stats.get('front_hard_negative_active_count', 0.0):.0f} "
             f"front_hn_loss={train_stats.get('front_hard_negative_loss', 0.0):.6f} "
             f"front_ctr_active={train_stats.get('front_contrastive_anchor_count', 0.0):.0f} "
+            f"front_ctr_candidate={train_stats.get('front_contrastive_candidate_negative_count', 0.0):.0f} "
+            f"front_ctr_selected={train_stats.get('front_contrastive_selected_hard_negative_count', 0.0):.0f} "
             f"front_ctr_loss={train_stats.get('front_contrastive_loss', 0.0):.6f}"
         )
         print(
@@ -792,6 +857,18 @@ def main():
         "front_contrastive_confounder_labels": config.get(
             "front_contrastive_confounder_labels"
         ),
+        "front_contrastive_negative_mining": config.get(
+            "front_contrastive_negative_mining"
+        ),
+        "front_contrastive_hard_negative_ratio": config.get(
+            "front_contrastive_hard_negative_ratio"
+        ),
+        "front_contrastive_hard_negative_min_k": config.get(
+            "front_contrastive_hard_negative_min_k"
+        ),
+        "front_contrastive_hard_negative_max_k": config.get(
+            "front_contrastive_hard_negative_max_k"
+        ),
         "beta_reliable_init": config.get("beta_reliable_init"),
         "gamma_reliable_init": config.get("gamma_reliable_init"),
         "warmup_epochs_neural_only": int(config.get("warmup_epochs_neural_only", 0)),
@@ -881,8 +958,16 @@ def main():
             float(row.get("front_contrastive_positive_count", 0.0))
             for row in history
         )
+        summary["front_contrastive_candidate_negative_count_total"] = sum(
+            float(row.get("front_contrastive_candidate_negative_count", 0.0))
+            for row in history
+        )
         summary["front_contrastive_hard_negative_count_total"] = sum(
             float(row.get("front_contrastive_hard_negative_count", 0.0))
+            for row in history
+        )
+        summary["front_contrastive_selected_hard_negative_count_total"] = sum(
+            float(row.get("front_contrastive_selected_hard_negative_count", 0.0))
             for row in history
         )
         summary["front_contrastive_active_batches_total"] = sum(
@@ -893,6 +978,19 @@ def main():
             float(row.get("front_contrastive_loss", 0.0))
             for row in history
         ) / len(history)
+        active_prob_rows = [
+            row
+            for row in history
+            if float(row.get("front_contrastive_selected_hard_negative_count", 0.0)) > 0
+        ]
+        summary["front_contrastive_selected_prob_mean"] = (
+            sum(float(row.get("front_contrastive_selected_prob_mean", 0.0)) for row in active_prob_rows)
+            / max(len(active_prob_rows), 1)
+        )
+        summary["front_contrastive_selected_prob_max"] = max(
+            [float(row.get("front_contrastive_selected_prob_max", 0.0)) for row in active_prob_rows]
+            or [0.0]
+        )
     final_model = model.module if isinstance(model, nn.DataParallel) else model
     if hasattr(final_model, "gate_values"):
         summary["gate_values"] = final_model.gate_values()

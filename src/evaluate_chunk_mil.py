@@ -675,6 +675,18 @@ def write_threshold_calibration_report(
         "front_contrastive_lambda": config.get("front_contrastive_lambda"),
         "front_contrastive_temperature": config.get("front_contrastive_temperature"),
         "front_contrastive_enable_epoch": config.get("front_contrastive_enable_epoch"),
+        "front_contrastive_negative_mining": config.get(
+            "front_contrastive_negative_mining"
+        ),
+        "front_contrastive_hard_negative_ratio": config.get(
+            "front_contrastive_hard_negative_ratio"
+        ),
+        "front_contrastive_hard_negative_min_k": config.get(
+            "front_contrastive_hard_negative_min_k"
+        ),
+        "front_contrastive_hard_negative_max_k": config.get(
+            "front_contrastive_hard_negative_max_k"
+        ),
         "beta_reliable_init": config.get("beta_reliable_init"),
         "gamma_reliable_init": config.get("gamma_reliable_init"),
         "is_transductive_pretraining": bool(config.get("is_transductive_pretraining", True)),
@@ -921,6 +933,18 @@ def main():
         "front_contrastive_lambda": config.get("front_contrastive_lambda"),
         "front_contrastive_temperature": config.get("front_contrastive_temperature"),
         "front_contrastive_enable_epoch": config.get("front_contrastive_enable_epoch"),
+        "front_contrastive_negative_mining": config.get(
+            "front_contrastive_negative_mining"
+        ),
+        "front_contrastive_hard_negative_ratio": config.get(
+            "front_contrastive_hard_negative_ratio"
+        ),
+        "front_contrastive_hard_negative_min_k": config.get(
+            "front_contrastive_hard_negative_min_k"
+        ),
+        "front_contrastive_hard_negative_max_k": config.get(
+            "front_contrastive_hard_negative_max_k"
+        ),
         "beta_reliable_init": config.get("beta_reliable_init"),
         "gamma_reliable_init": config.get("gamma_reliable_init"),
         "evaluated_samples": len(dataset),
