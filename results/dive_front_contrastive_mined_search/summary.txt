@@ -1,0 +1,29 @@
+DIVE Front conditional contrastive search summary
+
+baseline:
+micro_f1=0.824086
+macro_f1=0.745272
+detection_f1=0.946504
+front_f1=0.538462
+bad_randomness_f1=0.588235
+
+variant | checkpoint | mode | valid_macro | micro | macro | detection | front_f1 | front_tp | front_fp | front_fn | front_fp_conf | front_fp_none | front_ap | bad_f1 | rare_mean | winner
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+front_ctr_mined_lam0005_tau010 | best_micro_f1 | per_label | 0.779238 | 0.822276 | 0.727217 | 0.946898 | 0.453125 | 29 | 49 | 21 | 47 | 2 | 0.550524 | 0.546875 | 0.500000 | True
+front_ctr_mined_lam0020_tau010 | best_macro_f1 | fixed_0_5 | 0.781863 | 0.821704 | 0.736931 | 0.949245 | 0.491228 | 28 | 36 | 22 | 34 | 2 | 0.518244 | 0.582677 | 0.536953 | False
+front_ctr_mined_lam0020_tau010 | best_macro_f1 | best_global | 0.781863 | 0.816059 | 0.734252 | 0.949245 | 0.486486 | 27 | 34 | 23 | 33 | 1 | 0.518244 | 0.590164 | 0.538325 | False
+front_ctr_mined_lam0020_tau010 | best_macro_f1 | per_label | 0.781863 | 0.821499 | 0.732320 | 0.949245 | 0.482143 | 27 | 35 | 23 | 34 | 1 | 0.518244 | 0.571429 | 0.526786 | False
+front_ctr_mined_lam0010_tau010 | best_micro_f1 | per_label | 0.776185 | 0.822742 | 0.730473 | 0.945071 | 0.495238 | 26 | 29 | 24 | 28 | 1 | 0.450734 | 0.527027 | 0.511133 | False
+front_ctr_mined_lam0020_tau010 | best_micro_f1 | per_label | 0.778863 | 0.821836 | 0.728421 | 0.948894 | 0.490909 | 27 | 33 | 23 | 31 | 2 | 0.496150 | 0.531250 | 0.511080 | False
+front_ctr_mined_lam0005_tau010 | best_macro_f1 | per_label | 0.779238 | 0.822276 | 0.727217 | 0.946898 | 0.453125 | 29 | 49 | 21 | 47 | 2 | 0.550524 | 0.546875 | 0.500000 | False
+front_ctr_mined_lam0010_tau010 | best_macro_f1 | per_label | 0.783949 | 0.821674 | 0.725136 | 0.947525 | 0.495575 | 28 | 35 | 22 | 33 | 2 | 0.589416 | 0.495726 | 0.495651 | False
+front_ctr_mined_lam0010_tau010 | best_micro_f1 | fixed_0_5 | 0.776185 | 0.819546 | 0.723990 | 0.945071 | 0.459016 | 28 | 44 | 22 | 42 | 2 | 0.450734 | 0.516129 | 0.487573 | False
+front_ctr_mined_lam0020_tau010 | best_micro_f1 | fixed_0_5 | 0.778863 | 0.819585 | 0.723904 | 0.948894 | 0.490909 | 27 | 33 | 23 | 31 | 2 | 0.496150 | 0.509091 | 0.500000 | False
+front_ctr_mined_lam0010_tau010 | best_macro_f1 | fixed_0_5 | 0.783949 | 0.818818 | 0.722223 | 0.947525 | 0.466165 | 31 | 52 | 19 | 49 | 3 | 0.589416 | 0.496815 | 0.481490 | False
+front_ctr_mined_lam0020_tau010 | best_micro_f1 | best_global | 0.778863 | 0.818703 | 0.722203 | 0.948894 | 0.495413 | 27 | 32 | 23 | 31 | 1 | 0.496150 | 0.503067 | 0.499240 | False
+front_ctr_mined_lam0010_tau010 | best_micro_f1 | best_global | 0.776185 | 0.820002 | 0.721467 | 0.945071 | 0.444444 | 28 | 48 | 22 | 46 | 2 | 0.450734 | 0.509554 | 0.476999 | False
+front_ctr_mined_lam0005_tau010 | best_micro_f1 | fixed_0_5 | 0.779238 | 0.820580 | 0.720491 | 0.946898 | 0.453125 | 29 | 49 | 21 | 47 | 2 | 0.550524 | 0.490066 | 0.471596 | False
+front_ctr_mined_lam0005_tau010 | best_macro_f1 | fixed_0_5 | 0.779238 | 0.820580 | 0.720491 | 0.946898 | 0.453125 | 29 | 49 | 21 | 47 | 2 | 0.550524 | 0.490066 | 0.471596 | False
+front_ctr_mined_lam0005_tau010 | best_micro_f1 | best_global | 0.779238 | 0.819822 | 0.720206 | 0.946898 | 0.464000 | 29 | 46 | 21 | 44 | 2 | 0.550524 | 0.489796 | 0.476898 | False
+front_ctr_mined_lam0005_tau010 | best_macro_f1 | best_global | 0.779238 | 0.819822 | 0.720206 | 0.946898 | 0.464000 | 29 | 46 | 21 | 44 | 2 | 0.550524 | 0.489796 | 0.476898 | False
+front_ctr_mined_lam0010_tau010 | best_macro_f1 | best_global | 0.783949 | 0.814320 | 0.717855 | 0.947525 | 0.460317 | 29 | 47 | 21 | 44 | 3 | 0.589416 | 0.493333 | 0.476825 | False
