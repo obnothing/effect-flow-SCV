@@ -1,0 +1,70 @@
+EVM chunk MIL evaluation report
+
+split: test
+checkpoint: checkpoints/dive_graph_evidence_search/graph_scale_150/best_macro_f1.pt
+checkpoint_epoch: 48
+model: evef_mvd_v2_strong_backbone_side_evidence_label_gated_MIL
+ablation_dataset: DIVE
+ablation_variant: graph_scale_150
+side_evidence_enabled: True
+coefficient_scale: 1.5
+use_chunk_context: True
+chunk_context_num_layers: 2
+chunk_context_num_heads: 8
+feature_pooling: masked_mean
+recognition_aggregation: label_gated_attention
+feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256_max64
+semantic_feature_dir: data/features/effect_flow_semantics/dive_random_stride256_max64
+use_effect_flow_semantics: True
+effect_flow_semantic_mode: reliable_side_evidence
+risk_evidence_weight: 1.5
+missing_check_evidence_weight: 1.5
+protective_evidence_weight: 1.5
+effect_type_evidence_weight: 0.75
+relation_evidence_weight: 0.75
+behavior_weight_path: None
+use_weighted_behavior_scoring: False
+front_special_feature_dir: None
+front_running_special_enabled: False
+front_running_generic_pattern_scale: None
+front_running_confounder_suppression_weight: None
+front_hard_negative_loss_enabled: False
+front_hard_negative_lambda: 0.0
+front_contrastive_loss_enabled: False
+front_contrastive_lambda: 0.0
+front_contrastive_temperature: None
+front_contrastive_enable_epoch: None
+front_contrastive_negative_mining: None
+front_contrastive_hard_negative_ratio: None
+front_contrastive_hard_negative_min_k: None
+front_contrastive_hard_negative_max_k: None
+graph_evidence_enabled: True
+graph_evidence_dir: data/features/graph_evidence/dive_random_stride256_max64
+graph_evidence_dim: 12
+graph_evidence_scale: 1.5
+graph_evidence_attention_scale: 1.5
+graph_evidence_logit_scale: 1.5
+graph_evidence_enable_epoch: 4
+beta_reliable_init: 0.125
+gamma_reliable_init: 0.125
+is_transductive_pretraining: True
+threshold_source: validation set
+evaluated_samples: 2233
+single_gpu_evaluation: True
+batch_size: 1024
+max_chunks: 64
+effective_chunks_per_batch: 65536
+num_workers: 4
+loss: 0.4530796706676483
+threshold_0_5_baseline: {'threshold_mode': 'global', 'threshold_source': 'fixed_0.5_baseline', 'thresholds': 0.5, 'detection_accuracy': 0.9122257053291536, 'detection_precision': 0.93408203125, 'detection_recall': 0.9690982776089159, 'detection_f1': 0.9512680258577823, 'recognition_micro_precision': 0.7749393694421989, 'recognition_micro_recall': 0.8738377392889699, 'recognition_micro_f1': 0.8214224507283632, 'recognition_macro_precision': 0.6768043405381532, 'recognition_macro_recall': 0.7782403366965066, 'recognition_macro_f1': 0.7215999048078692, 'predicted_positive_total': 6185, 'per_label_predicted_positive_count': [1287, 1842, 1120, 633, 423, 73, 84, 723], 'per_label_support': [1139, 1681, 949, 581, 374, 72, 50, 639], 'per_label_true_positive_count': [1011, 1582, 815, 504, 272, 37, 29, 543], 'per_label_false_positive_count': [276, 260, 305, 129, 151, 36, 55, 180], 'per_label_false_negative_count': [128, 99, 134, 77, 102, 35, 21, 96], 'per_label_true_negative_count': [818, 292, 979, 1523, 1708, 2125, 2128, 1414], 'per_label_mean_pred_prob': [0.5513084530830383, 0.7870686650276184, 0.4897531569004059, 0.28038081526756287, 0.1952337920665741, 0.036426521837711334, 0.04043387621641159, 0.32947948575019836], 'macro_f1_change_over_threshold_0_5': 0.0, 'micro_f1_change_over_threshold_0_5': 0.0, 'macro_f1_change_over_evm_bert_first512': 0.7215999048078692, 'macro_f1_change_over_legacy_weighted_baseline': 0.7215999048078692}
+best_global_threshold_result: {'threshold_mode': 'global', 'threshold_source': 'validation_best_macro_f1', 'thresholds': 0.6, 'detection_accuracy': 0.9122257053291536, 'detection_precision': 0.93408203125, 'detection_recall': 0.9690982776089159, 'detection_f1': 0.9512680258577823, 'recognition_micro_precision': 0.7882708788438918, 'recognition_micro_recall': 0.8552415679124886, 'recognition_micro_f1': 0.8203917453655124, 'recognition_macro_precision': 0.6939855702018416, 'recognition_macro_recall': 0.7638630389794717, 'recognition_macro_f1': 0.7249407617747388, 'predicted_positive_total': 5951, 'per_label_predicted_positive_count': [1245, 1796, 1083, 619, 399, 70, 79, 660], 'per_label_support': [1139, 1681, 949, 581, 374, 72, 50, 639], 'per_label_true_positive_count': [992, 1552, 800, 499, 268, 37, 29, 514], 'per_label_false_positive_count': [253, 244, 283, 120, 131, 33, 50, 146], 'per_label_false_negative_count': [147, 129, 149, 82, 106, 35, 21, 125], 'per_label_true_negative_count': [841, 308, 1001, 1532, 1728, 2128, 2133, 1448], 'per_label_mean_pred_prob': [0.5513084530830383, 0.7870686650276184, 0.4897531569004059, 0.28038081526756287, 0.1952337920665741, 0.036426521837711334, 0.04043387621641159, 0.32947948575019836], 'macro_f1_change_over_threshold_0_5': 0.0033408569668695876, 'micro_f1_change_over_threshold_0_5': -0.00103070536285077, 'macro_f1_change_over_evm_bert_first512': 0.7249407617747388, 'macro_f1_change_over_legacy_weighted_baseline': 0.7249407617747388}
+per_label_threshold_result: {'threshold_mode': 'per_label', 'threshold_source': 'validation_selected_per_label', 'thresholds': [0.4, 0.25, 0.5, 0.6, 0.65, 0.95, 0.65, 0.5], 'detection_accuracy': 0.9122257053291536, 'detection_precision': 0.93408203125, 'detection_recall': 0.9690982776089159, 'detection_f1': 0.9512680258577823, 'recognition_micro_precision': 0.7752719129878439, 'recognition_micro_recall': 0.8836827711941659, 'recognition_micro_f1': 0.8259350771065861, 'recognition_macro_precision': 0.7048923156844761, 'recognition_macro_recall': 0.7739704458160853, 'recognition_macro_f1': 0.7314019880826816, 'predicted_positive_total': 6252, 'per_label_predicted_positive_count': [1345, 1928, 1120, 619, 392, 48, 77, 723], 'per_label_support': [1139, 1681, 949, 581, 374, 72, 50, 639], 'per_label_true_positive_count': [1036, 1627, 815, 499, 265, 33, 29, 543], 'per_label_false_positive_count': [309, 301, 305, 120, 127, 15, 48, 180], 'per_label_false_negative_count': [103, 54, 134, 82, 109, 39, 21, 96], 'per_label_true_negative_count': [785, 251, 979, 1532, 1732, 2146, 2135, 1414], 'per_label_mean_pred_prob': [0.5513084530830383, 0.7870686650276184, 0.4897531569004059, 0.28038081526756287, 0.1952337920665741, 0.036426521837711334, 0.04043387621641159, 0.32947948575019836], 'macro_f1_change_over_threshold_0_5': 0.009802083274812468, 'micro_f1_change_over_threshold_0_5': 0.004512626378222917, 'macro_f1_change_over_evm_bert_first512': 0.7314019880826816, 'macro_f1_change_over_legacy_weighted_baseline': 0.7314019880826816}
+per_label_metrics: [{'label_id': 0, 'label_name': 'Reentrancy', 'precision': 0.7702602230483271, 'recall': 0.9095697980684812, 'accuracy': 0.8154948499776086, 'f1': 0.8341384863123994, 'support': 1139, 'predicted_positive_count': 1345, 'true_positive_count': 1036, 'false_positive_count': 309, 'false_negative_count': 103, 'true_negative_count': 785}, {'label_id': 1, 'label_name': 'Access Control', 'precision': 0.8438796680497925, 'recall': 0.9678762641284949, 'accuracy': 0.8410210479175997, 'f1': 0.9016348018841784, 'support': 1681, 'predicted_positive_count': 1928, 'true_positive_count': 1627, 'false_positive_count': 301, 'false_negative_count': 54, 'true_negative_count': 251}, {'label_id': 2, 'label_name': 'Arithmetic', 'precision': 0.7276785714285714, 'recall': 0.8587987355110642, 'accuracy': 0.8034034930586654, 'f1': 0.7878202029966167, 'support': 949, 'predicted_positive_count': 1120, 'true_positive_count': 815, 'false_positive_count': 305, 'false_negative_count': 134, 'true_negative_count': 979}, {'label_id': 3, 'label_name': 'Unchecked Return Values', 'precision': 0.8061389337641357, 'recall': 0.8588640275387264, 'accuracy': 0.909538737124944, 'f1': 0.8316666666666668, 'support': 581, 'predicted_positive_count': 619, 'true_positive_count': 499, 'false_positive_count': 120, 'false_negative_count': 82, 'true_negative_count': 1532}, {'label_id': 4, 'label_name': 'DoS', 'precision': 0.6760204081632653, 'recall': 0.7085561497326203, 'accuracy': 0.8943125839677564, 'f1': 0.6919060052219321, 'support': 374, 'predicted_positive_count': 392, 'true_positive_count': 265, 'false_positive_count': 127, 'false_negative_count': 109, 'true_negative_count': 1732}, {'label_id': 5, 'label_name': 'Bad Randomness', 'precision': 0.6875, 'recall': 0.4583333333333333, 'accuracy': 0.9758172861621137, 'f1': 0.5499999999999999, 'support': 72, 'predicted_positive_count': 48, 'true_positive_count': 33, 'false_positive_count': 15, 'false_negative_count': 39, 'true_negative_count': 2146}, {'label_id': 6, 'label_name': 'Front Running', 'precision': 0.37662337662337664, 'recall': 0.58, 'accuracy': 0.9690998656515898, 'f1': 0.4566929133858268, 'support': 50, 'predicted_positive_count': 77, 'true_positive_count': 29, 'false_positive_count': 48, 'false_negative_count': 21, 'true_negative_count': 2135}, {'label_id': 7, 'label_name': 'Time manipulation', 'precision': 0.7510373443983402, 'recall': 0.8497652582159625, 'accuracy': 0.8763994626063591, 'f1': 0.7973568281938327, 'support': 639, 'predicted_positive_count': 723, 'true_positive_count': 543, 'false_positive_count': 180, 'false_negative_count': 96, 'true_negative_count': 1414}]
+per_label_thresholds: [{'label_id': 0, 'label_name': 'Reentrancy', 'threshold': 0.4}, {'label_id': 1, 'label_name': 'Access Control', 'threshold': 0.25}, {'label_id': 2, 'label_name': 'Arithmetic', 'threshold': 0.5}, {'label_id': 3, 'label_name': 'Unchecked Return Values', 'threshold': 0.6}, {'label_id': 4, 'label_name': 'DoS', 'threshold': 0.65}, {'label_id': 5, 'label_name': 'Bad Randomness', 'threshold': 0.95}, {'label_id': 6, 'label_name': 'Front Running', 'threshold': 0.65}, {'label_id': 7, 'label_name': 'Time manipulation', 'threshold': 0.5}]
+comparison_baselines: {'nonoverlap_labelattn_calibrated': {'micro_f1': 0.5918, 'macro_f1': 0.4421}, 'nonoverlap_labelattn_threshold_0_5': {'micro_f1': 0.5823, 'macro_f1': 0.4375, 'detection_f1': 0.6752}, 'weighted_global_threshold_0_5': {'micro_f1': 0.5823, 'macro_f1': 0.4375, 'detection_f1': 0.6752, 'predicted_positive_total': 7106}, 'evm_bert_first512_weighted': {'micro_f1': 0.5659, 'macro_f1': 0.4326, 'detection_f1': 0.6895, 'predicted_positive_total': 5806}, 'legacy_weighted_baseline': {'micro_f1': 0.5604, 'macro_f1': 0.4215, 'detection_f1': 0.643}}
+warnings: ['Reentrancy predicts too many positives: 1345/2233', 'Access Control predicts too many positives: 1928/2233', 'Arithmetic predicts too many positives: 1120/2233']
+top_chunks_test_calibrated: results/dive_graph_evidence_search/graph_scale_150/best_macro_f1/top_chunks_test_calibrated.jsonl
+fixed_threshold_prediction_path: results/dive_graph_evidence_search/graph_scale_150/best_macro_f1/test_predictions_threshold_0_5.jsonl
+best_global_prediction_path: results/dive_graph_evidence_search/graph_scale_150/best_macro_f1/test_predictions_best_global.jsonl
+prediction_path: results/dive_graph_evidence_search/graph_scale_150/best_macro_f1/test_predictions.jsonl
+per_label_prediction_path: results/dive_graph_evidence_search/graph_scale_150/best_macro_f1/test_predictions_per_label.jsonl

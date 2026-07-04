@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=dive_graph_ev
-#SBATCH --partition=gpu-l20
+#SBATCH --partition=gpu-a10
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=2
 #SBATCH --time=120:00:00
 #SBATCH --output=logs/slurm_dive_graph_evidence_%j.out
 #SBATCH --error=logs/slurm_dive_graph_evidence_%j.err

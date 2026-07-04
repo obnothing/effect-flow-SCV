@@ -1,0 +1,81 @@
+Graph evidence audit: train
+
+Reentrancy support=10780 negatives=9354
+  revert_failure_signal: pos=0.9265 neg=0.5214 delta=0.4051 ratio=1.78
+  combined_path_score: pos=0.7593 neg=0.3865 delta=0.3728 ratio=1.96
+  call_state_order_path: pos=0.6784 neg=0.3198 delta=0.3586 ratio=2.12
+  source_to_sink_path: pos=0.6250 neg=0.3089 delta=0.3161 ratio=2.02
+  external_call_signal: pos=0.6250 neg=0.3089 delta=0.3161 ratio=2.02
+  state_rw_signal: pos=0.8272 neg=0.6287 delta=0.1986 ratio=1.32
+  selector_text_signal: pos=0.5111 neg=0.4052 delta=0.1060 ratio=1.26
+  loop_sensitive_path: pos=0.8210 neg=0.7481 delta=0.0729 ratio=1.10
+
+Access Control support=15449 negatives=4685
+  selector_text_signal: pos=0.7525 neg=0.6450 delta=0.1075 ratio=1.17
+  external_call_signal: pos=0.4929 neg=0.4294 delta=0.0635 ratio=1.15
+  state_rw_signal: pos=0.7490 neg=0.6889 delta=0.0601 ratio=1.09
+  guard_condition_path: pos=0.9292 neg=0.8694 delta=0.0599 ratio=1.07
+  source_to_sink_path: pos=0.9405 neg=0.8858 delta=0.0547 ratio=1.06
+  combined_path_score: pos=0.9771 neg=0.9404 delta=0.0367 ratio=1.04
+  revert_failure_signal: pos=0.9302 neg=0.9147 delta=0.0155 ratio=1.02
+  call_state_order_path: pos=0.0000 neg=0.0000 delta=0.0000 ratio=1.00
+
+Arithmetic support=8723 negatives=11411
+  state_rw_signal: pos=0.7959 neg=0.6885 delta=0.1074 ratio=1.16
+  hash_arithmetic_signal: pos=0.9900 neg=0.9727 delta=0.0173 ratio=1.02
+  combined_path_score: pos=0.9910 neg=0.9757 delta=0.0153 ratio=1.02
+  revert_failure_signal: pos=0.9351 neg=0.9201 delta=0.0150 ratio=1.02
+  source_to_sink_path: pos=0.0000 neg=0.0000 delta=0.0000 ratio=1.00
+  guard_condition_path: pos=0.0000 neg=0.0000 delta=0.0000 ratio=1.00
+  call_state_order_path: pos=0.0000 neg=0.0000 delta=0.0000 ratio=1.00
+  environment_flow_path: pos=0.0000 neg=0.0000 delta=0.0000 ratio=1.00
+
+Unchecked Return Values support=5298 negatives=14836
+  protective_signal: pos=0.8323 neg=0.6464 delta=0.1859 ratio=1.29
+  source_to_sink_path: pos=0.6015 neg=0.4341 delta=0.1674 ratio=1.39
+  external_call_signal: pos=0.6015 neg=0.4341 delta=0.1674 ratio=1.39
+  revert_failure_signal: pos=0.8404 neg=0.7018 delta=0.1386 ratio=1.20
+  loop_sensitive_path: pos=0.8532 neg=0.7635 delta=0.0896 ratio=1.12
+  call_state_order_path: pos=0.0019 neg=0.0045 delta=-0.0026 ratio=0.42
+  combined_path_score: pos=0.0019 neg=0.0045 delta=-0.0026 ratio=0.42
+  guard_condition_path: pos=0.0000 neg=0.0000 delta=0.0000 ratio=1.00
+
+DoS support=4003 negatives=16131
+  selector_text_signal: pos=0.3015 neg=0.5551 delta=-0.2536 ratio=0.54
+  source_to_sink_path: pos=0.6883 neg=0.5266 delta=0.1617 ratio=1.31
+  call_state_order_path: pos=0.7497 neg=0.6439 delta=0.1058 ratio=1.16
+  external_call_signal: pos=0.5610 neg=0.4576 delta=0.1035 ratio=1.23
+  loop_sensitive_path: pos=0.8410 neg=0.8964 delta=-0.0554 ratio=0.94
+  combined_path_score: pos=0.9655 neg=0.9455 delta=0.0200 ratio=1.02
+  state_rw_signal: pos=0.7446 neg=0.7326 delta=0.0119 ratio=1.02
+  guard_condition_path: pos=0.9643 neg=0.9730 delta=-0.0088 ratio=0.99
+
+Bad Randomness support=1787 negatives=18347
+  guard_condition_path: pos=0.8543 neg=0.4515 delta=0.4028 ratio=1.89
+  environment_flow_path: pos=0.9457 neg=0.5462 delta=0.3996 ratio=1.73
+  combined_path_score: pos=0.9457 neg=0.5469 delta=0.3988 ratio=1.73
+  source_to_sink_path: pos=0.8843 neg=0.4883 delta=0.3961 ratio=1.81
+  state_rw_signal: pos=0.8467 neg=0.7241 delta=0.1226 ratio=1.17
+  external_call_signal: pos=0.5834 neg=0.4679 delta=0.1155 ratio=1.25
+  selector_text_signal: pos=0.0207 neg=0.0029 delta=0.0178 ratio=7.17
+  protective_signal: pos=0.0185 neg=0.0031 delta=0.0154 ratio=5.94
+
+Front Running support=1787 negatives=18347
+  selector_text_signal: pos=0.6564 neg=0.9122 delta=-0.2558 ratio=0.72
+  call_state_order_path: pos=0.8166 neg=0.6502 delta=0.1665 ratio=1.26
+  source_to_sink_path: pos=0.7036 neg=0.5447 delta=0.1589 ratio=1.29
+  hash_arithmetic_signal: pos=0.6788 neg=0.5373 delta=0.1415 ratio=1.26
+  state_rw_signal: pos=0.6447 neg=0.7438 delta=-0.0991 ratio=0.87
+  combined_path_score: pos=0.8745 neg=0.9668 delta=-0.0922 ratio=0.90
+  guard_condition_path: pos=0.9229 neg=0.9760 delta=-0.0531 ratio=0.95
+  external_call_signal: pos=0.4687 neg=0.4791 delta=-0.0103 ratio=0.98
+
+Time manipulation support=5919 negatives=14215
+  environment_flow_path: pos=0.9699 neg=0.4367 delta=0.5331 ratio=2.22
+  combined_path_score: pos=0.8632 neg=0.3713 delta=0.4919 ratio=2.32
+  source_to_sink_path: pos=0.8519 neg=0.3635 delta=0.4885 ratio=2.34
+  guard_condition_path: pos=0.8302 neg=0.3445 delta=0.4857 ratio=2.41
+  hash_arithmetic_signal: pos=0.8558 neg=0.3802 delta=0.4756 ratio=2.25
+  external_call_signal: pos=0.6515 neg=0.4060 delta=0.2455 ratio=1.60
+  state_rw_signal: pos=0.8582 neg=0.6837 delta=0.1746 ratio=1.26
+  selector_text_signal: pos=0.2793 neg=0.1251 delta=0.1541 ratio=2.23
