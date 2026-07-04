@@ -283,6 +283,119 @@ def cuda_peak_memory_mb(device):
     )
 
 
+def tensor_values(values):
+    if values is None:
+        return []
+    if isinstance(values, torch.Tensor):
+        return [float(v) for v in values.detach().cpu().flatten().tolist()]
+    return [float(v) for v in values]
+
+
+def accumulate_rare_negative_stats(accumulator, stats):
+    if not stats or not stats.get("enabled"):
+        return accumulator
+    label_names = list(stats.get("label_names", []))
+    label_ids = list(stats.get("label_ids", []))
+    if accumulator is None:
+        accumulator = {
+            "enabled": True,
+            "label_names": label_names,
+            "label_ids": label_ids,
+            "positive_count": [0.0 for _ in label_names],
+            "available_negative_count": [0.0 for _ in label_names],
+            "selected_negative_count": [0.0 for _ in label_names],
+            "active_label_batches": [0.0 for _ in label_names],
+            "zero_positive_label_batches": [0.0 for _ in label_names],
+        }
+    for key in (
+        "positive_count",
+        "available_negative_count",
+        "selected_negative_count",
+        "active_label_batches",
+        "zero_positive_label_batches",
+    ):
+        values = tensor_values(stats.get(key))
+        for idx, value in enumerate(values):
+            accumulator[key][idx] += value
+    return accumulator
+
+
+def finalize_rare_negative_stats(accumulator):
+    if accumulator is None:
+        return {"enabled": False, "labels": []}
+    rows = []
+    for idx, label_name in enumerate(accumulator["label_names"]):
+        positive = float(accumulator["positive_count"][idx])
+        available_negative = float(accumulator["available_negative_count"][idx])
+        selected_negative = float(accumulator["selected_negative_count"][idx])
+        rows.append(
+            {
+                "label_id": int(accumulator["label_ids"][idx]),
+                "label_name": label_name,
+                "positive_count": positive,
+                "available_negative_count": available_negative,
+                "selected_negative_count": selected_negative,
+                "effective_neg_per_pos": selected_negative / max(positive, 1.0),
+                "selected_negative_fraction": selected_negative
+                / max(available_negative, 1.0),
+                "active_label_batches": int(accumulator["active_label_batches"][idx]),
+                "zero_positive_label_batches": int(
+                    accumulator["zero_positive_label_batches"][idx]
+                ),
+            }
+        )
+    return {"enabled": True, "labels": rows}
+
+
+def aggregate_history_rare_negative_stats(history):
+    accumulator = None
+    for row in history:
+        rare_stats = row.get("rare_negative_subsampling")
+        if not rare_stats or not rare_stats.get("enabled"):
+            continue
+        if accumulator is None:
+            labels = rare_stats.get("labels", [])
+            accumulator = {
+                "enabled": True,
+                "label_names": [item["label_name"] for item in labels],
+                "label_ids": [item["label_id"] for item in labels],
+                "positive_count": [0.0 for _ in labels],
+                "available_negative_count": [0.0 for _ in labels],
+                "selected_negative_count": [0.0 for _ in labels],
+                "active_label_batches": [0.0 for _ in labels],
+                "zero_positive_label_batches": [0.0 for _ in labels],
+            }
+        for idx, item in enumerate(rare_stats.get("labels", [])):
+            accumulator["positive_count"][idx] += float(item["positive_count"])
+            accumulator["available_negative_count"][idx] += float(
+                item["available_negative_count"]
+            )
+            accumulator["selected_negative_count"][idx] += float(
+                item["selected_negative_count"]
+            )
+            accumulator["active_label_batches"][idx] += int(
+                item["active_label_batches"]
+            )
+            accumulator["zero_positive_label_batches"][idx] += int(
+                item["zero_positive_label_batches"]
+            )
+    return finalize_rare_negative_stats(accumulator)
+
+
+def format_rare_negative_stats(stats):
+    if not stats or not stats.get("enabled"):
+        return "rare_neg=disabled"
+    parts = []
+    for row in stats.get("labels", []):
+        parts.append(
+            f"{row['label_name']}:pos={row['positive_count']:.0f} "
+            f"neg={row['available_negative_count']:.0f} "
+            f"sel={row['selected_negative_count']:.0f} "
+            f"eff={row['effective_neg_per_pos']:.2f}"
+        )
+    return "rare_neg=[" + "; ".join(parts) + "]"
+
+
 def train_one_epoch(model, loader, optimizer, config, device):
     model.train()
     total_loss = 0.0
@@ -300,12 +413,17 @@ def train_one_epoch(model, loader, optimizer, config, device):
     contrastive_selected_prob_mean_batches = 0
     contrastive_selected_prob_max_epoch = 0.0
     contrastive_active_batches = 0
+    rare_negative_stats_accumulator = None
     grad_accum = int(config.get("gradient_accumulation_steps", 1))
     optimizer.zero_grad(set_to_none=True)
     for step, batch in enumerate(tqdm(loader, desc="train", leave=False), start=1):
         model_inputs = move_batch(batch, device)
         outputs = model(**model_inputs)
         batch_loss = outputs["loss"].mean()
+        rare_negative_stats_accumulator = accumulate_rare_negative_stats(
+            rare_negative_stats_accumulator,
+            outputs.get("rare_negative_subsampling_stats"),
+        )
         hard_loss = outputs.get("front_hard_negative_loss")
         hard_count = outputs.get("front_hard_negative_active_count")
         if hard_loss is not None:
@@ -410,6 +528,9 @@ def train_one_epoch(model, loader, optimizer, config, device):
         ),
         "front_contrastive_selected_prob_max": contrastive_selected_prob_max_epoch,
         "front_contrastive_active_batches": contrastive_active_batches,
+        "rare_negative_subsampling": finalize_rare_negative_stats(
+            rare_negative_stats_accumulator
+        ),
     }
 
 
@@ -510,6 +631,9 @@ def write_epoch_history(path_json, path_txt, history):
             f"per_label_number_vulnerability: {row['per_label_number_vulnerability']}"
         )
         lines.append(f"per_label_f1: {[round(v, 6) for v in row['per_label_f1']]}")
+        lines.append(
+            format_rare_negative_stats(row.get("rare_negative_subsampling"))
+        )
         for threshold, metrics in row["threshold_scan"].items():
             lines.append(
                 f"threshold={threshold}: micro_f1={metrics['micro_f1']:.6f} "
@@ -727,6 +851,10 @@ def main():
                 "front_contrastive_active_batches",
                 0,
             ),
+            "rare_negative_subsampling": train_stats.get(
+                "rare_negative_subsampling",
+                {"enabled": False, "labels": []},
+            ),
         }
         history.append(record)
         payload = checkpoint_payload(model, optimizer, epoch, config, valid_loss, metrics)
@@ -760,7 +888,8 @@ def main():
             f"front_ctr_active={train_stats.get('front_contrastive_anchor_count', 0.0):.0f} "
             f"front_ctr_candidate={train_stats.get('front_contrastive_candidate_negative_count', 0.0):.0f} "
             f"front_ctr_selected={train_stats.get('front_contrastive_selected_hard_negative_count', 0.0):.0f} "
-            f"front_ctr_loss={train_stats.get('front_contrastive_loss', 0.0):.6f}"
+            f"front_ctr_loss={train_stats.get('front_contrastive_loss', 0.0):.6f} "
+            f"{format_rare_negative_stats(train_stats.get('rare_negative_subsampling'))}"
         )
         print(
             f"per_label_precision: "
@@ -931,6 +1060,24 @@ def main():
         "use_pos_weight": config.get("use_pos_weight", False),
         "pos_weight_rows": pos_weight_rows,
         "recognition_loss_type": config.get("recognition_loss_type", "bce"),
+        "rare_negative_subsampling_enabled": bool(
+            config.get("rare_negative_subsampling_enabled", False)
+        ),
+        "rare_negative_subsampling_labels": config.get(
+            "rare_negative_subsampling_labels"
+        ),
+        "rare_negative_subsampling_policy": config.get(
+            "rare_negative_subsampling_policy"
+        ),
+        "rare_negative_subsampling_negative_fraction": config.get(
+            "rare_negative_subsampling_negative_fraction"
+        ),
+        "rare_negative_subsampling_neg_per_pos": config.get(
+            "rare_negative_subsampling_neg_per_pos"
+        ),
+        "rare_negative_subsampling_skip_when_no_positive": bool(
+            config.get("rare_negative_subsampling_skip_when_no_positive", True)
+        ),
         "asl_gamma_neg": config.get("asl_gamma_neg"),
         "asl_gamma_pos": config.get("asl_gamma_pos"),
         "asl_clip": config.get("asl_clip"),
@@ -1009,6 +1156,9 @@ def main():
         summary["front_contrastive_selected_prob_max"] = max(
             [float(row.get("front_contrastive_selected_prob_max", 0.0)) for row in active_prob_rows]
             or [0.0]
+        )
+        summary["rare_negative_subsampling_totals"] = (
+            aggregate_history_rare_negative_stats(history)
         )
     final_model = model.module if isinstance(model, nn.DataParallel) else model
     if hasattr(final_model, "gate_values"):

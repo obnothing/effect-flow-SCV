@@ -130,6 +130,10 @@ class EVMChunkMILClassifier(nn.Module):
         attn_dim = int(config.get("attn_dim", 256))
         dropout = float(config.get("dropout", 0.1))
         self.hidden_dim = hidden_dim
+        self.label_names = config.get(
+            "label_names",
+            [f"label_{idx}" for idx in range(self.num_labels)],
+        )
         self.recognition_aggregation = config.get("recognition_aggregation", "topk_mean")
         self.top_k = int(config.get("top_k", 2))
         self.use_chunk_context = bool(config.get("use_chunk_context", False))
@@ -142,6 +146,58 @@ class EVMChunkMILClassifier(nn.Module):
         self.asl_gamma_pos = float(config.get("asl_gamma_pos", 0.0))
         self.asl_clip = float(config.get("asl_clip", 0.05))
         self.asl_eps = float(config.get("asl_eps", 1e-8))
+        self.rare_negative_subsampling_enabled = bool(
+            config.get("rare_negative_subsampling_enabled", False)
+        )
+        self.rare_negative_subsampling_labels = list(
+            config.get(
+                "rare_negative_subsampling_labels",
+                ["Front Running", "Bad Randomness"],
+            )
+        )
+        self.rare_negative_subsampling_label_ids = [
+            self.label_names.index(name)
+            for name in self.rare_negative_subsampling_labels
+            if name in self.label_names
+        ]
+        self.rare_negative_subsampling_policy = str(
+            config.get("rare_negative_subsampling_policy", "random_fraction")
+        )
+        self.rare_negative_subsampling_negative_fraction = float(
+            config.get("rare_negative_subsampling_negative_fraction", 1.0)
+        )
+        self.rare_negative_subsampling_neg_per_pos = float(
+            config.get("rare_negative_subsampling_neg_per_pos", 5.0)
+        )
+        self.rare_negative_subsampling_skip_when_no_positive = bool(
+            config.get("rare_negative_subsampling_skip_when_no_positive", True)
+        )
+        if self.rare_negative_subsampling_enabled:
+            if self.recognition_loss_type != "bce":
+                raise ValueError(
+                    "rare_negative_subsampling_enabled requires recognition_loss_type=bce"
+                )
+            if not self.rare_negative_subsampling_label_ids:
+                raise ValueError(
+                    "rare_negative_subsampling_enabled=true requires at least one "
+                    "rare_negative_subsampling_label present in label_names"
+                )
+            if self.rare_negative_subsampling_policy not in {
+                "random_fraction",
+                "random_pos_ratio",
+            }:
+                raise ValueError(
+                    "rare_negative_subsampling_policy must be one of: "
+                    "random_fraction, random_pos_ratio"
+                )
+            if not (0.0 < self.rare_negative_subsampling_negative_fraction <= 1.0):
+                raise ValueError(
+                    "rare_negative_subsampling_negative_fraction must be in (0, 1]"
+                )
+            if self.rare_negative_subsampling_neg_per_pos <= 0:
+                raise ValueError(
+                    "rare_negative_subsampling_neg_per_pos must be positive"
+                )
 
         if self.use_chunk_context:
             self.chunk_context_encoder = ChunkContextEncoder(
@@ -182,9 +238,104 @@ class EVMChunkMILClassifier(nn.Module):
     def set_recognition_pos_weight(self, pos_weight):
         self.recognition_pos_weight = pos_weight
 
-    def compute_recognition_loss(self, recognition_logits, multi_labels):
+    def _empty_rare_negative_subsampling_stats(self, device):
+        size = len(self.rare_negative_subsampling_label_ids)
+        zero = torch.zeros(size, device=device, dtype=torch.float32)
+        return {
+            "enabled": bool(self.rare_negative_subsampling_enabled),
+            "label_names": [
+                self.label_names[idx] for idx in self.rare_negative_subsampling_label_ids
+            ],
+            "label_ids": list(self.rare_negative_subsampling_label_ids),
+            "positive_count": zero.clone(),
+            "available_negative_count": zero.clone(),
+            "selected_negative_count": zero.clone(),
+            "effective_neg_per_pos": zero.clone(),
+            "selected_negative_fraction": zero.clone(),
+            "active_label_batches": zero.clone(),
+            "zero_positive_label_batches": zero.clone(),
+        }
+
+    def _build_rare_negative_subsampling_mask(self, multi_labels):
+        labels = multi_labels.float()
+        device = labels.device
+        mask = torch.ones_like(labels, dtype=torch.bool, device=device)
+        stats = self._empty_rare_negative_subsampling_stats(device)
+        if not self.rare_negative_subsampling_enabled:
+            return mask, stats
+
+        for row_idx, label_id in enumerate(self.rare_negative_subsampling_label_ids):
+            targets = labels[:, label_id] > 0.5
+            negatives = ~targets
+            positive_count = targets.float().sum()
+            negative_count = negatives.float().sum()
+            stats["positive_count"][row_idx] = positive_count
+            stats["available_negative_count"][row_idx] = negative_count
+
+            has_positive = bool((positive_count > 0).detach().cpu().item())
+            if has_positive:
+                stats["active_label_batches"][row_idx] = 1.0
+            else:
+                stats["zero_positive_label_batches"][row_idx] = 1.0
+                if self.rare_negative_subsampling_skip_when_no_positive:
+                    mask[:, label_id] = False
+                    continue
+
+            selected_negatives = torch.zeros_like(negatives)
+            negative_indices = torch.nonzero(negatives, as_tuple=False).flatten()
+            negative_count_int = int(negative_indices.numel())
+            if negative_count_int > 0:
+                if self.rare_negative_subsampling_policy == "random_fraction":
+                    target_negative_count = int(
+                        torch.ceil(
+                            negative_count
+                            * self.rare_negative_subsampling_negative_fraction
+                        )
+                        .clamp(min=0)
+                        .detach()
+                        .cpu()
+                        .item()
+                    )
+                elif self.rare_negative_subsampling_policy == "random_pos_ratio":
+                    target_negative_count = int(
+                        torch.ceil(
+                            positive_count
+                            * self.rare_negative_subsampling_neg_per_pos
+                        )
+                        .clamp(min=0)
+                        .detach()
+                        .cpu()
+                        .item()
+                    )
+                else:
+                    raise ValueError(
+                        "Unsupported rare_negative_subsampling_policy: "
+                        f"{self.rare_negative_subsampling_policy}"
+                    )
+                target_negative_count = min(negative_count_int, target_negative_count)
+                if target_negative_count > 0:
+                    order = torch.randperm(negative_count_int, device=device)[
+                        :target_negative_count
+                    ]
+                    selected_negatives[negative_indices.index_select(0, order)] = True
+
+            label_mask = targets | selected_negatives
+            mask[:, label_id] = label_mask
+            selected_count = selected_negatives.float().sum()
+            stats["selected_negative_count"][row_idx] = selected_count
+            stats["selected_negative_fraction"][row_idx] = selected_count / negative_count.clamp_min(1.0)
+            stats["effective_neg_per_pos"][row_idx] = selected_count / positive_count.clamp_min(1.0)
+        return mask, stats
+
+    def compute_recognition_loss(
+        self,
+        recognition_logits,
+        multi_labels,
+        return_stats=False,
+    ):
+        stats = self._empty_rare_negative_subsampling_stats(recognition_logits.device)
         if self.recognition_loss_type == "asl":
-            return asymmetric_multilabel_loss(
+            loss = asymmetric_multilabel_loss(
                 recognition_logits,
                 multi_labels.float(),
                 gamma_neg=self.asl_gamma_neg,
@@ -192,16 +343,31 @@ class EVMChunkMILClassifier(nn.Module):
                 clip=self.asl_clip,
                 eps=self.asl_eps,
             )
-        if self.recognition_pos_weight is None:
-            return F.binary_cross_entropy_with_logits(
-                recognition_logits,
-                multi_labels.float(),
+            return (loss, stats) if return_stats else loss
+        pos_weight = (
+            None
+            if self.recognition_pos_weight is None
+            else self.recognition_pos_weight.to(
+                device=recognition_logits.device,
+                dtype=recognition_logits.dtype,
             )
-        return F.binary_cross_entropy_with_logits(
+        )
+        raw_loss = F.binary_cross_entropy_with_logits(
             recognition_logits,
             multi_labels.float(),
-            pos_weight=self.recognition_pos_weight,
+            pos_weight=pos_weight,
+            reduction="none",
         )
+        if not (self.training and self.rare_negative_subsampling_enabled):
+            loss = raw_loss.mean()
+            return (loss, stats) if return_stats else loss
+
+        loss_mask, stats = self._build_rare_negative_subsampling_mask(multi_labels)
+        masked_loss = raw_loss * loss_mask.to(dtype=raw_loss.dtype)
+        label_denominator = loss_mask.sum(dim=0).clamp_min(1).to(dtype=raw_loss.dtype)
+        label_losses = masked_loss.sum(dim=0) / label_denominator
+        loss = label_losses.mean()
+        return (loss, stats) if return_stats else loss
 
     def masked_mean(self, h, chunk_mask):
         mask = chunk_mask.unsqueeze(-1).type_as(h)
@@ -1673,14 +1839,18 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         front_contrastive_selected_hard_negative_count = torch.tensor(0.0, device=h.device)
         front_contrastive_selected_prob_mean = torch.tensor(0.0, device=h.device)
         front_contrastive_selected_prob_max = torch.tensor(0.0, device=h.device)
+        rare_negative_subsampling_stats = self._empty_rare_negative_subsampling_stats(
+            h.device
+        )
         if binary_label is not None and multi_labels is not None:
             detection_loss = self.detection_loss_fn(
                 detection_logits,
                 binary_label.float(),
             )
-            recognition_loss = self.compute_recognition_loss(
+            recognition_loss, rare_negative_subsampling_stats = self.compute_recognition_loss(
                 recognition_logits,
                 multi_labels,
+                return_stats=True,
             )
             active_beta = F.softplus(self.beta_reliable_raw)
             active_gamma = F.softplus(self.gamma_reliable_raw)
@@ -1769,6 +1939,7 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             "front_contrastive_selected_hard_negative_count": front_contrastive_selected_hard_negative_count,
             "front_contrastive_selected_prob_mean": front_contrastive_selected_prob_mean,
             "front_contrastive_selected_prob_max": front_contrastive_selected_prob_max,
+            "rare_negative_subsampling_stats": rare_negative_subsampling_stats,
             "detection_logits": detection_logits,
             "recognition_logits": recognition_logits,
             "chunk_logits": attn_logits,

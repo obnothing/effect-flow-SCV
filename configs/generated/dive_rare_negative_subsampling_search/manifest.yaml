@@ -1,0 +1,79 @@
+base_config: configs/generated/dive_side_scale_search/train_dive_side_scale_150_ep50.yaml
+output_config_dir: configs/generated/dive_rare_negative_subsampling_search
+checkpoint_root: checkpoints/dive_rare_negative_subsampling_search
+result_root: results/dive_rare_negative_subsampling_search
+seed: 42
+target_labels:
+- Front Running
+- Bad Randomness
+configs:
+- dataset: DIVE
+  variant: rare_neg_frac050
+  ratio: frac050
+  policy: random_fraction
+  negative_fraction: 0.5
+  neg_per_pos: null
+  target_labels:
+  - Front Running
+  - Bad Randomness
+  config: configs/generated/dive_rare_negative_subsampling_search/train_dive_rare_neg_frac050.yaml
+  experiment_name: train_dive_rare_neg_frac050
+  checkpoint_dir: checkpoints/dive_rare_negative_subsampling_search/rare_neg_frac050
+  train_result_dir: results/dive_rare_negative_subsampling_search/rare_neg_frac050/train
+  eval_result_root: results/dive_rare_negative_subsampling_search/rare_neg_frac050
+- dataset: DIVE
+  variant: rare_neg_frac025
+  ratio: frac025
+  policy: random_fraction
+  negative_fraction: 0.25
+  neg_per_pos: null
+  target_labels:
+  - Front Running
+  - Bad Randomness
+  config: configs/generated/dive_rare_negative_subsampling_search/train_dive_rare_neg_frac025.yaml
+  experiment_name: train_dive_rare_neg_frac025
+  checkpoint_dir: checkpoints/dive_rare_negative_subsampling_search/rare_neg_frac025
+  train_result_dir: results/dive_rare_negative_subsampling_search/rare_neg_frac025/train
+  eval_result_root: results/dive_rare_negative_subsampling_search/rare_neg_frac025
+- dataset: DIVE
+  variant: rare_neg_frac0125
+  ratio: frac0125
+  policy: random_fraction
+  negative_fraction: 0.125
+  neg_per_pos: null
+  target_labels:
+  - Front Running
+  - Bad Randomness
+  config: configs/generated/dive_rare_negative_subsampling_search/train_dive_rare_neg_frac0125.yaml
+  experiment_name: train_dive_rare_neg_frac0125
+  checkpoint_dir: checkpoints/dive_rare_negative_subsampling_search/rare_neg_frac0125
+  train_result_dir: results/dive_rare_negative_subsampling_search/rare_neg_frac0125/train
+  eval_result_root: results/dive_rare_negative_subsampling_search/rare_neg_frac0125
+- dataset: DIVE
+  variant: rare_neg_ratio005
+  ratio: ratio005
+  policy: random_pos_ratio
+  negative_fraction: null
+  neg_per_pos: 5.0
+  target_labels:
+  - Front Running
+  - Bad Randomness
+  config: configs/generated/dive_rare_negative_subsampling_search/train_dive_rare_neg_ratio005.yaml
+  experiment_name: train_dive_rare_neg_ratio005
+  checkpoint_dir: checkpoints/dive_rare_negative_subsampling_search/rare_neg_ratio005
+  train_result_dir: results/dive_rare_negative_subsampling_search/rare_neg_ratio005/train
+  eval_result_root: results/dive_rare_negative_subsampling_search/rare_neg_ratio005
+- dataset: DIVE
+  variant: rare_neg_ratio003
+  ratio: ratio003
+  policy: random_pos_ratio
+  negative_fraction: null
+  neg_per_pos: 3.0
+  target_labels:
+  - Front Running
+  - Bad Randomness
+  config: configs/generated/dive_rare_negative_subsampling_search/train_dive_rare_neg_ratio003.yaml
+  experiment_name: train_dive_rare_neg_ratio003
+  checkpoint_dir: checkpoints/dive_rare_negative_subsampling_search/rare_neg_ratio003
+  train_result_dir: results/dive_rare_negative_subsampling_search/rare_neg_ratio003/train
+  eval_result_root: results/dive_rare_negative_subsampling_search/rare_neg_ratio003
