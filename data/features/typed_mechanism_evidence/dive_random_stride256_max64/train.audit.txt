@@ -1,0 +1,31 @@
+DIVE typed mechanism evidence audit: train
+
+Front Running support=1787 negatives=18347
+Top positive-vs-negative typed features:
+  front_price_reserve_balance_text: pos_mean=0.0537 neg_mean=0.5090 delta=-0.4552 pos_hit=0.0537 neg_hit=0.5090 hit_delta=-0.4552 odds=0.06 mi=0.05931
+  front_selector_swap_or_order: pos_mean=0.0112 neg_mean=0.3564 delta=-0.3452 pos_hit=0.0112 neg_hit=0.3564 hit_delta=-0.3452 odds=0.02 mi=0.04642
+  front_selector_erc20_trade: pos_mean=0.6284 neg_mean=0.8962 delta=-0.2678 pos_hit=0.6284 neg_hit=0.8962 hit_delta=-0.2678 odds=0.20 mi=0.02801
+  front_missing_deadline_guard: pos_mean=0.6337 neg_mean=0.4346 delta=0.1991 pos_hit=0.5943 neg_hit=0.3680 hit_delta=0.2263 odds=2.51 mi=0.01221
+  front_calldata_to_branch_then_sstore: pos_mean=0.9105 neg_mean=0.6964 delta=0.2141 pos_hit=0.9105 neg_hit=0.6964 hit_delta=0.2141 odds=4.40 mi=0.01600
+  front_calldata_to_sstore: pos_mean=0.8303 neg_mean=0.6086 delta=0.2217 pos_hit=0.8142 neg_hit=0.6009 hit_delta=0.2134 odds=2.90 mi=0.01240
+  front_calldata_to_call: pos_mean=0.5434 neg_mean=0.2820 delta=0.2613 pos_hit=0.5406 neg_hit=0.3366 hit_delta=0.2039 odds=2.31 mi=0.01013
+  front_combined_typed_score: pos_mean=0.7335 neg_mean=0.7779 delta=-0.0444 pos_hit=0.9703 neg_hit=0.8278 hit_delta=0.1426 odds=6.62 mi=0.01224
+  front_calldata_to_log: pos_mean=0.4910 neg_mean=0.3592 delta=0.1319 pos_hit=0.4477 neg_hit=0.3194 hit_delta=0.1283 odds=1.73 mi=0.00416
+  front_deadline_guard_present: pos_mean=0.3492 neg_mean=0.4729 delta=-0.1237 pos_hit=0.3083 neg_hit=0.3967 hit_delta=-0.0884 odds=0.68 mi=0.00197
+  front_missing_commit_reveal_proxy: pos_mean=0.6238 neg_mean=0.5836 delta=0.0402 pos_hit=0.2669 neg_hit=0.1930 hit_delta=0.0739 odds=1.52 mi=0.00187
+  front_selector_bid_or_auction: pos_mean=0.0325 neg_mean=0.0215 delta=0.0109 pos_hit=0.0325 neg_hit=0.0215 hit_delta=0.0109 odds=1.50 mi=0.00028
+
+Bad Randomness support=1787 negatives=18347
+Top positive-vs-negative typed features:
+  bad_env_to_sha3: pos_mean=0.8276 neg_mean=0.4054 delta=0.4223 pos_hit=0.7823 neg_hit=0.3178 hit_delta=0.4645 odds=7.68 mi=0.05286
+  bad_combined_typed_score: pos_mean=0.7849 neg_mean=0.3832 delta=0.4017 pos_hit=0.8741 neg_hit=0.4109 hit_delta=0.4632 odds=9.88 mi=0.05461
+  bad_env_to_arithmetic: pos_mean=0.8236 neg_mean=0.4109 delta=0.4127 pos_hit=0.7773 neg_hit=0.3328 hit_delta=0.4445 odds=6.96 mi=0.04817
+  bad_env_to_sstore_result: pos_mean=0.8358 neg_mean=0.4207 delta=0.4151 pos_hit=0.7941 neg_hit=0.3509 hit_delta=0.4432 odds=7.10 mi=0.04794
+  bad_env_to_index_like_access: pos_mean=0.8808 neg_mean=0.4756 delta=0.4052 pos_hit=0.9088 neg_hit=0.5081 hit_delta=0.4006 odds=9.55 mi=0.04431
+  bad_env_to_branch_then_sstore: pos_mean=0.8982 neg_mean=0.5334 delta=0.3648 pos_hit=0.8982 neg_hit=0.5334 hit_delta=0.3648 odds=7.65 mi=0.03703
+  bad_env_source_present: pos_mean=0.9647 neg_mean=0.6058 delta=0.3590 pos_hit=0.9647 neg_hit=0.6058 hit_delta=0.3590 odds=17.35 mi=0.04349
+  bad_no_oracle_like_external_call: pos_mean=0.4633 neg_mean=0.1306 delta=0.3326 pos_hit=0.4488 neg_hit=0.1188 hit_delta=0.3300 odds=6.00 mi=0.03772
+  bad_env_to_transfer_amount: pos_mean=0.5529 neg_mean=0.3732 delta=0.1797 pos_hit=0.4645 neg_hit=0.2957 hit_delta=0.1687 odds=2.06 mi=0.00730
+  bad_env_to_mod: pos_mean=0.2252 neg_mean=0.0351 delta=0.1902 pos_hit=0.1740 neg_hit=0.0175 hit_delta=0.1565 odds=11.25 mi=0.02627
+  bad_random_text: pos_mean=0.0627 neg_mean=0.0258 delta=0.0369 pos_hit=0.0627 neg_hit=0.0258 hit_delta=0.0369 odds=2.47 mi=0.00220
+  bad_time_condition_only_counter: pos_mean=0.0818 neg_mean=0.0814 delta=0.0004 pos_hit=0.0593 neg_hit=0.0523 hit_delta=0.0070 odds=1.14 mi=0.00006

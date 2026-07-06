@@ -1,0 +1,39 @@
+DIVE typed mechanism evidence cache
+
+target_labels: ['Front Running', 'Bad Randomness']
+feature_dim: 28
+
+features:
+- front_selector_swap_or_order
+- front_selector_bid_or_auction
+- front_selector_erc20_trade
+- front_price_reserve_balance_text
+- front_calldata_to_sstore
+- front_calldata_to_call
+- front_calldata_to_log
+- front_calldata_to_branch_then_sstore
+- front_calldata_to_amount_arithmetic
+- front_deadline_guard_present
+- front_slippage_guard_present
+- front_commit_reveal_proxy_present
+- front_missing_deadline_guard
+- front_missing_slippage_guard
+- front_missing_commit_reveal_proxy
+- front_combined_typed_score
+- bad_env_source_present
+- bad_env_to_sha3
+- bad_env_to_mod
+- bad_env_to_arithmetic
+- bad_env_to_index_like_access
+- bad_env_to_transfer_amount
+- bad_env_to_sstore_result
+- bad_env_to_branch_then_sstore
+- bad_random_text
+- bad_no_oracle_like_external_call
+- bad_time_condition_only_counter
+- bad_combined_typed_score
+
+splits:
+- train: samples=20134 mean_real_chunks=21.61
+- valid: samples=2233 mean_real_chunks=22.01
+- test: samples=2233 mean_real_chunks=22.41

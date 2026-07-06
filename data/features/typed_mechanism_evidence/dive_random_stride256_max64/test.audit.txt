@@ -1,0 +1,57 @@
+DIVE typed mechanism evidence audit: test
+
+Front Running support=50 negatives=2183
+Top positive-vs-negative typed features:
+  front_price_reserve_balance_text: pos_mean=0.0400 neg_mean=0.5318 delta=-0.4918 pos_hit=0.0400 neg_hit=0.5318 hit_delta=-0.4918 odds=0.04 mi=0.01858
+  front_selector_swap_or_order: pos_mean=0.0400 neg_mean=0.3660 delta=-0.3260 pos_hit=0.0400 neg_hit=0.3660 hit_delta=-0.3260 odds=0.07 mi=0.00984
+  front_calldata_to_log: pos_mean=0.6500 neg_mean=0.3587 delta=0.2913 pos_hit=0.5800 neg_hit=0.3207 hit_delta=0.2593 odds=2.92 mi=0.00447
+  front_calldata_to_sstore: pos_mean=0.8733 neg_mean=0.6279 delta=0.2455 pos_hit=0.8800 neg_hit=0.6235 hit_delta=0.2565 odds=4.40 mi=0.00526
+  front_calldata_to_branch_then_sstore: pos_mean=0.9000 neg_mean=0.7036 delta=0.1964 pos_hit=0.9000 neg_hit=0.7036 hit_delta=0.1964 odds=3.76 mi=0.00358
+  front_missing_deadline_guard: pos_mean=0.5767 neg_mean=0.4358 delta=0.1409 pos_hit=0.5200 neg_hit=0.3656 hit_delta=0.1544 odds=1.88 mi=0.00156
+  front_selector_erc20_trade: pos_mean=0.7800 neg_mean=0.9015 delta=-0.1215 pos_hit=0.7800 neg_hit=0.9015 hit_delta=-0.1215 odds=0.39 mi=0.00200
+  front_combined_typed_score: pos_mean=0.7422 neg_mean=0.7872 delta=-0.0450 pos_hit=0.9400 neg_hit=0.8319 hit_delta=0.1081 odds=3.13 mi=0.00168
+  front_deadline_guard_present: pos_mean=0.3900 neg_mean=0.4769 delta=-0.0869 pos_hit=0.3400 neg_hit=0.4022 hit_delta=-0.0622 odds=0.77 mi=0.00026
+  front_calldata_to_call: pos_mean=0.3867 neg_mean=0.2913 delta=0.0953 pos_hit=0.4000 neg_hit=0.3481 hit_delta=0.0519 odds=1.25 mi=0.00018
+  front_missing_commit_reveal_proxy: pos_mean=0.6100 neg_mean=0.5839 delta=0.0261 pos_hit=0.2400 neg_hit=0.1892 hit_delta=0.0508 odds=1.35 mi=0.00025
+  front_selector_bid_or_auction: pos_mean=0.0600 neg_mean=0.0266 delta=0.0334 pos_hit=0.0600 neg_hit=0.0266 hit_delta=0.0334 odds=2.29 mi=0.00050
+Top baseline confusion differences:
+  front_calldata_to_call: tp=0.3214/0.3214(n=28) fp=0.6154/0.6154(n=26) fn=0.4697/0.5000(n=22) fp-tp-hit=0.2940 fn-tp-hit=0.1786
+  front_selector_erc20_trade: tp=0.7857/0.7857(n=28) fp=0.5769/0.5769(n=26) fn=0.7727/0.7727(n=22) fp-tp-hit=-0.2088 fn-tp-hit=-0.0130
+  front_calldata_to_sstore: tp=0.7738/0.7857(n=28) fp=0.9231/0.9231(n=26) fn=1.0000/1.0000(n=22) fp-tp-hit=0.1374 fn-tp-hit=0.2143
+  front_calldata_to_branch_then_sstore: tp=0.8214/0.8214(n=28) fp=0.9231/0.9231(n=26) fn=1.0000/1.0000(n=22) fp-tp-hit=0.1016 fn-tp-hit=0.1786
+  front_deadline_guard_present: tp=0.2500/0.1786(n=28) fp=0.2885/0.2692(n=26) fn=0.5682/0.5455(n=22) fp-tp-hit=0.0907 fn-tp-hit=0.3669
+  front_missing_deadline_guard: tp=0.6905/0.6071(n=28) fp=0.7115/0.6923(n=26) fn=0.4318/0.4091(n=22) fp-tp-hit=0.0852 fn-tp-hit=-0.1981
+  front_calldata_to_log: tp=0.5714/0.5357(n=28) fp=0.5192/0.4615(n=26) fn=0.7500/0.6364(n=22) fp-tp-hit=-0.0742 fn-tp-hit=0.1006
+  front_combined_typed_score: tp=0.7199/0.8929(n=28) fp=0.7298/0.9615(n=26) fn=0.7705/1.0000(n=22) fp-tp-hit=0.0687 fn-tp-hit=0.1071
+  front_selector_swap_or_order: tp=0.0714/0.0714(n=28) fp=0.0385/0.0385(n=26) fn=0.0000/0.0000(n=22) fp-tp-hit=-0.0330 fn-tp-hit=-0.0714
+  front_missing_commit_reveal_proxy: tp=0.5893/0.2143(n=28) fp=0.6154/0.2308(n=26) fn=0.6364/0.2727(n=22) fp-tp-hit=0.0165 fn-tp-hit=0.0584
+  front_price_reserve_balance_text: tp=0.0714/0.0714(n=28) fp=0.0769/0.0769(n=26) fn=0.0000/0.0000(n=22) fp-tp-hit=0.0055 fn-tp-hit=-0.0714
+  front_selector_bid_or_auction: tp=0.0357/0.0357(n=28) fp=0.0385/0.0385(n=26) fn=0.0909/0.0909(n=22) fp-tp-hit=0.0027 fn-tp-hit=0.0552
+
+Bad Randomness support=72 negatives=2161
+Top positive-vs-negative typed features:
+  bad_env_to_sha3: pos_mean=0.8750 neg_mean=0.4246 delta=0.4504 pos_hit=0.8056 neg_hit=0.3323 hit_delta=0.4733 odds=8.28 mi=0.02128
+  bad_combined_typed_score: pos_mean=0.8000 neg_mean=0.3968 delta=0.4032 pos_hit=0.8889 neg_hit=0.4216 hit_delta=0.4673 odds=10.88 mi=0.02165
+  bad_env_to_arithmetic: pos_mean=0.8507 neg_mean=0.4309 delta=0.4198 pos_hit=0.8056 neg_hit=0.3517 hit_delta=0.4539 odds=7.60 mi=0.01949
+  bad_env_to_sstore_result: pos_mean=0.8958 neg_mean=0.4408 delta=0.4551 pos_hit=0.8194 neg_hit=0.3693 hit_delta=0.4502 odds=7.71 mi=0.01923
+  bad_env_to_branch_then_sstore: pos_mean=0.9722 neg_mean=0.5479 delta=0.4243 pos_hit=0.9722 neg_hit=0.5479 hit_delta=0.4243 odds=27.92 mi=0.02179
+  bad_env_to_index_like_access: pos_mean=0.9028 neg_mean=0.4978 delta=0.4050 pos_hit=0.9167 neg_hit=0.5322 hit_delta=0.3845 odds=9.57 mi=0.01605
+  bad_env_source_present: pos_mean=1.0000 neg_mean=0.6344 delta=0.3656 pos_hit=1.0000 neg_hit=0.6344 hit_delta=0.3656 odds=577.47 mi=0.02073
+  bad_no_oracle_like_external_call: pos_mean=0.4074 neg_mean=0.1238 delta=0.2836 pos_hit=0.3889 neg_hit=0.1124 hit_delta=0.2764 odds=4.99 mi=0.01128
+  bad_env_to_transfer_amount: pos_mean=0.5972 neg_mean=0.3915 delta=0.2057 pos_hit=0.5417 neg_hit=0.3128 hit_delta=0.2288 odds=2.59 mi=0.00502
+  bad_random_text: pos_mean=0.1389 neg_mean=0.0278 delta=0.1111 pos_hit=0.1389 neg_hit=0.0278 hit_delta=0.1111 odds=5.49 mi=0.00521
+  bad_env_to_mod: pos_mean=0.1389 neg_mean=0.0319 delta=0.1070 pos_hit=0.1111 neg_hit=0.0130 hit_delta=0.0982 odds=8.92 mi=0.00625
+  bad_time_condition_only_counter: pos_mean=0.0694 neg_mean=0.0820 delta=-0.0125 pos_hit=0.0556 neg_hit=0.0528 hit_delta=0.0028 odds=1.06 mi=0.00000
+Top baseline confusion differences:
+  bad_env_to_sha3: tp=0.9429/0.9143(n=35) fp=0.8333/0.7500(n=12) fn=0.8108/0.7027(n=37) fp-tp-hit=-0.1643 fn-tp-hit=-0.2116
+  bad_no_oracle_like_external_call: tp=0.1714/0.1714(n=35) fp=0.3333/0.3333(n=12) fn=0.6306/0.5946(n=37) fp-tp-hit=0.1619 fn-tp-hit=0.4232
+  bad_env_to_transfer_amount: tp=0.7143/0.6857(n=35) fp=0.8750/0.8333(n=12) fn=0.4865/0.4054(n=37) fp-tp-hit=0.1476 fn-tp-hit=-0.2803
+  bad_combined_typed_score: tp=0.8136/0.9429(n=35) fp=0.7931/0.8333(n=12) fn=0.7872/0.8378(n=37) fp-tp-hit=-0.1095 fn-tp-hit=-0.1050
+  bad_env_to_mod: tp=0.1000/0.0857(n=35) fp=0.0000/0.0000(n=12) fn=0.1757/0.1351(n=37) fp-tp-hit=-0.0857 fn-tp-hit=0.0494
+  bad_time_condition_only_counter: tp=0.0429/0.0286(n=35) fp=0.1389/0.0833(n=12) fn=0.0946/0.0811(n=37) fp-tp-hit=0.0548 fn-tp-hit=0.0525
+  bad_env_to_arithmetic: tp=0.9286/0.9714(n=35) fp=0.9583/0.9167(n=12) fn=0.7770/0.6486(n=37) fp-tp-hit=-0.0548 fn-tp-hit=-0.3228
+  bad_env_to_index_like_access: tp=0.9810/0.9714(n=35) fp=0.9722/1.0000(n=12) fn=0.8288/0.8649(n=37) fp-tp-hit=0.0286 fn-tp-hit=-0.1066
+  bad_env_to_sstore_result: tp=0.9714/0.9429(n=35) fp=0.9167/0.9167(n=12) fn=0.8243/0.7027(n=37) fp-tp-hit=-0.0262 fn-tp-hit=-0.2402
+  bad_random_text: tp=0.0857/0.0857(n=35) fp=0.0833/0.0833(n=12) fn=0.1892/0.1892(n=37) fp-tp-hit=-0.0024 fn-tp-hit=0.1035
+  bad_env_to_branch_then_sstore: tp=1.0000/1.0000(n=35) fp=1.0000/1.0000(n=12) fn=0.9459/0.9459(n=37) fp-tp-hit=0.0000 fn-tp-hit=-0.0541
+  front_selector_swap_or_order: tp=0.0000/0.0000(n=35) fp=0.0000/0.0000(n=12) fn=0.0000/0.0000(n=37) fp-tp-hit=0.0000 fn-tp-hit=0.0000
