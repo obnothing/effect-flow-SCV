@@ -1112,6 +1112,63 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             self.gamma_graph_raw = nn.Parameter(
                 torch.full((self.num_labels,), self._softplus_inverse(graph_gamma_init))
             )
+        default_major_labels = [
+            "Reentrancy",
+            "Access Control",
+            "Arithmetic",
+            "Unchecked Return Values",
+            "DoS",
+            "Time manipulation",
+        ]
+        major_label_names = list(
+            config.get("major_enhancement_labels", default_major_labels)
+        )
+        major_label_mask = torch.zeros(self.num_labels, dtype=torch.float32)
+        for name in major_label_names:
+            if name in label_names:
+                major_label_mask[label_names.index(name)] = 1.0
+        self.register_buffer("major_enhancement_label_mask", major_label_mask)
+        self.major_global_residual_enabled = bool(
+            config.get("major_global_residual_enabled", False)
+        )
+        self.major_multipool_enabled = bool(
+            config.get("major_multipool_enabled", False)
+        )
+        major_dropout = float(config.get("major_enhancement_dropout", config.get("dropout", 0.1)))
+        major_scale_init = float(config.get("major_enhancement_scale_init", 0.1))
+        self.major_global_residual_scale_raw = None
+        self.major_multipool_scale_raw = None
+        self.major_global_residual_mlp = None
+        self.major_multipool_label_out = None
+        self.major_multipool_label_bias = None
+        self.major_multipool_top_k = int(config.get("major_multipool_top_k", 4))
+        if self.major_multipool_top_k <= 0:
+            raise ValueError("major_multipool_top_k must be positive")
+        if self.major_global_residual_enabled:
+            residual_hidden_dim = int(
+                config.get("major_global_residual_hidden_dim", max(64, self.hidden_dim // 2))
+            )
+            if residual_hidden_dim <= 0:
+                raise ValueError("major_global_residual_hidden_dim must be positive")
+            self.major_global_residual_mlp = nn.Sequential(
+                nn.LayerNorm(self.hidden_dim),
+                nn.Linear(self.hidden_dim, residual_hidden_dim),
+                nn.GELU(),
+                nn.Dropout(major_dropout),
+                nn.Linear(residual_hidden_dim, self.num_labels),
+            )
+            self.major_global_residual_scale_raw = nn.Parameter(
+                torch.tensor(self._softplus_inverse(major_scale_init))
+            )
+        if self.major_multipool_enabled:
+            self.major_multipool_label_out = nn.Parameter(
+                torch.empty(self.num_labels, self.hidden_dim * 3)
+            )
+            self.major_multipool_label_bias = nn.Parameter(torch.zeros(self.num_labels))
+            nn.init.xavier_uniform_(self.major_multipool_label_out)
+            self.major_multipool_scale_raw = nn.Parameter(
+                torch.tensor(self._softplus_inverse(major_scale_init))
+            )
         self.current_epoch = 10**9
 
     def _init_front_special_feature_masks(self):
@@ -1796,9 +1853,38 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         attn_logits = attn_logits.masked_fill(~chunk_mask.unsqueeze(-1), -1e9)
         attn_weights = torch.softmax(attn_logits, dim=1)
         z = torch.einsum("bck,bch->bkh", attn_weights, h)
+        global_h = self.masked_mean(h, chunk_mask)
         neural_logits = (
             z * self.label_out.unsqueeze(0)
         ).sum(dim=-1) + self.label_bias
+        major_mask = self.major_enhancement_label_mask.to(dtype=h.dtype).view(1, -1)
+        major_global_residual_logits = neural_logits.new_zeros(neural_logits.shape)
+        if self.major_global_residual_enabled:
+            global_scale = F.softplus(self.major_global_residual_scale_raw).to(dtype=h.dtype)
+            major_global_residual_logits = (
+                global_scale * self.major_global_residual_mlp(global_h).to(dtype=h.dtype) * major_mask
+            )
+        major_multipool_logits = neural_logits.new_zeros(neural_logits.shape)
+        if self.major_multipool_enabled:
+            top_k = min(self.major_multipool_top_k, h.shape[1])
+            masked_weights = attn_weights.masked_fill(~chunk_mask.unsqueeze(-1), -1.0)
+            top_values, top_indices = torch.topk(masked_weights, k=top_k, dim=1)
+            h_expanded = h.unsqueeze(2).expand(-1, -1, self.num_labels, -1)
+            gather_index = top_indices.unsqueeze(-1).expand(-1, -1, -1, h.shape[-1])
+            top_h = torch.gather(h_expanded, 1, gather_index)
+            valid_top = (top_values >= 0.0).unsqueeze(-1).to(dtype=h.dtype)
+            top_h = (
+                (top_h * valid_top).sum(dim=1)
+                / valid_top.sum(dim=1).clamp_min(1.0)
+            )
+            global_for_labels = global_h.unsqueeze(1).expand(-1, self.num_labels, -1)
+            multipool_repr = torch.cat([z, top_h, global_for_labels], dim=-1)
+            raw_multipool_logits = (
+                multipool_repr
+                * self.major_multipool_label_out.unsqueeze(0).to(dtype=h.dtype)
+            ).sum(dim=-1) + self.major_multipool_label_bias.unsqueeze(0).to(dtype=h.dtype)
+            multipool_scale = F.softplus(self.major_multipool_scale_raw).to(dtype=h.dtype)
+            major_multipool_logits = multipool_scale * raw_multipool_logits * major_mask
 
         attended_phi = (attn_weights * phi).sum(dim=1)
         masked_phi = phi.masked_fill(~chunk_mask.unsqueeze(-1), -1e9)
@@ -1817,9 +1903,10 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             neural_logits
             + gamma.view(1, -1) * evidence_logits
             + graph_outputs["contract_logits"]
+            + major_global_residual_logits
+            + major_multipool_logits
         )
 
-        global_h = self.masked_mean(h, chunk_mask)
         detection_logits = self.detection_classifier(global_h).squeeze(-1)
         chunk_scores = torch.sigmoid(
             attn_logits.masked_fill(~chunk_mask.unsqueeze(-1), -30.0)
@@ -1948,6 +2035,9 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             "neural_attention_logits": neural_attn_logits,
             "neural_logits": neural_logits,
             "evidence_logits": evidence_logits,
+            "major_global_residual_logits": major_global_residual_logits,
+            "major_multipool_logits": major_multipool_logits,
+            "major_enhancement_label_mask": self.major_enhancement_label_mask,
             "graph_contract_logits": graph_outputs["contract_logits"],
             "graph_raw_contract_logits": graph_outputs["raw_contract_logits"],
             "graph_chunk_scores": graph_outputs["chunk_scores"],
