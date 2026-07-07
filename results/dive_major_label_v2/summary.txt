@@ -1,0 +1,17 @@
+DIVE major-label v2 summary
+
+baseline: {'micro_f1': 0.8240858035638883, 'macro_f1': 0.7452721843450687, 'large_mean_f1': 0.7928307735135605}
+ensemble_best_micro: {'micro_f1': 0.8360528360528361, 'macro_f1': 0.7531034127883588, 'large_mean_f1': 0.8187998694577289}
+
+global_residual/best_macro_f1: micro=0.822131 macro=0.721524 large_mean=0.000000 detection=0.942914
+  Reentrancy=0.0000 | Access Control=0.0000 | Arithmetic=0.0000 | Unchecked Return Values=0.0000 | DoS=0.0000 | Time manipulation=0.0000
+global_residual_multipool/best_micro_f1: micro=0.821740 macro=0.730318 large_mean=0.000000 detection=0.944569
+  Reentrancy=0.0000 | Access Control=0.0000 | Arithmetic=0.0000 | Unchecked Return Values=0.0000 | DoS=0.0000 | Time manipulation=0.0000
+global_residual_multipool/best_macro_f1: micro=0.821740 macro=0.730318 large_mean=0.000000 detection=0.944569
+  Reentrancy=0.0000 | Access Control=0.0000 | Arithmetic=0.0000 | Unchecked Return Values=0.0000 | DoS=0.0000 | Time manipulation=0.0000
+multipool/best_micro_f1: micro=0.821044 macro=0.734596 large_mean=0.000000 detection=0.946269
+  Reentrancy=0.0000 | Access Control=0.0000 | Arithmetic=0.0000 | Unchecked Return Values=0.0000 | DoS=0.0000 | Time manipulation=0.0000
+global_residual/best_micro_f1: micro=0.820954 macro=0.728587 large_mean=0.000000 detection=0.946269
+  Reentrancy=0.0000 | Access Control=0.0000 | Arithmetic=0.0000 | Unchecked Return Values=0.0000 | DoS=0.0000 | Time manipulation=0.0000
+multipool/best_macro_f1: micro=0.818644 macro=0.719236 large_mean=0.000000 detection=0.950148
+  Reentrancy=0.0000 | Access Control=0.0000 | Arithmetic=0.0000 | Unchecked Return Values=0.0000 | DoS=0.0000 | Time manipulation=0.0000
