@@ -18,7 +18,7 @@ MAJOR_LABELS = [
 BASELINE = {
     "micro_f1": 0.8240858035638883,
     "macro_f1": 0.7452721843450687,
-    "large_mean_f1": 0.7928307735135605,
+    "large_mean_f1": 0.8059134403635607,
 }
 ENSEMBLE_BEST_MICRO = {
     "micro_f1": 0.8360528360528361,
@@ -40,28 +40,34 @@ def parse_eval_metrics(eval_dir):
     report_path = resolve(eval_dir) / "test_threshold_calibration_metrics.txt"
     if not report_path.exists():
         return None
+    threshold_payload = None
+    per_label = []
     for line in report_path.read_text(encoding="utf-8").splitlines():
         if line.startswith("per_label_threshold_result: "):
-            payload = ast.literal_eval(line.split(": ", 1)[1])
-            per_label = payload.get("per_label_metrics", [])
-            large = [
-                row
-                for row in per_label
-                if row.get("label_name") in MAJOR_LABELS
-            ]
-            large_mean = (
-                sum(float(row.get("f1", 0.0)) for row in large) / len(large)
-                if large
-                else 0.0
-            )
-            return {
-                "micro_f1": float(payload.get("recognition_micro_f1", 0.0)),
-                "macro_f1": float(payload.get("recognition_macro_f1", 0.0)),
-                "detection_f1": float(payload.get("detection_f1", 0.0)),
-                "large_mean_f1": large_mean,
-                "per_label": per_label,
-            }
-    return None
+            threshold_payload = ast.literal_eval(line.split(": ", 1)[1])
+        elif line.startswith("per_label_metrics: "):
+            per_label = ast.literal_eval(line.split(": ", 1)[1])
+    if threshold_payload is None:
+        return None
+    if not per_label:
+        per_label = threshold_payload.get("per_label_metrics", [])
+    large = [
+        row
+        for row in per_label
+        if row.get("label_name") in MAJOR_LABELS
+    ]
+    large_mean = (
+        sum(float(row.get("f1", 0.0)) for row in large) / len(large)
+        if large
+        else 0.0
+    )
+    return {
+        "micro_f1": float(threshold_payload.get("recognition_micro_f1", 0.0)),
+        "macro_f1": float(threshold_payload.get("recognition_macro_f1", 0.0)),
+        "detection_f1": float(threshold_payload.get("detection_f1", 0.0)),
+        "large_mean_f1": large_mean,
+        "per_label": per_label,
+    }
 
 
 def parse_args():
