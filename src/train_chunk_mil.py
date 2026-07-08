@@ -562,6 +562,9 @@ def evaluate(model, loader, config, device):
         multi_labels,
         threshold=float(config.get("threshold", 0.5)),
         scan_thresholds=config.get("thresholds", [0.5]),
+        derived_detection_from_multilabel=bool(
+            config.get("derived_detection_from_multilabel", False)
+        ),
     )
     return float(np.mean(losses)) if losses else 0.0, metrics
 
@@ -934,6 +937,14 @@ def main():
         "model_type": config.get("model_type", "evm_chunk_mil"),
         "ablation_dataset": config.get("ablation_dataset"),
         "ablation_variant": config.get("ablation_variant"),
+        "task_mode": config.get("task_mode", "joint_detection_recognition"),
+        "detection_head_enabled": bool(config.get("detection_head_enabled", True)),
+        "detection_loss_weight": float(config.get("detection_loss_weight", 1.0)),
+        "recognition_loss_weight": float(config.get("recognition_loss_weight", 1.0)),
+        "derived_detection_from_multilabel": bool(
+            config.get("derived_detection_from_multilabel", False)
+        ),
+        "detection_source": best_metrics.get("detection_source", "detection_head"),
         "side_evidence_enabled": bool(config.get("side_evidence_enabled", False)),
         "coefficient_scale": config.get("coefficient_scale"),
         "encoder_frozen": True,

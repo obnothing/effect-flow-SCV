@@ -19,6 +19,7 @@ from metrics import (
     binary_detection_metrics,
     compute_metrics,
     compute_multilabel_metrics_from_probs,
+    derived_detection_metrics_from_multilabel_probs,
     precision_recall_f1,
     sigmoid,
 )
@@ -195,13 +196,21 @@ def recognition_metrics_from_predictions(predictions, thresholds):
     return compute_multilabel_metrics_from_probs(labels, probs, thresholds)
 
 
-def full_metrics_from_predictions(predictions, thresholds):
+def full_metrics_from_predictions(predictions, thresholds, derived_detection=False):
     recognition = recognition_metrics_from_predictions(predictions, thresholds)
-    detection = binary_detection_metrics(
-        predictions["detection_logits"],
-        predictions["binary_labels"],
-        threshold=0.5,
-    )
+    if derived_detection:
+        detection = derived_detection_metrics_from_multilabel_probs(
+            predictions["multi_labels"],
+            sigmoid(predictions["recognition_logits"]),
+            thresholds,
+        )
+    else:
+        detection = binary_detection_metrics(
+            predictions["detection_logits"],
+            predictions["binary_labels"],
+            threshold=0.5,
+        )
+        detection["detection_source"] = "detection_head"
     metrics = {}
     metrics.update(detection)
     metrics.update(recognition)
@@ -215,6 +224,7 @@ def metric_summary(metrics, threshold_mode, threshold_source, thresholds):
         "threshold_mode": threshold_mode,
         "threshold_source": threshold_source,
         "thresholds": thresholds,
+        "detection_source": metrics.get("detection_source", "detection_head"),
         "detection_accuracy": metrics["detection_accuracy"],
         "detection_precision": metrics["detection_precision"],
         "detection_recall": metrics["detection_recall"],
@@ -508,13 +518,25 @@ def threshold_array_for_export(thresholds, num_labels):
     return values
 
 
-def write_prediction_jsonl(path, predictions, thresholds, threshold_mode):
+def write_prediction_jsonl(
+    path,
+    predictions,
+    thresholds,
+    threshold_mode,
+    derived_detection=False,
+):
     num_labels = predictions["multi_labels"].shape[1]
     thresholds = threshold_array_for_export(thresholds, num_labels)
     multi_probs = sigmoid(predictions["recognition_logits"])
     multi_preds = (multi_probs >= thresholds.reshape(1, -1)).astype(int)
-    binary_probs = sigmoid(predictions["detection_logits"]).reshape(-1)
-    binary_preds = (binary_probs >= 0.5).astype(int)
+    if derived_detection:
+        binary_probs = multi_probs.max(axis=1)
+        binary_preds = (multi_preds.sum(axis=1) > 0).astype(int)
+        detection_source = "derived_from_multilabel"
+    else:
+        binary_probs = sigmoid(predictions["detection_logits"]).reshape(-1)
+        binary_preds = (binary_probs >= 0.5).astype(int)
+        detection_source = "detection_head"
     ensure_dir(path.parent)
     with path.open("w", encoding="utf-8") as f:
         for idx, contract_id in enumerate(predictions["ids"]):
@@ -536,6 +558,7 @@ def write_prediction_jsonl(path, predictions, thresholds, threshold_mode):
                 "binary_true": int(predictions["binary_labels"][idx]),
                 "binary_prob": float(binary_probs[idx]),
                 "binary_pred": int(binary_preds[idx]),
+                "binary_detection_source": detection_source,
                 "multi_true": [
                     int(value) for value in predictions["multi_labels"][idx].tolist()
                 ],
@@ -640,6 +663,14 @@ def write_threshold_calibration_report(
         "model": model_description(config),
         "ablation_dataset": config.get("ablation_dataset"),
         "ablation_variant": config.get("ablation_variant"),
+        "task_mode": config.get("task_mode", "joint_detection_recognition"),
+        "detection_head_enabled": bool(config.get("detection_head_enabled", True)),
+        "detection_loss_weight": float(config.get("detection_loss_weight", 1.0)),
+        "recognition_loss_weight": float(config.get("recognition_loss_weight", 1.0)),
+        "derived_detection_from_multilabel": bool(
+            config.get("derived_detection_from_multilabel", False)
+        ),
+        "detection_source": per_label.get("detection_source", "detection_head"),
         "side_evidence_enabled": bool(config.get("side_evidence_enabled", False)),
         "coefficient_scale": config.get("coefficient_scale"),
         "use_chunk_context": bool(config.get("use_chunk_context", False)),
@@ -830,14 +861,21 @@ def main():
     if args.split == "test" and args.threshold_file and args.global_threshold_file:
         per_label_thresholds = load_threshold_selection(args.threshold_file)
         best_global_threshold = load_best_global_macro_threshold(args.global_threshold_file)
-        baseline_metrics = full_metrics_from_predictions(predictions, 0.5)
+        derived_detection = bool(config.get("derived_detection_from_multilabel", False))
+        baseline_metrics = full_metrics_from_predictions(
+            predictions,
+            0.5,
+            derived_detection=derived_detection,
+        )
         best_global_metrics = full_metrics_from_predictions(
             predictions,
             best_global_threshold,
+            derived_detection=derived_detection,
         )
         per_label_metrics = full_metrics_from_predictions(
             predictions,
             per_label_thresholds,
+            derived_detection=derived_detection,
         )
         report = write_threshold_calibration_report(
             result_dir,
@@ -858,6 +896,7 @@ def main():
                 predictions,
                 0.5,
                 "global_fixed_0_5",
+                derived_detection=derived_detection,
             )
             best_global_prediction_path = (
                 result_dir / "test_predictions_best_global.jsonl"
@@ -867,6 +906,7 @@ def main():
                 predictions,
                 best_global_threshold,
                 "global_validation_best_macro",
+                derived_detection=derived_detection,
             )
             default_prediction_path = result_dir / "test_predictions.jsonl"
             write_prediction_jsonl(
@@ -874,6 +914,7 @@ def main():
                 predictions,
                 best_global_threshold,
                 "global_validation_best_macro",
+                derived_detection=derived_detection,
             )
             per_label_prediction_path = (
                 result_dir / "test_predictions_per_label.jsonl"
@@ -883,6 +924,7 @@ def main():
                 predictions,
                 per_label_thresholds,
                 "per_label_validation_selected",
+                derived_detection=derived_detection,
             )
             report["fixed_threshold_prediction_path"] = str(fixed_prediction_path)
             report["best_global_prediction_path"] = str(best_global_prediction_path)
@@ -902,6 +944,9 @@ def main():
         predictions["multi_labels"],
         threshold=threshold,
         scan_thresholds=config.get("thresholds", [threshold]),
+        derived_detection_from_multilabel=bool(
+            config.get("derived_detection_from_multilabel", False)
+        ),
     )
     top_chunks_path = result_dir / f"top_chunks_{args.split}.jsonl"
     write_top_chunks(top_chunks_path, config, predictions, threshold)
@@ -915,6 +960,14 @@ def main():
         "model_type": config.get("model_type", "evm_chunk_mil"),
         "ablation_dataset": config.get("ablation_dataset"),
         "ablation_variant": config.get("ablation_variant"),
+        "task_mode": config.get("task_mode", "joint_detection_recognition"),
+        "detection_head_enabled": bool(config.get("detection_head_enabled", True)),
+        "detection_loss_weight": float(config.get("detection_loss_weight", 1.0)),
+        "recognition_loss_weight": float(config.get("recognition_loss_weight", 1.0)),
+        "derived_detection_from_multilabel": bool(
+            config.get("derived_detection_from_multilabel", False)
+        ),
+        "detection_source": metrics.get("detection_source", "detection_head"),
         "side_evidence_enabled": bool(config.get("side_evidence_enabled", False)),
         "coefficient_scale": config.get("coefficient_scale"),
         "encoder_frozen": True,
@@ -1012,7 +1065,15 @@ def main():
     write_report(prefix, report)
     if args.save_predictions:
         prediction_path = result_dir / f"{args.split}_predictions.jsonl"
-        write_prediction_jsonl(prediction_path, predictions, threshold, "global")
+        write_prediction_jsonl(
+            prediction_path,
+            predictions,
+            threshold,
+            "global",
+            derived_detection=bool(
+                config.get("derived_detection_from_multilabel", False)
+            ),
+        )
         report["prediction_path"] = str(prediction_path)
         write_report(prefix, report)
         print(f"[OK] wrote {prediction_path}")

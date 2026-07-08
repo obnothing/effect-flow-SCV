@@ -137,6 +137,33 @@ class EVMChunkMILClassifier(nn.Module):
         self.recognition_aggregation = config.get("recognition_aggregation", "topk_mean")
         self.top_k = int(config.get("top_k", 2))
         self.use_chunk_context = bool(config.get("use_chunk_context", False))
+        self.task_mode = str(config.get("task_mode", "joint_detection_recognition"))
+        self.derived_detection_from_multilabel = bool(
+            config.get("derived_detection_from_multilabel", False)
+        )
+        self.detection_head_enabled = bool(
+            config.get(
+                "detection_head_enabled",
+                self.task_mode != "recognition_only",
+            )
+        )
+        self.detection_loss_weight = float(
+            config.get(
+                "detection_loss_weight",
+                0.0 if self.task_mode == "recognition_only" else 1.0,
+            )
+        )
+        self.recognition_loss_weight = float(
+            config.get("recognition_loss_weight", 1.0)
+        )
+        if self.task_mode == "recognition_only" and self.detection_loss_weight != 0.0:
+            raise ValueError(
+                "task_mode=recognition_only requires detection_loss_weight=0.0"
+            )
+        if self.recognition_loss_weight <= 0:
+            raise ValueError("recognition_loss_weight must be positive")
+        if self.detection_loss_weight < 0:
+            raise ValueError("detection_loss_weight must be non-negative")
         self.recognition_loss_type = config.get("recognition_loss_type", "bce")
         if self.recognition_loss_type not in {"bce", "asl"}:
             raise ValueError(
@@ -223,13 +250,15 @@ class EVMChunkMILClassifier(nn.Module):
         self.label_attn = nn.Parameter(torch.empty(self.num_labels, attn_dim))
         self.label_out = nn.Parameter(torch.empty(self.num_labels, hidden_dim))
         self.label_bias = nn.Parameter(torch.zeros(self.num_labels))
-        self.detection_classifier = nn.Sequential(
-            nn.LayerNorm(hidden_dim),
-            nn.Linear(hidden_dim, hidden_dim // 2),
-            nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_dim // 2, 1),
-        )
+        self.detection_classifier = None
+        if self.detection_head_enabled:
+            self.detection_classifier = nn.Sequential(
+                nn.LayerNorm(hidden_dim),
+                nn.Linear(hidden_dim, hidden_dim // 2),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                nn.Linear(hidden_dim // 2, 1),
+            )
         self.detection_loss_fn = nn.BCEWithLogitsLoss()
         self.register_buffer("recognition_pos_weight", None, persistent=False)
         nn.init.xavier_uniform_(self.label_attn)
@@ -237,6 +266,19 @@ class EVMChunkMILClassifier(nn.Module):
 
     def set_recognition_pos_weight(self, pos_weight):
         self.recognition_pos_weight = pos_weight
+
+    def compute_weighted_task_loss(self, detection_loss, recognition_loss):
+        weighted_loss = self.recognition_loss_weight * recognition_loss
+        if detection_loss is not None and self.detection_loss_weight > 0:
+            weighted_loss = weighted_loss + self.detection_loss_weight * detection_loss
+            total_weight = self.recognition_loss_weight + self.detection_loss_weight
+            return weighted_loss / total_weight
+        return weighted_loss
+
+    def compute_detection_logits(self, global_h, recognition_logits):
+        if self.detection_classifier is not None:
+            return self.detection_classifier(global_h).squeeze(-1)
+        return recognition_logits.max(dim=1).values
 
     def _empty_rare_negative_subsampling_stats(self, device):
         size = len(self.rare_negative_subsampling_label_ids)
@@ -427,18 +469,29 @@ class EVMChunkMILClassifier(nn.Module):
                 0.0,
             )
         global_h = self.masked_mean(h, chunk_mask)
-        detection_logits = self.detection_classifier(global_h).squeeze(-1)
+        detection_logits = self.compute_detection_logits(global_h, recognition_logits)
 
         loss = None
+        detection_loss = None
+        recognition_loss = None
         if binary_label is not None and multi_labels is not None:
-            detection_loss = self.detection_loss_fn(detection_logits, binary_label.float())
+            if self.detection_loss_weight > 0 and self.detection_classifier is not None:
+                detection_loss = self.detection_loss_fn(
+                    detection_logits,
+                    binary_label.float(),
+                )
             recognition_loss = self.compute_recognition_loss(
                 recognition_logits,
                 multi_labels,
             )
-            loss = ((detection_loss + recognition_loss) / 2).reshape(1)
+            loss = self.compute_weighted_task_loss(
+                detection_loss,
+                recognition_loss,
+            ).reshape(1)
         return {
             "loss": loss,
+            "detection_loss": detection_loss,
+            "recognition_loss": recognition_loss,
             "detection_logits": detection_logits,
             "recognition_logits": recognition_logits,
             "chunk_logits": chunk_logits,
@@ -726,7 +779,7 @@ class EffectFlowGuidedChunkMIL(EVMChunkMILClassifier):
         ).masked_fill(~chunk_mask.unsqueeze(-1), 0.0)
         chunk_logits = template_outputs["final_evidence_scores"]
         global_h = self.masked_mean(h, chunk_mask)
-        detection_logits = self.detection_classifier(global_h).squeeze(-1)
+        detection_logits = self.compute_detection_logits(global_h, recognition_logits)
 
         loss = None
         detection_loss = None
@@ -734,7 +787,11 @@ class EffectFlowGuidedChunkMIL(EVMChunkMILClassifier):
         evidence_align_loss = None
         template_consistency_loss = None
         if binary_label is not None and multi_labels is not None:
-            detection_loss = self.detection_loss_fn(detection_logits, binary_label.float())
+            if self.detection_loss_weight > 0 and self.detection_classifier is not None:
+                detection_loss = self.detection_loss_fn(
+                    detection_logits,
+                    binary_label.float(),
+                )
             recognition_loss = self.compute_recognition_loss(
                 recognition_logits,
                 multi_labels,
@@ -777,7 +834,7 @@ class EffectFlowGuidedChunkMIL(EVMChunkMILClassifier):
                 template_consistency_loss * active_mask.float()
             ).sum() / active_mask.float().sum().clamp_min(1.0)
             loss = (
-                ((detection_loss + recognition_loss) / 2)
+                self.compute_weighted_task_loss(detection_loss, recognition_loss)
                 + self.evidence_align_weight * evidence_align_loss
                 + self.template_consistency_weight * template_consistency_loss
             )
@@ -1907,7 +1964,7 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             + major_multipool_logits
         )
 
-        detection_logits = self.detection_classifier(global_h).squeeze(-1)
+        detection_logits = self.compute_detection_logits(global_h, recognition_logits)
         chunk_scores = torch.sigmoid(
             attn_logits.masked_fill(~chunk_mask.unsqueeze(-1), -30.0)
         ).masked_fill(~chunk_mask.unsqueeze(-1), 0.0)
@@ -1930,10 +1987,11 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             h.device
         )
         if binary_label is not None and multi_labels is not None:
-            detection_loss = self.detection_loss_fn(
-                detection_logits,
-                binary_label.float(),
-            )
+            if self.detection_loss_weight > 0 and self.detection_classifier is not None:
+                detection_loss = self.detection_loss_fn(
+                    detection_logits,
+                    binary_label.float(),
+                )
             recognition_loss, rare_negative_subsampling_stats = self.compute_recognition_loss(
                 recognition_logits,
                 multi_labels,
@@ -2005,7 +2063,7 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
                     "selected_prob_max"
                 ]
             loss = (
-                (detection_loss + recognition_loss) / 2
+                self.compute_weighted_task_loss(detection_loss, recognition_loss)
                 + self.lambda_gate * gate_regularization_loss
                 + self.front_hard_negative_lambda * front_hard_negative_loss
                 + self.front_contrastive_lambda * front_contrastive_loss
