@@ -1,0 +1,12 @@
+Validation-selected per-label thresholds
+
+label_name | support | best_threshold | valid_precision | valid_recall | valid_f1 | predicted_positive_count
+----------------------------------------------------------------------------------------------------------------
+Reentrancy | 1121 | 0.50 | 0.579370 | 0.836753 | 0.684672 | 1619
+Access Control | 1665 | 0.50 | 0.745634 | 1.000000 | 0.854284 | 2233
+Arithmetic | 968 | 0.40 | 0.458619 | 0.898760 | 0.607330 | 1897
+Unchecked Return Values | 582 | 0.50 | 0.000000 | 0.000000 | 0.000000 | 0
+DoS | 369 | 0.50 | 0.000000 | 0.000000 | 0.000000 | 0
+Bad Randomness | 53 | 0.50 | 0.000000 | 0.000000 | 0.000000 | 0
+Front Running | 66 | 0.15 | 0.222222 | 0.272727 | 0.244898 | 81
+Time manipulation | 631 | 0.50 | 0.000000 | 0.000000 | 0.000000 | 0

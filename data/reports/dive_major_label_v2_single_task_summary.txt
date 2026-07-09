@@ -1,0 +1,12 @@
+DIVE major-label v2 single-task summary
+
+baseline: {'micro_f1': 0.8240858035638883, 'macro_f1': 0.7452721843450687, 'detection_f1': 0.9465041054988804, 'large_mean_f1': 0.8059134403635607}
+
+single_task_recognition_halfscale/best_micro_f1: micro=0.826694 macro=0.737260 large_mean=0.807564 detection=0.948560 detection_source=derived_from_multilabel
+  Reentrancy=0.8424 | Access Control=0.8941 | Arithmetic=0.7922 | Unchecked Return Values=0.8173 | DoS=0.7020 | Bad Randomness=0.5625 | Front Running=0.4902 | Time manipulation=0.7973
+single_task_recognition_halfscale/best_macro_f1: micro=0.824479 macro=0.724070 large_mean=0.805606 detection=0.946647 detection_source=derived_from_multilabel
+  Reentrancy=0.8450 | Access Control=0.8966 | Arithmetic=0.7831 | Unchecked Return Values=0.8166 | DoS=0.6986 | Bad Randomness=0.4505 | Front Running=0.5085 | Time manipulation=0.7938
+single_task_recognition_only/best_macro_f1: micro=0.616297 macro=0.384898 large_mean=0.477106 detection=0.938436 detection_source=derived_from_multilabel
+  Reentrancy=0.6890 | Access Control=0.8590 | Arithmetic=0.5981 | Unchecked Return Values=0.3685 | DoS=0.3480 | Bad Randomness=0.1277 | Front Running=0.0889 | Time manipulation=0.0000
+single_task_recognition_only/best_micro_f1: micro=0.613947 macro=0.275075 large_mean=0.355747 detection=0.938436 detection_source=derived_from_multilabel
+  Reentrancy=0.6880 | Access Control=0.8590 | Arithmetic=0.5875 | Unchecked Return Values=0.0000 | DoS=0.0000 | Bad Randomness=0.0000 | Front Running=0.0661 | Time manipulation=0.0000
