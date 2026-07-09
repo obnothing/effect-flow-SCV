@@ -64,13 +64,29 @@ GEN_ARGS=(
   --num_workers 4
 )
 if [[ "${RUN_SANITY}" == "1" ]]; then
-  GEN_ARGS+=(--debug_num_train_samples 512 --debug_num_valid_samples 512 --epochs 2 --early_stopping_patience 2)
+  GEN_ARGS=(
+    --variants ${VARIANTS}
+    --output_config_dir configs/generated/dive_major_label_v2_single_task_sanity
+    --checkpoint_root checkpoints/dive_major_label_v2_single_task_sanity
+    --result_root results/dive_major_label_v2_single_task_sanity/members
+    --num_workers 4
+    --debug_num_train_samples 512
+    --debug_num_valid_samples 512
+    --epochs 2
+    --early_stopping_patience 2
+  )
 fi
 
 echo "[DIVE 3/5] generate single-task configs"
 python scripts/generate_dive_major_label_v2_single_task_configs.py "${GEN_ARGS[@]}"
 
-MANIFEST="configs/generated/dive_major_label_v2_single_task/manifest.yaml"
+if [[ "${RUN_SANITY}" == "1" ]]; then
+  MANIFEST="configs/generated/dive_major_label_v2_single_task_sanity/manifest.yaml"
+  EVAL_ROOT="results/dive_major_label_v2_single_task_sanity"
+else
+  MANIFEST="configs/generated/dive_major_label_v2_single_task/manifest.yaml"
+  EVAL_ROOT="results/dive_major_label_v2_single_task"
+fi
 mapfile -t CONFIGS < <(python - "${MANIFEST}" <<'PY'
 import sys
 from pathlib import Path
@@ -116,9 +132,31 @@ train_if_needed() {
   local config="$1"
   local checkpoint_dir
   checkpoint_dir="$(python -c "import yaml; print(yaml.safe_load(open('${config}', encoding='utf-8'))['checkpoint_dir'])")"
+  local retrain="0"
   if [[ -f "${checkpoint_dir}/best_micro_f1.pt" && -f "${checkpoint_dir}/best_macro_f1.pt" ]]; then
+    retrain="$(python - "${checkpoint_dir}/best_micro_f1.pt" "${RUN_SANITY}" <<'PY'
+import sys
+
+import torch
+
+checkpoint_path = sys.argv[1]
+run_sanity = sys.argv[2] == "1"
+state = torch.load(checkpoint_path, map_location="cpu")
+config = state.get("config", {})
+has_debug = (
+    config.get("debug_num_train_samples") is not None
+    or config.get("debug_num_valid_samples") is not None
+)
+print("0" if run_sanity or not has_debug else "1")
+PY
+)"
+  fi
+  if [[ -f "${checkpoint_dir}/best_micro_f1.pt" && -f "${checkpoint_dir}/best_macro_f1.pt" && "${retrain}" == "0" ]]; then
     echo "[SKIP] checkpoints exist: ${checkpoint_dir}"
   else
+    if [[ "${retrain}" == "1" ]]; then
+      echo "[RETRAIN] existing checkpoint is a sanity/debug checkpoint: ${checkpoint_dir}"
+    fi
     echo "[TRAIN] ${config}"
     python src/train_chunk_mil.py --config "${config}"
   fi
@@ -133,7 +171,7 @@ eval_checkpoint() {
   variant="$(python -c "import yaml; print(yaml.safe_load(open('${config}', encoding='utf-8'))['ablation_variant'].replace('major_label_v2_', ''))")"
   local checkpoint="${checkpoint_dir}/${checkpoint_name}"
   local checkpoint_tag="${checkpoint_name%.pt}"
-  local eval_dir="results/dive_major_label_v2_single_task/${variant}/${checkpoint_tag}"
+  local eval_dir="${EVAL_ROOT}/${variant}/${checkpoint_tag}"
   if [[ ! -f "${checkpoint}" ]]; then
     echo "[ERROR] missing checkpoint: ${checkpoint}" >&2
     exit 1
@@ -170,10 +208,15 @@ done
 
 python scripts/summarize_dive_major_label_v2_single_task.py \
   --manifest "${MANIFEST}" \
-  --result_root results/dive_major_label_v2_single_task \
-  --output_prefix results/dive_major_label_v2_single_task/summary
+  --result_root "${EVAL_ROOT}" \
+  --output_prefix "${EVAL_ROOT}/summary"
 
-cp results/dive_major_label_v2_single_task/summary.txt \
-  data/reports/dive_major_label_v2_single_task_summary.txt
+if [[ "${RUN_SANITY}" == "1" ]]; then
+  cp "${EVAL_ROOT}/summary.txt" \
+    data/reports/dive_major_label_v2_single_task_sanity_summary.txt
+else
+  cp "${EVAL_ROOT}/summary.txt" \
+    data/reports/dive_major_label_v2_single_task_summary.txt
+fi
 
 echo "[OK] DIVE major-label v2 single-task search finished."
