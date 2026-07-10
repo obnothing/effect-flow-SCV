@@ -250,6 +250,36 @@ class EVMChunkMILClassifier(nn.Module):
         self.label_attn = nn.Parameter(torch.empty(self.num_labels, attn_dim))
         self.label_out = nn.Parameter(torch.empty(self.num_labels, hidden_dim))
         self.label_bias = nn.Parameter(torch.zeros(self.num_labels))
+        self.recognition_head_type = str(
+            config.get("recognition_head_type", "linear_label_dot")
+        )
+        if self.recognition_head_type not in {"linear_label_dot", "label_branch_mlp"}:
+            raise ValueError(
+                "recognition_head_type must be one of: "
+                "linear_label_dot, label_branch_mlp"
+            )
+        self.label_branches = None
+        if self.recognition_head_type == "label_branch_mlp":
+            branch_hidden_dim = int(config.get("label_branch_hidden_dim", hidden_dim // 2))
+            branch_dropout = float(config.get("label_branch_dropout", dropout))
+            branch_use_layernorm = bool(config.get("label_branch_use_layernorm", True))
+            if branch_hidden_dim <= 0:
+                raise ValueError("label_branch_hidden_dim must be positive")
+            branches = []
+            for _ in range(self.num_labels):
+                layers = []
+                if branch_use_layernorm:
+                    layers.append(nn.LayerNorm(hidden_dim))
+                layers.extend(
+                    [
+                        nn.Linear(hidden_dim, branch_hidden_dim),
+                        nn.GELU(),
+                        nn.Dropout(branch_dropout),
+                        nn.Linear(branch_hidden_dim, 1),
+                    ]
+                )
+                branches.append(nn.Sequential(*layers))
+            self.label_branches = nn.ModuleList(branches)
         self.detection_classifier = None
         if self.detection_head_enabled:
             self.detection_classifier = nn.Sequential(
@@ -279,6 +309,15 @@ class EVMChunkMILClassifier(nn.Module):
         if self.detection_classifier is not None:
             return self.detection_classifier(global_h).squeeze(-1)
         return recognition_logits.max(dim=1).values
+
+    def compute_label_logits(self, z):
+        if self.recognition_head_type == "label_branch_mlp":
+            logits = [
+                branch(z[:, label_idx, :]).squeeze(-1)
+                for label_idx, branch in enumerate(self.label_branches)
+            ]
+            return torch.stack(logits, dim=1)
+        return (z * self.label_out.unsqueeze(0)).sum(dim=-1) + self.label_bias
 
     def _empty_rare_negative_subsampling_stats(self, device):
         size = len(self.rare_negative_subsampling_label_ids)
@@ -439,7 +478,7 @@ class EVMChunkMILClassifier(nn.Module):
         attn_logits = attn_logits.masked_fill(~chunk_mask.unsqueeze(-1), -1e9)
         attn_weights = torch.softmax(attn_logits, dim=1)
         z = torch.einsum("bck,bch->bkh", attn_weights, h)
-        recognition_logits = (z * self.label_out.unsqueeze(0)).sum(dim=-1) + self.label_bias
+        recognition_logits = self.compute_label_logits(z)
         return recognition_logits, attn_weights, attn_logits
 
     def top_chunk_indices(self, chunk_logits, chunk_mask, k=None):
@@ -1911,9 +1950,7 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         attn_weights = torch.softmax(attn_logits, dim=1)
         z = torch.einsum("bck,bch->bkh", attn_weights, h)
         global_h = self.masked_mean(h, chunk_mask)
-        neural_logits = (
-            z * self.label_out.unsqueeze(0)
-        ).sum(dim=-1) + self.label_bias
+        neural_logits = self.compute_label_logits(z)
         major_mask = self.major_enhancement_label_mask.to(dtype=h.dtype).view(1, -1)
         major_global_residual_logits = neural_logits.new_zeros(neural_logits.shape)
         if self.major_global_residual_enabled:
