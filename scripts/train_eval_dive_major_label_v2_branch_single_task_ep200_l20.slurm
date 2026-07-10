@@ -97,9 +97,60 @@ result_dir="$(python -c "import yaml; print(yaml.safe_load(open('${CONFIG}', enc
 variant="$(python -c "import yaml; v=yaml.safe_load(open('${CONFIG}', encoding='utf-8'))['ablation_variant']; print(v.replace('major_label_v2_branch_single_task_', ''))")"
 
 echo "[DIVE 3/5] train static ep200 config"
+checkpoint_compatible="0"
 if [[ -f "${checkpoint_dir}/best_micro_f1.pt" && -f "${checkpoint_dir}/best_macro_f1.pt" ]]; then
-  echo "[SKIP] checkpoints exist: ${checkpoint_dir}"
+  checkpoint_compatible="$(python - "${CONFIG}" "${checkpoint_dir}/best_micro_f1.pt" <<'PY'
+import sys
+from pathlib import Path
+
+import torch
+import yaml
+
+config = yaml.safe_load(Path(sys.argv[1]).read_text(encoding="utf-8"))
+state = torch.load(sys.argv[2], map_location="cpu")
+ckpt_config = state.get("config", {})
+keys = [
+    "model_type",
+    "task_mode",
+    "detection_head_enabled",
+    "recognition_head_type",
+    "label_branch_hidden_dim",
+    "label_branch_use_layernorm",
+    "num_labels",
+    "feature_dim",
+    "hidden_dim",
+    "attn_dim",
+    "max_chunks",
+    "use_chunk_context",
+    "chunk_context_num_layers",
+    "chunk_context_num_heads",
+    "side_evidence_enabled",
+    "efpp_dim",
+    "etp_dim",
+    "relation_dim",
+]
+mismatch = []
+for key in keys:
+    if ckpt_config.get(key) != config.get(key):
+        mismatch.append((key, ckpt_config.get(key), config.get(key)))
+if mismatch:
+    print("[MISMATCH] existing checkpoint config differs from current config:")
+    for key, old, new in mismatch:
+        print(f"  {key}: checkpoint={old!r} current={new!r}")
+    print("0")
+else:
+    print("1")
+PY
+)"
+  checkpoint_compatible="$(echo "${checkpoint_compatible}" | tail -n 1)"
+fi
+
+if [[ -f "${checkpoint_dir}/best_micro_f1.pt" && -f "${checkpoint_dir}/best_macro_f1.pt" && "${checkpoint_compatible}" == "1" ]]; then
+  echo "[SKIP] compatible checkpoints exist: ${checkpoint_dir}"
 else
+  if [[ -f "${checkpoint_dir}/best_micro_f1.pt" || -f "${checkpoint_dir}/best_macro_f1.pt" ]]; then
+    echo "[RETRAIN] existing checkpoints are missing or incompatible with current config: ${checkpoint_dir}"
+  fi
   python src/train_chunk_mil.py --config "${CONFIG}"
 fi
 
