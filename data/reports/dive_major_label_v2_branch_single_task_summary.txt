@@ -1,0 +1,10 @@
+DIVE major-label v2 branch single-task summary
+
+baseline: {'micro_f1': 0.8240858035638883, 'macro_f1': 0.7452721843450687, 'detection_f1': 0.9465041054988804, 'large_mean_f1': 0.8059134403635607}
+full_recognition_only: {'micro_f1': 0.8250733897427043, 'macro_f1': 0.7332213136469405, 'detection_f1': 0.9481155163974546, 'large_mean_f1': 0.8033220889476849}
+seed_ensemble_main: {'micro_f1': 0.8360528360528361, 'macro_f1': 0.7531034127883588, 'large_mean_f1': 0.8187998694577289}
+
+branch_mlp_recognition_only/best_micro_f1: micro=0.829676 macro=0.749556 large_mean=0.808770 detection=0.947291 detection_source=derived_from_multilabel
+  Reentrancy=0.8492 | Access Control=0.8984 | Arithmetic=0.7915 | Unchecked Return Values=0.8246 | DoS=0.6951 | Bad Randomness=0.5873 | Front Running=0.5565 | Time manipulation=0.7939
+branch_mlp_recognition_only/best_macro_f1: micro=0.826154 macro=0.748142 large_mean=0.805204 detection=0.945866 detection_source=derived_from_multilabel
+  Reentrancy=0.8459 | Access Control=0.8942 | Arithmetic=0.7926 | Unchecked Return Values=0.8183 | DoS=0.6929 | Bad Randomness=0.6240 | Front Running=0.5299 | Time manipulation=0.7873
