@@ -12,6 +12,9 @@ class ChunkFeatureDataset(Dataset):
         debug_num_samples=None,
         seed=42,
         num_labels=None,
+        source_label_names=None,
+        label_names=None,
+        exclude_augmented_ids=False,
         semantic_path=None,
         front_special_path=None,
         graph_evidence_path=None,
@@ -23,9 +26,33 @@ class ChunkFeatureDataset(Dataset):
         self.ids = payload["ids"]
         self.features = payload["features"]
         self.chunk_mask = payload["chunk_mask"].bool()
-        self.binary_labels = payload["binary_labels"].float()
-        self.multi_labels = payload["multi_labels"].float()
-        self.num_labels = int(num_labels) if num_labels is not None else int(self.multi_labels.shape[1])
+        self.source_binary_labels = payload["binary_labels"].float()
+        self.source_multi_labels = payload["multi_labels"].float()
+        source_width = int(self.source_multi_labels.shape[1])
+        self.source_label_names = list(
+            source_label_names or [f"label_{idx}" for idx in range(source_width)]
+        )
+        if len(self.source_label_names) != source_width:
+            raise ValueError(
+                "source_label_names length must match the feature-cache label width"
+            )
+        self.label_names = list(label_names or self.source_label_names)
+        unknown_labels = [
+            name for name in self.label_names if name not in self.source_label_names
+        ]
+        if unknown_labels:
+            raise ValueError(f"Unknown label_names for feature cache: {unknown_labels}")
+        self.label_indices = [
+            self.source_label_names.index(name) for name in self.label_names
+        ]
+        self.multi_labels = self.source_multi_labels[:, self.label_indices]
+        self.binary_labels = self.multi_labels.gt(0.5).any(dim=1).float()
+        self.num_labels = len(self.label_names)
+        if num_labels is not None and int(num_labels) != self.num_labels:
+            raise ValueError(
+                f"num_labels={num_labels} does not match active label_names "
+                f"length {self.num_labels}"
+            )
         self.metadata = payload.get("metadata", [{} for _ in self.ids])
         self.report = payload.get("report", {})
         self.semantic_path = Path(semantic_path) if semantic_path else None
@@ -54,6 +81,10 @@ class ChunkFeatureDataset(Dataset):
         if self.graph_evidence_path is not None:
             self._load_graph_evidence_cache()
         self.indices = list(range(len(self.ids)))
+        if exclude_augmented_ids:
+            self.indices = [
+                idx for idx in self.indices if "__aug_" not in str(self.ids[idx])
+            ]
         if debug_num_samples is not None:
             rng = random.Random(int(seed))
             limit = min(int(debug_num_samples), len(self.indices))
@@ -88,9 +119,9 @@ class ChunkFeatureDataset(Dataset):
             )
         if not torch.equal(semantic_mask, self.chunk_mask):
             raise ValueError(f"Semantic chunk_mask does not match feature cache: {self.semantic_path}")
-        if not torch.equal(payload["binary_labels"].float(), self.binary_labels):
+        if not torch.equal(payload["binary_labels"].float(), self.source_binary_labels):
             raise ValueError(f"Semantic binary labels do not match feature cache: {self.semantic_path}")
-        if not torch.equal(payload["multi_labels"].float(), self.multi_labels):
+        if not torch.equal(payload["multi_labels"].float(), self.source_multi_labels):
             raise ValueError(f"Semantic multi-labels do not match feature cache: {self.semantic_path}")
         required = [
             "efpp_probs",
@@ -187,11 +218,11 @@ class ChunkFeatureDataset(Dataset):
             raise ValueError(
                 f"Graph chunk_mask does not match feature cache: {self.graph_evidence_path}"
             )
-        if not torch.equal(payload["binary_labels"].float(), self.binary_labels):
+        if not torch.equal(payload["binary_labels"].float(), self.source_binary_labels):
             raise ValueError(
                 f"Graph binary labels do not match feature cache: {self.graph_evidence_path}"
             )
-        if not torch.equal(payload["multi_labels"].float(), self.multi_labels):
+        if not torch.equal(payload["multi_labels"].float(), self.source_multi_labels):
             raise ValueError(
                 f"Graph multi-labels do not match feature cache: {self.graph_evidence_path}"
             )
@@ -201,8 +232,12 @@ class ChunkFeatureDataset(Dataset):
             raise ValueError(
                 f"{self.graph_evidence_path} missing graph evidence fields: {missing}"
             )
-        self.graph_contract_evidence = payload["graph_contract_evidence"].float()
-        self.graph_chunk_evidence = payload["graph_chunk_evidence"].float()
+        self.graph_contract_evidence = payload["graph_contract_evidence"].float()[
+            :, self.label_indices, :
+        ]
+        self.graph_chunk_evidence = payload["graph_chunk_evidence"].float()[
+            :, :, self.label_indices
+        ]
         self.graph_feature_names = list(payload.get("graph_feature_names", []))
         self.graph_evidence_report = payload.get("report", {})
 
@@ -348,6 +383,8 @@ def build_chunk_feature_datasets(config):
         else None
     )
     seed = config.get("seed", 42)
+    source_label_names = config.get("source_label_names", config.get("label_names"))
+    label_names = config.get("label_names")
     def semantic_path(split):
         return semantic_dir / f"{split}.pt" if semantic_dir is not None else None
 
@@ -363,6 +400,9 @@ def build_chunk_feature_datasets(config):
             debug_num_samples=config.get("debug_num_train_samples"),
             seed=seed,
             num_labels=config.get("num_labels"),
+            source_label_names=source_label_names,
+            label_names=label_names,
+            exclude_augmented_ids=bool(config.get("exclude_augmented_ids", False)),
             semantic_path=semantic_path("train"),
             front_special_path=front_special_path("train"),
             graph_evidence_path=graph_evidence_path("train"),
@@ -372,6 +412,8 @@ def build_chunk_feature_datasets(config):
             debug_num_samples=config.get("debug_num_valid_samples"),
             seed=seed,
             num_labels=config.get("num_labels"),
+            source_label_names=source_label_names,
+            label_names=label_names,
             semantic_path=semantic_path("valid"),
             front_special_path=front_special_path("valid"),
             graph_evidence_path=graph_evidence_path("valid"),
@@ -380,6 +422,8 @@ def build_chunk_feature_datasets(config):
             feature_dir / "test.pt",
             seed=seed,
             num_labels=config.get("num_labels"),
+            source_label_names=source_label_names,
+            label_names=label_names,
             semantic_path=semantic_path("test"),
             front_special_path=front_special_path("test"),
             graph_evidence_path=graph_evidence_path("test"),

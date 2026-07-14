@@ -30,12 +30,43 @@ EFFECT_FLOW_MODEL_TYPES = {
 def parse_args():
     parser = argparse.ArgumentParser(description="Train EVM-BERT chunk feature MIL head.")
     parser.add_argument("--config", required=True)
+    parser.add_argument("--variant", default=None)
+    parser.add_argument("--override", action="append", default=[])
     return parser.parse_args()
 
 
-def load_config(path):
+def load_config(path, variant=None):
     with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        payload = yaml.safe_load(f)
+    if "variants" not in payload:
+        if variant is not None:
+            raise ValueError(f"Config {path} does not define variants")
+        return payload
+    if not variant:
+        raise ValueError(f"Config {path} requires --variant")
+    variants = payload.get("variants", {})
+    if variant not in variants:
+        raise ValueError(
+            f"Unknown variant {variant}; available: {sorted(variants)}"
+        )
+    config = dict(payload.get("common", {}))
+    config.update(variants[variant])
+    config["config_variant"] = variant
+    return config
+
+
+def apply_config_overrides(config, overrides):
+    config = dict(config)
+    for item in overrides or []:
+        if "=" not in item:
+            raise ValueError(f"Invalid config override: {item}")
+        key, raw_value = item.split("=", 1)
+        try:
+            value = yaml.safe_load(raw_value)
+        except yaml.YAMLError as exc:
+            raise ValueError(f"Invalid override value for {key}: {raw_value}") from exc
+        config[key] = value
+    return config
 
 
 def ensure_dir(path):
@@ -64,6 +95,17 @@ def compute_pos_weight_from_feature_cache(config):
     path = Path(config["feature_dir"]) / "train.pt"
     payload = torch.load(path, map_location="cpu")
     labels = payload["multi_labels"].float()
+    source_names = list(config.get("source_label_names", config.get("label_names", [])))
+    active_names = list(config.get("label_names", source_names))
+    if source_names and active_names:
+        active_indices = [source_names.index(name) for name in active_names]
+        labels = labels[:, active_indices]
+    if config.get("exclude_augmented_ids", False):
+        keep = torch.tensor(
+            ["__aug_" not in str(sample_id) for sample_id in payload["ids"]],
+            dtype=torch.bool,
+        )
+        labels = labels[keep]
     total = labels.shape[0]
     positives = labels.sum(dim=0)
     negatives = total - positives
@@ -101,6 +143,84 @@ def compute_pos_weight_from_feature_cache(config):
             }
         )
     return torch.tensor(weights, dtype=torch.float32), rows
+
+
+class TargetBalancedBatchSampler:
+    def __init__(self, dataset, label_name, batch_size, neg_per_pos, seed=42):
+        if label_name not in dataset.label_names:
+            raise ValueError(f"Unknown transfer sampler label: {label_name}")
+        self.dataset = dataset
+        self.label_name = label_name
+        self.label_id = dataset.label_names.index(label_name)
+        self.batch_size = int(batch_size)
+        self.neg_per_pos = int(neg_per_pos)
+        if self.neg_per_pos not in {1, 3}:
+            raise ValueError("transfer_neg_per_pos must be 1 or 3")
+        divisor = 1 + self.neg_per_pos
+        if self.batch_size % divisor != 0:
+            raise ValueError(
+                f"batch_size={self.batch_size} must be divisible by {divisor}"
+            )
+        self.positive_per_batch = self.batch_size // divisor
+        self.negative_per_batch = self.batch_size - self.positive_per_batch
+        labels = dataset.multi_labels[dataset.indices, self.label_id]
+        self.positive_indices = [
+            idx for idx, value in enumerate(labels.tolist()) if value > 0.5
+        ]
+        self.negative_indices = [
+            idx for idx, value in enumerate(labels.tolist()) if value <= 0.5
+        ]
+        if not self.positive_indices or not self.negative_indices:
+            raise ValueError(
+                "target_balanced_batch requires both positive and negative samples"
+            )
+        self.num_batches = math.ceil(
+            len(self.positive_indices) / self.positive_per_batch
+        )
+        self.seed = int(seed)
+        self.epoch = 0
+
+    def set_epoch(self, epoch):
+        self.epoch = int(epoch)
+
+    @staticmethod
+    def _draw(pool, count, rng):
+        values = list(pool)
+        rng.shuffle(values)
+        if len(values) >= count:
+            return values[:count]
+        return values + [rng.choice(pool) for _ in range(count - len(values))]
+
+    def __iter__(self):
+        rng = random.Random(self.seed + self.epoch)
+        positive_count = self.num_batches * self.positive_per_batch
+        negative_count = self.num_batches * self.negative_per_batch
+        positives = self._draw(self.positive_indices, positive_count, rng)
+        negatives = self._draw(self.negative_indices, negative_count, rng)
+        for batch_idx in range(self.num_batches):
+            pos_start = batch_idx * self.positive_per_batch
+            neg_start = batch_idx * self.negative_per_batch
+            batch = (
+                positives[pos_start : pos_start + self.positive_per_batch]
+                + negatives[neg_start : neg_start + self.negative_per_batch]
+            )
+            rng.shuffle(batch)
+            yield batch
+
+    def __len__(self):
+        return self.num_batches
+
+    def stats(self):
+        return {
+            "train_sampler": "target_balanced_batch",
+            "transfer_target_label": self.label_name,
+            "transfer_positive_count": len(self.positive_indices),
+            "transfer_negative_count": len(self.negative_indices),
+            "transfer_neg_per_pos": self.neg_per_pos,
+            "transfer_positive_per_batch": self.positive_per_batch,
+            "transfer_negative_per_batch": self.negative_per_batch,
+            "transfer_batches_per_epoch": self.num_batches,
+        }
 
 
 def build_label_balanced_sampler(dataset, config):
@@ -220,7 +340,15 @@ def collate_batch(batch):
     return collated
 
 
-def make_loader(dataset, config, shuffle, sampler=None):
+def make_loader(dataset, config, shuffle, sampler=None, batch_sampler=None):
+    if batch_sampler is not None:
+        return DataLoader(
+            dataset,
+            batch_sampler=batch_sampler,
+            num_workers=int(config.get("num_workers", 0)),
+            pin_memory=torch.cuda.is_available(),
+            collate_fn=collate_batch,
+        )
     return DataLoader(
         dataset,
         batch_size=int(config["batch_size"]),
@@ -265,6 +393,163 @@ def build_model(config):
     if model_type == "evm_chunk_mil":
         return EVMChunkMILClassifier(config)
     raise ValueError(f"Unsupported chunk MIL model_type: {model_type}")
+
+
+def initialize_transfer_model(model, config):
+    checkpoint_path = config.get("transfer_init_checkpoint")
+    if not checkpoint_path:
+        return {
+            "enabled": False,
+            "trainable_label_names": list(config.get("trainable_label_names", [])),
+        }
+    if model.recognition_head_type != "classic_escort_residual":
+        raise ValueError(
+            "transfer_init_checkpoint requires recognition_head_type="
+            "classic_escort_residual"
+        )
+    checkpoint_path = Path(checkpoint_path)
+    if not checkpoint_path.exists():
+        raise FileNotFoundError(f"Transfer checkpoint not found: {checkpoint_path}")
+    checkpoint = torch.load(checkpoint_path, map_location="cpu")
+    source_config = checkpoint.get("config", {})
+    source_labels = list(source_config.get("label_names", []))
+    target_labels = list(config.get("label_names", []))
+    if not source_labels:
+        raise ValueError("Transfer checkpoint config is missing label_names")
+    if source_config.get("recognition_head_type") != "classic_escort_residual":
+        raise ValueError("Transfer checkpoint does not use classic_escort_residual")
+    missing_old_labels = [name for name in source_labels if name not in target_labels]
+    if missing_old_labels:
+        raise ValueError(
+            f"Target transfer model dropped source labels: {missing_old_labels}"
+        )
+
+    source_state = checkpoint["model_state_dict"]
+    target_state = model.state_dict()
+    label_specific_prefixes = (
+        "classic_label_branches.",
+        "label_attn",
+        "label_out",
+        "label_bias",
+        "chunk_classifier.",
+        "beta_reliable_raw",
+        "gamma_reliable_raw",
+        "evidence_logit_weight",
+        "evidence_logit_bias",
+        "template_",
+        "active_global_indices",
+        "major_enhancement_label_mask",
+    )
+    copied_shared = []
+    for key, value in source_state.items():
+        if key.startswith(label_specific_prefixes):
+            continue
+        if key in target_state and target_state[key].shape == value.shape:
+            target_state[key] = value.clone()
+            copied_shared.append(key)
+
+    copied_labels = []
+    for source_idx, label_name in enumerate(source_labels):
+        target_idx = target_labels.index(label_name)
+        source_prefix = f"classic_label_branches.{source_idx}."
+        target_prefix = f"classic_label_branches.{target_idx}."
+        branch_keys = [key for key in source_state if key.startswith(source_prefix)]
+        if not branch_keys:
+            raise ValueError(f"No branch parameters found for source label {label_name}")
+        for source_key in branch_keys:
+            suffix = source_key[len(source_prefix) :]
+            target_key = target_prefix + suffix
+            if target_key not in target_state:
+                raise ValueError(f"Missing target branch parameter: {target_key}")
+            if target_state[target_key].shape != source_state[source_key].shape:
+                raise ValueError(
+                    f"Branch shape mismatch for {label_name}: {target_key} "
+                    f"{tuple(target_state[target_key].shape)} != "
+                    f"{tuple(source_state[source_key].shape)}"
+                )
+            target_state[target_key] = source_state[source_key].clone()
+        copied_labels.append(label_name)
+    model.load_state_dict(target_state, strict=True)
+    return {
+        "enabled": True,
+        "checkpoint": str(checkpoint_path),
+        "source_epoch": checkpoint.get("epoch"),
+        "source_labels": source_labels,
+        "target_labels": target_labels,
+        "copied_labels": copied_labels,
+        "new_labels": [name for name in target_labels if name not in source_labels],
+        "copied_shared_parameter_count": len(copied_shared),
+    }
+
+
+def configure_trainable_parameters(model, config, transfer_audit):
+    trainable_labels = list(config.get("trainable_label_names", []))
+    if not transfer_audit.get("enabled"):
+        trainable_names = [name for name, param in model.named_parameters() if param.requires_grad]
+        return {
+            **transfer_audit,
+            "frozen_parameter_count": 0,
+            "trainable_parameter_count": sum(
+                param.numel() for param in model.parameters() if param.requires_grad
+            ),
+            "trainable_parameter_names": trainable_names,
+        }
+    if not trainable_labels:
+        raise ValueError("Transfer training requires trainable_label_names")
+    unknown = [name for name in trainable_labels if name not in model.label_names]
+    if unknown:
+        raise ValueError(f"Unknown trainable_label_names: {unknown}")
+    for param in model.parameters():
+        param.requires_grad = False
+    for label_name in trainable_labels:
+        label_idx = model.label_names.index(label_name)
+        for param in model.classic_label_branches[label_idx].parameters():
+            param.requires_grad = True
+    trainable_names = [
+        name for name, param in model.named_parameters() if param.requires_grad
+    ]
+    return {
+        **transfer_audit,
+        "trainable_label_names": trainable_labels,
+        "frozen_parameter_count": sum(
+            param.numel() for param in model.parameters() if not param.requires_grad
+        ),
+        "trainable_parameter_count": sum(
+            param.numel() for param in model.parameters() if param.requires_grad
+        ),
+        "trainable_parameter_names": trainable_names,
+    }
+
+
+def build_scheduler(optimizer, config):
+    scheduler_type = str(config.get("scheduler", "none"))
+    if scheduler_type in {"", "none"}:
+        return None
+    min_lr = float(config.get("min_learning_rate", 1e-6))
+    base_lr = float(config["learning_rate"])
+    if scheduler_type == "cosine":
+        epochs = int(config["epochs"])
+        warmup = int(config.get("scheduler_warmup_epochs", 0))
+        min_factor = min_lr / max(base_lr, 1e-12)
+
+        def lr_lambda(epoch_idx):
+            epoch_number = epoch_idx + 1
+            if warmup > 0 and epoch_number <= warmup:
+                return max(min_factor, epoch_number / warmup)
+            progress = (epoch_number - warmup) / max(epochs - warmup, 1)
+            cosine = 0.5 * (1.0 + math.cos(math.pi * min(max(progress, 0.0), 1.0)))
+            return min_factor + (1.0 - min_factor) * cosine
+
+        return torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lr_lambda)
+    if scheduler_type == "reduce_on_plateau":
+        return torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode="max",
+            factor=float(config.get("scheduler_factor", 0.5)),
+            patience=int(config.get("scheduler_patience", 5)),
+            min_lr=min_lr,
+        )
+    raise ValueError(f"Unsupported scheduler: {scheduler_type}")
 
 
 def set_model_epoch(model, epoch):
@@ -569,7 +854,15 @@ def evaluate(model, loader, config, device):
     return float(np.mean(losses)) if losses else 0.0, metrics
 
 
-def checkpoint_payload(model, optimizer, epoch, config, valid_loss, metrics):
+def checkpoint_payload(
+    model,
+    optimizer,
+    epoch,
+    config,
+    valid_loss,
+    metrics,
+    transfer_audit=None,
+):
     micro_threshold, micro_f1 = best_threshold_from_scan(
         metrics.get("threshold_scan", {}),
         "micro_f1",
@@ -597,6 +890,7 @@ def checkpoint_payload(model, optimizer, epoch, config, valid_loss, metrics):
         "semantic_feature_dir": config.get("semantic_feature_dir"),
         "is_transductive_pretraining": bool(config.get("is_transductive_pretraining", True)),
         "metrics": metrics,
+        "transfer_audit": transfer_audit or {"enabled": False},
     }
 
 
@@ -692,7 +986,10 @@ def label_table(config, metrics):
 
 def main():
     args = parse_args()
-    config = load_config(args.config)
+    config = apply_config_overrides(
+        load_config(args.config, args.variant),
+        args.override,
+    )
     set_seed(int(config.get("seed", 42)))
     ensure_dir(config["checkpoint_dir"])
     ensure_dir(config["result_dir"])
@@ -704,21 +1001,45 @@ def main():
         "train_sampler": config.get("train_sampler", "shuffle"),
     }
     train_sampler = None
+    train_batch_sampler = None
     if config.get("train_sampler") == "label_balanced":
         train_sampler, train_sampler_stats = build_label_balanced_sampler(
             datasets["train"],
             config,
         )
+    elif config.get("train_sampler") == "target_balanced_batch":
+        target_label = config.get("transfer_target_label")
+        if not target_label:
+            raise ValueError(
+                "target_balanced_batch requires transfer_target_label"
+            )
+        train_batch_sampler = TargetBalancedBatchSampler(
+            datasets["train"],
+            target_label,
+            int(config["batch_size"]),
+            int(config.get("transfer_neg_per_pos", 3)),
+            seed=int(config.get("seed", 42)),
+        )
+        train_sampler_stats = train_batch_sampler.stats()
     elif config.get("train_sampler") not in (None, "", "shuffle"):
         raise ValueError(f"Unsupported train_sampler: {config.get('train_sampler')}")
     train_loader = make_loader(
         datasets["train"],
         config,
-        shuffle=train_sampler is None,
+        shuffle=train_sampler is None and train_batch_sampler is None,
         sampler=train_sampler,
+        batch_sampler=train_batch_sampler,
     )
     valid_loader = make_loader(datasets["valid"], config, shuffle=False)
-    model = build_model(config).to(device)
+    model = build_model(config)
+    transfer_audit = initialize_transfer_model(model, config)
+    transfer_audit = configure_trainable_parameters(model, config, transfer_audit)
+    model = model.to(device)
+    audit_path = Path(config["result_dir"]) / "transfer_parameter_audit.json"
+    audit_path.write_text(
+        json.dumps(transfer_audit, indent=2, default=json_default),
+        encoding="utf-8",
+    )
     if config.get("recognition_loss_type") == "asl" and config.get("use_pos_weight", False):
         raise ValueError("ASL experiments must set use_pos_weight=false")
     pos_weight_rows = None
@@ -750,27 +1071,53 @@ def main():
             f"total_batch_size={config['batch_size']} "
             f"approx_batch_per_gpu={int(config['batch_size']) // len(requested_devices)}"
         )
+    trainable_parameters = [
+        parameter for parameter in model.parameters() if parameter.requires_grad
+    ]
+    if not trainable_parameters:
+        raise ValueError("No trainable parameters were selected")
     optimizer = torch.optim.AdamW(
-        model.parameters(),
+        trainable_parameters,
         lr=float(config["learning_rate"]),
         weight_decay=float(config.get("weight_decay", 0.0)),
     )
+    scheduler = build_scheduler(optimizer, config)
 
     checkpoint_dir = Path(config["checkpoint_dir"])
     result_dir = Path(config["result_dir"])
     best_loss = float("inf")
     best_micro = -1.0
     best_macro = -1.0
+    best_selection = -1.0
     best_loss_epoch = None
     best_micro_epoch = None
     best_macro_epoch = None
+    best_selection_epoch = None
     patience = int(config.get("early_stopping_patience", 5))
     patience_counter = 0
     history = []
     best_metrics = None
     best_valid_loss_for_macro = None
+    best_selection_metrics = None
+    selection_metric = str(config.get("selection_metric", "macro_f1"))
+    selection_label_name = config.get("selection_label_name")
+    if selection_metric == "target_label_f1":
+        if selection_label_name not in config.get("label_names", []):
+            raise ValueError(
+                "selection_metric=target_label_f1 requires a valid "
+                "selection_label_name"
+            )
+        selection_label_id = config["label_names"].index(selection_label_name)
+    elif selection_metric == "macro_f1":
+        selection_label_id = None
+    else:
+        raise ValueError(
+            "selection_metric must be macro_f1 or target_label_f1"
+        )
 
     for epoch in range(1, int(config["epochs"]) + 1):
+        if train_batch_sampler is not None:
+            train_batch_sampler.set_epoch(epoch)
         set_model_epoch(model, epoch)
         if device.type == "cuda":
             torch.cuda.reset_peak_memory_stats(device)
@@ -787,6 +1134,11 @@ def main():
             metrics.get("threshold_scan", {}),
             "macro_f1",
         )
+        selection_score = (
+            float(metrics["per_label_f1"][selection_label_id])
+            if selection_label_id is not None
+            else float(best_epoch_macro)
+        )
         record = {
             "epoch": epoch,
             "epochs": int(config["epochs"]),
@@ -798,6 +1150,9 @@ def main():
             "best_micro_f1": best_epoch_micro,
             "best_threshold_by_macro_f1": macro_threshold,
             "best_macro_f1": best_epoch_macro,
+            "selection_metric": selection_metric,
+            "selection_score": selection_score,
+            "learning_rate": float(optimizer.param_groups[0]["lr"]),
             "detection_f1": metrics["detection_f1"],
             "predicted_positive_total": metrics["predicted_positive_total"],
             "per_label_f1": metrics["per_label_f1"],
@@ -860,7 +1215,15 @@ def main():
             ),
         }
         history.append(record)
-        payload = checkpoint_payload(model, optimizer, epoch, config, valid_loss, metrics)
+        payload = checkpoint_payload(
+            model,
+            optimizer,
+            epoch,
+            config,
+            valid_loss,
+            metrics,
+            transfer_audit=transfer_audit,
+        )
         torch.save(payload, checkpoint_dir / "last.pt")
         if valid_loss < best_loss:
             best_loss = valid_loss
@@ -876,14 +1239,29 @@ def main():
             best_metrics = metrics
             best_valid_loss_for_macro = valid_loss
             torch.save(payload, checkpoint_dir / "best_macro_f1.pt")
+        if selection_score > best_selection:
+            best_selection = selection_score
+            best_selection_epoch = epoch
+            best_selection_metrics = metrics
+            torch.save(payload, checkpoint_dir / "best_selection.pt")
             patience_counter = 0
         else:
             patience_counter += 1
+
+        if scheduler is not None:
+            if isinstance(
+                scheduler,
+                torch.optim.lr_scheduler.ReduceLROnPlateau,
+            ):
+                scheduler.step(selection_score)
+            else:
+                scheduler.step()
 
         print(
             f"epoch {epoch}/{config['epochs']} train_loss={train_loss:.6f} "
             f"valid_loss={valid_loss:.6f} micro_f1={best_epoch_micro:.6f} "
             f"macro_f1={best_epoch_macro:.6f} pred={metrics['predicted_positive_total']} "
+            f"selection={selection_score:.6f} lr={optimizer.param_groups[0]['lr']:.8f} "
             f"max_memory_allocated_mb={max_memory_allocated_mb:.2f} "
             f"max_memory_reserved_mb={max_memory_reserved_mb:.2f} "
             f"front_hn_active={train_stats.get('front_hard_negative_active_count', 0.0):.0f} "
@@ -1094,6 +1472,24 @@ def main():
         "asl_clip": config.get("asl_clip"),
         "asl_eps": config.get("asl_eps"),
         **train_sampler_stats,
+        "scheduler": config.get("scheduler", "none"),
+        "selection_metric": selection_metric,
+        "selection_label_name": selection_label_name,
+        "best_selection_value": best_selection,
+        "best_selection_epoch": best_selection_epoch,
+        "best_selection_micro_f1": (
+            best_selection_metrics.get("recognition_micro_f1")
+            if best_selection_metrics is not None
+            else None
+        ),
+        "best_selection_macro_f1": (
+            best_selection_metrics.get("recognition_macro_f1")
+            if best_selection_metrics is not None
+            else None
+        ),
+        "loss_label_names": list(config.get("loss_label_names", config["label_names"])),
+        "exclude_augmented_ids": bool(config.get("exclude_augmented_ids", False)),
+        "transfer_audit": transfer_audit,
         "best_loss_epoch": best_loss_epoch,
         "best_loss_value": best_loss,
         "best_micro_f1_epoch": best_micro_epoch,
