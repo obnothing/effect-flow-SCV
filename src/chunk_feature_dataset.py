@@ -5,6 +5,19 @@ import torch
 from torch.utils.data import Dataset
 
 
+def load_id_subset(path):
+    """Load a newline-delimited contract-id allowlist for a dataset split."""
+    if not path:
+        return None
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"ID subset file not found: {path}")
+    ids = {line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()}
+    if not ids:
+        raise ValueError(f"ID subset file is empty: {path}")
+    return ids
+
+
 class ChunkFeatureDataset(Dataset):
     def __init__(
         self,
@@ -15,6 +28,7 @@ class ChunkFeatureDataset(Dataset):
         source_label_names=None,
         label_names=None,
         exclude_augmented_ids=False,
+        include_ids_path=None,
         semantic_path=None,
         front_special_path=None,
         graph_evidence_path=None,
@@ -84,6 +98,19 @@ class ChunkFeatureDataset(Dataset):
         if exclude_augmented_ids:
             self.indices = [
                 idx for idx in self.indices if "__aug_" not in str(self.ids[idx])
+            ]
+        include_ids = load_id_subset(include_ids_path)
+        if include_ids is not None:
+            available_ids = {str(self.ids[idx]) for idx in self.indices}
+            unknown_ids = include_ids - available_ids
+            if unknown_ids:
+                preview = ", ".join(sorted(unknown_ids)[:5])
+                raise ValueError(
+                    f"{include_ids_path} contains {len(unknown_ids)} IDs absent from "
+                    f"{self.path}; first IDs: {preview}"
+                )
+            self.indices = [
+                idx for idx in self.indices if str(self.ids[idx]) in include_ids
             ]
         if debug_num_samples is not None:
             rng = random.Random(int(seed))
@@ -403,6 +430,7 @@ def build_chunk_feature_datasets(config):
             source_label_names=source_label_names,
             label_names=label_names,
             exclude_augmented_ids=bool(config.get("exclude_augmented_ids", False)),
+            include_ids_path=config.get("train_include_ids_path"),
             semantic_path=semantic_path("train"),
             front_special_path=front_special_path("train"),
             graph_evidence_path=graph_evidence_path("train"),

@@ -12,7 +12,7 @@ import yaml
 from torch.utils.data import DataLoader, WeightedRandomSampler
 from tqdm import tqdm
 
-from chunk_feature_dataset import build_chunk_feature_datasets
+from chunk_feature_dataset import build_chunk_feature_datasets, load_id_subset
 from evm_chunk_mil_model import (
     EVEFMVDV2SideEvidenceMIL,
     EVMChunkMILClassifier,
@@ -104,6 +104,23 @@ def compute_pos_weight_from_feature_cache(config):
         keep = torch.tensor(
             ["__aug_" not in str(sample_id) for sample_id in payload["ids"]],
             dtype=torch.bool,
+        )
+        labels = labels[keep]
+        ids = [sample_id for sample_id, keep_value in zip(payload["ids"], keep) if keep_value]
+    else:
+        ids = list(payload["ids"])
+    include_ids = load_id_subset(config.get("train_include_ids_path"))
+    if include_ids is not None:
+        available_ids = {str(sample_id) for sample_id in ids}
+        unknown_ids = include_ids - available_ids
+        if unknown_ids:
+            preview = ", ".join(sorted(unknown_ids)[:5])
+            raise ValueError(
+                f"{config['train_include_ids_path']} contains {len(unknown_ids)} IDs "
+                f"absent from the training feature cache; first IDs: {preview}"
+            )
+        keep = torch.tensor(
+            [str(sample_id) in include_ids for sample_id in ids], dtype=torch.bool
         )
         labels = labels[keep]
     total = labels.shape[0]

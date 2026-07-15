@@ -66,6 +66,7 @@ data/processed/DIVE/*.jsonl
 data/processed/*.tar.gz
 data/processed/DIVE_random_split/
 data/processed/DIVE_main6_random_split/
+data/processed/DIVE_main6_access_train_subsets/
 data/processed/effect_flow_pretrain/
 data/processed/effect_flow_pretrain_debug/
 
