@@ -29,7 +29,9 @@ def parse_args():
     parser.add_argument("--target_override", action="append", default=[])
     parser.add_argument("--target_checkpoint", required=True)
     parser.add_argument("--max_samples", type=int, default=128)
-    parser.add_argument("--tolerance", type=float, default=1e-6)
+    # CUDA float32 reductions can differ slightly when the target label count
+    # changes, even if every shared and old-label parameter is bitwise equal.
+    parser.add_argument("--tolerance", type=float, default=1e-5)
     parser.add_argument("--output", required=True)
     return parser.parse_args()
 

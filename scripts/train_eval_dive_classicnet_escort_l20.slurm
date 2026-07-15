@@ -235,7 +235,7 @@ python scripts/audit_classicnet_escort_transfer.py \
   --target_override "chunk_context_encoder_type=${SELECTED_ENCODER_TYPE}" \
   --target_checkpoint "${CHECKPOINT_ROOT}/selected_front/best_selection.pt" \
   --max_samples 128 \
-  --tolerance 0.000001 \
+  --tolerance 0.00001 \
   --output "${RESULT_ROOT}/front_transfer_invariance.json"
 
 echo "[5/8] train and validate Bad Randomness transfer variants"
@@ -262,7 +262,7 @@ python scripts/audit_classicnet_escort_transfer.py \
   --target_override "chunk_context_encoder_type=${SELECTED_ENCODER_TYPE}" \
   --target_checkpoint "${CHECKPOINT_ROOT}/selected_bad/best_selection.pt" \
   --max_samples 128 \
-  --tolerance 0.000001 \
+  --tolerance 0.00001 \
   --output "${RESULT_ROOT}/bad_transfer_invariance.json"
 
 echo "[7/8] train joint-8 control and run final evaluations"
