@@ -1,0 +1,10 @@
+DIVE epoch F1 curve summary
+
+best_micro_f1: epoch=47 value=0.836460
+best_macro_f1: epoch=47 value=0.813123
+Reentrancy: best_epoch=12 best_f1=0.843775
+Access Control: best_epoch=17 best_f1=0.896630
+Arithmetic: best_epoch=34 best_f1=0.822038
+Unchecked Return Values: best_epoch=26 best_f1=0.831276
+DoS: best_epoch=49 best_f1=0.712401
+Time manipulation: best_epoch=45 best_f1=0.808219
