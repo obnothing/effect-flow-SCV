@@ -1,0 +1,8 @@
+DIVE Main-6 clean candidate runtime-opcode deduplication
+dive_rows_checked: 22330
+unique_dive_opcode_hashes: 20277
+candidates_input: 4040
+candidate_internal_opcode_duplicates: 87
+overlap_with_any_dive_split: 1
+candidates_kept: 3952
+output: data/raw/smartbugs_wild/tool_screened_main6_clean_runtime_deduplicated.jsonl
