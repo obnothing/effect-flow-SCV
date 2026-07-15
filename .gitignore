@@ -59,6 +59,8 @@ output.log
 
 # Large datasets
 data/raw/smartbugs_wild/
+data/raw/verified_smart_contracts/
+data/raw/ethereum_public_pretrain_100k/
 data/raw/BJUT_SC01/BJUT_SC01.zip
 data/raw/BJUT_SC01/extracted/
 data/processed/BJUT_SC01/*.jsonl
@@ -68,6 +70,8 @@ data/processed/*.tar.gz
 data/processed/DIVE_random_split/
 data/processed/DIVE_main6_random_split/
 data/processed/DIVE_main6_access_train_subsets/
+data/processed/DIVE_main6_access4000_clean3952/
+data/processed/ethereum_public_pretrain_100k/
 data/processed/effect_flow_pretrain/
 data/processed/effect_flow_pretrain_debug/
 
