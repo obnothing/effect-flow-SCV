@@ -58,6 +58,7 @@ results/*
 output.log
 
 # Large datasets
+data/raw/smartbugs_wild/
 data/raw/BJUT_SC01/BJUT_SC01.zip
 data/raw/BJUT_SC01/extracted/
 data/processed/BJUT_SC01/*.jsonl
