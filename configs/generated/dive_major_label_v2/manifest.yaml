@@ -1,0 +1,27 @@
+base_config: configs/generated/dive_side_scale_search/train_dive_side_scale_150_ep50.yaml
+output_config_dir: configs/generated/dive_major_label_v2
+checkpoint_root: checkpoints/dive_major_label_v2
+result_root: results/dive_major_label_v2/members
+major_labels:
+- Reentrancy
+- Access Control
+- Arithmetic
+- Unchecked Return Values
+- DoS
+- Time manipulation
+variants:
+- variant: global_residual
+  config: configs/generated/dive_major_label_v2/dive_major_label_v2_global_residual.yaml
+  experiment_name: dive_major_label_v2_global_residual
+  checkpoint_dir: checkpoints/dive_major_label_v2/dive_major_label_v2_global_residual
+  result_dir: results/dive_major_label_v2/members/dive_major_label_v2_global_residual
+- variant: multipool
+  config: configs/generated/dive_major_label_v2/dive_major_label_v2_multipool.yaml
+  experiment_name: dive_major_label_v2_multipool
+  checkpoint_dir: checkpoints/dive_major_label_v2/dive_major_label_v2_multipool
+  result_dir: results/dive_major_label_v2/members/dive_major_label_v2_multipool
+- variant: global_residual_multipool
+  config: configs/generated/dive_major_label_v2/dive_major_label_v2_global_residual_multipool.yaml
+  experiment_name: dive_major_label_v2_global_residual_multipool
+  checkpoint_dir: checkpoints/dive_major_label_v2/dive_major_label_v2_global_residual_multipool
+  result_dir: results/dive_major_label_v2/members/dive_major_label_v2_global_residual_multipool

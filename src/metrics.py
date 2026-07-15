@@ -48,6 +48,43 @@ def binary_detection_metrics(logits, labels, threshold=0.5):
     }
 
 
+def binary_detection_metrics_from_predictions(preds, labels):
+    preds = np.asarray(preds).astype(int)
+    labels = np.asarray(labels).astype(int)
+    tp = int(((preds == 1) & (labels == 1)).sum())
+    fp = int(((preds == 1) & (labels == 0)).sum())
+    fn = int(((preds == 0) & (labels == 1)).sum())
+    tn = int(((preds == 0) & (labels == 0)).sum())
+    precision, recall, f1 = precision_recall_f1(tp, fp, fn)
+    accuracy = safe_divide(tp + tn, tp + fp + fn + tn)
+    return {
+        "detection_accuracy": accuracy,
+        "detection_precision": precision,
+        "detection_recall": recall,
+        "detection_f1": f1,
+        "detection_tp": tp,
+        "detection_fp": fp,
+        "detection_fn": fn,
+        "detection_tn": tn,
+        "detection_predicted_positive_count": int(preds.sum()),
+        "detection_true_positive_count": int(labels.sum()),
+    }
+
+
+def derived_detection_metrics_from_multilabel_probs(labels, probs, thresholds):
+    labels = np.asarray(labels).astype(int)
+    probs = np.asarray(probs)
+    thresholds = np.asarray(thresholds, dtype=float)
+    if thresholds.ndim == 0:
+        thresholds = np.full(labels.shape[1], float(thresholds))
+    multi_preds = (probs >= thresholds.reshape(1, -1)).astype(int)
+    binary_preds = (multi_preds.sum(axis=1) > 0).astype(int)
+    binary_labels = (labels.sum(axis=1) > 0).astype(int)
+    metrics = binary_detection_metrics_from_predictions(binary_preds, binary_labels)
+    metrics["detection_source"] = "derived_from_multilabel"
+    return metrics
+
+
 def multilabel_metrics(logits, labels, threshold=0.5):
     probs = sigmoid(logits)
     preds = (probs >= threshold).astype(int)
@@ -355,11 +392,20 @@ def compute_metrics(
     multi_labels,
     threshold=0.5,
     scan_thresholds=None,
+    derived_detection_from_multilabel=False,
 ):
     multi = multilabel_metrics(recognition_logits, multi_labels, threshold=threshold)
-    detection = binary_detection_metrics(
-        detection_logits, binary_labels, threshold=threshold
-    )
+    if derived_detection_from_multilabel:
+        detection = derived_detection_metrics_from_multilabel_probs(
+            multi_labels,
+            sigmoid(recognition_logits),
+            threshold,
+        )
+    else:
+        detection = binary_detection_metrics(
+            detection_logits, binary_labels, threshold=threshold
+        )
+        detection["detection_source"] = "detection_head"
     metrics = {
         "recognition_micro_f1": multi["micro_f1"],
         "recognition_micro_precision": multi["micro_precision"],

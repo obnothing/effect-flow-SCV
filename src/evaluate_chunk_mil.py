@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 import torch
 import yaml
+from sklearn.metrics import average_precision_score, roc_auc_score
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -19,6 +20,7 @@ from metrics import (
     binary_detection_metrics,
     compute_metrics,
     compute_multilabel_metrics_from_probs,
+    derived_detection_metrics_from_multilabel_probs,
     precision_recall_f1,
     sigmoid,
 )
@@ -34,6 +36,8 @@ EFFECT_FLOW_MODEL_TYPES = {
 def parse_args():
     parser = argparse.ArgumentParser(description="Evaluate EVM chunk MIL classifier.")
     parser.add_argument("--config", required=True)
+    parser.add_argument("--variant", default=None)
+    parser.add_argument("--override", action="append", default=[])
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--split", default="test", choices=["train", "valid", "test"])
     parser.add_argument("--threshold", default="auto")
@@ -58,9 +62,34 @@ def parse_args():
     return parser.parse_args()
 
 
-def load_config(path):
+def load_config(path, variant=None):
     with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        payload = yaml.safe_load(f)
+    if "variants" not in payload:
+        if variant is not None:
+            raise ValueError(f"Config {path} does not define variants")
+        return payload
+    if not variant:
+        raise ValueError(f"Config {path} requires --variant")
+    variants = payload.get("variants", {})
+    if variant not in variants:
+        raise ValueError(
+            f"Unknown variant {variant}; available: {sorted(variants)}"
+        )
+    config = dict(payload.get("common", {}))
+    config.update(variants[variant])
+    config["config_variant"] = variant
+    return config
+
+
+def apply_config_overrides(config, overrides):
+    config = dict(config)
+    for item in overrides or []:
+        if "=" not in item:
+            raise ValueError(f"Invalid config override: {item}")
+        key, raw_value = item.split("=", 1)
+        config[key] = yaml.safe_load(raw_value)
+    return config
 
 
 def ensure_dir(path):
@@ -195,13 +224,21 @@ def recognition_metrics_from_predictions(predictions, thresholds):
     return compute_multilabel_metrics_from_probs(labels, probs, thresholds)
 
 
-def full_metrics_from_predictions(predictions, thresholds):
+def full_metrics_from_predictions(predictions, thresholds, derived_detection=False):
     recognition = recognition_metrics_from_predictions(predictions, thresholds)
-    detection = binary_detection_metrics(
-        predictions["detection_logits"],
-        predictions["binary_labels"],
-        threshold=0.5,
-    )
+    if derived_detection:
+        detection = derived_detection_metrics_from_multilabel_probs(
+            predictions["multi_labels"],
+            sigmoid(predictions["recognition_logits"]),
+            thresholds,
+        )
+    else:
+        detection = binary_detection_metrics(
+            predictions["detection_logits"],
+            predictions["binary_labels"],
+            threshold=0.5,
+        )
+        detection["detection_source"] = "detection_head"
     metrics = {}
     metrics.update(detection)
     metrics.update(recognition)
@@ -215,6 +252,7 @@ def metric_summary(metrics, threshold_mode, threshold_source, thresholds):
         "threshold_mode": threshold_mode,
         "threshold_source": threshold_source,
         "thresholds": thresholds,
+        "detection_source": metrics.get("detection_source", "detection_head"),
         "detection_accuracy": metrics["detection_accuracy"],
         "detection_precision": metrics["detection_precision"],
         "detection_recall": metrics["detection_recall"],
@@ -250,12 +288,21 @@ def select_per_label_thresholds(
     thresholds,
     label_names,
     global_threshold=0.5,
+    stable_labels=None,
+    bootstrap_iterations=500,
+    bootstrap_penalty=0.5,
+    minimum_recall=0.45,
+    predicted_positive_min_ratio=0.5,
+    predicted_positive_max_ratio=1.5,
+    seed=42,
 ):
     y_true = np.asarray(y_true).astype(int)
     y_prob = np.asarray(y_prob)
     selected = []
     rows = []
     warnings = []
+    stable_labels = set(stable_labels or [])
+    rng = np.random.default_rng(int(seed))
     for label_id, label_name in enumerate(label_names):
         targets = y_true[:, label_id]
         probs = y_prob[:, label_id]
@@ -288,14 +335,86 @@ def select_per_label_thresholds(
                         "predicted_positive_count": int(preds.sum()),
                     }
                 )
-            best = max(
-                candidates,
-                key=lambda item: (
-                    item["f1"],
-                    -item["balance_gap"],
-                    -item["distance_to_0_5"],
-                ),
-            )
+            if label_name in stable_labels:
+                positive_indices = np.flatnonzero(targets == 1)
+                negative_indices = np.flatnonzero(targets == 0)
+                stable_candidates = []
+                for candidate in candidates:
+                    predicted = candidate["predicted_positive_count"]
+                    if candidate["recall"] < float(minimum_recall):
+                        continue
+                    if not (
+                        float(predicted_positive_min_ratio) * support
+                        <= predicted
+                        <= float(predicted_positive_max_ratio) * support
+                    ):
+                        continue
+                    bootstrap_f1 = []
+                    threshold_value = candidate["threshold"]
+                    for _ in range(int(bootstrap_iterations)):
+                        sampled = np.concatenate(
+                            [
+                                rng.choice(
+                                    positive_indices,
+                                    size=len(positive_indices),
+                                    replace=True,
+                                ),
+                                rng.choice(
+                                    negative_indices,
+                                    size=len(negative_indices),
+                                    replace=True,
+                                ),
+                            ]
+                        )
+                        sampled_targets = targets[sampled]
+                        sampled_preds = (probs[sampled] >= threshold_value).astype(int)
+                        tp_b = int(((sampled_preds == 1) & (sampled_targets == 1)).sum())
+                        fp_b = int(((sampled_preds == 1) & (sampled_targets == 0)).sum())
+                        fn_b = int(((sampled_preds == 0) & (sampled_targets == 1)).sum())
+                        bootstrap_f1.append(precision_recall_f1(tp_b, fp_b, fn_b)[2])
+                    candidate["bootstrap_mean_f1"] = float(np.mean(bootstrap_f1))
+                    candidate["bootstrap_std_f1"] = float(np.std(bootstrap_f1))
+                    candidate["bootstrap_score"] = (
+                        candidate["bootstrap_mean_f1"]
+                        - float(bootstrap_penalty) * candidate["bootstrap_std_f1"]
+                    )
+                    stable_candidates.append(candidate)
+                if stable_candidates:
+                    top_score = max(item["bootstrap_score"] for item in stable_candidates)
+                    near_best = [
+                        item
+                        for item in stable_candidates
+                        if top_score - item["bootstrap_score"] < 0.005
+                    ]
+                    best = max(
+                        near_best,
+                        key=lambda item: (
+                            item["precision"],
+                            -item["distance_to_0_5"],
+                        ),
+                    )
+                else:
+                    warnings.append(
+                        f"{label_name}: no stable-bootstrap threshold passed constraints; "
+                        "fall back to validation F1"
+                    )
+                    best = max(
+                        candidates,
+                        key=lambda item: (
+                            item["f1"],
+                            -item["balance_gap"],
+                            -item["distance_to_0_5"],
+                        ),
+                    )
+            else:
+                best = max(
+                    candidates,
+                    key=lambda item: (
+                        item["f1"],
+                        -item["balance_gap"],
+                        -item["distance_to_0_5"],
+                    ),
+                )
             threshold = float(best["threshold"])
             precision = float(best["precision"])
             recall = float(best["recall"])
@@ -313,6 +432,20 @@ def select_per_label_thresholds(
                 "best_valid_recall": float(recall),
                 "best_valid_f1": float(f1),
                 "predicted_positive_count_at_best_threshold": int(preds.sum()),
+                "selection_method": (
+                    "stable_bootstrap" if label_name in stable_labels else "validation_f1"
+                ),
+                "bootstrap_mean_f1": best.get("bootstrap_mean_f1") if support else None,
+                "bootstrap_std_f1": best.get("bootstrap_std_f1") if support else None,
+                "bootstrap_score": best.get("bootstrap_score") if support else None,
+                "average_precision": (
+                    float(average_precision_score(targets, probs)) if support else None
+                ),
+                "roc_auc": (
+                    float(roc_auc_score(targets, probs))
+                    if support and len(np.unique(targets)) > 1
+                    else None
+                ),
             }
         )
     return {"thresholds": selected, "per_label": rows, "warnings": warnings}
@@ -508,13 +641,25 @@ def threshold_array_for_export(thresholds, num_labels):
     return values
 
 
-def write_prediction_jsonl(path, predictions, thresholds, threshold_mode):
+def write_prediction_jsonl(
+    path,
+    predictions,
+    thresholds,
+    threshold_mode,
+    derived_detection=False,
+):
     num_labels = predictions["multi_labels"].shape[1]
     thresholds = threshold_array_for_export(thresholds, num_labels)
     multi_probs = sigmoid(predictions["recognition_logits"])
     multi_preds = (multi_probs >= thresholds.reshape(1, -1)).astype(int)
-    binary_probs = sigmoid(predictions["detection_logits"]).reshape(-1)
-    binary_preds = (binary_probs >= 0.5).astype(int)
+    if derived_detection:
+        binary_probs = multi_probs.max(axis=1)
+        binary_preds = (multi_preds.sum(axis=1) > 0).astype(int)
+        detection_source = "derived_from_multilabel"
+    else:
+        binary_probs = sigmoid(predictions["detection_logits"]).reshape(-1)
+        binary_preds = (binary_probs >= 0.5).astype(int)
+        detection_source = "detection_head"
     ensure_dir(path.parent)
     with path.open("w", encoding="utf-8") as f:
         for idx, contract_id in enumerate(predictions["ids"]):
@@ -536,6 +681,7 @@ def write_prediction_jsonl(path, predictions, thresholds, threshold_mode):
                 "binary_true": int(predictions["binary_labels"][idx]),
                 "binary_prob": float(binary_probs[idx]),
                 "binary_pred": int(binary_preds[idx]),
+                "binary_detection_source": detection_source,
                 "multi_true": [
                     int(value) for value in predictions["multi_labels"][idx].tolist()
                 ],
@@ -640,6 +786,14 @@ def write_threshold_calibration_report(
         "model": model_description(config),
         "ablation_dataset": config.get("ablation_dataset"),
         "ablation_variant": config.get("ablation_variant"),
+        "task_mode": config.get("task_mode", "joint_detection_recognition"),
+        "detection_head_enabled": bool(config.get("detection_head_enabled", True)),
+        "detection_loss_weight": float(config.get("detection_loss_weight", 1.0)),
+        "recognition_loss_weight": float(config.get("recognition_loss_weight", 1.0)),
+        "derived_detection_from_multilabel": bool(
+            config.get("derived_detection_from_multilabel", False)
+        ),
+        "detection_source": per_label.get("detection_source", "detection_head"),
         "side_evidence_enabled": bool(config.get("side_evidence_enabled", False)),
         "coefficient_scale": config.get("coefficient_scale"),
         "use_chunk_context": bool(config.get("use_chunk_context", False)),
@@ -776,7 +930,10 @@ def write_threshold_calibration_report(
 
 def main():
     args = parse_args()
-    config = load_config(args.config)
+    config = apply_config_overrides(
+        load_config(args.config, args.variant),
+        args.override,
+    )
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     semantic_path = None
     if config.get("semantic_feature_dir"):
@@ -791,6 +948,12 @@ def main():
         feature_path(config, args.split),
         seed=config.get("seed", 42),
         num_labels=config.get("num_labels"),
+        source_label_names=config.get("source_label_names", config.get("label_names")),
+        label_names=config.get("label_names"),
+        exclude_augmented_ids=(
+            bool(config.get("exclude_augmented_ids", False))
+            and args.split == "train"
+        ),
         semantic_path=semantic_path,
         front_special_path=front_special_path,
         graph_evidence_path=graph_evidence_path,
@@ -818,6 +981,17 @@ def main():
             thresholds,
             config.get("label_names", [f"label_{idx}" for idx in range(10)]),
             global_threshold=0.5,
+            stable_labels=config.get("stable_calibration_labels", []),
+            bootstrap_iterations=int(config.get("stable_calibration_bootstrap", 500)),
+            bootstrap_penalty=float(config.get("stable_calibration_std_penalty", 0.5)),
+            minimum_recall=float(config.get("stable_calibration_min_recall", 0.45)),
+            predicted_positive_min_ratio=float(
+                config.get("stable_calibration_min_predicted_ratio", 0.5)
+            ),
+            predicted_positive_max_ratio=float(
+                config.get("stable_calibration_max_predicted_ratio", 1.5)
+            ),
+            seed=int(config.get("seed", 42)),
         )
         selection["global_threshold_scan_path"] = str(
             result_dir / "valid_global_threshold_scan.json"
@@ -830,14 +1004,21 @@ def main():
     if args.split == "test" and args.threshold_file and args.global_threshold_file:
         per_label_thresholds = load_threshold_selection(args.threshold_file)
         best_global_threshold = load_best_global_macro_threshold(args.global_threshold_file)
-        baseline_metrics = full_metrics_from_predictions(predictions, 0.5)
+        derived_detection = bool(config.get("derived_detection_from_multilabel", False))
+        baseline_metrics = full_metrics_from_predictions(
+            predictions,
+            0.5,
+            derived_detection=derived_detection,
+        )
         best_global_metrics = full_metrics_from_predictions(
             predictions,
             best_global_threshold,
+            derived_detection=derived_detection,
         )
         per_label_metrics = full_metrics_from_predictions(
             predictions,
             per_label_thresholds,
+            derived_detection=derived_detection,
         )
         report = write_threshold_calibration_report(
             result_dir,
@@ -858,6 +1039,7 @@ def main():
                 predictions,
                 0.5,
                 "global_fixed_0_5",
+                derived_detection=derived_detection,
             )
             best_global_prediction_path = (
                 result_dir / "test_predictions_best_global.jsonl"
@@ -867,6 +1049,7 @@ def main():
                 predictions,
                 best_global_threshold,
                 "global_validation_best_macro",
+                derived_detection=derived_detection,
             )
             default_prediction_path = result_dir / "test_predictions.jsonl"
             write_prediction_jsonl(
@@ -874,6 +1057,7 @@ def main():
                 predictions,
                 best_global_threshold,
                 "global_validation_best_macro",
+                derived_detection=derived_detection,
             )
             per_label_prediction_path = (
                 result_dir / "test_predictions_per_label.jsonl"
@@ -883,6 +1067,7 @@ def main():
                 predictions,
                 per_label_thresholds,
                 "per_label_validation_selected",
+                derived_detection=derived_detection,
             )
             report["fixed_threshold_prediction_path"] = str(fixed_prediction_path)
             report["best_global_prediction_path"] = str(best_global_prediction_path)
@@ -902,6 +1087,9 @@ def main():
         predictions["multi_labels"],
         threshold=threshold,
         scan_thresholds=config.get("thresholds", [threshold]),
+        derived_detection_from_multilabel=bool(
+            config.get("derived_detection_from_multilabel", False)
+        ),
     )
     top_chunks_path = result_dir / f"top_chunks_{args.split}.jsonl"
     write_top_chunks(top_chunks_path, config, predictions, threshold)
@@ -915,6 +1103,14 @@ def main():
         "model_type": config.get("model_type", "evm_chunk_mil"),
         "ablation_dataset": config.get("ablation_dataset"),
         "ablation_variant": config.get("ablation_variant"),
+        "task_mode": config.get("task_mode", "joint_detection_recognition"),
+        "detection_head_enabled": bool(config.get("detection_head_enabled", True)),
+        "detection_loss_weight": float(config.get("detection_loss_weight", 1.0)),
+        "recognition_loss_weight": float(config.get("recognition_loss_weight", 1.0)),
+        "derived_detection_from_multilabel": bool(
+            config.get("derived_detection_from_multilabel", False)
+        ),
+        "detection_source": metrics.get("detection_source", "detection_head"),
         "side_evidence_enabled": bool(config.get("side_evidence_enabled", False)),
         "coefficient_scale": config.get("coefficient_scale"),
         "encoder_frozen": True,
@@ -1012,7 +1208,15 @@ def main():
     write_report(prefix, report)
     if args.save_predictions:
         prediction_path = result_dir / f"{args.split}_predictions.jsonl"
-        write_prediction_jsonl(prediction_path, predictions, threshold, "global")
+        write_prediction_jsonl(
+            prediction_path,
+            predictions,
+            threshold,
+            "global",
+            derived_detection=bool(
+                config.get("derived_detection_from_multilabel", False)
+            ),
+        )
         report["prediction_path"] = str(prediction_path)
         write_report(prefix, report)
         print(f"[OK] wrote {prediction_path}")

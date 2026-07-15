@@ -1,0 +1,14 @@
+Validation-selected per-label thresholds
+
+label_name | support | best_threshold | valid_precision | valid_recall | valid_f1 | predicted_positive_count
+----------------------------------------------------------------------------------------------------------------
+Reentrancy | 1121 | 0.45 | 0.803500 | 0.900981 | 0.849453 | 1257
+Access Control | 1665 | 0.25 | 0.848730 | 0.943544 | 0.893629 | 1851
+Arithmetic | 968 | 0.30 | 0.769936 | 0.867769 | 0.815930 | 1091
+Unchecked Return Values | 582 | 0.50 | 0.787066 | 0.857388 | 0.820724 | 634
+DoS | 369 | 0.45 | 0.664251 | 0.745257 | 0.702427 | 414
+Time manipulation | 631 | 0.50 | 0.786550 | 0.852615 | 0.818251 | 684
+Front Running | 66 | 0.90 | 0.221477 | 0.500000 | 0.306977 | 149
+
+Warnings:
+- Front Running: no stable-bootstrap threshold passed constraints; fall back to validation F1

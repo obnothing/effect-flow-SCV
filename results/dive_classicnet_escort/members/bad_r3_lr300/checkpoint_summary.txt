@@ -1,0 +1,161 @@
+EVM chunk MIL training report
+
+experiment_name: dive_classicnet_escort_bad_r3_lr300
+model_type: evef_mvd_v2_side_evidence_mil
+ablation_dataset: DIVE
+ablation_variant: classicnet_bad_r3_lr300
+task_mode: recognition_only
+detection_head_enabled: False
+detection_loss_weight: 0.0
+recognition_loss_weight: 1.0
+derived_detection_from_multilabel: True
+detection_source: derived_from_multilabel
+side_evidence_enabled: True
+coefficient_scale: 1.5
+encoder_frozen: True
+feature_dir: data/features/continued_dive_evm_bert_dive_random_stride256_max64
+semantic_feature_dir: data/features/effect_flow_semantics/dive_random_stride256_max64
+use_effect_flow_semantics: True
+effect_flow_semantic_mode: reliable_side_evidence
+efpp_dim: 22
+etp_dim: 16
+relation_dim: 6
+semantic_projection_dim: 0
+semantic_fusion: side_evidence_bias
+semantic_dropout: 0.2
+lambda_gate: 0.0001
+risk_evidence_weight: 1.5
+missing_check_evidence_weight: 1.5
+protective_evidence_weight: 1.5
+effect_type_evidence_weight: 0.75
+relation_evidence_weight: 0.75
+behavior_weight_path: None
+use_weighted_behavior_scoring: False
+front_special_feature_dir: None
+front_running_special_enabled: False
+front_running_generic_pattern_scale: None
+front_running_special_risk_weight: None
+front_running_special_protective_weight: None
+front_running_confounder_suppression_weight: None
+front_running_confounder_margin: None
+front_hard_negative_loss_enabled: False
+front_hard_negative_lambda: None
+front_hard_negative_prob_threshold: None
+front_hard_negative_margin_logit: None
+front_contrastive_loss_enabled: False
+front_contrastive_lambda: None
+front_contrastive_temperature: None
+front_contrastive_dim: None
+front_contrastive_enable_epoch: None
+front_contrastive_confounder_labels: None
+front_contrastive_negative_mining: None
+front_contrastive_hard_negative_ratio: None
+front_contrastive_hard_negative_min_k: None
+front_contrastive_hard_negative_max_k: None
+graph_evidence_enabled: False
+graph_evidence_dir: None
+graph_evidence_dim: 0
+graph_evidence_scale: None
+graph_evidence_attention_scale: None
+graph_evidence_logit_scale: None
+graph_evidence_enable_epoch: None
+beta_reliable_init: 0.125
+gamma_reliable_init: 0.125
+warmup_epochs_neural_only: 0
+enable_reliable_semantic_epoch: 1
+use_weak_semantic_features: False
+feature_pooling: masked_mean
+max_chunks: 64
+feature_dim: 768
+hidden_dim: 512
+use_chunk_context: True
+chunk_context_num_layers: 2
+chunk_context_num_heads: 8
+chunk_context_dropout: 0.1
+use_data_parallel: False
+single_gpu_training: True
+visible_cuda_devices: 0
+visible_cuda_device_count: 1
+batch_size: 128
+total_batch_size: 128
+effective_chunks_per_batch: 8192
+num_workers: 4
+gradient_accumulation_steps: 1
+batch_size_fallback_due_to_oom: False
+max_memory_allocated_mb: 267.20947265625
+max_memory_reserved_mb: 356.0
+approx_batch_per_gpu: 128
+recognition_aggregation: label_gated_attention
+top_k: 2
+use_pos_weight: False
+pos_weight_rows: None
+recognition_loss_type: bce
+rare_negative_subsampling_enabled: False
+rare_negative_subsampling_labels: None
+rare_negative_subsampling_policy: None
+rare_negative_subsampling_negative_fraction: None
+rare_negative_subsampling_neg_per_pos: None
+rare_negative_subsampling_skip_when_no_positive: True
+asl_gamma_neg: None
+asl_gamma_pos: None
+asl_clip: None
+asl_eps: None
+train_sampler: target_balanced_batch
+transfer_target_label: Bad Randomness
+transfer_positive_count: 509
+transfer_negative_count: 17355
+transfer_neg_per_pos: 3
+transfer_positive_per_batch: 32
+transfer_negative_per_batch: 96
+transfer_batches_per_epoch: 16
+scheduler: reduce_on_plateau
+selection_metric: target_label_f1
+selection_label_name: Bad Randomness
+best_selection_value: 0.33191489361702126
+best_selection_epoch: 45
+best_selection_micro_f1: 0.8166853399982763
+best_selection_macro_f1: 0.6964319329209621
+loss_label_names: ['Bad Randomness']
+exclude_augmented_ids: True
+transfer_audit: {'enabled': True, 'checkpoint': 'checkpoints/dive_classicnet_escort/selected_front/best_selection.pt', 'source_epoch': 32, 'source_labels': ['Reentrancy', 'Access Control', 'Arithmetic', 'Unchecked Return Values', 'DoS', 'Time manipulation', 'Front Running'], 'target_labels': ['Reentrancy', 'Access Control', 'Arithmetic', 'Unchecked Return Values', 'DoS', 'Time manipulation', 'Front Running', 'Bad Randomness'], 'copied_labels': ['Reentrancy', 'Access Control', 'Arithmetic', 'Unchecked Return Values', 'DoS', 'Time manipulation', 'Front Running'], 'new_labels': ['Bad Randomness'], 'copied_shared_parameter_count': 37, 'trainable_label_names': ['Bad Randomness'], 'frozen_parameter_count': 7364098, 'trainable_parameter_count': 18214, 'trainable_parameter_names': ['classic_label_branches.7.attention_query', 'classic_label_branches.7.beta_reliable_raw', 'classic_label_branches.7.gamma_reliable_raw', 'classic_label_branches.7.evidence_logit_weight', 'classic_label_branches.7.evidence_logit_bias', 'classic_label_branches.7.residual_norm.weight', 'classic_label_branches.7.residual_norm.bias', 'classic_label_branches.7.down_projection.weight', 'classic_label_branches.7.down_projection.bias', 'classic_label_branches.7.up_projection.weight', 'classic_label_branches.7.up_projection.bias', 'classic_label_branches.7.output_norm.weight', 'classic_label_branches.7.output_norm.bias', 'classic_label_branches.7.classifier.weight', 'classic_label_branches.7.classifier.bias']}
+best_loss_epoch: 41
+best_loss_value: 0.18013611353105968
+best_micro_f1_epoch: 1
+best_micro_f1_value: 0.8206627680311891
+best_macro_f1_epoch: 51
+best_macro_f1_value: 0.7139176965218315
+best_macro_f1_threshold: 0.75
+valid_loss_at_best_macro: 0.1829017818801933
+valid_micro_f1: 0.8165445928479105
+valid_macro_f1: 0.6960818117251635
+detection_f1: 0.943101711983887
+predicted_positive_total: 6150
+baseline_comparison: {}
+improves_evm_bert_first512_macro_f1: False
+is_transductive_pretraining: True
+train_samples: 17864
+valid_samples: 2233
+per_label_table:
+- Reentrancy: precision=0.807443 recall=0.890277 accuracy=0.838334 f1=0.846839 support=1121
+- Access Control: precision=0.862514 recall=0.923123 accuracy=0.832960 f1=0.891790 support=1665
+- Arithmetic: precision=0.789834 recall=0.834711 accuracy=0.832064 f1=0.811652 support=968
+- Unchecked Return Values: precision=0.787066 recall=0.857388 accuracy=0.902373 f1=0.820724 support=582
+- DoS: precision=0.667482 recall=0.739837 accuracy=0.896104 f1=0.701799 support=369
+- Time manipulation: precision=0.786550 recall=0.852615 accuracy=0.892969 f1=0.818251 support=631
+- Front Running: precision=0.232323 recall=0.696970 accuracy=0.922974 f1=0.348485 support=66
+- Bad Randomness: precision=0.211957 recall=0.735849 accuracy=0.928795 f1=0.329114 support=53
+front_hard_negative_active_count_total: 0.0
+front_hard_negative_loss_mean: 0.0
+front_contrastive_anchor_count_total: 0.0
+front_contrastive_positive_count_total: 0.0
+front_contrastive_candidate_negative_count_total: 0.0
+front_contrastive_hard_negative_count_total: 0.0
+front_contrastive_selected_hard_negative_count_total: 0.0
+front_contrastive_active_batches_total: 0
+front_contrastive_loss_mean: 0.0
+front_contrastive_selected_prob_mean: 0.0
+front_contrastive_selected_prob_max: 0.0
+rare_negative_subsampling_totals: {'enabled': False, 'labels': []}
+gate_values: {'beta_reliable': tensor([0.1167, 0.1176, 0.1214, 0.1259, 0.1205, 0.1394, 0.1209, 0.1232],
+       device='cuda:0'), 'gamma_reliable': tensor([0.1176, 0.1196, 0.1143, 0.1294, 0.1153, 0.1355, 0.1325, 0.1354],
+       device='cuda:0')}

@@ -13,6 +13,11 @@ from effect_flow_ontology import (
 from effect_flow_utils import GLOBAL_VULNERABILITY_LABELS
 
 
+def softplus_inverse(value):
+    value = torch.tensor(float(value), dtype=torch.float32)
+    return float(torch.log(torch.expm1(value)).item())
+
+
 def asymmetric_multilabel_loss(
     logits,
     targets,
@@ -121,6 +126,154 @@ class ChunkContextEncoder(nn.Module):
         return h.masked_fill(~chunk_mask.unsqueeze(-1), 0.0)
 
 
+class ClassicPreNormTransformerBlock(nn.Module):
+    def __init__(self, hidden_dim, num_heads, dropout):
+        super().__init__()
+        self.attn_norm = nn.LayerNorm(hidden_dim)
+        self.self_attn = nn.MultiheadAttention(
+            hidden_dim,
+            num_heads,
+            dropout=dropout,
+            batch_first=True,
+        )
+        self.attn_dropout = nn.Dropout(dropout)
+        self.ffn_norm = nn.LayerNorm(hidden_dim)
+        self.ffn = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim * 4),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim * 4, hidden_dim),
+            nn.Dropout(dropout),
+        )
+
+    def forward(self, h, padding_mask):
+        normalized = self.attn_norm(h)
+        attended, _ = self.self_attn(
+            normalized,
+            normalized,
+            normalized,
+            key_padding_mask=padding_mask,
+            need_weights=False,
+        )
+        h = h + self.attn_dropout(attended)
+        return h + self.ffn(self.ffn_norm(h))
+
+
+class ClassicLocalGlobalContextEncoder(nn.Module):
+    """Shallow local-convolution plus global pre-norm Transformer encoder."""
+
+    def __init__(
+        self,
+        feature_dim=768,
+        hidden_dim=512,
+        max_chunks=64,
+        num_layers=2,
+        num_heads=8,
+        dropout=0.1,
+        local_residual_enabled=True,
+    ):
+        super().__init__()
+        if hidden_dim % num_heads != 0:
+            raise ValueError(
+                f"hidden_dim ({hidden_dim}) must be divisible by num_heads ({num_heads})"
+            )
+        self.max_chunks = int(max_chunks)
+        self.local_residual_enabled = bool(local_residual_enabled)
+        self.input_norm = nn.LayerNorm(feature_dim)
+        self.input_projection = nn.Linear(feature_dim, hidden_dim)
+        self.activation = nn.GELU()
+        self.dropout = nn.Dropout(dropout)
+        self.position_embedding = nn.Parameter(
+            torch.empty(self.max_chunks, hidden_dim)
+        )
+        self.local_norm = nn.LayerNorm(hidden_dim)
+        self.local_depthwise = nn.Conv1d(
+            hidden_dim,
+            hidden_dim,
+            kernel_size=3,
+            padding=1,
+            groups=hidden_dim,
+        )
+        self.local_pointwise = nn.Conv1d(hidden_dim, hidden_dim, kernel_size=1)
+        self.local_activation = nn.GELU()
+        self.local_dropout = nn.Dropout(dropout)
+        self.transformer = nn.ModuleList(
+            [
+                ClassicPreNormTransformerBlock(hidden_dim, num_heads, dropout)
+                for _ in range(int(num_layers))
+            ]
+        )
+        self.output_norm = nn.LayerNorm(hidden_dim)
+        nn.init.normal_(self.position_embedding, mean=0.0, std=0.02)
+
+    def forward(self, chunk_features, chunk_mask):
+        if chunk_features.ndim != 3:
+            raise ValueError(
+                f"chunk_features must be [B, C, H], got {tuple(chunk_features.shape)}"
+            )
+        chunk_mask = chunk_mask.bool()
+        if chunk_mask.shape != chunk_features.shape[:2]:
+            raise ValueError(
+                "chunk_mask shape must match the first two chunk_features dimensions"
+            )
+        if chunk_features.shape[1] > self.max_chunks:
+            raise ValueError(
+                f"received {chunk_features.shape[1]} chunks, max_chunks={self.max_chunks}"
+            )
+        if (~chunk_mask).all(dim=1).any():
+            raise ValueError("each sample must contain at least one valid chunk")
+
+        h = self.dropout(self.activation(self.input_projection(self.input_norm(chunk_features))))
+        h = h + self.position_embedding[: h.shape[1]].unsqueeze(0).type_as(h)
+        h = h.masked_fill(~chunk_mask.unsqueeze(-1), 0.0)
+        if self.local_residual_enabled:
+            local = self.local_norm(h).transpose(1, 2)
+            local = self.local_depthwise(local)
+            local = self.local_pointwise(local).transpose(1, 2)
+            local = self.local_dropout(self.local_activation(local))
+            h = (h + local).masked_fill(~chunk_mask.unsqueeze(-1), 0.0)
+        padding_mask = (~chunk_mask).contiguous()
+        for layer in self.transformer:
+            h = layer(h, padding_mask)
+            h = h.masked_fill(~chunk_mask.unsqueeze(-1), 0.0)
+        return self.output_norm(h).masked_fill(~chunk_mask.unsqueeze(-1), 0.0)
+
+
+class ClassicEscortLabelBranch(nn.Module):
+    def __init__(
+        self,
+        attn_dim,
+        adapter_dim,
+        bottleneck_dim,
+        dropout,
+        beta_init,
+        gamma_init,
+    ):
+        super().__init__()
+        self.attention_query = nn.Parameter(torch.empty(attn_dim))
+        self.residual_norm = nn.LayerNorm(adapter_dim)
+        self.down_projection = nn.Linear(adapter_dim, bottleneck_dim)
+        self.activation = nn.GELU()
+        self.down_dropout = nn.Dropout(dropout)
+        self.up_projection = nn.Linear(bottleneck_dim, adapter_dim)
+        self.up_dropout = nn.Dropout(min(float(dropout), 0.1))
+        self.output_norm = nn.LayerNorm(adapter_dim)
+        self.classifier = nn.Linear(adapter_dim, 1)
+        self.beta_reliable_raw = nn.Parameter(torch.tensor(softplus_inverse(beta_init)))
+        self.gamma_reliable_raw = nn.Parameter(torch.tensor(softplus_inverse(gamma_init)))
+        self.evidence_logit_weight = nn.Parameter(torch.zeros(2))
+        self.evidence_logit_bias = nn.Parameter(torch.zeros(()))
+        nn.init.normal_(self.attention_query, mean=0.0, std=0.02)
+        nn.init.zeros_(self.up_projection.weight)
+        nn.init.zeros_(self.up_projection.bias)
+
+    def forward(self, adapted):
+        update = self.down_projection(self.residual_norm(adapted))
+        update = self.down_dropout(self.activation(update))
+        update = self.up_dropout(self.up_projection(update))
+        return self.classifier(self.output_norm(adapted + update)).squeeze(-1)
+
+
 class EVMChunkMILClassifier(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -134,9 +287,45 @@ class EVMChunkMILClassifier(nn.Module):
             "label_names",
             [f"label_{idx}" for idx in range(self.num_labels)],
         )
+        self.loss_label_names = list(config.get("loss_label_names", self.label_names))
+        unknown_loss_labels = [
+            name for name in self.loss_label_names if name not in self.label_names
+        ]
+        if unknown_loss_labels:
+            raise ValueError(f"Unknown loss_label_names: {unknown_loss_labels}")
+        self.loss_label_ids = [
+            self.label_names.index(name) for name in self.loss_label_names
+        ]
         self.recognition_aggregation = config.get("recognition_aggregation", "topk_mean")
         self.top_k = int(config.get("top_k", 2))
         self.use_chunk_context = bool(config.get("use_chunk_context", False))
+        self.task_mode = str(config.get("task_mode", "joint_detection_recognition"))
+        self.derived_detection_from_multilabel = bool(
+            config.get("derived_detection_from_multilabel", False)
+        )
+        self.detection_head_enabled = bool(
+            config.get(
+                "detection_head_enabled",
+                self.task_mode != "recognition_only",
+            )
+        )
+        self.detection_loss_weight = float(
+            config.get(
+                "detection_loss_weight",
+                0.0 if self.task_mode == "recognition_only" else 1.0,
+            )
+        )
+        self.recognition_loss_weight = float(
+            config.get("recognition_loss_weight", 1.0)
+        )
+        if self.task_mode == "recognition_only" and self.detection_loss_weight != 0.0:
+            raise ValueError(
+                "task_mode=recognition_only requires detection_loss_weight=0.0"
+            )
+        if self.recognition_loss_weight <= 0:
+            raise ValueError("recognition_loss_weight must be positive")
+        if self.detection_loss_weight < 0:
+            raise ValueError("detection_loss_weight must be non-negative")
         self.recognition_loss_type = config.get("recognition_loss_type", "bce")
         if self.recognition_loss_type not in {"bce", "asl"}:
             raise ValueError(
@@ -200,14 +389,31 @@ class EVMChunkMILClassifier(nn.Module):
                 )
 
         if self.use_chunk_context:
-            self.chunk_context_encoder = ChunkContextEncoder(
-                feature_dim=feature_dim,
-                hidden_dim=hidden_dim,
-                max_chunks=int(config.get("max_chunks", 32)),
-                num_layers=int(config.get("chunk_context_num_layers", 2)),
-                num_heads=int(config.get("chunk_context_num_heads", 8)),
-                dropout=float(config.get("chunk_context_dropout", dropout)),
+            encoder_type = str(
+                config.get("chunk_context_encoder_type", "transformer")
             )
+            encoder_kwargs = {
+                "feature_dim": feature_dim,
+                "hidden_dim": hidden_dim,
+                "max_chunks": int(config.get("max_chunks", 32)),
+                "num_layers": int(config.get("chunk_context_num_layers", 2)),
+                "num_heads": int(config.get("chunk_context_num_heads", 8)),
+                "dropout": float(config.get("chunk_context_dropout", dropout)),
+            }
+            if encoder_type == "transformer":
+                self.chunk_context_encoder = ChunkContextEncoder(**encoder_kwargs)
+            elif encoder_type == "classic_local_global":
+                self.chunk_context_encoder = ClassicLocalGlobalContextEncoder(
+                    **encoder_kwargs,
+                    local_residual_enabled=bool(
+                        config.get("classic_local_residual_enabled", True)
+                    ),
+                )
+            else:
+                raise ValueError(
+                    "chunk_context_encoder_type must be transformer or "
+                    "classic_local_global"
+                )
             self.chunk_projection = None
         else:
             self.chunk_context_encoder = None
@@ -223,13 +429,103 @@ class EVMChunkMILClassifier(nn.Module):
         self.label_attn = nn.Parameter(torch.empty(self.num_labels, attn_dim))
         self.label_out = nn.Parameter(torch.empty(self.num_labels, hidden_dim))
         self.label_bias = nn.Parameter(torch.zeros(self.num_labels))
-        self.detection_classifier = nn.Sequential(
-            nn.LayerNorm(hidden_dim),
-            nn.Linear(hidden_dim, hidden_dim // 2),
-            nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_dim // 2, 1),
+        self.recognition_head_type = str(
+            config.get("recognition_head_type", "linear_label_dot")
         )
+        if self.recognition_head_type not in {
+            "linear_label_dot",
+            "label_branch_mlp",
+            "classic_escort_residual",
+        }:
+            raise ValueError(
+                "recognition_head_type must be one of: "
+                "linear_label_dot, label_branch_mlp, classic_escort_residual"
+            )
+        self.label_branches = None
+        if self.recognition_head_type == "label_branch_mlp":
+            branch_hidden_dim = int(config.get("label_branch_hidden_dim", hidden_dim // 2))
+            branch_dropout = float(config.get("label_branch_dropout", dropout))
+            branch_use_layernorm = bool(config.get("label_branch_use_layernorm", True))
+            if branch_hidden_dim <= 0:
+                raise ValueError("label_branch_hidden_dim must be positive")
+            branches = []
+            for _ in range(self.num_labels):
+                layers = []
+                if branch_use_layernorm:
+                    layers.append(nn.LayerNorm(hidden_dim))
+                layers.extend(
+                    [
+                        nn.Linear(hidden_dim, branch_hidden_dim),
+                        nn.GELU(),
+                        nn.Dropout(branch_dropout),
+                        nn.Linear(branch_hidden_dim, 1),
+                    ]
+                )
+                branches.append(nn.Sequential(*layers))
+            self.label_branches = nn.ModuleList(branches)
+        self.classic_label_adapter = None
+        self.classic_label_branches = None
+        if self.recognition_head_type == "classic_escort_residual":
+            adapter_dim = int(config.get("classic_label_adapter_dim", 256))
+            major_bottleneck = int(
+                config.get("classic_major_branch_bottleneck_dim", 64)
+            )
+            rare_bottleneck = int(
+                config.get("classic_rare_branch_bottleneck_dim", 32)
+            )
+            rare_labels = set(
+                config.get(
+                    "classic_rare_label_names",
+                    ["Front Running", "Bad Randomness"],
+                )
+            )
+            self.classic_label_adapter = nn.Sequential(
+                nn.LayerNorm(hidden_dim),
+                nn.Linear(hidden_dim, adapter_dim),
+                nn.GELU(),
+                nn.Dropout(float(config.get("classic_label_adapter_dropout", 0.1))),
+            )
+            beta_init = float(config.get("beta_reliable_init", 0.125))
+            gamma_init = float(config.get("gamma_reliable_init", 0.125))
+            branches = []
+            for label_name in self.label_names:
+                is_rare = label_name in rare_labels
+                branches.append(
+                    ClassicEscortLabelBranch(
+                        attn_dim=attn_dim,
+                        adapter_dim=adapter_dim,
+                        bottleneck_dim=(
+                            rare_bottleneck if is_rare else major_bottleneck
+                        ),
+                        dropout=float(
+                            config.get(
+                                "classic_rare_branch_dropout" if is_rare
+                                else "classic_major_branch_dropout",
+                                0.2 if is_rare else 0.1,
+                            )
+                        ),
+                        beta_init=beta_init,
+                        gamma_init=gamma_init,
+                    )
+                )
+            self.classic_label_branches = nn.ModuleList(branches)
+            for legacy_parameter in (
+                self.label_attn,
+                self.label_out,
+                self.label_bias,
+                self.chunk_classifier.weight,
+                self.chunk_classifier.bias,
+            ):
+                legacy_parameter.requires_grad = False
+        self.detection_classifier = None
+        if self.detection_head_enabled:
+            self.detection_classifier = nn.Sequential(
+                nn.LayerNorm(hidden_dim),
+                nn.Linear(hidden_dim, hidden_dim // 2),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                nn.Linear(hidden_dim // 2, 1),
+            )
         self.detection_loss_fn = nn.BCEWithLogitsLoss()
         self.register_buffer("recognition_pos_weight", None, persistent=False)
         nn.init.xavier_uniform_(self.label_attn)
@@ -237,6 +533,35 @@ class EVMChunkMILClassifier(nn.Module):
 
     def set_recognition_pos_weight(self, pos_weight):
         self.recognition_pos_weight = pos_weight
+
+    def compute_weighted_task_loss(self, detection_loss, recognition_loss):
+        weighted_loss = self.recognition_loss_weight * recognition_loss
+        if detection_loss is not None and self.detection_loss_weight > 0:
+            weighted_loss = weighted_loss + self.detection_loss_weight * detection_loss
+            total_weight = self.recognition_loss_weight + self.detection_loss_weight
+            return weighted_loss / total_weight
+        return weighted_loss
+
+    def compute_detection_logits(self, global_h, recognition_logits):
+        if self.detection_classifier is not None:
+            return self.detection_classifier(global_h).squeeze(-1)
+        return recognition_logits.max(dim=1).values
+
+    def compute_label_logits(self, z):
+        if self.recognition_head_type == "classic_escort_residual":
+            adapted = self.classic_label_adapter(z)
+            logits = [
+                branch(adapted[:, label_idx, :])
+                for label_idx, branch in enumerate(self.classic_label_branches)
+            ]
+            return torch.stack(logits, dim=1)
+        if self.recognition_head_type == "label_branch_mlp":
+            logits = [
+                branch(z[:, label_idx, :]).squeeze(-1)
+                for label_idx, branch in enumerate(self.label_branches)
+            ]
+            return torch.stack(logits, dim=1)
+        return (z * self.label_out.unsqueeze(0)).sum(dim=-1) + self.label_bias
 
     def _empty_rare_negative_subsampling_stats(self, device):
         size = len(self.rare_negative_subsampling_label_ids)
@@ -334,10 +659,17 @@ class EVMChunkMILClassifier(nn.Module):
         return_stats=False,
     ):
         stats = self._empty_rare_negative_subsampling_stats(recognition_logits.device)
+        loss_ids = torch.tensor(
+            self.loss_label_ids,
+            device=recognition_logits.device,
+            dtype=torch.long,
+        )
+        loss_logits = recognition_logits.index_select(1, loss_ids)
+        loss_targets = multi_labels.index_select(1, loss_ids).float()
         if self.recognition_loss_type == "asl":
             loss = asymmetric_multilabel_loss(
-                recognition_logits,
-                multi_labels.float(),
+                loss_logits,
+                loss_targets,
                 gamma_neg=self.asl_gamma_neg,
                 gamma_pos=self.asl_gamma_pos,
                 clip=self.asl_clip,
@@ -352,9 +684,11 @@ class EVMChunkMILClassifier(nn.Module):
                 dtype=recognition_logits.dtype,
             )
         )
+        if pos_weight is not None:
+            pos_weight = pos_weight.index_select(0, loss_ids)
         raw_loss = F.binary_cross_entropy_with_logits(
-            recognition_logits,
-            multi_labels.float(),
+            loss_logits,
+            loss_targets,
             pos_weight=pos_weight,
             reduction="none",
         )
@@ -363,6 +697,7 @@ class EVMChunkMILClassifier(nn.Module):
             return (loss, stats) if return_stats else loss
 
         loss_mask, stats = self._build_rare_negative_subsampling_mask(multi_labels)
+        loss_mask = loss_mask.index_select(1, loss_ids)
         masked_loss = raw_loss * loss_mask.to(dtype=raw_loss.dtype)
         label_denominator = loss_mask.sum(dim=0).clamp_min(1).to(dtype=raw_loss.dtype)
         label_losses = masked_loss.sum(dim=0) / label_denominator
@@ -397,7 +732,7 @@ class EVMChunkMILClassifier(nn.Module):
         attn_logits = attn_logits.masked_fill(~chunk_mask.unsqueeze(-1), -1e9)
         attn_weights = torch.softmax(attn_logits, dim=1)
         z = torch.einsum("bck,bch->bkh", attn_weights, h)
-        recognition_logits = (z * self.label_out.unsqueeze(0)).sum(dim=-1) + self.label_bias
+        recognition_logits = self.compute_label_logits(z)
         return recognition_logits, attn_weights, attn_logits
 
     def top_chunk_indices(self, chunk_logits, chunk_mask, k=None):
@@ -427,18 +762,29 @@ class EVMChunkMILClassifier(nn.Module):
                 0.0,
             )
         global_h = self.masked_mean(h, chunk_mask)
-        detection_logits = self.detection_classifier(global_h).squeeze(-1)
+        detection_logits = self.compute_detection_logits(global_h, recognition_logits)
 
         loss = None
+        detection_loss = None
+        recognition_loss = None
         if binary_label is not None and multi_labels is not None:
-            detection_loss = self.detection_loss_fn(detection_logits, binary_label.float())
+            if self.detection_loss_weight > 0 and self.detection_classifier is not None:
+                detection_loss = self.detection_loss_fn(
+                    detection_logits,
+                    binary_label.float(),
+                )
             recognition_loss = self.compute_recognition_loss(
                 recognition_logits,
                 multi_labels,
             )
-            loss = ((detection_loss + recognition_loss) / 2).reshape(1)
+            loss = self.compute_weighted_task_loss(
+                detection_loss,
+                recognition_loss,
+            ).reshape(1)
         return {
             "loss": loss,
+            "detection_loss": detection_loss,
+            "recognition_loss": recognition_loss,
             "detection_logits": detection_logits,
             "recognition_logits": recognition_logits,
             "chunk_logits": chunk_logits,
@@ -726,7 +1072,7 @@ class EffectFlowGuidedChunkMIL(EVMChunkMILClassifier):
         ).masked_fill(~chunk_mask.unsqueeze(-1), 0.0)
         chunk_logits = template_outputs["final_evidence_scores"]
         global_h = self.masked_mean(h, chunk_mask)
-        detection_logits = self.detection_classifier(global_h).squeeze(-1)
+        detection_logits = self.compute_detection_logits(global_h, recognition_logits)
 
         loss = None
         detection_loss = None
@@ -734,7 +1080,11 @@ class EffectFlowGuidedChunkMIL(EVMChunkMILClassifier):
         evidence_align_loss = None
         template_consistency_loss = None
         if binary_label is not None and multi_labels is not None:
-            detection_loss = self.detection_loss_fn(detection_logits, binary_label.float())
+            if self.detection_loss_weight > 0 and self.detection_classifier is not None:
+                detection_loss = self.detection_loss_fn(
+                    detection_logits,
+                    binary_label.float(),
+                )
             recognition_loss = self.compute_recognition_loss(
                 recognition_logits,
                 multi_labels,
@@ -777,7 +1127,7 @@ class EffectFlowGuidedChunkMIL(EVMChunkMILClassifier):
                 template_consistency_loss * active_mask.float()
             ).sum() / active_mask.float().sum().clamp_min(1.0)
             loss = (
-                ((detection_loss + recognition_loss) / 2)
+                self.compute_weighted_task_loss(detection_loss, recognition_loss)
                 + self.evidence_align_weight * evidence_align_loss
                 + self.template_consistency_weight * template_consistency_loss
             )
@@ -846,6 +1196,20 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         label_names = config.get(
             "label_names",
             [f"label_{idx}" for idx in range(self.num_labels)],
+        )
+        self.new_branch_semantic_label_names = list(
+            config.get("new_branch_semantic_label_names", [])
+        )
+        self.new_branch_semantic_label_ids = [
+            label_names.index(name)
+            for name in self.new_branch_semantic_label_names
+            if name in label_names
+        ]
+        self.new_branch_semantic_enable_epoch = int(
+            config.get(
+                "new_branch_semantic_enable_epoch",
+                self.enable_reliable_semantic_epoch,
+            )
         )
         templates = load_vulnerability_templates(
             template_path,
@@ -1073,6 +1437,14 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         )
         self.evidence_logit_weight = nn.Parameter(torch.zeros(self.num_labels, 2))
         self.evidence_logit_bias = nn.Parameter(torch.zeros(self.num_labels))
+        if self.recognition_head_type == "classic_escort_residual":
+            for legacy_parameter in (
+                self.beta_reliable_raw,
+                self.gamma_reliable_raw,
+                self.evidence_logit_weight,
+                self.evidence_logit_bias,
+            ):
+                legacy_parameter.requires_grad = False
         self.graph_evidence_enabled = bool(config.get("graph_evidence_enabled", False))
         self.graph_evidence_dim = int(config.get("graph_evidence_dim", 0))
         self.graph_evidence_scale = float(config.get("graph_evidence_scale", 1.0))
@@ -1111,6 +1483,63 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             )
             self.gamma_graph_raw = nn.Parameter(
                 torch.full((self.num_labels,), self._softplus_inverse(graph_gamma_init))
+            )
+        default_major_labels = [
+            "Reentrancy",
+            "Access Control",
+            "Arithmetic",
+            "Unchecked Return Values",
+            "DoS",
+            "Time manipulation",
+        ]
+        major_label_names = list(
+            config.get("major_enhancement_labels", default_major_labels)
+        )
+        major_label_mask = torch.zeros(self.num_labels, dtype=torch.float32)
+        for name in major_label_names:
+            if name in label_names:
+                major_label_mask[label_names.index(name)] = 1.0
+        self.register_buffer("major_enhancement_label_mask", major_label_mask)
+        self.major_global_residual_enabled = bool(
+            config.get("major_global_residual_enabled", False)
+        )
+        self.major_multipool_enabled = bool(
+            config.get("major_multipool_enabled", False)
+        )
+        major_dropout = float(config.get("major_enhancement_dropout", config.get("dropout", 0.1)))
+        major_scale_init = float(config.get("major_enhancement_scale_init", 0.1))
+        self.major_global_residual_scale_raw = None
+        self.major_multipool_scale_raw = None
+        self.major_global_residual_mlp = None
+        self.major_multipool_label_out = None
+        self.major_multipool_label_bias = None
+        self.major_multipool_top_k = int(config.get("major_multipool_top_k", 4))
+        if self.major_multipool_top_k <= 0:
+            raise ValueError("major_multipool_top_k must be positive")
+        if self.major_global_residual_enabled:
+            residual_hidden_dim = int(
+                config.get("major_global_residual_hidden_dim", max(64, self.hidden_dim // 2))
+            )
+            if residual_hidden_dim <= 0:
+                raise ValueError("major_global_residual_hidden_dim must be positive")
+            self.major_global_residual_mlp = nn.Sequential(
+                nn.LayerNorm(self.hidden_dim),
+                nn.Linear(self.hidden_dim, residual_hidden_dim),
+                nn.GELU(),
+                nn.Dropout(major_dropout),
+                nn.Linear(residual_hidden_dim, self.num_labels),
+            )
+            self.major_global_residual_scale_raw = nn.Parameter(
+                torch.tensor(self._softplus_inverse(major_scale_init))
+            )
+        if self.major_multipool_enabled:
+            self.major_multipool_label_out = nn.Parameter(
+                torch.empty(self.num_labels, self.hidden_dim * 3)
+            )
+            self.major_multipool_label_bias = nn.Parameter(torch.zeros(self.num_labels))
+            nn.init.xavier_uniform_(self.major_multipool_label_out)
+            self.major_multipool_scale_raw = nn.Parameter(
+                torch.tensor(self._softplus_inverse(major_scale_init))
             )
         self.current_epoch = 10**9
 
@@ -1606,6 +2035,18 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         return adjusted, diagnostics
 
     def gate_values(self):
+        if self.recognition_head_type == "classic_escort_residual":
+            beta_raw = torch.stack(
+                [branch.beta_reliable_raw for branch in self.classic_label_branches]
+            )
+            gamma_raw = torch.stack(
+                [branch.gamma_reliable_raw for branch in self.classic_label_branches]
+            )
+            values = {
+                "beta_reliable": F.softplus(beta_raw).detach(),
+                "gamma_reliable": F.softplus(gamma_raw).detach(),
+            }
+            return values
         values = {
             "beta_reliable": F.softplus(self.beta_reliable_raw).detach(),
             "gamma_reliable": F.softplus(self.gamma_reliable_raw).detach(),
@@ -1614,6 +2055,49 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             values["beta_graph"] = F.softplus(self.beta_graph_raw).detach()
             values["gamma_graph"] = F.softplus(self.gamma_graph_raw).detach()
         return values
+
+    def _active_label_parameters(self, dtype, device):
+        if self.recognition_head_type == "classic_escort_residual":
+            queries = torch.stack(
+                [branch.attention_query for branch in self.classic_label_branches]
+            )
+            beta_raw = torch.stack(
+                [branch.beta_reliable_raw for branch in self.classic_label_branches]
+            )
+            gamma_raw = torch.stack(
+                [branch.gamma_reliable_raw for branch in self.classic_label_branches]
+            )
+            evidence_weight = torch.stack(
+                [branch.evidence_logit_weight for branch in self.classic_label_branches]
+            )
+            evidence_bias = torch.stack(
+                [branch.evidence_logit_bias for branch in self.classic_label_branches]
+            )
+        else:
+            queries = self.label_attn
+            beta_raw = self.beta_reliable_raw
+            gamma_raw = self.gamma_reliable_raw
+            evidence_weight = self.evidence_logit_weight
+            evidence_bias = self.evidence_logit_bias
+        beta = F.softplus(beta_raw).to(device=device, dtype=dtype)
+        gamma = F.softplus(gamma_raw).to(device=device, dtype=dtype)
+        semantic_mask = torch.ones_like(beta)
+        if not self.semantic_enabled():
+            semantic_mask.zero_()
+        elif (
+            self.new_branch_semantic_label_ids
+            and int(self.current_epoch) < self.new_branch_semantic_enable_epoch
+        ):
+            semantic_mask[self.new_branch_semantic_label_ids] = 0.0
+        return {
+            "queries": queries.to(device=device, dtype=dtype),
+            "beta_raw": beta_raw,
+            "gamma_raw": gamma_raw,
+            "beta": beta * semantic_mask,
+            "gamma": gamma * semantic_mask,
+            "evidence_weight": evidence_weight.to(device=device, dtype=dtype),
+            "evidence_bias": evidence_bias.to(device=device, dtype=dtype),
+        }
 
     def compute_front_contrastive_loss(
         self,
@@ -1782,12 +2266,21 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         v = torch.tanh(self.attn_v(h))
         u = torch.sigmoid(self.attn_u(h))
         gated = v * u
-        neural_attn_logits = torch.einsum("bca,ka->bck", gated, self.label_attn)
-        beta = F.softplus(self.beta_reliable_raw).to(dtype=h.dtype)
-        gamma = F.softplus(self.gamma_reliable_raw).to(dtype=h.dtype)
-        if not self.semantic_enabled():
-            beta = torch.zeros_like(beta)
-            gamma = torch.zeros_like(gamma)
+        label_parameters = self._active_label_parameters(h.dtype, h.device)
+        if self.recognition_head_type == "classic_escort_residual":
+            neural_attn_logits = torch.stack(
+                [
+                    torch.einsum("bca,a->bc", gated, query)
+                    for query in label_parameters["queries"]
+                ],
+                dim=-1,
+            )
+        else:
+            neural_attn_logits = torch.einsum(
+                "bca,ka->bck", gated, label_parameters["queries"]
+            )
+        beta = label_parameters["beta"]
+        gamma = label_parameters["gamma"]
         attn_logits = (
             neural_attn_logits
             + beta.view(1, 1, -1) * phi
@@ -1796,9 +2289,36 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         attn_logits = attn_logits.masked_fill(~chunk_mask.unsqueeze(-1), -1e9)
         attn_weights = torch.softmax(attn_logits, dim=1)
         z = torch.einsum("bck,bch->bkh", attn_weights, h)
-        neural_logits = (
-            z * self.label_out.unsqueeze(0)
-        ).sum(dim=-1) + self.label_bias
+        global_h = self.masked_mean(h, chunk_mask)
+        neural_logits = self.compute_label_logits(z)
+        major_mask = self.major_enhancement_label_mask.to(dtype=h.dtype).view(1, -1)
+        major_global_residual_logits = neural_logits.new_zeros(neural_logits.shape)
+        if self.major_global_residual_enabled:
+            global_scale = F.softplus(self.major_global_residual_scale_raw).to(dtype=h.dtype)
+            major_global_residual_logits = (
+                global_scale * self.major_global_residual_mlp(global_h).to(dtype=h.dtype) * major_mask
+            )
+        major_multipool_logits = neural_logits.new_zeros(neural_logits.shape)
+        if self.major_multipool_enabled:
+            top_k = min(self.major_multipool_top_k, h.shape[1])
+            masked_weights = attn_weights.masked_fill(~chunk_mask.unsqueeze(-1), -1.0)
+            top_values, top_indices = torch.topk(masked_weights, k=top_k, dim=1)
+            h_expanded = h.unsqueeze(2).expand(-1, -1, self.num_labels, -1)
+            gather_index = top_indices.unsqueeze(-1).expand(-1, -1, -1, h.shape[-1])
+            top_h = torch.gather(h_expanded, 1, gather_index)
+            valid_top = (top_values >= 0.0).unsqueeze(-1).to(dtype=h.dtype)
+            top_h = (
+                (top_h * valid_top).sum(dim=1)
+                / valid_top.sum(dim=1).clamp_min(1.0)
+            )
+            global_for_labels = global_h.unsqueeze(1).expand(-1, self.num_labels, -1)
+            multipool_repr = torch.cat([z, top_h, global_for_labels], dim=-1)
+            raw_multipool_logits = (
+                multipool_repr
+                * self.major_multipool_label_out.unsqueeze(0).to(dtype=h.dtype)
+            ).sum(dim=-1) + self.major_multipool_label_bias.unsqueeze(0).to(dtype=h.dtype)
+            multipool_scale = F.softplus(self.major_multipool_scale_raw).to(dtype=h.dtype)
+            major_multipool_logits = multipool_scale * raw_multipool_logits * major_mask
 
         attended_phi = (attn_weights * phi).sum(dim=1)
         masked_phi = phi.masked_fill(~chunk_mask.unsqueeze(-1), -1e9)
@@ -1811,16 +2331,17 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         )
         evidence_features = torch.stack([attended_phi, topk_phi], dim=-1)
         evidence_logits = (
-            evidence_features * self.evidence_logit_weight.unsqueeze(0).to(dtype=h.dtype)
-        ).sum(dim=-1) + self.evidence_logit_bias.unsqueeze(0).to(dtype=h.dtype)
+            evidence_features * label_parameters["evidence_weight"].unsqueeze(0)
+        ).sum(dim=-1) + label_parameters["evidence_bias"].unsqueeze(0)
         recognition_logits = (
             neural_logits
             + gamma.view(1, -1) * evidence_logits
             + graph_outputs["contract_logits"]
+            + major_global_residual_logits
+            + major_multipool_logits
         )
 
-        global_h = self.masked_mean(h, chunk_mask)
-        detection_logits = self.detection_classifier(global_h).squeeze(-1)
+        detection_logits = self.compute_detection_logits(global_h, recognition_logits)
         chunk_scores = torch.sigmoid(
             attn_logits.masked_fill(~chunk_mask.unsqueeze(-1), -30.0)
         ).masked_fill(~chunk_mask.unsqueeze(-1), 0.0)
@@ -1843,17 +2364,18 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             h.device
         )
         if binary_label is not None and multi_labels is not None:
-            detection_loss = self.detection_loss_fn(
-                detection_logits,
-                binary_label.float(),
-            )
+            if self.detection_loss_weight > 0 and self.detection_classifier is not None:
+                detection_loss = self.detection_loss_fn(
+                    detection_logits,
+                    binary_label.float(),
+                )
             recognition_loss, rare_negative_subsampling_stats = self.compute_recognition_loss(
                 recognition_logits,
                 multi_labels,
                 return_stats=True,
             )
-            active_beta = F.softplus(self.beta_reliable_raw)
-            active_gamma = F.softplus(self.gamma_reliable_raw)
+            active_beta = F.softplus(label_parameters["beta_raw"])
+            active_gamma = F.softplus(label_parameters["gamma_raw"])
             gate_regularization_loss = (
                 active_beta.pow(2).mean() + active_gamma.pow(2).mean()
             )
@@ -1918,7 +2440,7 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
                     "selected_prob_max"
                 ]
             loss = (
-                (detection_loss + recognition_loss) / 2
+                self.compute_weighted_task_loss(detection_loss, recognition_loss)
                 + self.lambda_gate * gate_regularization_loss
                 + self.front_hard_negative_lambda * front_hard_negative_loss
                 + self.front_contrastive_lambda * front_contrastive_loss
@@ -1948,6 +2470,9 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             "neural_attention_logits": neural_attn_logits,
             "neural_logits": neural_logits,
             "evidence_logits": evidence_logits,
+            "major_global_residual_logits": major_global_residual_logits,
+            "major_multipool_logits": major_multipool_logits,
+            "major_enhancement_label_mask": self.major_enhancement_label_mask,
             "graph_contract_logits": graph_outputs["contract_logits"],
             "graph_raw_contract_logits": graph_outputs["raw_contract_logits"],
             "graph_chunk_scores": graph_outputs["chunk_scores"],

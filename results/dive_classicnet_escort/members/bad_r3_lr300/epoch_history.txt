@@ -1,0 +1,1756 @@
+EVM chunk MIL epoch history
+
+epoch 1/100 train_loss=0.633620 valid_loss=0.365080 micro_f1=0.816401 macro_f1=0.669824 predicted_positive_total=6081 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.086957]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.188679]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.933721]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.119048]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.678399 macro_f1=0.628867 predicted_positive_total=9489
+threshold=0.1: micro_f1=0.686956 macro_f1=0.636573 predicted_positive_total=9134
+threshold=0.15: micro_f1=0.699831 macro_f1=0.641934 predicted_positive_total=8757
+threshold=0.2: micro_f1=0.717020 macro_f1=0.646507 predicted_positive_total=8288
+threshold=0.25: micro_f1=0.740589 macro_f1=0.650542 predicted_positive_total=7748
+threshold=0.3: micro_f1=0.763897 macro_f1=0.652058 predicted_positive_total=7264
+threshold=0.35: micro_f1=0.786460 macro_f1=0.657107 predicted_positive_total=6805
+threshold=0.4: micro_f1=0.800234 macro_f1=0.660197 predicted_positive_total=6514
+threshold=0.45: micro_f1=0.808040 macro_f1=0.662550 predicted_positive_total=6287
+threshold=0.5: micro_f1=0.816401 macro_f1=0.669824 predicted_positive_total=6081
+threshold=0.55: micro_f1=0.818939 macro_f1=0.664860 predicted_positive_total=5950
+threshold=0.6: micro_f1=0.820663 macro_f1=0.666098 predicted_positive_total=5831
+threshold=0.65: micro_f1=0.820660 macro_f1=0.660110 predicted_positive_total=5697
+threshold=0.7: micro_f1=0.819642 macro_f1=0.658027 predicted_positive_total=5562
+threshold=0.75: micro_f1=0.816984 macro_f1=0.657974 predicted_positive_total=5402
+threshold=0.8: micro_f1=0.809854 macro_f1=0.655975 predicted_positive_total=5221
+threshold=0.85: micro_f1=0.798929 macro_f1=0.642202 predicted_positive_total=5004
+threshold=0.9: micro_f1=0.780213 macro_f1=0.615154 predicted_positive_total=4673
+threshold=0.95: micro_f1=0.735831 macro_f1=0.580031 predicted_positive_total=4126
+
+epoch 2/100 train_loss=0.514145 valid_loss=0.255284 micro_f1=0.817764 macro_f1=0.678234 predicted_positive_total=6074 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.138889]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.283019]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.941335]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.186335]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.685046 macro_f1=0.629253 predicted_positive_total=9344
+threshold=0.1: micro_f1=0.715981 macro_f1=0.638353 predicted_positive_total=8537
+threshold=0.15: micro_f1=0.740768 macro_f1=0.644382 predicted_positive_total=7950
+threshold=0.2: micro_f1=0.768522 macro_f1=0.652171 predicted_positive_total=7354
+threshold=0.25: micro_f1=0.783459 macro_f1=0.658541 predicted_positive_total=7023
+threshold=0.3: micro_f1=0.793213 macro_f1=0.661752 predicted_positive_total=6804
+threshold=0.35: micro_f1=0.801228 macro_f1=0.667801 predicted_positive_total=6599
+threshold=0.4: micro_f1=0.807980 macro_f1=0.672495 predicted_positive_total=6424
+threshold=0.45: micro_f1=0.812799 macro_f1=0.672858 predicted_positive_total=6233
+threshold=0.5: micro_f1=0.817764 macro_f1=0.678234 predicted_positive_total=6074
+threshold=0.55: micro_f1=0.818946 macro_f1=0.677336 predicted_positive_total=5967
+threshold=0.6: micro_f1=0.819950 macro_f1=0.675966 predicted_positive_total=5853
+threshold=0.65: micro_f1=0.819696 macro_f1=0.665453 predicted_positive_total=5715
+threshold=0.7: micro_f1=0.818923 macro_f1=0.668301 predicted_positive_total=5579
+threshold=0.75: micro_f1=0.816642 macro_f1=0.662072 predicted_positive_total=5409
+threshold=0.8: micro_f1=0.809551 macro_f1=0.655975 predicted_positive_total=5225
+threshold=0.85: micro_f1=0.798853 macro_f1=0.642202 predicted_positive_total=5005
+threshold=0.9: micro_f1=0.780213 macro_f1=0.615154 predicted_positive_total=4673
+threshold=0.95: micro_f1=0.735831 macro_f1=0.580031 predicted_positive_total=4126
+
+epoch 3/100 train_loss=0.459466 valid_loss=0.278584 micro_f1=0.811851 macro_f1=0.680213 predicted_positive_total=6190 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.125]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.528302]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.90103]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.202166]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.692161 macro_f1=0.629601 predicted_positive_total=9189
+threshold=0.1: micro_f1=0.724787 macro_f1=0.639218 predicted_positive_total=8367
+threshold=0.15: micro_f1=0.746208 macro_f1=0.645908 predicted_positive_total=7863
+threshold=0.2: micro_f1=0.769627 macro_f1=0.653552 predicted_positive_total=7346
+threshold=0.25: micro_f1=0.782344 macro_f1=0.659464 predicted_positive_total=7051
+threshold=0.3: micro_f1=0.790131 macro_f1=0.662535 predicted_positive_total=6867
+threshold=0.35: micro_f1=0.797197 macro_f1=0.667664 predicted_positive_total=6675
+threshold=0.4: micro_f1=0.802939 macro_f1=0.672392 predicted_positive_total=6521
+threshold=0.45: micro_f1=0.806370 macro_f1=0.672343 predicted_positive_total=6351
+threshold=0.5: micro_f1=0.811851 macro_f1=0.680213 predicted_positive_total=6190
+threshold=0.55: micro_f1=0.814294 macro_f1=0.685639 predicted_positive_total=6074
+threshold=0.6: micro_f1=0.816610 macro_f1=0.687538 predicted_positive_total=5936
+threshold=0.65: micro_f1=0.817187 macro_f1=0.685880 predicted_positive_total=5786
+threshold=0.7: micro_f1=0.817329 macro_f1=0.685338 predicted_positive_total=5625
+threshold=0.75: micro_f1=0.815155 macro_f1=0.678382 predicted_positive_total=5446
+threshold=0.8: micro_f1=0.808483 macro_f1=0.668321 predicted_positive_total=5249
+threshold=0.85: micro_f1=0.797634 macro_f1=0.648869 predicted_positive_total=5026
+threshold=0.9: micro_f1=0.780103 macro_f1=0.619540 predicted_positive_total=4677
+threshold=0.95: micro_f1=0.735831 macro_f1=0.580031 predicted_positive_total=4126
+
+epoch 4/100 train_loss=0.431193 valid_loss=0.259454 micro_f1=0.813026 macro_f1=0.684572 predicted_positive_total=6183 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.147465]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.603774]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.907747]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.237037]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.702482 macro_f1=0.630252 predicted_positive_total=8971
+threshold=0.1: micro_f1=0.734149 macro_f1=0.640180 predicted_positive_total=8188
+threshold=0.15: micro_f1=0.755836 macro_f1=0.647894 predicted_positive_total=7696
+threshold=0.2: micro_f1=0.771458 macro_f1=0.655188 predicted_positive_total=7326
+threshold=0.25: micro_f1=0.785898 macro_f1=0.661392 predicted_positive_total=6997
+threshold=0.3: micro_f1=0.792834 macro_f1=0.664102 predicted_positive_total=6825
+threshold=0.35: micro_f1=0.799768 macro_f1=0.669587 predicted_positive_total=6636
+threshold=0.4: micro_f1=0.804484 macro_f1=0.673893 predicted_positive_total=6498
+threshold=0.45: micro_f1=0.808760 macro_f1=0.677467 predicted_positive_total=6326
+threshold=0.5: micro_f1=0.813026 macro_f1=0.684572 predicted_positive_total=6183
+threshold=0.55: micro_f1=0.814751 macro_f1=0.687237 predicted_positive_total=6070
+threshold=0.6: micro_f1=0.816452 macro_f1=0.690690 predicted_positive_total=5948
+threshold=0.65: micro_f1=0.817527 macro_f1=0.693345 predicted_positive_total=5796
+threshold=0.7: micro_f1=0.817011 macro_f1=0.692447 predicted_positive_total=5644
+threshold=0.75: micro_f1=0.816023 macro_f1=0.695709 predicted_positive_total=5454
+threshold=0.8: micro_f1=0.808399 macro_f1=0.677714 predicted_positive_total=5260
+threshold=0.85: micro_f1=0.797826 macro_f1=0.657827 predicted_positive_total=5031
+threshold=0.9: micro_f1=0.779795 macro_f1=0.619252 predicted_positive_total=4681
+threshold=0.95: micro_f1=0.735755 macro_f1=0.580031 predicted_positive_total=4127
+
+epoch 5/100 train_loss=0.406589 valid_loss=0.239202 micro_f1=0.814598 macro_f1=0.687943 predicted_positive_total=6163 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.167513]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.622642]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.9176]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.264]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.709068 macro_f1=0.630833 predicted_positive_total=8837
+threshold=0.1: micro_f1=0.739898 macro_f1=0.641009 predicted_positive_total=8082
+threshold=0.15: micro_f1=0.757989 macro_f1=0.648146 predicted_positive_total=7656
+threshold=0.2: micro_f1=0.773697 macro_f1=0.655936 predicted_positive_total=7289
+threshold=0.25: micro_f1=0.787645 macro_f1=0.663386 predicted_positive_total=6977
+threshold=0.3: micro_f1=0.796077 macro_f1=0.667253 predicted_positive_total=6780
+threshold=0.35: micro_f1=0.802922 macro_f1=0.672989 predicted_positive_total=6591
+threshold=0.4: micro_f1=0.807286 macro_f1=0.677710 predicted_positive_total=6459
+threshold=0.45: micro_f1=0.810200 macro_f1=0.680727 predicted_positive_total=6310
+threshold=0.5: micro_f1=0.814598 macro_f1=0.687943 predicted_positive_total=6163
+threshold=0.55: micro_f1=0.815844 macro_f1=0.690255 predicted_positive_total=6057
+threshold=0.6: micro_f1=0.817918 macro_f1=0.695318 predicted_positive_total=5930
+threshold=0.65: micro_f1=0.818174 macro_f1=0.697480 predicted_positive_total=5792
+threshold=0.7: micro_f1=0.817854 macro_f1=0.696787 predicted_positive_total=5635
+threshold=0.75: micro_f1=0.815724 macro_f1=0.694337 predicted_positive_total=5458
+threshold=0.8: micro_f1=0.808733 macro_f1=0.684922 predicted_positive_total=5263
+threshold=0.85: micro_f1=0.797787 macro_f1=0.655023 predicted_positive_total=5029
+threshold=0.9: micro_f1=0.779872 macro_f1=0.619320 predicted_positive_total=4680
+threshold=0.95: micro_f1=0.735886 macro_f1=0.584576 predicted_positive_total=4128
+
+epoch 6/100 train_loss=0.378691 valid_loss=0.232385 micro_f1=0.815012 macro_f1=0.690083 predicted_positive_total=6162 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.178571]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.660377]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.919839]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.281124]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.715375 macro_f1=0.631473 predicted_positive_total=8711
+threshold=0.1: micro_f1=0.745422 macro_f1=0.641739 predicted_positive_total=7979
+threshold=0.15: micro_f1=0.761066 macro_f1=0.648886 predicted_positive_total=7603
+threshold=0.2: micro_f1=0.775523 macro_f1=0.656600 predicted_positive_total=7259
+threshold=0.25: micro_f1=0.787742 macro_f1=0.663800 predicted_positive_total=6978
+threshold=0.3: micro_f1=0.796599 macro_f1=0.668556 predicted_positive_total=6777
+threshold=0.35: micro_f1=0.802820 macro_f1=0.674361 predicted_positive_total=6600
+threshold=0.4: micro_f1=0.807318 macro_f1=0.678305 predicted_positive_total=6461
+threshold=0.45: micro_f1=0.810508 macro_f1=0.681818 predicted_positive_total=6308
+threshold=0.5: micro_f1=0.815012 macro_f1=0.690083 predicted_positive_total=6162
+threshold=0.55: micro_f1=0.815837 macro_f1=0.691726 predicted_positive_total=6062
+threshold=0.6: micro_f1=0.817376 macro_f1=0.694646 predicted_positive_total=5940
+threshold=0.65: micro_f1=0.818166 macro_f1=0.699288 predicted_positive_total=5797
+threshold=0.7: micro_f1=0.818174 macro_f1=0.701587 predicted_positive_total=5638
+threshold=0.75: micro_f1=0.815908 macro_f1=0.696610 predicted_positive_total=5458
+threshold=0.8: micro_f1=0.808880 macro_f1=0.689138 predicted_positive_total=5266
+threshold=0.85: micro_f1=0.798130 macro_f1=0.658649 predicted_positive_total=5027
+threshold=0.9: micro_f1=0.779915 macro_f1=0.623218 predicted_positive_total=4682
+threshold=0.95: micro_f1=0.735810 macro_f1=0.584495 predicted_positive_total=4129
+
+epoch 7/100 train_loss=0.359190 valid_loss=0.232124 micro_f1=0.814764 macro_f1=0.690237 predicted_positive_total=6168 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.178218]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.679245]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.918047]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.282353]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.718367 macro_f1=0.631810 predicted_positive_total=8652
+threshold=0.1: micro_f1=0.747313 macro_f1=0.642089 predicted_positive_total=7945
+threshold=0.15: micro_f1=0.762877 macro_f1=0.649362 predicted_positive_total=7572
+threshold=0.2: micro_f1=0.777270 macro_f1=0.657590 predicted_positive_total=7233
+threshold=0.25: micro_f1=0.788186 macro_f1=0.664058 predicted_positive_total=6971
+threshold=0.3: micro_f1=0.796731 macro_f1=0.669531 predicted_positive_total=6780
+threshold=0.35: micro_f1=0.802189 macro_f1=0.673218 predicted_positive_total=6607
+threshold=0.4: micro_f1=0.805998 macro_f1=0.677154 predicted_positive_total=6483
+threshold=0.45: micro_f1=0.809576 macro_f1=0.680970 predicted_positive_total=6324
+threshold=0.5: micro_f1=0.814764 macro_f1=0.690237 predicted_positive_total=6168
+threshold=0.55: micro_f1=0.815625 macro_f1=0.691250 predicted_positive_total=6065
+threshold=0.6: micro_f1=0.817767 macro_f1=0.696542 predicted_positive_total=5937
+threshold=0.65: micro_f1=0.818053 macro_f1=0.699753 predicted_positive_total=5801
+threshold=0.7: micro_f1=0.817576 macro_f1=0.701130 predicted_positive_total=5651
+threshold=0.75: micro_f1=0.815337 macro_f1=0.697974 predicted_positive_total=5473
+threshold=0.8: micro_f1=0.809026 macro_f1=0.693104 predicted_positive_total=5269
+threshold=0.85: micro_f1=0.798131 macro_f1=0.663807 predicted_positive_total=5032
+threshold=0.9: micro_f1=0.779805 macro_f1=0.626517 predicted_positive_total=4686
+threshold=0.95: micro_f1=0.735810 macro_f1=0.584495 predicted_positive_total=4129
+
+epoch 8/100 train_loss=0.344354 valid_loss=0.228612 micro_f1=0.813504 macro_f1=0.687910 predicted_positive_total=6186 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.163636]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.679245]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.909987]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.263736]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.724076 macro_f1=0.632361 predicted_positive_total=8538
+threshold=0.1: micro_f1=0.751012 macro_f1=0.642837 predicted_positive_total=7879
+threshold=0.15: micro_f1=0.766999 macro_f1=0.650572 predicted_positive_total=7502
+threshold=0.2: micro_f1=0.780036 macro_f1=0.658815 predicted_positive_total=7188
+threshold=0.25: micro_f1=0.789491 macro_f1=0.665223 predicted_positive_total=6953
+threshold=0.3: micro_f1=0.795655 macro_f1=0.667353 predicted_positive_total=6789
+threshold=0.35: micro_f1=0.801723 macro_f1=0.672754 predicted_positive_total=6614
+threshold=0.4: micro_f1=0.806030 macro_f1=0.677712 predicted_positive_total=6485
+threshold=0.45: micro_f1=0.808817 macro_f1=0.680996 predicted_positive_total=6340
+threshold=0.5: micro_f1=0.813504 macro_f1=0.687910 predicted_positive_total=6186
+threshold=0.55: micro_f1=0.815792 macro_f1=0.693730 predicted_positive_total=6070
+threshold=0.6: micro_f1=0.817464 macro_f1=0.698738 predicted_positive_total=5951
+threshold=0.65: micro_f1=0.817722 macro_f1=0.699431 predicted_positive_total=5808
+threshold=0.7: micro_f1=0.817421 macro_f1=0.702435 predicted_positive_total=5658
+threshold=0.75: micro_f1=0.815323 macro_f1=0.702418 predicted_positive_total=5483
+threshold=0.8: micro_f1=0.809169 macro_f1=0.699553 predicted_positive_total=5277
+threshold=0.85: micro_f1=0.798209 macro_f1=0.672758 predicted_positive_total=5041
+threshold=0.9: micro_f1=0.779805 macro_f1=0.626517 predicted_positive_total=4686
+threshold=0.95: micro_f1=0.735426 macro_f1=0.584129 predicted_positive_total=4134
+
+epoch 9/100 train_loss=0.344388 valid_loss=0.228300 micro_f1=0.813987 macro_f1=0.689998 predicted_positive_total=6184 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.174312]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.912674]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.280443]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.726204 macro_f1=0.632652 predicted_positive_total=8497
+threshold=0.1: micro_f1=0.752367 macro_f1=0.643133 predicted_positive_total=7855
+threshold=0.15: micro_f1=0.767472 macro_f1=0.650725 predicted_positive_total=7494
+threshold=0.2: micro_f1=0.779235 macro_f1=0.658444 predicted_positive_total=7201
+threshold=0.25: micro_f1=0.788284 macro_f1=0.664475 predicted_positive_total=6972
+threshold=0.3: micro_f1=0.794912 macro_f1=0.668028 predicted_positive_total=6808
+threshold=0.35: micro_f1=0.801059 macro_f1=0.673043 predicted_positive_total=6629
+threshold=0.4: micro_f1=0.805356 macro_f1=0.676905 predicted_positive_total=6495
+threshold=0.45: micro_f1=0.809092 macro_f1=0.681389 predicted_positive_total=6336
+threshold=0.5: micro_f1=0.813987 macro_f1=0.689998 predicted_positive_total=6184
+threshold=0.55: micro_f1=0.815785 macro_f1=0.695046 predicted_positive_total=6075
+threshold=0.6: micro_f1=0.817783 macro_f1=0.700378 predicted_positive_total=5949
+threshold=0.65: micro_f1=0.817577 macro_f1=0.698935 predicted_positive_total=5810
+threshold=0.7: micro_f1=0.817642 macro_f1=0.703329 predicted_positive_total=5655
+threshold=0.75: micro_f1=0.815688 macro_f1=0.706122 predicted_positive_total=5483
+threshold=0.8: micro_f1=0.809169 macro_f1=0.699553 predicted_positive_total=5277
+threshold=0.85: micro_f1=0.798018 macro_f1=0.669980 predicted_positive_total=5041
+threshold=0.9: micro_f1=0.779771 macro_f1=0.629646 predicted_positive_total=4689
+threshold=0.95: micro_f1=0.735503 macro_f1=0.584197 predicted_positive_total=4133
+
+epoch 10/100 train_loss=0.338299 valid_loss=0.226873 micro_f1=0.814229 macro_f1=0.691054 predicted_positive_total=6183 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.179724]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.914017]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.288889]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.729341 macro_f1=0.633113 predicted_positive_total=8437
+threshold=0.1: micro_f1=0.754464 macro_f1=0.643621 predicted_positive_total=7818
+threshold=0.15: micro_f1=0.769016 macro_f1=0.651241 predicted_positive_total=7468
+threshold=0.2: micro_f1=0.780275 macro_f1=0.658282 predicted_positive_total=7179
+threshold=0.25: micro_f1=0.788850 macro_f1=0.664089 predicted_positive_total=6958
+threshold=0.3: micro_f1=0.794782 macro_f1=0.667928 predicted_positive_total=6810
+threshold=0.35: micro_f1=0.801126 macro_f1=0.673106 predicted_positive_total=6628
+threshold=0.4: micro_f1=0.805558 macro_f1=0.677142 predicted_positive_total=6492
+threshold=0.45: micro_f1=0.809124 macro_f1=0.681985 predicted_positive_total=6338
+threshold=0.5: micro_f1=0.814229 macro_f1=0.691054 predicted_positive_total=6183
+threshold=0.55: micro_f1=0.815926 macro_f1=0.695381 predicted_positive_total=6073
+threshold=0.6: micro_f1=0.817106 macro_f1=0.697751 predicted_positive_total=5956
+threshold=0.65: micro_f1=0.817326 macro_f1=0.697271 predicted_positive_total=5811
+threshold=0.7: micro_f1=0.817527 macro_f1=0.703778 predicted_positive_total=5659
+threshold=0.75: micro_f1=0.816020 macro_f1=0.708726 predicted_positive_total=5481
+threshold=0.8: micro_f1=0.809125 macro_f1=0.702984 predicted_positive_total=5285
+threshold=0.85: micro_f1=0.798324 macro_f1=0.678660 predicted_positive_total=5047
+threshold=0.9: micro_f1=0.779978 macro_f1=0.638802 predicted_positive_total=4694
+threshold=0.95: micro_f1=0.735558 macro_f1=0.588095 predicted_positive_total=4135
+
+epoch 11/100 train_loss=0.319651 valid_loss=0.207320 micro_f1=0.815740 macro_f1=0.693560 predicted_positive_total=6159 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.196891]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.923869]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.308943]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.734789 macro_f1=0.634019 predicted_positive_total=8334
+threshold=0.1: micro_f1=0.759384 macro_f1=0.644918 predicted_positive_total=7732
+threshold=0.15: micro_f1=0.772688 macro_f1=0.652318 predicted_positive_total=7404
+threshold=0.2: micro_f1=0.783625 macro_f1=0.659979 predicted_positive_total=7125
+threshold=0.25: micro_f1=0.791593 macro_f1=0.665879 predicted_positive_total=6915
+threshold=0.3: micro_f1=0.797610 macro_f1=0.669888 predicted_positive_total=6764
+threshold=0.35: micro_f1=0.803120 macro_f1=0.675170 predicted_positive_total=6598
+threshold=0.4: micro_f1=0.807179 macro_f1=0.679196 predicted_positive_total=6468
+threshold=0.45: micro_f1=0.810981 macro_f1=0.684961 predicted_positive_total=6311
+threshold=0.5: micro_f1=0.815740 macro_f1=0.693560 predicted_positive_total=6159
+threshold=0.55: micro_f1=0.816745 macro_f1=0.696760 predicted_positive_total=6059
+threshold=0.6: micro_f1=0.817903 macro_f1=0.698512 predicted_positive_total=5940
+threshold=0.65: micro_f1=0.818529 macro_f1=0.700664 predicted_positive_total=5792
+threshold=0.7: micro_f1=0.818485 macro_f1=0.708027 predicted_positive_total=5646
+threshold=0.75: micro_f1=0.816468 macro_f1=0.711123 predicted_positive_total=5475
+threshold=0.8: micro_f1=0.809244 macro_f1=0.699957 predicted_positive_total=5276
+threshold=0.85: micro_f1=0.798362 macro_f1=0.677148 predicted_positive_total=5044
+threshold=0.9: micro_f1=0.779978 macro_f1=0.638802 predicted_positive_total=4694
+threshold=0.95: micro_f1=0.735558 macro_f1=0.588095 predicted_positive_total=4135
+
+epoch 12/100 train_loss=0.306903 valid_loss=0.211866 micro_f1=0.815178 macro_f1=0.692344 predicted_positive_total=6167 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.189055]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.920287]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.299213]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.736444 macro_f1=0.634324 predicted_positive_total=8303
+threshold=0.1: micro_f1=0.760516 macro_f1=0.645506 predicted_positive_total=7715
+threshold=0.15: micro_f1=0.773591 macro_f1=0.652686 predicted_positive_total=7389
+threshold=0.2: micro_f1=0.784373 macro_f1=0.660400 predicted_positive_total=7113
+threshold=0.25: micro_f1=0.791721 macro_f1=0.665969 predicted_positive_total=6913
+threshold=0.3: micro_f1=0.797382 macro_f1=0.670115 predicted_positive_total=6770
+threshold=0.35: micro_f1=0.803053 macro_f1=0.675096 predicted_positive_total=6599
+threshold=0.4: micro_f1=0.806976 macro_f1=0.678923 predicted_positive_total=6471
+threshold=0.45: micro_f1=0.810292 macro_f1=0.683796 predicted_positive_total=6321
+threshold=0.5: micro_f1=0.815178 macro_f1=0.692344 predicted_positive_total=6167
+threshold=0.55: micro_f1=0.816029 macro_f1=0.696277 predicted_positive_total=6074
+threshold=0.6: micro_f1=0.817672 macro_f1=0.700753 predicted_positive_total=5953
+threshold=0.65: micro_f1=0.817722 macro_f1=0.699431 predicted_positive_total=5808
+threshold=0.7: micro_f1=0.817675 macro_f1=0.704384 predicted_positive_total=5657
+threshold=0.75: micro_f1=0.815797 macro_f1=0.707606 predicted_positive_total=5484
+threshold=0.8: micro_f1=0.809125 macro_f1=0.702984 predicted_positive_total=5285
+threshold=0.85: micro_f1=0.798401 macro_f1=0.682202 predicted_positive_total=5051
+threshold=0.9: micro_f1=0.779791 macro_f1=0.640470 predicted_positive_total=4699
+threshold=0.95: micro_f1=0.735481 macro_f1=0.587967 predicted_positive_total=4136
+
+epoch 13/100 train_loss=0.306372 valid_loss=0.220910 micro_f1=0.814439 macro_f1=0.691459 predicted_positive_total=6180 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.182243]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.915361]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.292135]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.734948 macro_f1=0.634047 predicted_positive_total=8331
+threshold=0.1: micro_f1=0.759693 macro_f1=0.644755 predicted_positive_total=7724
+threshold=0.15: micro_f1=0.772508 macro_f1=0.652246 predicted_positive_total=7407
+threshold=0.2: micro_f1=0.782443 macro_f1=0.659346 predicted_positive_total=7144
+threshold=0.25: micro_f1=0.790506 macro_f1=0.665135 predicted_positive_total=6932
+threshold=0.3: micro_f1=0.796210 macro_f1=0.669082 predicted_positive_total=6788
+threshold=0.35: micro_f1=0.801922 macro_f1=0.673894 predicted_positive_total=6616
+threshold=0.4: micro_f1=0.805928 macro_f1=0.678096 predicted_positive_total=6489
+threshold=0.45: micro_f1=0.810049 macro_f1=0.683956 predicted_positive_total=6327
+threshold=0.5: micro_f1=0.814439 macro_f1=0.691459 predicted_positive_total=6180
+threshold=0.55: micro_f1=0.816100 macro_f1=0.696450 predicted_positive_total=6073
+threshold=0.6: micro_f1=0.817274 macro_f1=0.700298 predicted_positive_total=5961
+threshold=0.65: micro_f1=0.817279 macro_f1=0.699556 predicted_positive_total=5819
+threshold=0.7: micro_f1=0.817487 macro_f1=0.704501 predicted_positive_total=5662
+threshold=0.75: micro_f1=0.815498 macro_f1=0.706188 predicted_positive_total=5488
+threshold=0.8: micro_f1=0.808970 macro_f1=0.704362 predicted_positive_total=5292
+threshold=0.85: micro_f1=0.798440 macro_f1=0.686595 predicted_positive_total=5058
+threshold=0.9: micro_f1=0.780315 macro_f1=0.653389 predicted_positive_total=4705
+threshold=0.95: micro_f1=0.735328 macro_f1=0.587723 predicted_positive_total=4138
+
+epoch 14/100 train_loss=0.308690 valid_loss=0.205010 micro_f1=0.816021 macro_f1=0.694199 predicted_positive_total=6155 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.201058]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.925661]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.31405]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.738592 macro_f1=0.634745 predicted_positive_total=8263
+threshold=0.1: micro_f1=0.761832 macro_f1=0.645397 predicted_positive_total=7687
+threshold=0.15: micro_f1=0.775099 macro_f1=0.653337 predicted_positive_total=7364
+threshold=0.2: micro_f1=0.784123 macro_f1=0.660258 predicted_positive_total=7117
+threshold=0.25: micro_f1=0.792203 macro_f1=0.666714 predicted_positive_total=6908
+threshold=0.3: micro_f1=0.797709 macro_f1=0.670417 predicted_positive_total=6765
+threshold=0.35: micro_f1=0.803586 macro_f1=0.675699 predicted_positive_total=6591
+threshold=0.4: micro_f1=0.807889 macro_f1=0.680726 predicted_positive_total=6460
+threshold=0.45: micro_f1=0.811257 macro_f1=0.685450 predicted_positive_total=6307
+threshold=0.5: micro_f1=0.816021 macro_f1=0.694199 predicted_positive_total=6155
+threshold=0.55: micro_f1=0.816777 macro_f1=0.697518 predicted_positive_total=6061
+threshold=0.6: micro_f1=0.817895 macro_f1=0.699988 predicted_positive_total=5945
+threshold=0.65: micro_f1=0.818198 macro_f1=0.700286 predicted_positive_total=5799
+threshold=0.7: micro_f1=0.818116 macro_f1=0.706303 predicted_positive_total=5651
+threshold=0.75: micro_f1=0.815879 macro_f1=0.706051 predicted_positive_total=5478
+threshold=0.8: micro_f1=0.809160 macro_f1=0.704294 predicted_positive_total=5287
+threshold=0.85: micro_f1=0.798515 macro_f1=0.684281 predicted_positive_total=5052
+threshold=0.9: micro_f1=0.780545 macro_f1=0.654788 predicted_positive_total=4702
+threshold=0.95: micro_f1=0.735405 macro_f1=0.587843 predicted_positive_total=4137
+
+epoch 15/100 train_loss=0.290492 valid_loss=0.209893 micro_f1=0.815070 macro_f1=0.692733 predicted_positive_total=6171 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.190244]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.919391]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.302326]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.737463 macro_f1=0.634520 predicted_positive_total=8284
+threshold=0.1: micro_f1=0.761811 macro_f1=0.645652 predicted_positive_total=7690
+threshold=0.15: micro_f1=0.775039 macro_f1=0.653310 predicted_positive_total=7365
+threshold=0.2: micro_f1=0.784248 macro_f1=0.660329 predicted_positive_total=7115
+threshold=0.25: micro_f1=0.791626 macro_f1=0.666293 predicted_positive_total=6917
+threshold=0.3: micro_f1=0.797448 macro_f1=0.670175 predicted_positive_total=6769
+threshold=0.35: micro_f1=0.803386 macro_f1=0.675470 predicted_positive_total=6594
+threshold=0.4: micro_f1=0.807112 macro_f1=0.679105 predicted_positive_total=6469
+threshold=0.45: micro_f1=0.810705 macro_f1=0.684486 predicted_positive_total=6315
+threshold=0.5: micro_f1=0.815070 macro_f1=0.692733 predicted_positive_total=6171
+threshold=0.55: micro_f1=0.815958 macro_f1=0.696106 predicted_positive_total=6075
+threshold=0.6: micro_f1=0.817496 macro_f1=0.699545 predicted_positive_total=5953
+threshold=0.65: micro_f1=0.817867 macro_f1=0.699938 predicted_positive_total=5806
+threshold=0.7: micro_f1=0.817928 macro_f1=0.706360 predicted_positive_total=5656
+threshold=0.75: micro_f1=0.815688 macro_f1=0.706122 predicted_positive_total=5483
+threshold=0.8: micro_f1=0.809085 macro_f1=0.703892 predicted_positive_total=5288
+threshold=0.85: micro_f1=0.798135 macro_f1=0.682296 predicted_positive_total=5057
+threshold=0.9: micro_f1=0.780195 macro_f1=0.650868 predicted_positive_total=4704
+threshold=0.95: micro_f1=0.735328 macro_f1=0.587723 predicted_positive_total=4138
+
+epoch 16/100 train_loss=0.287480 valid_loss=0.201137 micro_f1=0.814789 macro_f1=0.692156 predicted_positive_total=6175 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.186603]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.9176]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.29771]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.741077 macro_f1=0.635271 predicted_positive_total=8217
+threshold=0.1: micro_f1=0.765326 macro_f1=0.646572 predicted_positive_total=7627
+threshold=0.15: micro_f1=0.777039 macro_f1=0.654247 predicted_positive_total=7332
+threshold=0.2: micro_f1=0.786250 macro_f1=0.661537 predicted_positive_total=7083
+threshold=0.25: micro_f1=0.793324 macro_f1=0.667171 predicted_positive_total=6888
+threshold=0.3: micro_f1=0.798525 macro_f1=0.670757 predicted_positive_total=6750
+threshold=0.35: micro_f1=0.804724 macro_f1=0.676063 predicted_positive_total=6569
+threshold=0.4: micro_f1=0.808400 macro_f1=0.680945 predicted_positive_total=6450
+threshold=0.45: micro_f1=0.811431 macro_f1=0.685185 predicted_positive_total=6302
+threshold=0.5: micro_f1=0.814789 macro_f1=0.692156 predicted_positive_total=6175
+threshold=0.55: micro_f1=0.815958 macro_f1=0.696106 predicted_positive_total=6075
+threshold=0.6: micro_f1=0.817743 macro_f1=0.700964 predicted_positive_total=5952
+threshold=0.65: micro_f1=0.818295 macro_f1=0.703137 predicted_positive_total=5805
+threshold=0.7: micro_f1=0.818296 macro_f1=0.708027 predicted_positive_total=5651
+threshold=0.75: micro_f1=0.815539 macro_f1=0.705419 predicted_positive_total=5485
+threshold=0.8: micro_f1=0.809085 macro_f1=0.703892 predicted_positive_total=5288
+threshold=0.85: micro_f1=0.798630 macro_f1=0.686320 predicted_positive_total=5053
+threshold=0.9: micro_f1=0.780632 macro_f1=0.658758 predicted_positive_total=4706
+threshold=0.95: micro_f1=0.735460 macro_f1=0.591394 predicted_positive_total=4139
+
+epoch 17/100 train_loss=0.286429 valid_loss=0.200026 micro_f1=0.814929 macro_f1=0.692443 predicted_positive_total=6173 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.188406]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.918495]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.3]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.741364 macro_f1=0.635118 predicted_positive_total=8209
+threshold=0.1: micro_f1=0.765326 macro_f1=0.646572 predicted_positive_total=7627
+threshold=0.15: micro_f1=0.777708 macro_f1=0.654582 predicted_positive_total=7321
+threshold=0.2: micro_f1=0.786062 macro_f1=0.661418 predicted_positive_total=7086
+threshold=0.25: micro_f1=0.793486 macro_f1=0.667708 predicted_positive_total=6888
+threshold=0.3: micro_f1=0.798624 macro_f1=0.671303 predicted_positive_total=6751
+threshold=0.35: micro_f1=0.804556 macro_f1=0.676364 predicted_positive_total=6574
+threshold=0.4: micro_f1=0.807960 macro_f1=0.679748 predicted_positive_total=6454
+threshold=0.45: micro_f1=0.810949 macro_f1=0.684330 predicted_positive_total=6309
+threshold=0.5: micro_f1=0.814929 macro_f1=0.692443 predicted_positive_total=6173
+threshold=0.55: micro_f1=0.815958 macro_f1=0.696106 predicted_positive_total=6075
+threshold=0.6: micro_f1=0.817991 macro_f1=0.702397 predicted_positive_total=5951
+threshold=0.65: micro_f1=0.818295 macro_f1=0.703137 predicted_positive_total=5805
+threshold=0.7: micro_f1=0.818149 macro_f1=0.707347 predicted_positive_total=5653
+threshold=0.75: micro_f1=0.816129 macro_f1=0.710212 predicted_positive_total=5482
+threshold=0.8: micro_f1=0.809382 macro_f1=0.707628 predicted_positive_total=5289
+threshold=0.85: micro_f1=0.798896 macro_f1=0.689232 predicted_positive_total=5052
+threshold=0.9: micro_f1=0.780709 macro_f1=0.659271 predicted_positive_total=4705
+threshold=0.95: micro_f1=0.735723 macro_f1=0.598413 predicted_positive_total=4141
+
+epoch 18/100 train_loss=0.292113 valid_loss=0.194685 micro_f1=0.815529 macro_f1=0.693095 predicted_positive_total=6162 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.193878]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.922526]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.305221]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.742941 macro_f1=0.635473 predicted_positive_total=8180
+threshold=0.1: micro_f1=0.765291 macro_f1=0.646278 predicted_positive_total=7625
+threshold=0.15: micro_f1=0.778074 macro_f1=0.654770 predicted_positive_total=7315
+threshold=0.2: micro_f1=0.786815 macro_f1=0.661904 predicted_positive_total=7074
+threshold=0.25: micro_f1=0.794194 macro_f1=0.668291 predicted_positive_total=6877
+threshold=0.3: micro_f1=0.799639 macro_f1=0.672811 predicted_positive_total=6738
+threshold=0.35: micro_f1=0.804955 macro_f1=0.677871 predicted_positive_total=6573
+threshold=0.4: micro_f1=0.807960 macro_f1=0.679748 predicted_positive_total=6454
+threshold=0.45: micro_f1=0.811224 macro_f1=0.684814 predicted_positive_total=6305
+threshold=0.5: micro_f1=0.815529 macro_f1=0.693095 predicted_positive_total=6162
+threshold=0.55: micro_f1=0.816635 macro_f1=0.697146 predicted_positive_total=6063
+threshold=0.6: micro_f1=0.818852 macro_f1=0.705202 predicted_positive_total=5939
+threshold=0.65: micro_f1=0.818545 macro_f1=0.704895 predicted_positive_total=5804
+threshold=0.7: micro_f1=0.818075 macro_f1=0.707013 predicted_positive_total=5654
+threshold=0.75: micro_f1=0.815797 macro_f1=0.707606 predicted_positive_total=5484
+threshold=0.8: micro_f1=0.809457 macro_f1=0.708058 predicted_positive_total=5288
+threshold=0.85: micro_f1=0.799200 macro_f1=0.691171 predicted_positive_total=5048
+threshold=0.9: micro_f1=0.780589 macro_f1=0.656820 predicted_positive_total=4704
+threshold=0.95: micro_f1=0.735800 macro_f1=0.598687 predicted_positive_total=4140
+
+epoch 19/100 train_loss=0.307080 valid_loss=0.190496 micro_f1=0.815708 macro_f1=0.692852 predicted_positive_total=6157 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.193717]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.698113]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.923869]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.303279]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.742288 macro_f1=0.635324 predicted_positive_total=8192
+threshold=0.1: micro_f1=0.764706 macro_f1=0.646073 predicted_positive_total=7635
+threshold=0.15: micro_f1=0.777769 macro_f1=0.654614 predicted_positive_total=7320
+threshold=0.2: micro_f1=0.787037 macro_f1=0.662426 predicted_positive_total=7073
+threshold=0.25: micro_f1=0.794194 macro_f1=0.668291 predicted_positive_total=6877
+threshold=0.3: micro_f1=0.799836 macro_f1=0.673027 predicted_positive_total=6735
+threshold=0.35: micro_f1=0.805022 macro_f1=0.677958 predicted_positive_total=6572
+threshold=0.4: micro_f1=0.808335 macro_f1=0.679738 predicted_positive_total=6446
+threshold=0.45: micro_f1=0.811676 macro_f1=0.685038 predicted_positive_total=6296
+threshold=0.5: micro_f1=0.815708 macro_f1=0.692852 predicted_positive_total=6157
+threshold=0.55: micro_f1=0.817558 macro_f1=0.699690 predicted_positive_total=6050
+threshold=0.6: micro_f1=0.819396 macro_f1=0.706455 predicted_positive_total=5929
+threshold=0.65: micro_f1=0.818772 macro_f1=0.704215 predicted_positive_total=5796
+threshold=0.7: micro_f1=0.818075 macro_f1=0.707013 predicted_positive_total=5654
+threshold=0.75: micro_f1=0.816061 macro_f1=0.707974 predicted_positive_total=5478
+threshold=0.8: micro_f1=0.809723 macro_f1=0.708607 predicted_positive_total=5282
+threshold=0.85: micro_f1=0.799238 macro_f1=0.690074 predicted_positive_total=5045
+threshold=0.9: micro_f1=0.780742 macro_f1=0.657837 predicted_positive_total=4702
+threshold=0.95: micro_f1=0.735668 macro_f1=0.595182 predicted_positive_total=4139
+
+epoch 20/100 train_loss=0.273859 valid_loss=0.207400 micro_f1=0.814165 macro_f1=0.689717 predicted_positive_total=6179 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.173709]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.698113]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.914017]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.278195]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.742669 macro_f1=0.635410 predicted_positive_total=8185
+threshold=0.1: micro_f1=0.765057 macro_f1=0.646195 predicted_positive_total=7629
+threshold=0.15: micro_f1=0.777282 macro_f1=0.654368 predicted_positive_total=7328
+threshold=0.2: micro_f1=0.785657 macro_f1=0.661529 predicted_positive_total=7095
+threshold=0.25: micro_f1=0.793198 macro_f1=0.667879 predicted_positive_total=6895
+threshold=0.3: micro_f1=0.798003 macro_f1=0.671133 predicted_positive_total=6763
+threshold=0.35: micro_f1=0.802952 macro_f1=0.675459 predicted_positive_total=6603
+threshold=0.4: micro_f1=0.806941 macro_f1=0.679399 predicted_positive_total=6474
+threshold=0.45: micro_f1=0.809815 macro_f1=0.681906 predicted_positive_total=6323
+threshold=0.5: micro_f1=0.814165 macro_f1=0.689717 predicted_positive_total=6179
+threshold=0.55: micro_f1=0.815290 macro_f1=0.693917 predicted_positive_total=6082
+threshold=0.6: micro_f1=0.817346 macro_f1=0.700499 predicted_positive_total=5960
+threshold=0.65: micro_f1=0.818061 macro_f1=0.705259 predicted_positive_total=5818
+threshold=0.7: micro_f1=0.817912 macro_f1=0.709589 predicted_positive_total=5666
+threshold=0.75: micro_f1=0.815607 macro_f1=0.707619 predicted_positive_total=5489
+threshold=0.8: micro_f1=0.809001 macro_f1=0.707502 predicted_positive_total=5299
+threshold=0.85: micro_f1=0.798935 macro_f1=0.693128 predicted_positive_total=5059
+threshold=0.9: micro_f1=0.780675 macro_f1=0.660608 predicted_positive_total=4708
+threshold=0.95: micro_f1=0.735855 macro_f1=0.601770 predicted_positive_total=4142
+
+epoch 21/100 train_loss=0.269890 valid_loss=0.208330 micro_f1=0.814267 macro_f1=0.690523 predicted_positive_total=6180 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.17757]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.914465]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.284644]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.743650 macro_f1=0.635639 predicted_positive_total=8167
+threshold=0.1: micro_f1=0.765935 macro_f1=0.646511 predicted_positive_total=7614
+threshold=0.15: micro_f1=0.777891 macro_f1=0.654676 predicted_positive_total=7318
+threshold=0.2: micro_f1=0.786033 macro_f1=0.661766 predicted_positive_total=7089
+threshold=0.25: micro_f1=0.793391 macro_f1=0.668034 predicted_positive_total=6892
+threshold=0.3: micro_f1=0.798003 macro_f1=0.671133 predicted_positive_total=6763
+threshold=0.35: micro_f1=0.802886 macro_f1=0.675386 predicted_positive_total=6604
+threshold=0.4: micro_f1=0.806873 macro_f1=0.679309 predicted_positive_total=6475
+threshold=0.45: micro_f1=0.809677 macro_f1=0.681696 predicted_positive_total=6325
+threshold=0.5: micro_f1=0.814267 macro_f1=0.690523 predicted_positive_total=6180
+threshold=0.55: micro_f1=0.815290 macro_f1=0.693917 predicted_positive_total=6082
+threshold=0.6: micro_f1=0.816884 macro_f1=0.698559 predicted_positive_total=5964
+threshold=0.65: micro_f1=0.817738 macro_f1=0.703376 predicted_positive_total=5820
+threshold=0.7: micro_f1=0.817691 macro_f1=0.708640 predicted_positive_total=5669
+threshold=0.75: micro_f1=0.815708 macro_f1=0.710695 predicted_positive_total=5495
+threshold=0.8: micro_f1=0.808926 macro_f1=0.707111 predicted_positive_total=5300
+threshold=0.85: micro_f1=0.798973 macro_f1=0.694475 predicted_positive_total=5061
+threshold=0.9: micro_f1=0.780598 macro_f1=0.660097 predicted_positive_total=4709
+threshold=0.95: micro_f1=0.735910 macro_f1=0.604679 predicted_positive_total=4144
+
+epoch 22/100 train_loss=0.280526 valid_loss=0.191586 micro_f1=0.815740 macro_f1=0.693560 predicted_positive_total=6159 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.196891]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.923869]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.308943]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.745785 macro_f1=0.636165 predicted_positive_total=8128
+threshold=0.1: micro_f1=0.768522 macro_f1=0.647516 predicted_positive_total=7570
+threshold=0.15: micro_f1=0.779783 macro_f1=0.655699 predicted_positive_total=7287
+threshold=0.2: micro_f1=0.787855 macro_f1=0.662993 predicted_positive_total=7060
+threshold=0.25: micro_f1=0.795097 macro_f1=0.669076 predicted_positive_total=6863
+threshold=0.3: micro_f1=0.799705 macro_f1=0.672883 predicted_positive_total=6737
+threshold=0.35: micro_f1=0.804623 macro_f1=0.676446 predicted_positive_total=6573
+threshold=0.4: micro_f1=0.808164 macro_f1=0.680044 predicted_positive_total=6451
+threshold=0.45: micro_f1=0.811192 macro_f1=0.684168 predicted_positive_total=6303
+threshold=0.5: micro_f1=0.815740 macro_f1=0.693560 predicted_positive_total=6159
+threshold=0.55: micro_f1=0.816564 macro_f1=0.696963 predicted_positive_total=6064
+threshold=0.6: micro_f1=0.818357 macro_f1=0.702146 predicted_positive_total=5941
+threshold=0.65: micro_f1=0.818900 macro_f1=0.707853 predicted_positive_total=5804
+threshold=0.7: micro_f1=0.818174 macro_f1=0.709975 predicted_positive_total=5660
+threshold=0.75: micro_f1=0.815905 macro_f1=0.709069 predicted_positive_total=5485
+threshold=0.8: micro_f1=0.809382 macro_f1=0.707628 predicted_positive_total=5289
+threshold=0.85: micro_f1=0.799391 macro_f1=0.696124 predicted_positive_total=5053
+threshold=0.9: micro_f1=0.780709 macro_f1=0.659271 predicted_positive_total=4705
+threshold=0.95: micro_f1=0.735723 macro_f1=0.598413 predicted_positive_total=4141
+
+epoch 23/100 train_loss=0.272453 valid_loss=0.190938 micro_f1=0.815810 macro_f1=0.693718 predicted_positive_total=6158 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.197917]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.924317]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.310204]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.745620 macro_f1=0.636123 predicted_positive_total=8131
+threshold=0.1: micro_f1=0.767461 macro_f1=0.647089 predicted_positive_total=7588
+threshold=0.15: micro_f1=0.779478 macro_f1=0.655527 predicted_positive_total=7292
+threshold=0.2: micro_f1=0.787351 macro_f1=0.662641 predicted_positive_total=7068
+threshold=0.25: micro_f1=0.794903 macro_f1=0.668904 predicted_positive_total=6866
+threshold=0.3: micro_f1=0.799869 macro_f1=0.672607 predicted_positive_total=6732
+threshold=0.35: micro_f1=0.804856 macro_f1=0.677244 predicted_positive_total=6572
+threshold=0.4: micro_f1=0.808232 macro_f1=0.680143 predicted_positive_total=6450
+threshold=0.45: micro_f1=0.811054 macro_f1=0.683927 predicted_positive_total=6305
+threshold=0.5: micro_f1=0.815810 macro_f1=0.693718 predicted_positive_total=6158
+threshold=0.55: micro_f1=0.817021 macro_f1=0.698838 predicted_positive_total=6060
+threshold=0.6: micro_f1=0.818788 macro_f1=0.703571 predicted_positive_total=5935
+threshold=0.65: micro_f1=0.818650 macro_f1=0.706078 predicted_positive_total=5805
+threshold=0.7: micro_f1=0.818247 macro_f1=0.710314 predicted_positive_total=5659
+threshold=0.75: micro_f1=0.816088 macro_f1=0.710893 predicted_positive_total=5485
+threshold=0.8: micro_f1=0.809683 macro_f1=0.709394 predicted_positive_total=5285
+threshold=0.85: micro_f1=0.799505 macro_f1=0.698027 predicted_positive_total=5054
+threshold=0.9: micro_f1=0.780512 macro_f1=0.656330 predicted_positive_total=4705
+threshold=0.95: micro_f1=0.735723 macro_f1=0.598413 predicted_positive_total=4141
+
+epoch 24/100 train_loss=0.263948 valid_loss=0.198587 micro_f1=0.814898 macro_f1=0.691764 predicted_positive_total=6171 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.185366]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.918495]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.294574]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.744853 macro_f1=0.635930 predicted_positive_total=8145
+threshold=0.1: micro_f1=0.766521 macro_f1=0.646728 predicted_positive_total=7604
+threshold=0.15: micro_f1=0.778622 macro_f1=0.655059 predicted_positive_total=7306
+threshold=0.2: micro_f1=0.786723 macro_f1=0.662216 predicted_positive_total=7078
+threshold=0.25: micro_f1=0.793936 macro_f1=0.668076 predicted_positive_total=6881
+threshold=0.3: micro_f1=0.798951 macro_f1=0.671634 predicted_positive_total=6746
+threshold=0.35: micro_f1=0.804286 macro_f1=0.677023 predicted_positive_total=6583
+threshold=0.4: micro_f1=0.807925 macro_f1=0.680241 predicted_positive_total=6457
+threshold=0.45: micro_f1=0.810365 macro_f1=0.682773 predicted_positive_total=6315
+threshold=0.5: micro_f1=0.814898 macro_f1=0.691764 predicted_positive_total=6171
+threshold=0.55: micro_f1=0.816171 macro_f1=0.696624 predicted_positive_total=6072
+threshold=0.6: micro_f1=0.818389 macro_f1=0.702960 predicted_positive_total=5943
+threshold=0.65: micro_f1=0.818610 macro_f1=0.706656 predicted_positive_total=5808
+threshold=0.7: micro_f1=0.817986 macro_f1=0.709914 predicted_positive_total=5665
+threshold=0.75: micro_f1=0.815715 macro_f1=0.709030 predicted_positive_total=5490
+threshold=0.8: micro_f1=0.809231 macro_f1=0.706788 predicted_positive_total=5291
+threshold=0.85: micro_f1=0.799505 macro_f1=0.700072 predicted_positive_total=5059
+threshold=0.9: micro_f1=0.780521 macro_f1=0.659598 predicted_positive_total=4710
+threshold=0.95: micro_f1=0.735778 macro_f1=0.601459 predicted_positive_total=4143
+
+epoch 25/100 train_loss=0.272708 valid_loss=0.194098 micro_f1=0.814968 macro_f1=0.691908 predicted_positive_total=6170 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.186275]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.918943]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.29572]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.746995 macro_f1=0.636482 predicted_positive_total=8106
+threshold=0.1: micro_f1=0.767756 macro_f1=0.647206 predicted_positive_total=7583
+threshold=0.15: micro_f1=0.779355 macro_f1=0.655459 predicted_positive_total=7294
+threshold=0.2: micro_f1=0.787477 macro_f1=0.662728 predicted_positive_total=7066
+threshold=0.25: micro_f1=0.794676 macro_f1=0.668285 predicted_positive_total=6867
+threshold=0.3: micro_f1=0.799770 macro_f1=0.672038 predicted_positive_total=6731
+threshold=0.35: micro_f1=0.804722 macro_f1=0.677074 predicted_positive_total=6574
+threshold=0.4: micro_f1=0.808264 macro_f1=0.680741 predicted_positive_total=6452
+threshold=0.45: micro_f1=0.810779 macro_f1=0.683456 predicted_positive_total=6309
+threshold=0.5: micro_f1=0.814968 macro_f1=0.691908 predicted_positive_total=6170
+threshold=0.55: micro_f1=0.817021 macro_f1=0.698838 predicted_positive_total=6060
+threshold=0.6: micro_f1=0.818820 macro_f1=0.704395 predicted_positive_total=5937
+threshold=0.65: micro_f1=0.818359 macro_f1=0.704929 predicted_positive_total=5809
+threshold=0.7: micro_f1=0.818247 macro_f1=0.710314 predicted_positive_total=5659
+threshold=0.75: micro_f1=0.815607 macro_f1=0.707619 predicted_positive_total=5489
+threshold=0.8: micro_f1=0.809231 macro_f1=0.706788 predicted_positive_total=5291
+threshold=0.85: micro_f1=0.799429 macro_f1=0.699542 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780872 macro_f1=0.663449 predicted_positive_total=4708
+threshold=0.95: micro_f1=0.735647 macro_f1=0.598147 predicted_positive_total=4142
+
+epoch 26/100 train_loss=0.253576 valid_loss=0.187784 micro_f1=0.815669 macro_f1=0.693404 predicted_positive_total=6160 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.195876]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.923421]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.307692]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.748116 macro_f1=0.636545 predicted_positive_total=8083
+threshold=0.1: micro_f1=0.769053 macro_f1=0.647737 predicted_positive_total=7561
+threshold=0.15: micro_f1=0.779722 macro_f1=0.655664 predicted_positive_total=7288
+threshold=0.2: micro_f1=0.788611 macro_f1=0.663543 predicted_positive_total=7048
+threshold=0.25: micro_f1=0.795386 macro_f1=0.668912 predicted_positive_total=6856
+threshold=0.3: micro_f1=0.800888 macro_f1=0.673294 predicted_positive_total=6714
+threshold=0.35: micro_f1=0.805759 macro_f1=0.678955 predicted_positive_total=6561
+threshold=0.4: micro_f1=0.808843 macro_f1=0.681072 predicted_positive_total=6441
+threshold=0.45: micro_f1=0.811814 macro_f1=0.685294 predicted_positive_total=6294
+threshold=0.5: micro_f1=0.815669 macro_f1=0.693404 predicted_positive_total=6160
+threshold=0.55: micro_f1=0.817803 macro_f1=0.701089 predicted_positive_total=6049
+threshold=0.6: micro_f1=0.819108 macro_f1=0.705403 predicted_positive_total=5933
+threshold=0.65: micro_f1=0.818400 macro_f1=0.704324 predicted_positive_total=5806
+threshold=0.7: micro_f1=0.818215 macro_f1=0.709351 predicted_positive_total=5657
+threshold=0.75: micro_f1=0.815830 macro_f1=0.708698 predicted_positive_total=5486
+threshold=0.8: micro_f1=0.809382 macro_f1=0.707628 predicted_positive_total=5289
+threshold=0.85: micro_f1=0.799353 macro_f1=0.696964 predicted_positive_total=5056
+threshold=0.9: micro_f1=0.780872 macro_f1=0.663449 predicted_positive_total=4708
+threshold=0.95: micro_f1=0.735778 macro_f1=0.601459 predicted_positive_total=4143
+
+epoch 27/100 train_loss=0.266397 valid_loss=0.191846 micro_f1=0.815529 macro_f1=0.693095 predicted_positive_total=6162 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.193878]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.922526]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.305221]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.747895 macro_f1=0.636485 predicted_positive_total=8087
+threshold=0.1: micro_f1=0.768522 macro_f1=0.647516 predicted_positive_total=7570
+threshold=0.15: micro_f1=0.779661 macro_f1=0.655630 predicted_positive_total=7289
+threshold=0.2: micro_f1=0.788359 macro_f1=0.663357 predicted_positive_total=7052
+threshold=0.25: micro_f1=0.794870 macro_f1=0.668453 predicted_positive_total=6864
+threshold=0.3: micro_f1=0.800427 macro_f1=0.672763 predicted_positive_total=6721
+threshold=0.35: micro_f1=0.805357 macro_f1=0.678404 predicted_positive_total=6567
+threshold=0.4: micro_f1=0.808707 macro_f1=0.680861 predicted_positive_total=6443
+threshold=0.45: micro_f1=0.811330 macro_f1=0.684412 predicted_positive_total=6301
+threshold=0.5: micro_f1=0.815529 macro_f1=0.693095 predicted_positive_total=6162
+threshold=0.55: micro_f1=0.817234 macro_f1=0.699429 predicted_positive_total=6057
+threshold=0.6: micro_f1=0.819068 macro_f1=0.705959 predicted_positive_total=5936
+threshold=0.65: micro_f1=0.818432 macro_f1=0.705211 predicted_positive_total=5808
+threshold=0.7: micro_f1=0.818067 macro_f1=0.708680 predicted_positive_total=5659
+threshold=0.75: micro_f1=0.815681 macro_f1=0.707974 predicted_positive_total=5488
+threshold=0.8: micro_f1=0.809307 macro_f1=0.707205 predicted_positive_total=5290
+threshold=0.85: micro_f1=0.799505 macro_f1=0.700072 predicted_positive_total=5059
+threshold=0.9: micro_f1=0.780915 macro_f1=0.665154 predicted_positive_total=4710
+threshold=0.95: micro_f1=0.735910 macro_f1=0.604679 predicted_positive_total=4144
+
+epoch 28/100 train_loss=0.248507 valid_loss=0.189020 micro_f1=0.815740 macro_f1=0.693560 predicted_positive_total=6159 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.196891]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.923869]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.308943]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.748559 macro_f1=0.636668 predicted_positive_total=8075
+threshold=0.1: micro_f1=0.769526 macro_f1=0.647939 predicted_positive_total=7553
+threshold=0.15: micro_f1=0.780090 macro_f1=0.655875 predicted_positive_total=7282
+threshold=0.2: micro_f1=0.788863 macro_f1=0.663732 predicted_positive_total=7044
+threshold=0.25: micro_f1=0.795580 macro_f1=0.669088 predicted_positive_total=6853
+threshold=0.3: micro_f1=0.800493 macro_f1=0.672838 predicted_positive_total=6720
+threshold=0.35: micro_f1=0.805692 macro_f1=0.678862 predicted_positive_total=6562
+threshold=0.4: micro_f1=0.808911 macro_f1=0.681178 predicted_positive_total=6440
+threshold=0.45: micro_f1=0.811607 macro_f1=0.684911 predicted_positive_total=6297
+threshold=0.5: micro_f1=0.815740 macro_f1=0.693560 predicted_positive_total=6159
+threshold=0.55: micro_f1=0.817163 macro_f1=0.699230 predicted_positive_total=6058
+threshold=0.6: micro_f1=0.819068 macro_f1=0.705959 predicted_positive_total=5936
+threshold=0.65: micro_f1=0.818682 macro_f1=0.706950 predicted_positive_total=5807
+threshold=0.7: micro_f1=0.818067 macro_f1=0.708680 predicted_positive_total=5659
+threshold=0.75: micro_f1=0.815830 macro_f1=0.708698 predicted_positive_total=5486
+threshold=0.8: micro_f1=0.809307 macro_f1=0.707205 predicted_positive_total=5290
+threshold=0.85: micro_f1=0.799429 macro_f1=0.699542 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780915 macro_f1=0.665154 predicted_positive_total=4710
+threshold=0.95: micro_f1=0.736173 macro_f1=0.610853 predicted_positive_total=4146
+
+epoch 29/100 train_loss=0.276962 valid_loss=0.186209 micro_f1=0.815880 macro_f1=0.693877 predicted_positive_total=6157 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.198953]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.924765]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.311475]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.748946 macro_f1=0.636777 predicted_positive_total=8068
+threshold=0.1: micro_f1=0.770118 macro_f1=0.648198 predicted_positive_total=7543
+threshold=0.15: micro_f1=0.780212 macro_f1=0.655946 predicted_positive_total=7280
+threshold=0.2: micro_f1=0.788989 macro_f1=0.663828 predicted_positive_total=7042
+threshold=0.25: micro_f1=0.795709 macro_f1=0.669207 predicted_positive_total=6851
+threshold=0.3: micro_f1=0.800756 macro_f1=0.673141 predicted_positive_total=6716
+threshold=0.35: micro_f1=0.806027 macro_f1=0.679334 predicted_positive_total=6557
+threshold=0.4: micro_f1=0.809147 macro_f1=0.682116 predicted_positive_total=6439
+threshold=0.45: micro_f1=0.811814 macro_f1=0.685294 predicted_positive_total=6294
+threshold=0.5: micro_f1=0.815880 macro_f1=0.693877 predicted_positive_total=6157
+threshold=0.55: micro_f1=0.817202 macro_f1=0.698675 predicted_positive_total=6055
+threshold=0.6: micro_f1=0.819036 macro_f1=0.705147 predicted_positive_total=5934
+threshold=0.65: micro_f1=0.818577 macro_f1=0.705786 predicted_positive_total=5806
+threshold=0.7: micro_f1=0.818288 macro_f1=0.709693 predicted_positive_total=5656
+threshold=0.75: micro_f1=0.815830 macro_f1=0.708698 predicted_positive_total=5486
+threshold=0.8: micro_f1=0.809608 macro_f1=0.708941 predicted_positive_total=5286
+threshold=0.85: micro_f1=0.799619 macro_f1=0.699894 predicted_positive_total=5055
+threshold=0.9: micro_f1=0.780992 macro_f1=0.665715 predicted_positive_total=4709
+threshold=0.95: micro_f1=0.736250 macro_f1=0.611281 predicted_positive_total=4145
+
+epoch 30/100 train_loss=0.266944 valid_loss=0.186076 micro_f1=0.815950 macro_f1=0.694037 predicted_positive_total=6156 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.2]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.925213]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.312757]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.749057 macro_f1=0.636809 predicted_positive_total=8066
+threshold=0.1: micro_f1=0.769882 macro_f1=0.648094 predicted_positive_total=7547
+threshold=0.15: micro_f1=0.780273 macro_f1=0.655981 predicted_positive_total=7279
+threshold=0.2: micro_f1=0.788989 macro_f1=0.663828 predicted_positive_total=7042
+threshold=0.25: micro_f1=0.795839 macro_f1=0.669327 predicted_positive_total=6849
+threshold=0.3: micro_f1=0.800624 macro_f1=0.672988 predicted_positive_total=6718
+threshold=0.35: micro_f1=0.805893 macro_f1=0.679143 predicted_positive_total=6559
+threshold=0.4: micro_f1=0.809079 macro_f1=0.682006 predicted_positive_total=6440
+threshold=0.45: micro_f1=0.811883 macro_f1=0.685424 predicted_positive_total=6293
+threshold=0.5: micro_f1=0.815950 macro_f1=0.694037 predicted_positive_total=6156
+threshold=0.55: micro_f1=0.817273 macro_f1=0.698875 predicted_positive_total=6054
+threshold=0.6: micro_f1=0.819108 macro_f1=0.705403 predicted_positive_total=5933
+threshold=0.65: micro_f1=0.818577 macro_f1=0.705786 predicted_positive_total=5806
+threshold=0.7: micro_f1=0.818174 macro_f1=0.709975 predicted_positive_total=5660
+threshold=0.75: micro_f1=0.815905 macro_f1=0.709069 predicted_positive_total=5485
+threshold=0.8: micro_f1=0.809533 macro_f1=0.708496 predicted_positive_total=5287
+threshold=0.85: micro_f1=0.799543 macro_f1=0.699345 predicted_positive_total=5056
+threshold=0.9: micro_f1=0.780992 macro_f1=0.665715 predicted_positive_total=4709
+threshold=0.95: micro_f1=0.736250 macro_f1=0.611281 predicted_positive_total=4145
+
+epoch 31/100 train_loss=0.255686 valid_loss=0.182897 micro_f1=0.816232 macro_f1=0.694692 predicted_positive_total=6152 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.204301]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.927004]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.317992]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.749944 macro_f1=0.637067 predicted_positive_total=8050
+threshold=0.1: micro_f1=0.770711 macro_f1=0.648466 predicted_positive_total=7533
+threshold=0.15: micro_f1=0.781071 macro_f1=0.656457 predicted_positive_total=7266
+threshold=0.2: micro_f1=0.789368 macro_f1=0.664120 predicted_positive_total=7036
+threshold=0.25: micro_f1=0.796551 macro_f1=0.670008 predicted_positive_total=6838
+threshold=0.3: micro_f1=0.801019 macro_f1=0.673450 predicted_positive_total=6712
+threshold=0.35: micro_f1=0.806229 macro_f1=0.679624 predicted_positive_total=6554
+threshold=0.4: micro_f1=0.809251 macro_f1=0.681722 predicted_positive_total=6435
+threshold=0.45: micro_f1=0.812229 macro_f1=0.686088 predicted_positive_total=6288
+threshold=0.5: micro_f1=0.816232 macro_f1=0.694692 predicted_positive_total=6152
+threshold=0.55: micro_f1=0.817415 macro_f1=0.699279 predicted_positive_total=6052
+threshold=0.6: micro_f1=0.819108 macro_f1=0.705403 predicted_positive_total=5933
+threshold=0.65: micro_f1=0.818900 macro_f1=0.707853 predicted_positive_total=5804
+threshold=0.7: micro_f1=0.818174 macro_f1=0.709975 predicted_positive_total=5660
+threshold=0.75: micro_f1=0.815980 macro_f1=0.709444 predicted_positive_total=5484
+threshold=0.8: micro_f1=0.809834 macro_f1=0.710323 predicted_positive_total=5283
+threshold=0.85: micro_f1=0.799467 macro_f1=0.698806 predicted_positive_total=5057
+threshold=0.9: micro_f1=0.780949 macro_f1=0.664004 predicted_positive_total=4707
+threshold=0.95: micro_f1=0.736250 macro_f1=0.611281 predicted_positive_total=4145
+
+epoch 32/100 train_loss=0.258802 valid_loss=0.181859 micro_f1=0.816583 macro_f1=0.695541 predicted_positive_total=6147 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.209945]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.929243]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.324786]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.750111 macro_f1=0.637116 predicted_positive_total=8047
+threshold=0.1: micro_f1=0.770889 macro_f1=0.648547 predicted_positive_total=7530
+threshold=0.15: micro_f1=0.781378 macro_f1=0.656646 predicted_positive_total=7261
+threshold=0.2: micro_f1=0.789495 macro_f1=0.664219 predicted_positive_total=7034
+threshold=0.25: micro_f1=0.797070 macro_f1=0.670527 predicted_positive_total=6830
+threshold=0.3: micro_f1=0.801217 macro_f1=0.673686 predicted_positive_total=6709
+threshold=0.35: micro_f1=0.805861 macro_f1=0.678587 predicted_positive_total=6557
+threshold=0.4: micro_f1=0.809320 macro_f1=0.681833 predicted_positive_total=6434
+threshold=0.45: micro_f1=0.812367 macro_f1=0.686361 predicted_positive_total=6286
+threshold=0.5: micro_f1=0.816583 macro_f1=0.695541 predicted_positive_total=6147
+threshold=0.55: micro_f1=0.817700 macro_f1=0.700110 predicted_positive_total=6048
+threshold=0.6: micro_f1=0.818996 macro_f1=0.705704 predicted_positive_total=5937
+threshold=0.65: micro_f1=0.818900 macro_f1=0.707853 predicted_positive_total=5804
+threshold=0.7: micro_f1=0.818468 macro_f1=0.711360 predicted_positive_total=5656
+threshold=0.75: micro_f1=0.815905 macro_f1=0.709069 predicted_positive_total=5485
+threshold=0.8: micro_f1=0.809910 macro_f1=0.710800 predicted_positive_total=5282
+threshold=0.85: micro_f1=0.799467 macro_f1=0.698806 predicted_positive_total=5057
+threshold=0.9: micro_f1=0.780915 macro_f1=0.665154 predicted_positive_total=4710
+threshold=0.95: micro_f1=0.736305 macro_f1=0.613814 predicted_positive_total=4147
+
+epoch 33/100 train_loss=0.245279 valid_loss=0.184125 micro_f1=0.816372 macro_f1=0.695027 predicted_positive_total=6150 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.206522]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.9279]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.320675]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.749833 macro_f1=0.637034 predicted_positive_total=8052
+threshold=0.1: micro_f1=0.770830 macro_f1=0.648520 predicted_positive_total=7531
+threshold=0.15: micro_f1=0.781193 macro_f1=0.656532 predicted_positive_total=7264
+threshold=0.2: micro_f1=0.789368 macro_f1=0.664120 predicted_positive_total=7036
+threshold=0.25: micro_f1=0.796745 macro_f1=0.670201 predicted_positive_total=6835
+threshold=0.3: micro_f1=0.800888 macro_f1=0.673294 predicted_positive_total=6714
+threshold=0.35: micro_f1=0.805995 macro_f1=0.678776 predicted_positive_total=6555
+threshold=0.4: micro_f1=0.809352 macro_f1=0.682450 predicted_positive_total=6436
+threshold=0.45: micro_f1=0.812159 macro_f1=0.685953 predicted_positive_total=6289
+threshold=0.5: micro_f1=0.816372 macro_f1=0.695027 predicted_positive_total=6150
+threshold=0.55: micro_f1=0.817273 macro_f1=0.698875 predicted_positive_total=6054
+threshold=0.6: micro_f1=0.818924 macro_f1=0.705452 predicted_positive_total=5938
+threshold=0.65: micro_f1=0.818755 macro_f1=0.707248 predicted_positive_total=5806
+threshold=0.7: micro_f1=0.818395 macro_f1=0.711007 predicted_positive_total=5657
+threshold=0.75: micro_f1=0.815939 macro_f1=0.710132 predicted_positive_total=5487
+threshold=0.8: micro_f1=0.809719 macro_f1=0.710597 predicted_positive_total=5287
+threshold=0.85: micro_f1=0.799467 macro_f1=0.698806 predicted_positive_total=5057
+threshold=0.9: micro_f1=0.780838 macro_f1=0.664604 predicted_positive_total=4711
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 34/100 train_loss=0.255565 valid_loss=0.186090 micro_f1=0.816091 macro_f1=0.694362 predicted_positive_total=6154 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.202128]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.926108]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.315353]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.749556 macro_f1=0.636953 predicted_positive_total=8057
+threshold=0.1: micro_f1=0.770711 macro_f1=0.648466 predicted_positive_total=7533
+threshold=0.15: micro_f1=0.780702 macro_f1=0.656235 predicted_positive_total=7272
+threshold=0.2: micro_f1=0.789179 macro_f1=0.663973 predicted_positive_total=7039
+threshold=0.25: micro_f1=0.796486 macro_f1=0.669945 predicted_positive_total=6839
+threshold=0.3: micro_f1=0.800559 macro_f1=0.672913 predicted_positive_total=6719
+threshold=0.35: micro_f1=0.805995 macro_f1=0.678776 predicted_positive_total=6555
+threshold=0.4: micro_f1=0.809216 macro_f1=0.682227 predicted_positive_total=6438
+threshold=0.45: micro_f1=0.812159 macro_f1=0.685953 predicted_positive_total=6289
+threshold=0.5: micro_f1=0.816091 macro_f1=0.694362 predicted_positive_total=6154
+threshold=0.55: micro_f1=0.817305 macro_f1=0.699630 predicted_positive_total=6056
+threshold=0.6: micro_f1=0.818852 macro_f1=0.705202 predicted_positive_total=5939
+threshold=0.65: micro_f1=0.818642 macro_f1=0.707507 predicted_positive_total=5810
+threshold=0.7: micro_f1=0.818321 macro_f1=0.710658 predicted_positive_total=5658
+threshold=0.75: micro_f1=0.815939 macro_f1=0.710132 predicted_positive_total=5487
+threshold=0.8: micro_f1=0.809794 macro_f1=0.711060 predicted_positive_total=5286
+threshold=0.85: micro_f1=0.799467 macro_f1=0.698806 predicted_positive_total=5057
+threshold=0.9: micro_f1=0.780804 macro_f1=0.665686 predicted_positive_total=4714
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 35/100 train_loss=0.254743 valid_loss=0.185700 micro_f1=0.816091 macro_f1=0.694362 predicted_positive_total=6154 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.202128]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.926108]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.315353]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.750056 macro_f1=0.637100 predicted_positive_total=8048
+threshold=0.1: micro_f1=0.770889 macro_f1=0.648547 predicted_positive_total=7530
+threshold=0.15: micro_f1=0.781009 macro_f1=0.656420 predicted_positive_total=7267
+threshold=0.2: micro_f1=0.789621 macro_f1=0.664319 predicted_positive_total=7032
+threshold=0.25: micro_f1=0.796810 macro_f1=0.670265 predicted_positive_total=6834
+threshold=0.3: micro_f1=0.800624 macro_f1=0.672988 predicted_positive_total=6718
+threshold=0.35: micro_f1=0.806129 macro_f1=0.678966 predicted_positive_total=6553
+threshold=0.4: micro_f1=0.809011 macro_f1=0.681897 predicted_positive_total=6441
+threshold=0.45: micro_f1=0.812021 macro_f1=0.685687 predicted_positive_total=6291
+threshold=0.5: micro_f1=0.816091 macro_f1=0.694362 predicted_positive_total=6154
+threshold=0.55: micro_f1=0.817163 macro_f1=0.699230 predicted_positive_total=6058
+threshold=0.6: micro_f1=0.818852 macro_f1=0.705202 predicted_positive_total=5939
+threshold=0.65: micro_f1=0.818787 macro_f1=0.708101 predicted_positive_total=5808
+threshold=0.7: micro_f1=0.818247 macro_f1=0.710314 predicted_positive_total=5659
+threshold=0.75: micro_f1=0.815789 macro_f1=0.709392 predicted_positive_total=5489
+threshold=0.8: micro_f1=0.809493 macro_f1=0.709254 predicted_positive_total=5290
+threshold=0.85: micro_f1=0.799315 macro_f1=0.697758 predicted_positive_total=5059
+threshold=0.9: micro_f1=0.780651 macro_f1=0.664633 predicted_positive_total=4716
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 36/100 train_loss=0.262496 valid_loss=0.186689 micro_f1=0.816091 macro_f1=0.694362 predicted_positive_total=6154 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.202128]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.926108]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.315353]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.750000 macro_f1=0.637083 predicted_positive_total=8049
+threshold=0.1: micro_f1=0.771068 macro_f1=0.648630 predicted_positive_total=7527
+threshold=0.15: micro_f1=0.781193 macro_f1=0.656532 predicted_positive_total=7264
+threshold=0.2: micro_f1=0.789432 macro_f1=0.664170 predicted_positive_total=7035
+threshold=0.25: micro_f1=0.796616 macro_f1=0.670072 predicted_positive_total=6837
+threshold=0.3: micro_f1=0.800690 macro_f1=0.673064 predicted_positive_total=6717
+threshold=0.35: micro_f1=0.805794 macro_f1=0.678494 predicted_positive_total=6558
+threshold=0.4: micro_f1=0.809147 macro_f1=0.682116 predicted_positive_total=6439
+threshold=0.45: micro_f1=0.811984 macro_f1=0.686217 predicted_positive_total=6294
+threshold=0.5: micro_f1=0.816091 macro_f1=0.694362 predicted_positive_total=6154
+threshold=0.55: micro_f1=0.817092 macro_f1=0.699033 predicted_positive_total=6059
+threshold=0.6: micro_f1=0.818852 macro_f1=0.705202 predicted_positive_total=5939
+threshold=0.65: micro_f1=0.818569 macro_f1=0.707215 predicted_positive_total=5811
+threshold=0.7: micro_f1=0.818247 macro_f1=0.710314 predicted_positive_total=5659
+threshold=0.75: micro_f1=0.816047 macro_f1=0.711545 predicted_positive_total=5488
+threshold=0.8: micro_f1=0.809493 macro_f1=0.709254 predicted_positive_total=5290
+threshold=0.85: micro_f1=0.799315 macro_f1=0.697758 predicted_positive_total=5059
+threshold=0.9: micro_f1=0.780651 macro_f1=0.664633 predicted_positive_total=4716
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 37/100 train_loss=0.244356 valid_loss=0.185612 micro_f1=0.816161 macro_f1=0.694526 predicted_positive_total=6153 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.203209]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.926556]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.316667]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.750222 macro_f1=0.637149 predicted_positive_total=8045
+threshold=0.1: micro_f1=0.771068 macro_f1=0.648630 predicted_positive_total=7527
+threshold=0.15: micro_f1=0.781193 macro_f1=0.656532 predicted_positive_total=7264
+threshold=0.2: micro_f1=0.789242 macro_f1=0.664022 predicted_positive_total=7038
+threshold=0.25: micro_f1=0.796421 macro_f1=0.669882 predicted_positive_total=6840
+threshold=0.3: micro_f1=0.801019 macro_f1=0.673450 predicted_positive_total=6712
+threshold=0.35: micro_f1=0.806094 macro_f1=0.679430 predicted_positive_total=6556
+threshold=0.4: micro_f1=0.809248 macro_f1=0.682834 predicted_positive_total=6440
+threshold=0.45: micro_f1=0.812122 macro_f1=0.686484 predicted_positive_total=6292
+threshold=0.5: micro_f1=0.816161 macro_f1=0.694526 predicted_positive_total=6153
+threshold=0.55: micro_f1=0.817163 macro_f1=0.699230 predicted_positive_total=6058
+threshold=0.6: micro_f1=0.818892 macro_f1=0.704643 predicted_positive_total=5936
+threshold=0.65: micro_f1=0.818464 macro_f1=0.706078 predicted_positive_total=5810
+threshold=0.7: micro_f1=0.818174 macro_f1=0.709975 predicted_positive_total=5660
+threshold=0.75: micro_f1=0.816155 macro_f1=0.712938 predicted_positive_total=5489
+threshold=0.8: micro_f1=0.809754 macro_f1=0.711760 predicted_positive_total=5289
+threshold=0.85: micro_f1=0.799391 macro_f1=0.698277 predicted_positive_total=5058
+threshold=0.9: micro_f1=0.780728 macro_f1=0.665154 predicted_positive_total=4715
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 38/100 train_loss=0.266483 valid_loss=0.181840 micro_f1=0.816302 macro_f1=0.694859 predicted_positive_total=6151 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.205405]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.927452]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.319328]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.750945 macro_f1=0.637369 predicted_positive_total=8032
+threshold=0.1: micro_f1=0.771484 macro_f1=0.648825 predicted_positive_total=7520
+threshold=0.15: micro_f1=0.781808 macro_f1=0.656917 predicted_positive_total=7254
+threshold=0.2: micro_f1=0.789841 macro_f1=0.664095 predicted_positive_total=7026
+threshold=0.25: micro_f1=0.796616 macro_f1=0.670072 predicted_positive_total=6837
+threshold=0.3: micro_f1=0.801348 macro_f1=0.673845 predicted_positive_total=6707
+threshold=0.35: micro_f1=0.806229 macro_f1=0.679624 predicted_positive_total=6554
+threshold=0.4: micro_f1=0.809520 macro_f1=0.683289 predicted_positive_total=6436
+threshold=0.45: micro_f1=0.812537 macro_f1=0.687311 predicted_positive_total=6286
+threshold=0.5: micro_f1=0.816302 macro_f1=0.694859 predicted_positive_total=6151
+threshold=0.55: micro_f1=0.817273 macro_f1=0.698875 predicted_positive_total=6054
+threshold=0.6: micro_f1=0.819036 macro_f1=0.705147 predicted_positive_total=5934
+threshold=0.65: micro_f1=0.818682 macro_f1=0.706950 predicted_positive_total=5807
+threshold=0.7: micro_f1=0.818247 macro_f1=0.710314 predicted_positive_total=5659
+threshold=0.75: micro_f1=0.815830 macro_f1=0.708698 predicted_positive_total=5486
+threshold=0.8: micro_f1=0.809905 macro_f1=0.712698 predicted_positive_total=5287
+threshold=0.85: micro_f1=0.799391 macro_f1=0.698277 predicted_positive_total=5058
+threshold=0.9: micro_f1=0.780958 macro_f1=0.666784 predicted_positive_total=4712
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 39/100 train_loss=0.246456 valid_loss=0.182288 micro_f1=0.816302 macro_f1=0.694859 predicted_positive_total=6151 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.205405]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.716981]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.927452]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.319328]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751112 macro_f1=0.637420 predicted_positive_total=8029
+threshold=0.1: micro_f1=0.771305 macro_f1=0.648741 predicted_positive_total=7523
+threshold=0.15: micro_f1=0.781747 macro_f1=0.656878 predicted_positive_total=7255
+threshold=0.2: micro_f1=0.789777 macro_f1=0.664045 predicted_positive_total=7027
+threshold=0.25: micro_f1=0.796745 macro_f1=0.670201 predicted_positive_total=6835
+threshold=0.3: micro_f1=0.801151 macro_f1=0.673607 predicted_positive_total=6710
+threshold=0.35: micro_f1=0.806129 macro_f1=0.678966 predicted_positive_total=6553
+threshold=0.4: micro_f1=0.809724 macro_f1=0.683639 predicted_positive_total=6433
+threshold=0.45: micro_f1=0.812537 macro_f1=0.687311 predicted_positive_total=6286
+threshold=0.5: micro_f1=0.816302 macro_f1=0.694859 predicted_positive_total=6151
+threshold=0.55: micro_f1=0.817415 macro_f1=0.699279 predicted_positive_total=6052
+threshold=0.6: micro_f1=0.819212 macro_f1=0.706477 predicted_positive_total=5934
+threshold=0.65: micro_f1=0.818723 macro_f1=0.706374 predicted_positive_total=5804
+threshold=0.7: micro_f1=0.818100 macro_f1=0.709640 predicted_positive_total=5661
+threshold=0.75: micro_f1=0.815939 macro_f1=0.710132 predicted_positive_total=5487
+threshold=0.8: micro_f1=0.809980 macro_f1=0.713178 predicted_positive_total=5286
+threshold=0.85: micro_f1=0.799391 macro_f1=0.698277 predicted_positive_total=5058
+threshold=0.9: micro_f1=0.781001 macro_f1=0.668345 predicted_positive_total=4714
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 40/100 train_loss=0.259384 valid_loss=0.181434 micro_f1=0.816193 macro_f1=0.695232 predicted_positive_total=6155 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.206349]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.926556]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.322314]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751112 macro_f1=0.637420 predicted_positive_total=8029
+threshold=0.1: micro_f1=0.771484 macro_f1=0.648825 predicted_positive_total=7520
+threshold=0.15: micro_f1=0.781931 macro_f1=0.656995 predicted_positive_total=7252
+threshold=0.2: micro_f1=0.790094 macro_f1=0.664298 predicted_positive_total=7022
+threshold=0.25: micro_f1=0.796745 macro_f1=0.670201 predicted_positive_total=6835
+threshold=0.3: micro_f1=0.801217 macro_f1=0.673686 predicted_positive_total=6709
+threshold=0.35: micro_f1=0.806264 macro_f1=0.679159 predicted_positive_total=6551
+threshold=0.4: micro_f1=0.809792 macro_f1=0.683757 predicted_positive_total=6432
+threshold=0.45: micro_f1=0.812606 macro_f1=0.687453 predicted_positive_total=6285
+threshold=0.5: micro_f1=0.816193 macro_f1=0.695232 predicted_positive_total=6155
+threshold=0.55: micro_f1=0.817629 macro_f1=0.699899 predicted_positive_total=6049
+threshold=0.6: micro_f1=0.819212 macro_f1=0.706477 predicted_positive_total=5934
+threshold=0.65: micro_f1=0.818723 macro_f1=0.706374 predicted_positive_total=5804
+threshold=0.7: micro_f1=0.818100 macro_f1=0.709640 predicted_positive_total=5661
+threshold=0.75: micro_f1=0.815864 macro_f1=0.709759 predicted_positive_total=5488
+threshold=0.8: micro_f1=0.809870 macro_f1=0.711531 predicted_positive_total=5285
+threshold=0.85: micro_f1=0.799391 macro_f1=0.698277 predicted_positive_total=5058
+threshold=0.9: micro_f1=0.781001 macro_f1=0.668345 predicted_positive_total=4714
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 41/100 train_loss=0.253884 valid_loss=0.180136 micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.211957]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928795]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.329114]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751168 macro_f1=0.637438 predicted_positive_total=8028
+threshold=0.1: micro_f1=0.771960 macro_f1=0.649054 predicted_positive_total=7512
+threshold=0.15: micro_f1=0.782054 macro_f1=0.657075 predicted_positive_total=7250
+threshold=0.2: micro_f1=0.790250 macro_f1=0.664018 predicted_positive_total=7017
+threshold=0.25: micro_f1=0.797264 macro_f1=0.670727 predicted_positive_total=6827
+threshold=0.3: micro_f1=0.801678 macro_f1=0.674252 predicted_positive_total=6702
+threshold=0.35: micro_f1=0.806465 macro_f1=0.679453 predicted_positive_total=6548
+threshold=0.4: micro_f1=0.809792 macro_f1=0.683757 predicted_positive_total=6432
+threshold=0.45: micro_f1=0.812606 macro_f1=0.687453 predicted_positive_total=6285
+threshold=0.5: micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150
+threshold=0.55: micro_f1=0.817558 macro_f1=0.699690 predicted_positive_total=6050
+threshold=0.6: micro_f1=0.819068 macro_f1=0.705959 predicted_positive_total=5936
+threshold=0.65: micro_f1=0.818650 macro_f1=0.706078 predicted_positive_total=5805
+threshold=0.7: micro_f1=0.818247 macro_f1=0.710314 predicted_positive_total=5659
+threshold=0.75: micro_f1=0.816047 macro_f1=0.711545 predicted_positive_total=5488
+threshold=0.8: micro_f1=0.810056 macro_f1=0.713667 predicted_positive_total=5285
+threshold=0.85: micro_f1=0.799391 macro_f1=0.698277 predicted_positive_total=5058
+threshold=0.9: micro_f1=0.780881 macro_f1=0.666229 predicted_positive_total=4713
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 42/100 train_loss=0.239308 valid_loss=0.181192 micro_f1=0.816474 macro_f1=0.695909 predicted_positive_total=6151 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.210811]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928348]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.327731]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751168 macro_f1=0.637438 predicted_positive_total=8028
+threshold=0.1: micro_f1=0.771722 macro_f1=0.648939 predicted_positive_total=7516
+threshold=0.15: micro_f1=0.781931 macro_f1=0.656995 predicted_positive_total=7252
+threshold=0.2: micro_f1=0.789997 macro_f1=0.663815 predicted_positive_total=7021
+threshold=0.25: micro_f1=0.797070 macro_f1=0.670527 predicted_positive_total=6830
+threshold=0.3: micro_f1=0.801283 macro_f1=0.673765 predicted_positive_total=6708
+threshold=0.35: micro_f1=0.806331 macro_f1=0.679256 predicted_positive_total=6550
+threshold=0.4: micro_f1=0.809724 macro_f1=0.683639 predicted_positive_total=6433
+threshold=0.45: micro_f1=0.812676 macro_f1=0.687595 predicted_positive_total=6284
+threshold=0.5: micro_f1=0.816474 macro_f1=0.695909 predicted_positive_total=6151
+threshold=0.55: micro_f1=0.817558 macro_f1=0.699690 predicted_positive_total=6050
+threshold=0.6: micro_f1=0.819068 macro_f1=0.705959 predicted_positive_total=5936
+threshold=0.65: micro_f1=0.818650 macro_f1=0.706078 predicted_positive_total=5805
+threshold=0.7: micro_f1=0.818174 macro_f1=0.709975 predicted_positive_total=5660
+threshold=0.75: micro_f1=0.816006 macro_f1=0.712169 predicted_positive_total=5491
+threshold=0.8: micro_f1=0.809870 macro_f1=0.711531 predicted_positive_total=5285
+threshold=0.85: micro_f1=0.799391 macro_f1=0.698277 predicted_positive_total=5058
+threshold=0.9: micro_f1=0.780804 macro_f1=0.665686 predicted_positive_total=4714
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 43/100 train_loss=0.258943 valid_loss=0.181175 micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.211957]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928795]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.329114]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751280 macro_f1=0.637472 predicted_positive_total=8026
+threshold=0.1: micro_f1=0.771781 macro_f1=0.648968 predicted_positive_total=7515
+threshold=0.15: micro_f1=0.781993 macro_f1=0.657035 predicted_positive_total=7251
+threshold=0.2: micro_f1=0.789997 macro_f1=0.663815 predicted_positive_total=7021
+threshold=0.25: micro_f1=0.797134 macro_f1=0.670593 predicted_positive_total=6829
+threshold=0.3: micro_f1=0.801546 macro_f1=0.674088 predicted_positive_total=6704
+threshold=0.35: micro_f1=0.806398 macro_f1=0.679354 predicted_positive_total=6549
+threshold=0.4: micro_f1=0.809724 macro_f1=0.683639 predicted_positive_total=6433
+threshold=0.45: micro_f1=0.812606 macro_f1=0.687453 predicted_positive_total=6285
+threshold=0.5: micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150
+threshold=0.55: micro_f1=0.817558 macro_f1=0.699690 predicted_positive_total=6050
+threshold=0.6: micro_f1=0.819068 macro_f1=0.705959 predicted_positive_total=5936
+threshold=0.65: micro_f1=0.818577 macro_f1=0.705786 predicted_positive_total=5806
+threshold=0.7: micro_f1=0.818100 macro_f1=0.709640 predicted_positive_total=5661
+threshold=0.75: micro_f1=0.816006 macro_f1=0.712169 predicted_positive_total=5491
+threshold=0.8: micro_f1=0.809905 macro_f1=0.712698 predicted_positive_total=5287
+threshold=0.85: micro_f1=0.799467 macro_f1=0.698806 predicted_positive_total=5057
+threshold=0.9: micro_f1=0.780804 macro_f1=0.665686 predicted_positive_total=4714
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 44/100 train_loss=0.253594 valid_loss=0.181135 micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.211957]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928795]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.329114]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751224 macro_f1=0.637455 predicted_positive_total=8027
+threshold=0.1: micro_f1=0.771424 macro_f1=0.648797 predicted_positive_total=7521
+threshold=0.15: micro_f1=0.782239 macro_f1=0.657194 predicted_positive_total=7247
+threshold=0.2: micro_f1=0.789744 macro_f1=0.663616 predicted_positive_total=7025
+threshold=0.25: micro_f1=0.797199 macro_f1=0.670660 predicted_positive_total=6828
+threshold=0.3: micro_f1=0.801612 macro_f1=0.674170 predicted_positive_total=6703
+threshold=0.35: micro_f1=0.806465 macro_f1=0.679453 predicted_positive_total=6548
+threshold=0.4: micro_f1=0.809928 macro_f1=0.683996 predicted_positive_total=6430
+threshold=0.45: micro_f1=0.812399 macro_f1=0.687032 predicted_positive_total=6288
+threshold=0.5: micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150
+threshold=0.55: micro_f1=0.817415 macro_f1=0.699279 predicted_positive_total=6052
+threshold=0.6: micro_f1=0.819068 macro_f1=0.705959 predicted_positive_total=5936
+threshold=0.65: micro_f1=0.818650 macro_f1=0.706078 predicted_positive_total=5805
+threshold=0.7: micro_f1=0.818100 macro_f1=0.709640 predicted_positive_total=5661
+threshold=0.75: micro_f1=0.816006 macro_f1=0.712169 predicted_positive_total=5491
+threshold=0.8: micro_f1=0.809905 macro_f1=0.712698 predicted_positive_total=5287
+threshold=0.85: micro_f1=0.799315 macro_f1=0.697758 predicted_positive_total=5059
+threshold=0.9: micro_f1=0.780804 macro_f1=0.665686 predicted_positive_total=4714
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 45/100 train_loss=0.245893 valid_loss=0.181900 micro_f1=0.816685 macro_f1=0.696432 predicted_positive_total=6148 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.214286]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.929691]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.331915]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751168 macro_f1=0.637438 predicted_positive_total=8028
+threshold=0.1: micro_f1=0.771543 macro_f1=0.648854 predicted_positive_total=7519
+threshold=0.15: micro_f1=0.781993 macro_f1=0.657035 predicted_positive_total=7251
+threshold=0.2: micro_f1=0.789870 macro_f1=0.663715 predicted_positive_total=7023
+threshold=0.25: micro_f1=0.797134 macro_f1=0.670593 predicted_positive_total=6829
+threshold=0.3: micro_f1=0.801678 macro_f1=0.674252 predicted_positive_total=6702
+threshold=0.35: micro_f1=0.806465 macro_f1=0.679453 predicted_positive_total=6548
+threshold=0.4: micro_f1=0.809997 macro_f1=0.684117 predicted_positive_total=6429
+threshold=0.45: micro_f1=0.812330 macro_f1=0.686893 predicted_positive_total=6289
+threshold=0.5: micro_f1=0.816685 macro_f1=0.696432 predicted_positive_total=6148
+threshold=0.55: micro_f1=0.817487 macro_f1=0.699483 predicted_positive_total=6051
+threshold=0.6: micro_f1=0.819036 macro_f1=0.705147 predicted_positive_total=5934
+threshold=0.65: micro_f1=0.818577 macro_f1=0.705786 predicted_positive_total=5806
+threshold=0.7: micro_f1=0.818247 macro_f1=0.710314 predicted_positive_total=5659
+threshold=0.75: micro_f1=0.815931 macro_f1=0.711793 predicted_positive_total=5492
+threshold=0.8: micro_f1=0.809830 macro_f1=0.712225 predicted_positive_total=5288
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780924 macro_f1=0.667785 predicted_positive_total=4715
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 46/100 train_loss=0.234161 valid_loss=0.182617 micro_f1=0.816404 macro_f1=0.695738 predicted_positive_total=6152 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.209677]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.9279]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.32636]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.750797 macro_f1=0.637067 predicted_positive_total=8032
+threshold=0.1: micro_f1=0.771543 macro_f1=0.648854 predicted_positive_total=7519
+threshold=0.15: micro_f1=0.782116 macro_f1=0.657114 predicted_positive_total=7249
+threshold=0.2: micro_f1=0.789904 macro_f1=0.664146 predicted_positive_total=7025
+threshold=0.25: micro_f1=0.796940 macro_f1=0.670395 predicted_positive_total=6832
+threshold=0.3: micro_f1=0.801546 macro_f1=0.674088 predicted_positive_total=6704
+threshold=0.35: micro_f1=0.806264 macro_f1=0.679159 predicted_positive_total=6551
+threshold=0.4: micro_f1=0.809928 macro_f1=0.683996 predicted_positive_total=6430
+threshold=0.45: micro_f1=0.812330 macro_f1=0.686893 predicted_positive_total=6289
+threshold=0.5: micro_f1=0.816404 macro_f1=0.695738 predicted_positive_total=6152
+threshold=0.55: micro_f1=0.817344 macro_f1=0.699076 predicted_positive_total=6053
+threshold=0.6: micro_f1=0.819036 macro_f1=0.705147 predicted_positive_total=5934
+threshold=0.65: micro_f1=0.818650 macro_f1=0.706078 predicted_positive_total=5805
+threshold=0.7: micro_f1=0.818026 macro_f1=0.709309 predicted_positive_total=5662
+threshold=0.75: micro_f1=0.816080 macro_f1=0.712551 predicted_positive_total=5490
+threshold=0.8: micro_f1=0.809905 macro_f1=0.712698 predicted_positive_total=5287
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780924 macro_f1=0.667785 predicted_positive_total=4715
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 47/100 train_loss=0.253713 valid_loss=0.180727 micro_f1=0.816685 macro_f1=0.696432 predicted_positive_total=6148 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.214286]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.929691]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.331915]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751410 macro_f1=0.637254 predicted_positive_total=8021
+threshold=0.1: micro_f1=0.771841 macro_f1=0.648997 predicted_positive_total=7514
+threshold=0.15: micro_f1=0.782239 macro_f1=0.657194 predicted_positive_total=7247
+threshold=0.2: micro_f1=0.789870 macro_f1=0.663715 predicted_positive_total=7023
+threshold=0.25: micro_f1=0.797166 macro_f1=0.670175 predicted_positive_total=6826
+threshold=0.3: micro_f1=0.801678 macro_f1=0.674252 predicted_positive_total=6702
+threshold=0.35: micro_f1=0.806331 macro_f1=0.679256 predicted_positive_total=6550
+threshold=0.4: micro_f1=0.810201 macro_f1=0.684484 predicted_positive_total=6426
+threshold=0.45: micro_f1=0.812676 macro_f1=0.687595 predicted_positive_total=6284
+threshold=0.5: micro_f1=0.816685 macro_f1=0.696432 predicted_positive_total=6148
+threshold=0.55: micro_f1=0.817415 macro_f1=0.699279 predicted_positive_total=6052
+threshold=0.6: micro_f1=0.819180 macro_f1=0.705662 predicted_positive_total=5932
+threshold=0.65: micro_f1=0.818650 macro_f1=0.706078 predicted_positive_total=5805
+threshold=0.7: micro_f1=0.818026 macro_f1=0.709309 predicted_positive_total=5662
+threshold=0.75: micro_f1=0.816155 macro_f1=0.712938 predicted_positive_total=5489
+threshold=0.8: micro_f1=0.810056 macro_f1=0.713667 predicted_positive_total=5285
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.781001 macro_f1=0.668345 predicted_positive_total=4714
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 48/100 train_loss=0.245665 valid_loss=0.180305 micro_f1=0.816615 macro_f1=0.696256 predicted_positive_total=6149 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.213115]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.929243]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.330508]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751689 macro_f1=0.637340 predicted_positive_total=8016
+threshold=0.1: micro_f1=0.772257 macro_f1=0.649200 predicted_positive_total=7507
+threshold=0.15: micro_f1=0.782485 macro_f1=0.657356 predicted_positive_total=7243
+threshold=0.2: micro_f1=0.790187 macro_f1=0.663967 predicted_positive_total=7018
+threshold=0.25: micro_f1=0.797296 macro_f1=0.670307 predicted_positive_total=6824
+threshold=0.3: micro_f1=0.802008 macro_f1=0.674670 predicted_positive_total=6697
+threshold=0.35: micro_f1=0.806599 macro_f1=0.679652 predicted_positive_total=6546
+threshold=0.4: micro_f1=0.810269 macro_f1=0.684608 predicted_positive_total=6425
+threshold=0.45: micro_f1=0.812468 macro_f1=0.687171 predicted_positive_total=6287
+threshold=0.5: micro_f1=0.816615 macro_f1=0.696256 predicted_positive_total=6149
+threshold=0.55: micro_f1=0.817771 macro_f1=0.700323 predicted_positive_total=6047
+threshold=0.6: micro_f1=0.819252 macro_f1=0.705923 predicted_positive_total=5931
+threshold=0.65: micro_f1=0.818650 macro_f1=0.706078 predicted_positive_total=5805
+threshold=0.7: micro_f1=0.818100 macro_f1=0.709640 predicted_positive_total=5661
+threshold=0.75: micro_f1=0.816230 macro_f1=0.713331 predicted_positive_total=5488
+threshold=0.8: micro_f1=0.810056 macro_f1=0.713667 predicted_positive_total=5285
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.781001 macro_f1=0.668345 predicted_positive_total=4714
+threshold=0.95: micro_f1=0.736437 macro_f1=0.616697 predicted_positive_total=4148
+
+epoch 49/100 train_loss=0.244715 valid_loss=0.182788 micro_f1=0.816334 macro_f1=0.695568 predicted_positive_total=6153 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.208556]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.927452]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.325]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751076 macro_f1=0.637151 predicted_positive_total=8027
+threshold=0.1: micro_f1=0.771722 macro_f1=0.648939 predicted_positive_total=7516
+threshold=0.15: micro_f1=0.782301 macro_f1=0.657235 predicted_positive_total=7246
+threshold=0.2: micro_f1=0.789841 macro_f1=0.664095 predicted_positive_total=7026
+threshold=0.25: micro_f1=0.796583 macro_f1=0.669595 predicted_positive_total=6835
+threshold=0.3: micro_f1=0.801612 macro_f1=0.674170 predicted_positive_total=6703
+threshold=0.35: micro_f1=0.806196 macro_f1=0.679062 predicted_positive_total=6552
+threshold=0.4: micro_f1=0.810065 macro_f1=0.684238 predicted_positive_total=6428
+threshold=0.45: micro_f1=0.812330 macro_f1=0.686893 predicted_positive_total=6289
+threshold=0.5: micro_f1=0.816334 macro_f1=0.695568 predicted_positive_total=6153
+threshold=0.55: micro_f1=0.817629 macro_f1=0.699899 predicted_positive_total=6049
+threshold=0.6: micro_f1=0.819108 macro_f1=0.705403 predicted_positive_total=5933
+threshold=0.65: micro_f1=0.818505 macro_f1=0.705497 predicted_positive_total=5807
+threshold=0.7: micro_f1=0.818059 macro_f1=0.710242 predicted_positive_total=5664
+threshold=0.75: micro_f1=0.816080 macro_f1=0.712551 predicted_positive_total=5490
+threshold=0.8: micro_f1=0.809905 macro_f1=0.712698 predicted_positive_total=5287
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780924 macro_f1=0.667785 predicted_positive_total=4715
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 50/100 train_loss=0.243062 valid_loss=0.184129 micro_f1=0.816334 macro_f1=0.695568 predicted_positive_total=6153 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.208556]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.927452]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.325]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.750908 macro_f1=0.637100 predicted_positive_total=8030
+threshold=0.1: micro_f1=0.771900 macro_f1=0.649025 predicted_positive_total=7513
+threshold=0.15: micro_f1=0.782239 macro_f1=0.657194 predicted_positive_total=7247
+threshold=0.2: micro_f1=0.789938 macro_f1=0.664572 predicted_positive_total=7027
+threshold=0.25: micro_f1=0.796486 macro_f1=0.669945 predicted_positive_total=6839
+threshold=0.3: micro_f1=0.801414 macro_f1=0.673926 predicted_positive_total=6706
+threshold=0.35: micro_f1=0.806062 macro_f1=0.678871 predicted_positive_total=6554
+threshold=0.4: micro_f1=0.809724 macro_f1=0.683639 predicted_positive_total=6433
+threshold=0.45: micro_f1=0.812261 macro_f1=0.686756 predicted_positive_total=6290
+threshold=0.5: micro_f1=0.816334 macro_f1=0.695568 predicted_positive_total=6153
+threshold=0.55: micro_f1=0.817415 macro_f1=0.699279 predicted_positive_total=6052
+threshold=0.6: micro_f1=0.819140 macro_f1=0.706216 predicted_positive_total=5935
+threshold=0.65: micro_f1=0.818359 macro_f1=0.704929 predicted_positive_total=5809
+threshold=0.7: micro_f1=0.817986 macro_f1=0.709914 predicted_positive_total=5665
+threshold=0.75: micro_f1=0.816114 macro_f1=0.713529 predicted_positive_total=5492
+threshold=0.8: micro_f1=0.809905 macro_f1=0.712698 predicted_positive_total=5287
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780967 macro_f1=0.669277 predicted_positive_total=4717
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 51/100 train_loss=0.246964 valid_loss=0.182902 micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.211957]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928795]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.329114]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.750964 macro_f1=0.637117 predicted_positive_total=8029
+threshold=0.1: micro_f1=0.772079 macro_f1=0.649112 predicted_positive_total=7510
+threshold=0.15: micro_f1=0.782362 macro_f1=0.657275 predicted_positive_total=7245
+threshold=0.2: micro_f1=0.789904 macro_f1=0.664146 predicted_positive_total=7025
+threshold=0.25: micro_f1=0.796777 macro_f1=0.669786 predicted_positive_total=6832
+threshold=0.3: micro_f1=0.801480 macro_f1=0.674007 predicted_positive_total=6705
+threshold=0.35: micro_f1=0.806196 macro_f1=0.679062 predicted_positive_total=6552
+threshold=0.4: micro_f1=0.809860 macro_f1=0.683876 predicted_positive_total=6431
+threshold=0.45: micro_f1=0.812399 macro_f1=0.687032 predicted_positive_total=6288
+threshold=0.5: micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150
+threshold=0.55: micro_f1=0.817518 macro_f1=0.700244 predicted_positive_total=6053
+threshold=0.6: micro_f1=0.819212 macro_f1=0.706477 predicted_positive_total=5934
+threshold=0.65: micro_f1=0.818359 macro_f1=0.704929 predicted_positive_total=5809
+threshold=0.7: micro_f1=0.817879 macro_f1=0.708660 predicted_positive_total=5664
+threshold=0.75: micro_f1=0.816189 macro_f1=0.713918 predicted_positive_total=5491
+threshold=0.8: micro_f1=0.809980 macro_f1=0.713178 predicted_positive_total=5286
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780967 macro_f1=0.669277 predicted_positive_total=4717
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 52/100 train_loss=0.242300 valid_loss=0.181315 micro_f1=0.816685 macro_f1=0.696432 predicted_positive_total=6148 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.214286]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.929691]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.331915]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751466 macro_f1=0.637271 predicted_positive_total=8020
+threshold=0.1: micro_f1=0.772257 macro_f1=0.649200 predicted_positive_total=7507
+threshold=0.15: micro_f1=0.782670 macro_f1=0.657479 predicted_positive_total=7240
+threshold=0.2: micro_f1=0.790157 macro_f1=0.664349 predicted_positive_total=7021
+threshold=0.25: micro_f1=0.797166 macro_f1=0.670175 predicted_positive_total=6826
+threshold=0.3: micro_f1=0.801678 macro_f1=0.674252 predicted_positive_total=6702
+threshold=0.35: micro_f1=0.806331 macro_f1=0.679256 predicted_positive_total=6550
+threshold=0.4: micro_f1=0.810065 macro_f1=0.684238 predicted_positive_total=6428
+threshold=0.45: micro_f1=0.812468 macro_f1=0.687171 predicted_positive_total=6287
+threshold=0.5: micro_f1=0.816685 macro_f1=0.696432 predicted_positive_total=6148
+threshold=0.55: micro_f1=0.817589 macro_f1=0.700452 predicted_positive_total=6052
+threshold=0.6: micro_f1=0.819283 macro_f1=0.706740 predicted_positive_total=5933
+threshold=0.65: micro_f1=0.818359 macro_f1=0.704929 predicted_positive_total=5809
+threshold=0.7: micro_f1=0.817879 macro_f1=0.708660 predicted_positive_total=5664
+threshold=0.75: micro_f1=0.816080 macro_f1=0.712551 predicted_positive_total=5490
+threshold=0.8: micro_f1=0.809980 macro_f1=0.713178 predicted_positive_total=5286
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.781121 macro_f1=0.670417 predicted_positive_total=4715
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 53/100 train_loss=0.234415 valid_loss=0.181404 micro_f1=0.816685 macro_f1=0.696432 predicted_positive_total=6148 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.214286]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.929691]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.331915]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751577 macro_f1=0.637306 predicted_positive_total=8018
+threshold=0.1: micro_f1=0.772257 macro_f1=0.649200 predicted_positive_total=7507
+threshold=0.15: micro_f1=0.782609 macro_f1=0.657438 predicted_positive_total=7241
+threshold=0.2: micro_f1=0.790220 macro_f1=0.664401 predicted_positive_total=7020
+threshold=0.25: micro_f1=0.797231 macro_f1=0.670241 predicted_positive_total=6825
+threshold=0.3: micro_f1=0.801678 macro_f1=0.674252 predicted_positive_total=6702
+threshold=0.35: micro_f1=0.806264 macro_f1=0.679159 predicted_positive_total=6551
+threshold=0.4: micro_f1=0.809997 macro_f1=0.684117 predicted_positive_total=6429
+threshold=0.45: micro_f1=0.812468 macro_f1=0.687171 predicted_positive_total=6287
+threshold=0.5: micro_f1=0.816685 macro_f1=0.696432 predicted_positive_total=6148
+threshold=0.55: micro_f1=0.817589 macro_f1=0.700452 predicted_positive_total=6052
+threshold=0.6: micro_f1=0.819283 macro_f1=0.706740 predicted_positive_total=5933
+threshold=0.65: micro_f1=0.818432 macro_f1=0.705211 predicted_positive_total=5808
+threshold=0.7: micro_f1=0.817953 macro_f1=0.708982 predicted_positive_total=5663
+threshold=0.75: micro_f1=0.816155 macro_f1=0.712938 predicted_positive_total=5489
+threshold=0.8: micro_f1=0.809980 macro_f1=0.713178 predicted_positive_total=5286
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.781044 macro_f1=0.669841 predicted_positive_total=4716
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 54/100 train_loss=0.238757 valid_loss=0.182914 micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.211957]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928795]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.329114]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751410 macro_f1=0.637254 predicted_positive_total=8021
+threshold=0.1: micro_f1=0.772138 macro_f1=0.649142 predicted_positive_total=7509
+threshold=0.15: micro_f1=0.782547 macro_f1=0.657397 predicted_positive_total=7242
+threshold=0.2: micro_f1=0.789967 macro_f1=0.664196 predicted_positive_total=7024
+threshold=0.25: micro_f1=0.796907 macro_f1=0.669914 predicted_positive_total=6830
+threshold=0.3: micro_f1=0.801414 macro_f1=0.673926 predicted_positive_total=6706
+threshold=0.35: micro_f1=0.806331 macro_f1=0.679256 predicted_positive_total=6550
+threshold=0.4: micro_f1=0.809792 macro_f1=0.683757 predicted_positive_total=6432
+threshold=0.45: micro_f1=0.812399 macro_f1=0.687032 predicted_positive_total=6288
+threshold=0.5: micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150
+threshold=0.55: micro_f1=0.817376 macro_f1=0.699833 predicted_positive_total=6055
+threshold=0.6: micro_f1=0.819212 macro_f1=0.706477 predicted_positive_total=5934
+threshold=0.65: micro_f1=0.818287 macro_f1=0.704650 predicted_positive_total=5810
+threshold=0.7: micro_f1=0.817879 macro_f1=0.708660 predicted_positive_total=5664
+threshold=0.75: micro_f1=0.815931 macro_f1=0.711793 predicted_positive_total=5492
+threshold=0.8: micro_f1=0.809980 macro_f1=0.713178 predicted_positive_total=5286
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.781087 macro_f1=0.671276 predicted_positive_total=4718
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 55/100 train_loss=0.233773 valid_loss=0.184600 micro_f1=0.816474 macro_f1=0.695909 predicted_positive_total=6151 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.210811]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928348]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.327731]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751131 macro_f1=0.637168 predicted_positive_total=8026
+threshold=0.1: micro_f1=0.771960 macro_f1=0.649054 predicted_positive_total=7512
+threshold=0.15: micro_f1=0.782424 macro_f1=0.657316 predicted_positive_total=7244
+threshold=0.2: micro_f1=0.789904 macro_f1=0.664146 predicted_positive_total=7025
+threshold=0.25: micro_f1=0.796647 macro_f1=0.669658 predicted_positive_total=6834
+threshold=0.3: micro_f1=0.801283 macro_f1=0.673765 predicted_positive_total=6708
+threshold=0.35: micro_f1=0.806062 macro_f1=0.678871 predicted_positive_total=6554
+threshold=0.4: micro_f1=0.809452 macro_f1=0.683174 predicted_positive_total=6437
+threshold=0.45: micro_f1=0.812261 macro_f1=0.686756 predicted_positive_total=6290
+threshold=0.5: micro_f1=0.816474 macro_f1=0.695909 predicted_positive_total=6151
+threshold=0.55: micro_f1=0.817305 macro_f1=0.699630 predicted_positive_total=6056
+threshold=0.6: micro_f1=0.819068 macro_f1=0.705959 predicted_positive_total=5936
+threshold=0.65: micro_f1=0.818287 macro_f1=0.704650 predicted_positive_total=5810
+threshold=0.7: micro_f1=0.817912 macro_f1=0.709589 predicted_positive_total=5666
+threshold=0.75: micro_f1=0.816039 macro_f1=0.713146 predicted_positive_total=5493
+threshold=0.8: micro_f1=0.809754 macro_f1=0.711760 predicted_positive_total=5289
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.781087 macro_f1=0.671276 predicted_positive_total=4718
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 56/100 train_loss=0.233678 valid_loss=0.183977 micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.211957]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928795]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.329114]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751633 macro_f1=0.637323 predicted_positive_total=8017
+threshold=0.1: micro_f1=0.772079 macro_f1=0.649112 predicted_positive_total=7510
+threshold=0.15: micro_f1=0.782547 macro_f1=0.657397 predicted_positive_total=7242
+threshold=0.2: micro_f1=0.789807 macro_f1=0.663665 predicted_positive_total=7024
+threshold=0.25: micro_f1=0.796777 macro_f1=0.669786 predicted_positive_total=6832
+threshold=0.3: micro_f1=0.801348 macro_f1=0.673845 predicted_positive_total=6707
+threshold=0.35: micro_f1=0.806094 macro_f1=0.679430 predicted_positive_total=6556
+threshold=0.4: micro_f1=0.809452 macro_f1=0.683174 predicted_positive_total=6437
+threshold=0.45: micro_f1=0.812261 macro_f1=0.686756 predicted_positive_total=6290
+threshold=0.5: micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150
+threshold=0.55: micro_f1=0.817305 macro_f1=0.699630 predicted_positive_total=6056
+threshold=0.6: micro_f1=0.819068 macro_f1=0.705959 predicted_positive_total=5936
+threshold=0.65: micro_f1=0.818287 macro_f1=0.704650 predicted_positive_total=5810
+threshold=0.7: micro_f1=0.817912 macro_f1=0.709589 predicted_positive_total=5666
+threshold=0.75: micro_f1=0.816039 macro_f1=0.713146 predicted_positive_total=5493
+threshold=0.8: micro_f1=0.809754 macro_f1=0.711760 predicted_positive_total=5289
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780967 macro_f1=0.669277 predicted_positive_total=4717
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 57/100 train_loss=0.245617 valid_loss=0.183760 micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.211957]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928795]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.329114]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751633 macro_f1=0.637323 predicted_positive_total=8017
+threshold=0.1: micro_f1=0.772198 macro_f1=0.649171 predicted_positive_total=7508
+threshold=0.15: micro_f1=0.782547 macro_f1=0.657397 predicted_positive_total=7242
+threshold=0.2: micro_f1=0.789807 macro_f1=0.663665 predicted_positive_total=7024
+threshold=0.25: micro_f1=0.796972 macro_f1=0.669979 predicted_positive_total=6829
+threshold=0.3: micro_f1=0.801348 macro_f1=0.673845 predicted_positive_total=6707
+threshold=0.35: micro_f1=0.806296 macro_f1=0.679722 predicted_positive_total=6553
+threshold=0.4: micro_f1=0.809520 macro_f1=0.683289 predicted_positive_total=6436
+threshold=0.45: micro_f1=0.812261 macro_f1=0.686756 predicted_positive_total=6290
+threshold=0.5: micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150
+threshold=0.55: micro_f1=0.817305 macro_f1=0.699630 predicted_positive_total=6056
+threshold=0.6: micro_f1=0.819068 macro_f1=0.705959 predicted_positive_total=5936
+threshold=0.65: micro_f1=0.818359 macro_f1=0.704929 predicted_positive_total=5809
+threshold=0.7: micro_f1=0.817912 macro_f1=0.709589 predicted_positive_total=5666
+threshold=0.75: micro_f1=0.816039 macro_f1=0.713146 predicted_positive_total=5493
+threshold=0.8: micro_f1=0.809754 macro_f1=0.711760 predicted_positive_total=5289
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780967 macro_f1=0.669277 predicted_positive_total=4717
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 58/100 train_loss=0.242681 valid_loss=0.184144 micro_f1=0.816474 macro_f1=0.695909 predicted_positive_total=6151 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.210811]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928348]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.327731]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751633 macro_f1=0.637323 predicted_positive_total=8017
+threshold=0.1: micro_f1=0.772079 macro_f1=0.649112 predicted_positive_total=7510
+threshold=0.15: micro_f1=0.782547 macro_f1=0.657397 predicted_positive_total=7242
+threshold=0.2: micro_f1=0.789807 macro_f1=0.663665 predicted_positive_total=7024
+threshold=0.25: micro_f1=0.796972 macro_f1=0.669979 predicted_positive_total=6829
+threshold=0.3: micro_f1=0.801348 macro_f1=0.673845 predicted_positive_total=6707
+threshold=0.35: micro_f1=0.806162 macro_f1=0.679526 predicted_positive_total=6555
+threshold=0.4: micro_f1=0.809452 macro_f1=0.683174 predicted_positive_total=6437
+threshold=0.45: micro_f1=0.812122 macro_f1=0.686484 predicted_positive_total=6292
+threshold=0.5: micro_f1=0.816474 macro_f1=0.695909 predicted_positive_total=6151
+threshold=0.55: micro_f1=0.817305 macro_f1=0.699630 predicted_positive_total=6056
+threshold=0.6: micro_f1=0.818924 macro_f1=0.705452 predicted_positive_total=5938
+threshold=0.65: micro_f1=0.818287 macro_f1=0.704650 predicted_positive_total=5810
+threshold=0.7: micro_f1=0.817839 macro_f1=0.709269 predicted_positive_total=5667
+threshold=0.75: micro_f1=0.816039 macro_f1=0.713146 predicted_positive_total=5493
+threshold=0.8: micro_f1=0.809679 macro_f1=0.711303 predicted_positive_total=5290
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.781087 macro_f1=0.671276 predicted_positive_total=4718
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 59/100 train_loss=0.252819 valid_loss=0.184093 micro_f1=0.816474 macro_f1=0.695909 predicted_positive_total=6151 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.210811]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928348]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.327731]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751633 macro_f1=0.637323 predicted_positive_total=8017
+threshold=0.1: micro_f1=0.772138 macro_f1=0.649142 predicted_positive_total=7509
+threshold=0.15: micro_f1=0.782547 macro_f1=0.657397 predicted_positive_total=7242
+threshold=0.2: micro_f1=0.789870 macro_f1=0.663715 predicted_positive_total=7023
+threshold=0.25: micro_f1=0.796972 macro_f1=0.669979 predicted_positive_total=6829
+threshold=0.3: micro_f1=0.801348 macro_f1=0.673845 predicted_positive_total=6707
+threshold=0.35: micro_f1=0.806162 macro_f1=0.679526 predicted_positive_total=6555
+threshold=0.4: micro_f1=0.809520 macro_f1=0.683289 predicted_positive_total=6436
+threshold=0.45: micro_f1=0.812122 macro_f1=0.686484 predicted_positive_total=6292
+threshold=0.5: micro_f1=0.816474 macro_f1=0.695909 predicted_positive_total=6151
+threshold=0.55: micro_f1=0.817305 macro_f1=0.699630 predicted_positive_total=6056
+threshold=0.6: micro_f1=0.818924 macro_f1=0.705452 predicted_positive_total=5938
+threshold=0.65: micro_f1=0.818287 macro_f1=0.704650 predicted_positive_total=5810
+threshold=0.7: micro_f1=0.817839 macro_f1=0.709269 predicted_positive_total=5667
+threshold=0.75: micro_f1=0.816039 macro_f1=0.713146 predicted_positive_total=5493
+threshold=0.8: micro_f1=0.809604 macro_f1=0.710853 predicted_positive_total=5291
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780967 macro_f1=0.669277 predicted_positive_total=4717
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 60/100 train_loss=0.232900 valid_loss=0.183851 micro_f1=0.816474 macro_f1=0.695909 predicted_positive_total=6151 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.210811]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928348]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.327731]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751689 macro_f1=0.637340 predicted_positive_total=8016
+threshold=0.1: micro_f1=0.772198 macro_f1=0.649171 predicted_positive_total=7508
+threshold=0.15: micro_f1=0.782547 macro_f1=0.657397 predicted_positive_total=7242
+threshold=0.2: micro_f1=0.789870 macro_f1=0.663715 predicted_positive_total=7023
+threshold=0.25: micro_f1=0.797037 macro_f1=0.670044 predicted_positive_total=6828
+threshold=0.3: micro_f1=0.801414 macro_f1=0.673926 predicted_positive_total=6706
+threshold=0.35: micro_f1=0.806296 macro_f1=0.679722 predicted_positive_total=6553
+threshold=0.4: micro_f1=0.809452 macro_f1=0.683174 predicted_positive_total=6437
+threshold=0.45: micro_f1=0.812122 macro_f1=0.686484 predicted_positive_total=6292
+threshold=0.5: micro_f1=0.816474 macro_f1=0.695909 predicted_positive_total=6151
+threshold=0.55: micro_f1=0.817305 macro_f1=0.699630 predicted_positive_total=6056
+threshold=0.6: micro_f1=0.818996 macro_f1=0.705704 predicted_positive_total=5937
+threshold=0.65: micro_f1=0.818287 macro_f1=0.704650 predicted_positive_total=5810
+threshold=0.7: micro_f1=0.817839 macro_f1=0.709269 predicted_positive_total=5667
+threshold=0.75: micro_f1=0.816039 macro_f1=0.713146 predicted_positive_total=5493
+threshold=0.8: micro_f1=0.809679 macro_f1=0.711303 predicted_positive_total=5290
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780967 macro_f1=0.669277 predicted_positive_total=4717
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 61/100 train_loss=0.238378 valid_loss=0.183597 micro_f1=0.816474 macro_f1=0.695909 predicted_positive_total=6151 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.210811]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928348]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.327731]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751745 macro_f1=0.637358 predicted_positive_total=8015
+threshold=0.1: micro_f1=0.772198 macro_f1=0.649171 predicted_positive_total=7508
+threshold=0.15: micro_f1=0.782547 macro_f1=0.657397 predicted_positive_total=7242
+threshold=0.2: micro_f1=0.789870 macro_f1=0.663715 predicted_positive_total=7023
+threshold=0.25: micro_f1=0.797101 macro_f1=0.670109 predicted_positive_total=6827
+threshold=0.3: micro_f1=0.801480 macro_f1=0.674007 predicted_positive_total=6705
+threshold=0.35: micro_f1=0.806430 macro_f1=0.679919 predicted_positive_total=6551
+threshold=0.4: micro_f1=0.809452 macro_f1=0.683174 predicted_positive_total=6437
+threshold=0.45: micro_f1=0.812122 macro_f1=0.686484 predicted_positive_total=6292
+threshold=0.5: micro_f1=0.816474 macro_f1=0.695909 predicted_positive_total=6151
+threshold=0.55: micro_f1=0.817376 macro_f1=0.699833 predicted_positive_total=6055
+threshold=0.6: micro_f1=0.819068 macro_f1=0.705959 predicted_positive_total=5936
+threshold=0.65: micro_f1=0.818287 macro_f1=0.704650 predicted_positive_total=5810
+threshold=0.7: micro_f1=0.817839 macro_f1=0.709269 predicted_positive_total=5667
+threshold=0.75: micro_f1=0.816039 macro_f1=0.713146 predicted_positive_total=5493
+threshold=0.8: micro_f1=0.809679 macro_f1=0.711303 predicted_positive_total=5290
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780967 macro_f1=0.669277 predicted_positive_total=4717
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 62/100 train_loss=0.249948 valid_loss=0.183470 micro_f1=0.816474 macro_f1=0.695909 predicted_positive_total=6151 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.210811]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928348]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.327731]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751800 macro_f1=0.637375 predicted_positive_total=8014
+threshold=0.1: micro_f1=0.772317 macro_f1=0.649230 predicted_positive_total=7506
+threshold=0.15: micro_f1=0.782609 macro_f1=0.657438 predicted_positive_total=7241
+threshold=0.2: micro_f1=0.789933 macro_f1=0.663765 predicted_positive_total=7022
+threshold=0.25: micro_f1=0.797166 macro_f1=0.670175 predicted_positive_total=6826
+threshold=0.3: micro_f1=0.801546 macro_f1=0.674088 predicted_positive_total=6704
+threshold=0.35: micro_f1=0.806497 macro_f1=0.680019 predicted_positive_total=6550
+threshold=0.4: micro_f1=0.809452 macro_f1=0.683174 predicted_positive_total=6437
+threshold=0.45: micro_f1=0.812191 macro_f1=0.686620 predicted_positive_total=6291
+threshold=0.5: micro_f1=0.816474 macro_f1=0.695909 predicted_positive_total=6151
+threshold=0.55: micro_f1=0.817447 macro_f1=0.700037 predicted_positive_total=6054
+threshold=0.6: micro_f1=0.819068 macro_f1=0.705959 predicted_positive_total=5936
+threshold=0.65: micro_f1=0.818287 macro_f1=0.704650 predicted_positive_total=5810
+threshold=0.7: micro_f1=0.817912 macro_f1=0.709589 predicted_positive_total=5666
+threshold=0.75: micro_f1=0.816039 macro_f1=0.713146 predicted_positive_total=5493
+threshold=0.8: micro_f1=0.809679 macro_f1=0.711303 predicted_positive_total=5290
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780967 macro_f1=0.669277 predicted_positive_total=4717
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 63/100 train_loss=0.250196 valid_loss=0.182871 micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.211957]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928795]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.329114]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751856 macro_f1=0.637393 predicted_positive_total=8013
+threshold=0.1: micro_f1=0.772377 macro_f1=0.649259 predicted_positive_total=7505
+threshold=0.15: micro_f1=0.782609 macro_f1=0.657438 predicted_positive_total=7241
+threshold=0.2: micro_f1=0.790187 macro_f1=0.663967 predicted_positive_total=7018
+threshold=0.25: micro_f1=0.797296 macro_f1=0.670307 predicted_positive_total=6824
+threshold=0.3: micro_f1=0.801678 macro_f1=0.674252 predicted_positive_total=6702
+threshold=0.35: micro_f1=0.806564 macro_f1=0.680119 predicted_positive_total=6549
+threshold=0.4: micro_f1=0.809588 macro_f1=0.683405 predicted_positive_total=6435
+threshold=0.45: micro_f1=0.812261 macro_f1=0.686756 predicted_positive_total=6290
+threshold=0.5: micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150
+threshold=0.55: micro_f1=0.817376 macro_f1=0.699833 predicted_positive_total=6055
+threshold=0.6: micro_f1=0.819068 macro_f1=0.705959 predicted_positive_total=5936
+threshold=0.65: micro_f1=0.818287 macro_f1=0.704650 predicted_positive_total=5810
+threshold=0.7: micro_f1=0.818059 macro_f1=0.710242 predicted_positive_total=5664
+threshold=0.75: micro_f1=0.816039 macro_f1=0.713146 predicted_positive_total=5493
+threshold=0.8: micro_f1=0.809679 macro_f1=0.711303 predicted_positive_total=5290
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780967 macro_f1=0.669277 predicted_positive_total=4717
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 64/100 train_loss=0.243695 valid_loss=0.182775 micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.211957]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928795]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.329114]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.752024 macro_f1=0.637446 predicted_positive_total=8010
+threshold=0.1: micro_f1=0.772377 macro_f1=0.649259 predicted_positive_total=7505
+threshold=0.15: micro_f1=0.782609 macro_f1=0.657438 predicted_positive_total=7241
+threshold=0.2: micro_f1=0.790250 macro_f1=0.664018 predicted_positive_total=7017
+threshold=0.25: micro_f1=0.797296 macro_f1=0.670307 predicted_positive_total=6824
+threshold=0.3: micro_f1=0.801678 macro_f1=0.674252 predicted_positive_total=6702
+threshold=0.35: micro_f1=0.806632 macro_f1=0.680220 predicted_positive_total=6548
+threshold=0.4: micro_f1=0.809588 macro_f1=0.683405 predicted_positive_total=6435
+threshold=0.45: micro_f1=0.812330 macro_f1=0.686893 predicted_positive_total=6289
+threshold=0.5: micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150
+threshold=0.55: micro_f1=0.817447 macro_f1=0.700037 predicted_positive_total=6054
+threshold=0.6: micro_f1=0.819068 macro_f1=0.705959 predicted_positive_total=5936
+threshold=0.65: micro_f1=0.818287 macro_f1=0.704650 predicted_positive_total=5810
+threshold=0.7: micro_f1=0.818133 macro_f1=0.710575 predicted_positive_total=5663
+threshold=0.75: micro_f1=0.816039 macro_f1=0.713146 predicted_positive_total=5493
+threshold=0.8: micro_f1=0.809679 macro_f1=0.711303 predicted_positive_total=5290
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780967 macro_f1=0.669277 predicted_positive_total=4717
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
+
+epoch 65/100 train_loss=0.250780 valid_loss=0.182798 micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150 max_memory_allocated_mb=267.21 max_memory_reserved_mb=356.00
+per_label_precision: [0.807443, 0.862514, 0.789834, 0.787066, 0.667482, 0.78655, 0.232323, 0.211957]
+per_label_recall: [0.890277, 0.923123, 0.834711, 0.857388, 0.739837, 0.852615, 0.69697, 0.735849]
+per_label_accuracy: [0.838334, 0.83296, 0.832064, 0.902373, 0.896104, 0.892969, 0.922974, 0.928795]
+per_label_number_vulnerability: [1121, 1665, 968, 582, 369, 631, 66, 53]
+per_label_f1: [0.846839, 0.89179, 0.811652, 0.820724, 0.701799, 0.818251, 0.348485, 0.329114]
+rare_neg=disabled
+threshold=0.05: micro_f1=0.751968 macro_f1=0.637428 predicted_positive_total=8011
+threshold=0.1: micro_f1=0.772377 macro_f1=0.649259 predicted_positive_total=7505
+threshold=0.15: micro_f1=0.782609 macro_f1=0.657438 predicted_positive_total=7241
+threshold=0.2: micro_f1=0.790314 macro_f1=0.664069 predicted_positive_total=7016
+threshold=0.25: micro_f1=0.797231 macro_f1=0.670241 predicted_positive_total=6825
+threshold=0.3: micro_f1=0.801678 macro_f1=0.674252 predicted_positive_total=6702
+threshold=0.35: micro_f1=0.806497 macro_f1=0.680019 predicted_positive_total=6550
+threshold=0.4: micro_f1=0.809588 macro_f1=0.683405 predicted_positive_total=6435
+threshold=0.45: micro_f1=0.812330 macro_f1=0.686893 predicted_positive_total=6289
+threshold=0.5: micro_f1=0.816545 macro_f1=0.696082 predicted_positive_total=6150
+threshold=0.55: micro_f1=0.817305 macro_f1=0.699630 predicted_positive_total=6056
+threshold=0.6: micro_f1=0.818996 macro_f1=0.705704 predicted_positive_total=5937
+threshold=0.65: micro_f1=0.818287 macro_f1=0.704650 predicted_positive_total=5810
+threshold=0.7: micro_f1=0.818133 macro_f1=0.710575 predicted_positive_total=5663
+threshold=0.75: micro_f1=0.816039 macro_f1=0.713146 predicted_positive_total=5493
+threshold=0.8: micro_f1=0.809679 macro_f1=0.711303 predicted_positive_total=5290
+threshold=0.85: micro_f1=0.799239 macro_f1=0.697248 predicted_positive_total=5060
+threshold=0.9: micro_f1=0.780967 macro_f1=0.669277 predicted_positive_total=4717
+threshold=0.95: micro_f1=0.736700 macro_f1=0.622238 predicted_positive_total=4150
