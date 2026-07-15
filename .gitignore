@@ -56,6 +56,8 @@ results/*
 !data/reports/stage16c_effect_flow_bootstrap_report.json
 !configs/effect_flow_efpp_conservative_22.json
 output.log
+data/reports/*_build.stdout.txt
+data/reports/*_build.stderr.txt
 
 # Large datasets
 data/raw/smartbugs_wild/

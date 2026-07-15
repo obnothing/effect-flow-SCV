@@ -1,0 +1,25 @@
+{
+  "status": "ok",
+  "target_samples": 100000,
+  "output_samples": 100000,
+  "unique_output_addresses": 100000,
+  "unique_output_opcode_hashes": 19143,
+  "exact_opcode_duplicate_rows_retained": 80857,
+  "downstream_opcode_hashes_excluded_against": 20617,
+  "counters": {
+    "runtime_rows_input": 100603,
+    "excluded_downstream_opcode_overlap": 603
+  },
+  "runtime_inputs": [
+    "data/raw/ethereum_public_pretrain_100k/runtime_part1.jsonl",
+    "data/raw/ethereum_public_pretrain_100k/runtime_part2.jsonl",
+    "data/raw/ethereum_public_pretrain_100k/runtime_part3.jsonl",
+    "data/raw/ethereum_public_pretrain_100k/runtime_part4.jsonl"
+  ],
+  "output": "data/processed/ethereum_public_pretrain_100k/runtime_opcode.jsonl",
+  "caveats": [
+    "The corpus contains public Ethereum runtime opcode only and no vulnerability labels.",
+    "Exact runtime-opcode overlap with the new downstream benchmark is excluded.",
+    "Address-level contracts are retained; exact opcode duplicate prevalence is reported for optional deduplicated training ablation."
+  ]
+}

@@ -35,6 +35,8 @@ def parse_args():
     parser.add_argument("--retries", type=int, default=4)
     parser.add_argument("--timeout-seconds", type=int, default=45)
     parser.add_argument("--max-candidates", type=int, default=None)
+    parser.add_argument("--start-index", type=int, default=0)
+    parser.add_argument("--end-index", type=int, default=None)
     parser.add_argument("--sleep-seconds", type=float, default=0.2)
     return parser.parse_args()
 
@@ -114,6 +116,7 @@ def main():
     output_path = resolve(args.output)
     rejected_path = resolve(args.rejected_output)
     candidates = load_jsonl(candidates_path)
+    candidates = candidates[args.start_index : args.end_index]
     if args.max_candidates is not None:
         candidates = candidates[: args.max_candidates]
     completed = {
