@@ -32,10 +32,14 @@ echo "[INFO] RUN_SANITY=${RUN_SANITY}"
 echo "[INFO] CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES}"
 nvidia-smi || true
 
-echo "[1/5] derive and audit DIVE Main-6 data view"
+echo "[1/6] derive DIVE Main-6 data view"
 python scripts/build_dive_main6_dataset.py --overwrite
 
-echo "[2/5] validate source feature cache"
+echo "[2/6] verify DIVE Main-6 projection"
+python scripts/check_dive_main6_dataset.py \
+  --output data/reports/check_dive_main6_dataset.txt
+
+echo "[3/6] validate source feature cache"
 python scripts/check_evm_bert_chunk_features.py \
   --feature_dir data/features/continued_dive_evm_bert_dive_random_stride256_max64 \
   --data_dir data/processed/DIVE_random_split \
@@ -44,7 +48,7 @@ python scripts/check_evm_bert_chunk_features.py \
   --expected_num_labels 8 \
   --output data/reports/dive_main6_source_feature_cache.txt
 
-echo "[3/5] validate source semantic cache"
+echo "[4/6] validate source semantic cache"
 python scripts/check_effect_flow_semantic_features.py \
   --semantic_dir data/features/effect_flow_semantics/dive_random_stride256_max64 \
   --feature_dir data/features/continued_dive_evm_bert_dive_random_stride256_max64 \
@@ -72,10 +76,10 @@ if [[ "${RUN_SANITY}" == "1" ]]; then
   RESULT_DIR="results/dive_main6_branch_baseline_sanity"
 fi
 
-echo "[4/5] train Main-6 baseline"
+echo "[5/6] train Main-6 baseline"
 python src/train_chunk_mil.py "${TRAIN_ARGS[@]}"
 
-echo "[5/5] validation calibration and strict test evaluation"
+echo "[6/6] validation calibration and strict test evaluation"
 python src/evaluate_chunk_mil.py \
   --config "${CONFIG}" \
   --checkpoint "${CHECKPOINT_DIR}/best_macro_f1.pt" \
