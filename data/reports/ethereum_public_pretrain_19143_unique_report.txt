@@ -1,0 +1,8 @@
+{
+  "status": "ok",
+  "input": "data/processed/ethereum_public_pretrain_100k/runtime_opcode.jsonl",
+  "output": "data/processed/ethereum_public_pretrain_19143_unique_runtime/runtime_opcode.jsonl",
+  "input_address_level_rows": 100000,
+  "unique_runtime_opcode_rows": 19143,
+  "exact_duplicate_rows_removed": 80857
+}
