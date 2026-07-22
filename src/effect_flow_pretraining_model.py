@@ -212,7 +212,9 @@ class EffectFlowBertForPreTraining(nn.Module):
                     weight=self.relation_class_weights,
                 )
             else:
-                err_loss = torch.tensor(0.0, device=err_logits.device, dtype=err_logits.dtype)
+                # Keep ERR head parameters in the autograd graph for DDP batches
+                # without an annotated relation.
+                err_loss = err_logits.sum() * 0.0
         if vep_labels is not None:
             if vulnerability_loss_mask is None:
                 vulnerability_loss_mask = torch.ones_like(vep_labels)

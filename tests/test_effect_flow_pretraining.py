@@ -189,6 +189,10 @@ def test_three_head_model_loads_existing_encoder_and_backpropagates():
         mom_labels[:, 2] = input_ids[:, 2]
         etp_labels = torch.randint(0, 16, (2, 8))
         efpp_labels = torch.randint(0, 2, (2, 22)).float()
+        err_labels = torch.full((2,), -100, dtype=torch.long)
+        vep_labels = torch.zeros((2, 18), dtype=torch.float32)
+        vtm_labels = torch.zeros((2, 18), dtype=torch.float32)
+        vulnerability_loss_mask = torch.zeros((2, 18), dtype=torch.float32)
         outputs = model(
             input_ids=input_ids,
             attention_mask=attention_mask,
@@ -196,6 +200,10 @@ def test_three_head_model_loads_existing_encoder_and_backpropagates():
             mom_labels=mom_labels,
             etp_labels=etp_labels,
             efpp_labels=efpp_labels,
+            err_labels=err_labels,
+            vep_labels=vep_labels,
+            vtm_labels=vtm_labels,
+            vulnerability_loss_mask=vulnerability_loss_mask,
         )
         assert outputs["mom_logits"].shape == (2, 8, 32)
         assert outputs["etp_logits"].shape == (2, 8, 16)
@@ -204,8 +212,11 @@ def test_three_head_model_loads_existing_encoder_and_backpropagates():
         assert outputs["mom_loss"].item() > 0
         assert outputs["etp_loss"].item() > 0
         assert outputs["efpp_loss"].item() > 0
+        assert outputs["err_loss"].item() == 0
         outputs["loss"].backward()
         assert model.bert.embeddings.word_embeddings.weight.grad is not None
+        assert model.err_head.weight.grad is not None
+        assert torch.count_nonzero(model.err_head.weight.grad) == 0
         export_path = Path(directory) / "export"
         model.save_hf_model(
             export_path,
