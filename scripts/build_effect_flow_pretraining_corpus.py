@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import json
 import multiprocessing as mp
 import statistics
@@ -77,6 +78,21 @@ def parse_args():
         "--template_path",
         default=None,
     )
+    parser.add_argument(
+        "--train_path",
+        default=None,
+        help="Optional train-only input override. When set, valid/test are never read.",
+    )
+    parser.add_argument(
+        "--disable_downstream_labels",
+        action="store_true",
+        help="Build VEP/VTM pseudo targets from templates only; never gate them with labels.",
+    )
+    parser.add_argument(
+        "--report_prefix",
+        default=None,
+        help="Optional report basename under data/reports; defaults to the dataset name.",
+    )
     return parser.parse_args()
 
 
@@ -115,6 +131,7 @@ def make_payload(
     ontology,
     templates,
     contract_multi_labels,
+    disable_downstream_labels,
 ):
     effects = annotate_effect_types(
         content_units, include_other_operands=include_other_operands
@@ -132,11 +149,15 @@ def make_payload(
         pattern_labels,
         relation_labels,
     )
-    chunk_evidence = (
-        pseudo_evidence_vector(template_scores, contract_multi_labels, label_names)
-        if contract_multi_labels is not None
-        else [0.0] * len(GLOBAL_VULNERABILITY_LABELS)
-    )
+    if disable_downstream_labels:
+        # VEP remains a template-derived weak target without reading contract labels.
+        chunk_evidence = template_scores
+    else:
+        chunk_evidence = (
+            pseudo_evidence_vector(template_scores, contract_multi_labels, label_names)
+            if contract_multi_labels is not None
+            else [0.0] * len(GLOBAL_VULNERABILITY_LABELS)
+        )
     content_tokens = [unit.token for unit in content_units]
     tokens = [tokenizer.cls_token] + content_tokens + [tokenizer.sep_token]
     input_ids = tokenizer.convert_tokens_to_ids(tokens)
@@ -227,7 +248,7 @@ def process_contract(task):
     units = build_token_units(opcode, tokenizer)
     total_tokens = len(units)
     contract_multi_labels = None
-    if split == "train" and "multi_labels" in item:
+    if (not config["disable_downstream_labels"]) and split == "train" and "multi_labels" in item:
         contract_multi_labels = item["multi_labels"]
         if len(contract_multi_labels) != len(config["label_names"]):
             raise ValueError(
@@ -271,6 +292,7 @@ def process_contract(task):
             config["ontology"],
             config["templates"],
             contract_multi_labels,
+            config["disable_downstream_labels"],
         )
         lines.append(json.dumps(payload, ensure_ascii=False))
     return {
@@ -305,6 +327,7 @@ def build_split(args, tokenizer, split, input_path, output_path):
         "ontology": args.ontology,
         "templates": args.templates,
         "label_names": DATASET_SPECS[args.dataset]["label_names"],
+        "disable_downstream_labels": bool(args.disable_downstream_labels),
     }
 
     def tasks():
@@ -367,13 +390,12 @@ def build_split(args, tokenizer, split, input_path, output_path):
 def main():
     args = parse_args()
     if args.max_chunks_per_contract is None:
-        args.max_chunks_per_contract = 64 if args.dataset == "DIVE" else 32
+        args.max_chunks_per_contract = 64 if "DIVE" in args.dataset else 32
     if args.template_path is None:
-        args.template_path = (
-            "configs/vulnerability_templates_dive.yaml"
-            if args.dataset == "DIVE"
-            else "configs/vulnerability_templates_bjut.yaml"
-        )
+        if "DIVE" in args.dataset:
+            args.template_path = "configs/vulnerability_templates_dive.yaml"
+        else:
+            args.template_path = "configs/vulnerability_templates_bjut.yaml"
     tokenizer = EVMOpcodeTokenizer.from_vocab_file(resolve(args.vocab_path))
     args.ontology = load_ontology(resolve(args.ontology_path))
     args.templates = load_vulnerability_templates(
@@ -381,7 +403,10 @@ def main():
         args.ontology,
         expected_label_names=DATASET_SPECS[args.dataset]["label_names"],
     )
-    input_paths = strict_split_paths(args.dataset)
+    if args.train_path:
+        input_paths = {"train": resolve(args.train_path)}
+    else:
+        input_paths = strict_split_paths(args.dataset)
     missing = [relative(path) for path in input_paths.values() if not path.exists()]
     if missing:
         raise FileNotFoundError(
@@ -396,10 +421,16 @@ def main():
         split_reports[split] = build_split(
             args, tokenizer, split, input_path, output_path
         )
+    template_file = resolve(args.template_path)
     report = {
         "dataset": args.dataset,
-        "input_policy": "strict opcode-hash grouped splits only",
+        "input_policy": (
+            "explicit train-only input override"
+            if args.train_path
+            else "strict opcode-hash grouped splits only"
+        ),
         "vulnerability_labels_written": False,
+        "downstream_labels_used_for_pseudo_targets": not bool(args.disable_downstream_labels),
         "max_len": args.max_len,
         "chunk_content_size": args.max_len - 2,
         "chunk_stride": args.chunk_stride,
@@ -409,14 +440,16 @@ def main():
         "efpp_pattern_count": len(EFPP_PATTERNS),
         "relation_type_count": len(args.ontology["relation_types"]),
         "global_vulnerability_label_count": len(GLOBAL_VULNERABILITY_LABELS),
-        "template_path": relative(resolve(args.template_path)),
+        "template_path": relative(template_file),
+        "template_sha256": hashlib.sha256(template_file.read_bytes()).hexdigest(),
         "ontology_path": relative(resolve(args.ontology_path)),
         "splits": split_reports,
         "total_contracts": sum(row["contracts"] for row in split_reports.values()),
         "total_chunks": sum(row["chunks"] for row in split_reports.values()),
     }
-    json_path = REPORT_DIR / f"effect_flow_corpus_build_{args.dataset}.json"
-    txt_path = REPORT_DIR / f"effect_flow_corpus_build_{args.dataset}.txt"
+    report_name = args.report_prefix or f"effect_flow_corpus_build_{args.dataset}"
+    json_path = REPORT_DIR / f"{report_name}.json"
+    txt_path = REPORT_DIR / f"{report_name}.txt"
     write_json(json_path, report)
     lines = [
         f"Effect-flow corpus build report: {args.dataset}",

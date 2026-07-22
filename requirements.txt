@@ -1,12 +1,9 @@
 torch
 transformers
-pandas
 numpy
+pandas
 scikit-learn
 pyyaml
 tqdm
 requests
-openpyxl
 pyevmasm
-iterative-stratification
-matplotlib

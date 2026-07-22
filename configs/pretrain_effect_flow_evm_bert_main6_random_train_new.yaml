@@ -1,0 +1,64 @@
+experiment_name: pretrain_effect_flow_evm_bert_main6_random_train_new
+base_hf_model_path: checkpoints/pretrain_evm_bert_19143_base_continue/hf_model
+base_encoder_init: ethereum_19143 EVM-BERT
+base_encoder_init_setting: continued_pretraining
+vocab_path: checkpoints/pretrain_evm_bert_19143_base_continue/evm_vocab.json
+efpp_pattern_config: configs/effect_flow_efpp_conservative_22.json
+efpp_pattern_subset: conservative_22
+ontology_path: configs/effect_flow_ontology.yaml
+template_paths:
+  DIVE_main6_random_train: configs/vulnerability_templates_dive_main6_new.yaml
+  ethereum_19143: configs/vulnerability_templates_dive_main6_new.yaml
+train_corpora:
+  DIVE_main6_random_train: data/processed/effect_flow_pretrain/DIVE_main6_random_train_new/train_effect_flow_chunks.jsonl
+  ethereum_19143: data/processed/effect_flow_pretrain/ethereum_19143/train_effect_flow_chunks.jsonl
+expected_train_chunks:
+  ethereum_19143: 307725
+train_manifest_path: data/processed/effect_flow_pretrain/main6_random_train_new_train_manifest.json
+internal_valid_manifest_path: data/processed/effect_flow_pretrain/main6_random_train_new_internal_valid_manifest.json
+checkpoint_dir: checkpoints/pretrain_effect_flow_evm_bert_main6_random_train_new
+result_dir: results/pretrain_effect_flow_evm_bert_main6_random_train_new
+report_dir: data/reports
+report_filename: stage16b_effect_flow_pretraining_main6_random_train_new_report
+log_dir: logs
+internal_valid_ratio: 0.01
+internal_valid_split_policy: contract_id
+dataset_sampling_ratio:
+  DIVE_main6_random_train: 0.5
+  ethereum_19143: 0.5
+seed: 42
+max_len: 512
+mlm_probability: 0.15
+num_effect_types: 16
+num_efpp_patterns: 22
+num_relation_types: 6
+lambda_mom: 1.0
+lambda_etp: 0.3
+lambda_efpp: 0.5
+lambda_err: 0.3
+lambda_vep: 0.4
+lambda_vtm: 0.4
+max_etp_class_weight: 5.0
+normal_class_weight_scale: 0.5
+max_efpp_pos_weight: 10.0
+batch_size: 4
+eval_batch_size: 8
+gradient_accumulation_steps: 8
+steps_per_epoch: 12000
+epochs: 3
+learning_rate: 0.00001
+weight_decay: 0.01
+adam_beta1: 0.9
+adam_beta2: 0.999
+adam_epsilon: 0.00000001
+warmup_ratio: 0.06
+max_grad_norm: 1.0
+num_workers: 4
+fp16: false
+bf16: false
+gradient_checkpointing: true
+logging_steps: 100
+resume_from:
+use_downstream_labels: false
+use_original_valid_test_chunks: false
+is_transductive_pretraining: false

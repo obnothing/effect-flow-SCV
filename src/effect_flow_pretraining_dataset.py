@@ -165,6 +165,30 @@ def choose_internal_holdout(offsets, ratio, seed):
     return train_offsets, valid_offsets
 
 
+def choose_internal_holdout_by_contract(corpus_path, offsets, ratio, seed):
+    """Split an effect-flow corpus by contract id so chunks cannot cross holdout."""
+    grouped_offsets = {}
+    with Path(corpus_path).open("rb") as handle:
+        for raw_offset in offsets:
+            offset = int(raw_offset)
+            handle.seek(offset)
+            item = json.loads(handle.readline().decode("utf-8"))
+            contract_id = str(item.get("id", ""))
+            if not contract_id:
+                raise ValueError(f"Effect-flow corpus item at {offset} has no contract id")
+            grouped_offsets.setdefault(contract_id, []).append(offset)
+    contract_ids = sorted(grouped_offsets)
+    valid_count = max(1, int(round(len(contract_ids) * float(ratio)))) if contract_ids else 0
+    rng = random.Random(int(seed))
+    valid_ids = set(rng.sample(contract_ids, valid_count))
+    train_offsets = []
+    valid_offsets = []
+    for contract_id, contract_offsets in grouped_offsets.items():
+        target = valid_offsets if contract_id in valid_ids else train_offsets
+        target.extend(contract_offsets)
+    return np.asarray(train_offsets, dtype=np.int64), np.asarray(valid_offsets, dtype=np.int64)
+
+
 def count_offsets_labels(corpus_path, offsets):
     etp_counts = [0] * NUM_EFFECT_TYPES
     efpp_counts = [0] * ORIGINAL_PATTERN_COUNT

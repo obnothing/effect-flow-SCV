@@ -40,6 +40,25 @@ DATASET_SPECS = {
             "Time manipulation",
         ],
     },
+    "DIVE_main6": {
+        "strict_dir": "data/processed/DIVE_main6_access4000_clean3952",
+        "random_dir": None,
+        "output_dir": "data/processed/effect_flow_pretrain/DIVE_main6",
+        "label_names": [
+            "Reentrancy",
+            "Access Control",
+            "Arithmetic",
+            "Unchecked Return Values",
+            "DoS",
+            "Time manipulation",
+        ],
+    },
+    "ethereum_19143": {
+        "strict_dir": "data/processed/ethereum_public_pretrain_19143_unique_runtime",
+        "random_dir": None,
+        "output_dir": "data/processed/effect_flow_pretrain/ethereum_19143",
+        "label_names": [],
+    },
 }
 
 GLOBAL_VULNERABILITY_LABELS = []
@@ -111,7 +130,14 @@ def write_text(path, lines):
 def strict_split_paths(dataset):
     spec = DATASET_SPECS[dataset]
     root = resolve(spec["strict_dir"])
-    return {split: root / f"{split}.jsonl" for split in ("train", "valid", "test")}
+    splits = {}
+    for split in ("train", "valid", "test"):
+        path = root / f"{split}.jsonl"
+        if path.exists():
+            splits[split] = path
+    if not splits:
+        raise FileNotFoundError(f"No split files found in {root}")
+    return splits
 
 
 def corpus_split_paths(dataset):

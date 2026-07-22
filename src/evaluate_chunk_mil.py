@@ -12,6 +12,7 @@ from tqdm import tqdm
 
 from chunk_feature_dataset import ChunkFeatureDataset
 from evm_chunk_mil_model import (
+    EVEFMVDV2MultiScaleMIL,
     EVEFMVDV2SideEvidenceMIL,
     EVMChunkMILClassifier,
     EffectFlowGuidedChunkMIL,
@@ -30,6 +31,7 @@ from train_chunk_mil import collate_batch, compute_pos_weight_from_feature_cache
 EFFECT_FLOW_MODEL_TYPES = {
     "effect_flow_guided_chunk_mil",
     "evef_mvd_v2_side_evidence_mil",
+    "evef_mvd_v2_multiscale_mil",
 }
 
 
@@ -131,6 +133,8 @@ def load_model(config, checkpoint, device):
         model = EffectFlowGuidedChunkMIL(config).to(device)
     elif model_type == "evef_mvd_v2_side_evidence_mil":
         model = EVEFMVDV2SideEvidenceMIL(config).to(device)
+    elif model_type == "evef_mvd_v2_multiscale_mil":
+        model = EVEFMVDV2MultiScaleMIL(config).to(device)
     else:
         model = EVMChunkMILClassifier(config).to(device)
     if config.get("use_pos_weight", False):

@@ -201,12 +201,18 @@ class EffectFlowBertForPreTraining(nn.Module):
                 pos_weight=self.efpp_pos_weights,
             )
         if err_labels is not None:
-            err_loss = nn.functional.cross_entropy(
-                err_logits.reshape(-1, self.num_relation_types),
-                err_labels.reshape(-1),
-                weight=self.relation_class_weights,
-                ignore_index=-100,
-            )
+            err_labels_flat = err_labels.reshape(-1)
+            err_logits_flat = err_logits.reshape(-1, self.num_relation_types)
+            # Check if there are any valid labels (not -100)
+            valid_mask = err_labels_flat != -100
+            if valid_mask.any():
+                err_loss = nn.functional.cross_entropy(
+                    err_logits_flat[valid_mask],
+                    err_labels_flat[valid_mask],
+                    weight=self.relation_class_weights,
+                )
+            else:
+                err_loss = torch.tensor(0.0, device=err_logits.device, dtype=err_logits.dtype)
         if vep_labels is not None:
             if vulnerability_loss_mask is None:
                 vulnerability_loss_mask = torch.ones_like(vep_labels)

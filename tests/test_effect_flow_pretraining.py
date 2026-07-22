@@ -17,6 +17,7 @@ from effect_flow_pretraining_dataset import (  # noqa: E402
     EffectFlowChunkDataset,
     build_or_load_corpus_index,
     choose_internal_holdout,
+    choose_internal_holdout_by_contract,
     load_pattern_subset,
     load_tokenizer,
 )
@@ -46,6 +47,7 @@ def _write_vocab(path):
 
 
 def _corpus_item(index, include_downstream_label=False):
+    global_labels = [f"label_{value}" for value in range(17)]
     item = {
         "id": str(index),
         "source_dataset": "TEST",
@@ -55,6 +57,11 @@ def _corpus_item(index, include_downstream_label=False):
         "effect_type_ids": [-100, 0, 15, 1, 2, 3, 5, -100],
         "etp_loss_mask": [0, 1, 1, 1, 1, 1, 1, 0],
         "efpp_pattern_labels": [int((index + value) % 3 == 0) for value in range(27)],
+        "effect_relations": {"labels": [0] * 6},
+        "chunk_vulnerability_evidence": [0.0] * 17,
+        "vulnerability_template_matches": [0.0] * 17,
+        "active_vulnerability_label_mask": [0.0] * 17,
+        "global_vulnerability_label_names": global_labels,
     }
     if include_downstream_label:
         item["multi_labels"] = [1, 0]
@@ -130,6 +137,31 @@ def test_index_rejects_downstream_labels():
             assert "Downstream labels" in str(exc)
         else:
             raise AssertionError("Corpus index accepted a downstream vulnerability label.")
+
+
+def test_contract_holdout_keeps_all_contract_chunks_together():
+    with tempfile.TemporaryDirectory() as directory:
+        path = Path(directory) / "train.jsonl"
+        rows = []
+        for contract_id in ("a", "a", "b", "b", "c", "c"):
+            row = _corpus_item(len(rows))
+            row["id"] = contract_id
+            rows.append(row)
+        path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+        offsets, _ = build_or_load_corpus_index(path)
+        train_offsets, valid_offsets = choose_internal_holdout_by_contract(path, offsets, 1 / 3, 42)
+        def ids_for(selected):
+            values = set()
+            with path.open("rb") as handle:
+                for offset in selected:
+                    handle.seek(int(offset))
+                    values.add(json.loads(handle.readline().decode("utf-8"))["id"])
+            return values
+        train_ids = ids_for(train_offsets)
+        valid_ids = ids_for(valid_offsets)
+        assert train_ids.isdisjoint(valid_ids)
+        assert len(train_ids | valid_ids) == 3
+        del offsets
 
 
 def test_three_head_model_loads_existing_encoder_and_backpropagates():

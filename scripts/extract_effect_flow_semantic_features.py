@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import json
 import math
 import sys
@@ -63,6 +64,14 @@ def project_relative(path):
 def load_yaml(path):
     with resolve_path(path).open("r", encoding="utf-8") as f:
         return yaml.safe_load(f)
+
+
+def file_sha256(path):
+    digest = hashlib.sha256()
+    with resolve_path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def count_jsonl(path):
@@ -142,6 +151,8 @@ def semantic_cache_v2_status(path, config, model):
         return False, "reference_feature_dir mismatch"
     if report.get("template_path") != config["template_path"]:
         return False, "template_path mismatch"
+    if report.get("template_sha256") != file_sha256(config["template_path"]):
+        return False, "template_sha256 mismatch"
     if report.get("ontology_path") != config["ontology_path"]:
         return False, "ontology_path mismatch"
     return True, "ok"
@@ -551,6 +562,7 @@ def extract_split(split, input_path, output_path, tokenizer, model, config, devi
         "reference_feature_dir": config.get("reference_feature_dir"),
         "ontology_path": config["ontology_path"],
         "template_path": config["template_path"],
+        "template_sha256": file_sha256(config["template_path"]),
     }
     payload = {
         "ids": ids,
@@ -589,6 +601,7 @@ def write_report(config, reports):
         "reference_feature_dir": config.get("reference_feature_dir"),
         "ontology_path": config["ontology_path"],
         "template_path": config["template_path"],
+        "template_sha256": file_sha256(config["template_path"]),
         "max_len": config["max_len"],
         "chunk_stride": config["chunk_stride"],
         "max_chunks_per_contract": config["max_chunks_per_contract"],

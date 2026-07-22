@@ -14,6 +14,7 @@ from tqdm import tqdm
 
 from chunk_feature_dataset import build_chunk_feature_datasets, load_id_subset
 from evm_chunk_mil_model import (
+    EVEFMVDV2MultiScaleMIL,
     EVEFMVDV2SideEvidenceMIL,
     EVMChunkMILClassifier,
     EffectFlowGuidedChunkMIL,
@@ -24,6 +25,7 @@ from metrics import compute_metrics
 EFFECT_FLOW_MODEL_TYPES = {
     "effect_flow_guided_chunk_mil",
     "evef_mvd_v2_side_evidence_mil",
+    "evef_mvd_v2_multiscale_mil",
 }
 
 
@@ -407,6 +409,8 @@ def build_model(config):
         return EffectFlowGuidedChunkMIL(config)
     if model_type == "evef_mvd_v2_side_evidence_mil":
         return EVEFMVDV2SideEvidenceMIL(config)
+    if model_type == "evef_mvd_v2_multiscale_mil":
+        return EVEFMVDV2MultiScaleMIL(config)
     if model_type == "evm_chunk_mil":
         return EVMChunkMILClassifier(config)
     raise ValueError(f"Unsupported chunk MIL model_type: {model_type}")

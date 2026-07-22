@@ -1942,6 +1942,13 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
             "final_evidence_scores": final.masked_fill(~valid, 0.0),
         }
 
+    def compute_label_logits_from_pools(
+        self, z, h, attn_weights, phi, chunk_mask, global_h
+    ):
+        """Default v2 head: classify the evidence-attended label representation."""
+        del h, attn_weights, phi, chunk_mask, global_h
+        return self.compute_label_logits(z)
+
     def compute_front_special_scores(self, front_special_features, chunk_mask):
         if not self.front_running_special_enabled:
             return None
@@ -2290,7 +2297,9 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         attn_weights = torch.softmax(attn_logits, dim=1)
         z = torch.einsum("bck,bch->bkh", attn_weights, h)
         global_h = self.masked_mean(h, chunk_mask)
-        neural_logits = self.compute_label_logits(z)
+        neural_logits = self.compute_label_logits_from_pools(
+            z, h, attn_weights, phi, chunk_mask, global_h
+        )
         major_mask = self.major_enhancement_label_mask.to(dtype=h.dtype).view(1, -1)
         major_global_residual_logits = neural_logits.new_zeros(neural_logits.shape)
         if self.major_global_residual_enabled:
@@ -2497,3 +2506,74 @@ class EVEFMVDV2SideEvidenceMIL(EVMChunkMILClassifier):
         }
         outputs.update(front_diagnostics)
         return outputs
+
+
+class EVEFMVDV2MultiScaleMIL(EVEFMVDV2SideEvidenceMIL):
+    """Main-6 label-wise MIL with evidence, cross-attention, top-k, and global pools."""
+
+    def __init__(self, config):
+        super().__init__(config)
+        if self.recognition_head_type != "label_branch_mlp":
+            raise ValueError(
+                "EVEFMVDV2MultiScaleMIL requires recognition_head_type=label_branch_mlp"
+            )
+        heads = int(config.get("multiscale_cross_attention_heads", 8))
+        if self.hidden_dim % heads != 0:
+            raise ValueError("multiscale_cross_attention_heads must divide hidden_dim")
+        self.multiscale_top_k = int(config.get("multiscale_top_k", self.top_k))
+        if self.multiscale_top_k <= 0:
+            raise ValueError("multiscale_top_k must be positive")
+        self.multiscale_label_queries = nn.Parameter(
+            torch.empty(self.num_labels, self.hidden_dim)
+        )
+        self.multiscale_cross_attention = nn.MultiheadAttention(
+            self.hidden_dim,
+            heads,
+            dropout=float(config.get("multiscale_cross_attention_dropout", 0.1)),
+            batch_first=True,
+        )
+        self.multiscale_cross_norm = nn.LayerNorm(self.hidden_dim)
+        branch_dropout = float(config.get("label_branch_dropout", config.get("dropout", 0.1)))
+        self.multiscale_label_branches = nn.ModuleList(
+            [
+                nn.Sequential(
+                    nn.LayerNorm(self.hidden_dim * 4),
+                    nn.Linear(self.hidden_dim * 4, self.hidden_dim),
+                    nn.GELU(),
+                    nn.Dropout(branch_dropout),
+                    nn.Linear(self.hidden_dim, 1),
+                )
+                for _ in range(self.num_labels)
+            ]
+        )
+        nn.init.normal_(self.multiscale_label_queries, mean=0.0, std=0.02)
+
+    def compute_label_logits_from_pools(
+        self, z, h, attn_weights, phi, chunk_mask, global_h
+    ):
+        batch_size = h.shape[0]
+        queries = self.multiscale_label_queries.unsqueeze(0).expand(
+            batch_size, -1, -1
+        ).to(dtype=h.dtype)
+        cross, _ = self.multiscale_cross_attention(
+            queries,
+            h,
+            h,
+            key_padding_mask=(~chunk_mask).contiguous(),
+            need_weights=False,
+        )
+        cross = self.multiscale_cross_norm(cross + queries)
+
+        top_k = min(self.multiscale_top_k, h.shape[1])
+        masked_phi = phi.masked_fill(~chunk_mask.unsqueeze(-1), -1e9)
+        _, top_indices = torch.topk(masked_phi, k=top_k, dim=1)
+        expanded_h = h.unsqueeze(2).expand(-1, -1, self.num_labels, -1)
+        gather_index = top_indices.unsqueeze(-1).expand(-1, -1, -1, self.hidden_dim)
+        top_h = torch.gather(expanded_h, 1, gather_index).mean(dim=1)
+        global_for_labels = global_h.unsqueeze(1).expand(-1, self.num_labels, -1)
+        combined = torch.cat([z, cross, top_h, global_for_labels], dim=-1)
+        logits = [
+            branch(combined[:, label_idx, :]).squeeze(-1)
+            for label_idx, branch in enumerate(self.multiscale_label_branches)
+        ]
+        return torch.stack(logits, dim=1)

@@ -1,92 +1,31 @@
-# Python
+# Python and local tooling
 __pycache__/
 *.py[cod]
-*.egg-info/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-*.pptx
-SC_UEE-main/
-AGENTS.md
-# Runtime outputs
-checkpoints/
-logs/
-results/*
-!results/**/
-!results/**/*.txt
-!results/**/*.json
-!results/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/*.csv
-!results/pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/*.png
-!results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/*.csv
-!results/sanity_pretrain_effect_flow_evm_bert_bjut_dive_train_balanced/*.png
-*.pt
-*.pth
-*.json
-!data/reports/paper_metric_audit.json
-!data/reports/metric_recomputation_summary.json
-!data/reports/metric_recomputation_summary_completed.json
-!data/reports/stage11b_prediction_artifact_report.json
-!data/reports/dive_file_inventory.json
-!data/reports/dive_dataset_audit.json
-!data/reports/dive_split_report.json
-!data/reports/dive_evm_tokenizer_compatibility.json
-!data/reports/dive_stage12_plan.json
-!data/reports/dive_continued_mlm_corpus_train_only_report.json
-!data/reports/dive_continued_mlm_corpus_full_report.json
-!data/reports/continue_pretrain_evm_bert_dive_train_only_report.json
-!data/reports/continue_pretrain_evm_bert_dive_full_transductive_report.json
-!data/reports/dive_random_split_report.json
-!data/reports/bjut_vs_dive_random_structure_report.json
-!data/reports/mlsmote_dive_random_split_report.json
-!data/reports/stage12c_two_random_full_results_summary.json
-!data/reports/stage16a_input_inventory.json
-!data/reports/effect_flow_corpus_build_BJUT.json
-!data/reports/effect_flow_corpus_build_DIVE.json
-!data/reports/effect_flow_annotation_audit_BJUT.json
-!data/reports/effect_flow_annotation_audit_DIVE.json
-!data/reports/label_pattern_relevance_BJUT_train.json
-!data/reports/label_pattern_relevance_DIVE_train.json
-!data/reports/label_pattern_relevance_BJUT_all_splits_diagnostic.json
-!data/reports/label_pattern_relevance_DIVE_all_splits_diagnostic.json
-!data/reports/usable_efpp_patterns_recommendation.json
-!data/reports/stage16a_effect_flow_summary.json
-!data/reports/stage16b_effect_flow_pretraining_report.json
-!data/reports/stage16b_effect_flow_pretraining_sanity_report.json
-!data/reports/stage16c_effect_flow_downstream_validation_summary.json
-!data/reports/stage16c_effect_flow_bootstrap_report.json
-!configs/effect_flow_efpp_conservative_22.json
-output.log
-data/reports/*_build.stdout.txt
-data/reports/*_build.stderr.txt
-
-# Large datasets
-data/raw/smartbugs_wild/
-data/raw/verified_smart_contracts/
-data/raw/ethereum_public_pretrain_100k/
-data/raw/BJUT_SC01/BJUT_SC01.zip
-data/raw/BJUT_SC01/extracted/
-data/processed/BJUT_SC01/*.jsonl
-data/processed/BJUT_SC01_random_split/
-data/processed/DIVE/*.jsonl
-data/processed/*.tar.gz
-data/processed/DIVE_random_split/
-data/processed/DIVE_main6_random_split/
-data/processed/DIVE_main6_access_train_subsets/
-data/processed/DIVE_main6_access4000_clean3952/
-data/processed/ethereum_public_pretrain_100k/
-data/processed/ethereum_public_pretrain_19143_unique_runtime/
-data/processed/effect_flow_pretrain/
-data/processed/effect_flow_pretrain_debug/
-
-# Local model weights and caches
-models/
-.cache/
-
-# OS/editor
-.DS_Store
-Thumbs.db
+.venv/
+.env
 .vscode/
 .idea/
+.agents/
 
+# Generated experiments and local models
+checkpoints/
+logs/
+results/
+models/
+tmp/
+server_upload/
+data/features/
+data/reports/*
+!data/reports/.gitkeep
 
-DIVE/
+# Local datasets are transferred to the server separately.
+data/raw/
+data/processed/*
+!data/processed/.gitkeep
+
+# Local operating-system files
+.DS_Store
+Thumbs.db

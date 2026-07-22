@@ -1,0 +1,58 @@
+﻿experiment_name: pretrain_evm_bert_19143_base
+model_type: evm_bert_base
+tokenizer_type: evm
+
+vocab_path: data/processed/ethereum_public_pretrain_19143_unique_runtime/evm_vocab.json
+pretrain_corpus_path: data/processed/ethereum_public_pretrain_19143_unique_runtime/runtime_opcode.jsonl
+
+data_paths:
+  train: data/processed/ethereum_public_pretrain_19143_unique_runtime/train.jsonl
+  valid: data/processed/ethereum_public_pretrain_19143_unique_runtime/valid.jsonl
+
+checkpoint_dir: checkpoints/pretrain_evm_bert_19143_base
+result_dir: results/pretrain_evm_bert_19143_base
+report_dir: data/reports
+log_dir: logs
+
+is_transductive_pretraining: false
+use_labels: false
+
+max_len: 512
+chunk_content_size: 510
+chunk_stride: 510
+max_chunks_per_contract: 16
+debug_num_contracts:
+mlm_probability: 0.15
+
+bert_config:
+  vocab_size: auto
+  hidden_size: 768
+  num_hidden_layers: 12
+  num_attention_heads: 12
+  intermediate_size: 3072
+  max_position_embeddings: 512
+  type_vocab_size: 2
+  hidden_dropout_prob: 0.1
+  attention_probs_dropout_prob: 0.1
+  hidden_act: gelu
+  initializer_range: 0.02
+
+batch_size: 32
+gradient_accumulation_steps: 1
+effective_batch_size: 32
+learning_rate: 5e-5
+weight_decay: 0.01
+adam_beta1: 0.9
+adam_beta2: 0.999
+adam_epsilon: 1e-8
+warmup_ratio: 0.1
+epochs: 5
+max_grad_norm: 1.0
+seed: 42
+num_workers: 4
+
+fp16: true
+bf16: false
+save_every_epoch: true
+save_best_mlm_loss: true
+logging_steps: 50

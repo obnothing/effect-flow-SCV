@@ -1,0 +1,14 @@
+data_dir: data/processed/ethereum_public_pretrain_19143_unique_runtime
+vocab_build_path: data/processed/ethereum_public_pretrain_19143_unique_runtime/train.jsonl
+train_path: ''
+valid_path: data/processed/ethereum_public_pretrain_19143_unique_runtime/valid.jsonl
+test_path: data/processed/ethereum_public_pretrain_19143_unique_runtime/valid.jsonl
+vocab_path: data/processed/ethereum_public_pretrain_19143_unique_runtime/evm_vocab.json
+model_name_for_comparison: ./models/CodeBERTa-small-v1
+sample_size_for_fragmentation: 1000
+top_k_operands: 1000
+min_operand_freq: 5
+preserve_common_operands: true
+normalize_rare_long_operands: true
+add_jump_aware_tokens: false
+allow_oversampled_vocab: false
