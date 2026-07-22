@@ -15,14 +15,27 @@ case "$STAGE" in
     run_python scripts/audit_main6_random_pretrain_protocol.py
     ;;
   corpus)
-    run_python scripts/build_effect_flow_pretraining_corpus.py \
-      --dataset DIVE_main6 \
-      --train_path data/processed/DIVE_main6_random_split/train.jsonl \
-      --output_dir data/processed/effect_flow_pretrain/DIVE_main6_random_train_new \
-      --vocab_path checkpoints/pretrain_evm_bert_19143_base_continue/evm_vocab.json \
-      --template_path configs/vulnerability_templates_dive_main6_new.yaml \
-      --disable_downstream_labels \
-      --report_prefix effect_flow_corpus_build_DIVE_main6_random_train_new
+    if [[ ! -f data/processed/effect_flow_pretrain/DIVE_main6_random_train_new/train_effect_flow_chunks.jsonl ]]; then
+      run_python scripts/build_effect_flow_pretraining_corpus.py \
+        --dataset DIVE_main6 \
+        --train_path data/processed/DIVE_main6_random_split/train.jsonl \
+        --output_dir data/processed/effect_flow_pretrain/DIVE_main6_random_train_new \
+        --vocab_path checkpoints/pretrain_evm_bert_19143_base_continue/evm_vocab.json \
+        --template_path configs/vulnerability_templates_dive_main6_new.yaml \
+        --disable_downstream_labels \
+        --report_prefix effect_flow_corpus_build_DIVE_main6_random_train_new
+    fi
+    if [[ ! -f data/processed/effect_flow_pretrain/ethereum_19143/train_effect_flow_chunks.jsonl ]]; then
+      run_python scripts/build_effect_flow_pretraining_corpus.py \
+        --dataset ethereum_19143 \
+        --train_path data/processed/ethereum_public_pretrain_19143_unique_runtime/runtime_opcode.jsonl \
+        --output_dir data/processed/effect_flow_pretrain/ethereum_19143 \
+        --vocab_path checkpoints/pretrain_evm_bert_19143_base_continue/evm_vocab.json \
+        --template_path configs/vulnerability_templates_dive_main6_new.yaml \
+        --disable_downstream_labels \
+        --max_chunks_per_contract 32 \
+        --report_prefix effect_flow_corpus_build_ethereum_19143
+    fi
     ;;
   pretrain)
     run_python src/pretrain_effect_flow_evm_bert_main6.py --config "$PRETRAIN_CONFIG"

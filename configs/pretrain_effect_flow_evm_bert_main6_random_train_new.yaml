@@ -13,7 +13,7 @@ train_corpora:
   DIVE_main6_random_train: data/processed/effect_flow_pretrain/DIVE_main6_random_train_new/train_effect_flow_chunks.jsonl
   ethereum_19143: data/processed/effect_flow_pretrain/ethereum_19143/train_effect_flow_chunks.jsonl
 expected_train_chunks:
-  ethereum_19143: 307725
+  ethereum_19143: 342333
 train_manifest_path: data/processed/effect_flow_pretrain/main6_random_train_new_train_manifest.json
 internal_valid_manifest_path: data/processed/effect_flow_pretrain/main6_random_train_new_internal_valid_manifest.json
 checkpoint_dir: checkpoints/pretrain_effect_flow_evm_bert_main6_random_train_new
