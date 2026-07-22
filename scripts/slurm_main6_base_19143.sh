@@ -8,11 +8,10 @@
 #SBATCH --output=logs/main6_19143_base_%j.out
 #SBATCH --error=logs/main6_19143_base_%j.err
 
-set -euo pipefail
-
 cd "${SLURM_SUBMIT_DIR:?Submit this job with sbatch from the project root}"
 source ~/.bashrc
 conda activate correlascan_a40
+set -euo pipefail
 mkdir -p logs
 
 test -f data/processed/ethereum_public_pretrain_19143_unique_runtime/runtime_opcode.jsonl

@@ -8,11 +8,10 @@
 #SBATCH --output=logs/main6_effectflow_pretrain_%j.out
 #SBATCH --error=logs/main6_effectflow_pretrain_%j.err
 
-set -euo pipefail
-
 cd "${SLURM_SUBMIT_DIR:?Submit this job with sbatch from the project root}"
 source ~/.bashrc
 conda activate correlascan_a40
+set -euo pipefail
 mkdir -p logs
 
 test -f checkpoints/pretrain_evm_bert_19143_base_continue/hf_model/config.json
