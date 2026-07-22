@@ -36,7 +36,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Pretrain EVM-BERT-base with MLM.")
     parser.add_argument(
         "--config",
-        default="configs/pretrain_evm_bert_base_full_bjut.yaml",
+        default="configs/pretrain_evm_bert_19143_base.yaml",
         help="Path to YAML config.",
     )
     return parser.parse_args()
@@ -552,7 +552,7 @@ def main():
         "coverage_ratio": corpus_summary.get("covered_token_ratio_mean"),
         "vocab_size": vocab_size,
         "model_scale": (
-            "BERT-base continued from BJUT EVM-BERT with fixed EVM vocab"
+            "BERT-base continued from configured EVM-BERT checkpoint with fixed EVM vocab"
             if continued_pretraining
             else "BERT-base architecture from scratch with EVM vocab"
         ),
