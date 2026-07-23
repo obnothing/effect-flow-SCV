@@ -900,6 +900,7 @@ def main():
     best_epoch = None
     best_checksum = checksum_before
     best_metrics = None
+    last_metrics = None
     history = []
     resume_path = args.resume or config.get("resume_from")
     if resume_path:
@@ -954,7 +955,6 @@ def main():
     main_print(rank, f"[INFO] optimizer_steps_per_epoch={steps_per_epoch} epochs={epochs}")
     main_print(rank, f"[WARNING] {TRANSDUCTIVE_WARNING}")
 
-    last_metrics = None
     for epoch in range(start_epoch, epochs + 1):
         sampler.set_epoch(epoch)
         train_dataset.set_epoch(epoch)
