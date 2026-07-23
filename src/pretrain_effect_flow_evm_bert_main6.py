@@ -90,6 +90,8 @@ def load_config(path):
     config["train_corpora"] = {
         name: str(resolve(path)) for name, path in config["train_corpora"].items()
     }
+    if config.get("init_checkpoint"):
+        config["init_checkpoint"] = str(resolve(config["init_checkpoint"]))
     config["_config_path"] = str(config_path)
     return config
 
@@ -695,7 +697,7 @@ def save_outputs(config, report, history, metrics):
         f"result_paths: {report['result_paths']}",
         f"sanity_success: {report['sanity_success']}",
         f"full_pretraining_success: {report['full_pretraining_success']}",
-        f"recommendation_for_stage16c: {report['recommendation_for_stage16c']}",
+        f"recommendation_for_downstream_extraction: {report['recommendation_for_downstream_extraction']}",
         "",
         "Epoch loss table:",
     ]
@@ -854,6 +856,13 @@ def main():
         vep_pos_weights=weights["vep_pos_weights"],
         vtm_pos_weights=weights["vtm_pos_weights"],
     )
+    init_checkpoint_path = config.get("init_checkpoint")
+    if init_checkpoint_path:
+        if args.resume or config.get("resume_from"):
+            raise ValueError("init_checkpoint cannot be combined with full-state resume.")
+        init_checkpoint = torch.load(init_checkpoint_path, map_location="cpu")
+        model.load_state_dict(init_checkpoint["model_state_dict"])
+        main_print(rank, f"[INIT] loaded model weights from {relative(init_checkpoint_path)}")
     if config.get("gradient_checkpointing", True):
         model.gradient_checkpointing_enable()
     checksum_before = encoder_checksum(model) if rank == 0 else None
@@ -1177,6 +1186,11 @@ def main():
             "base_hf_model_path": relative(config["base_hf_model_path"]),
             "base_encoder_init": config["base_encoder_init"],
             "base_encoder_init_setting": config["base_encoder_init_setting"],
+            "initialization_checkpoint": (
+                relative(config["init_checkpoint"])
+                if config.get("init_checkpoint")
+                else None
+            ),
             "train_corpora": {
                 name: {
                     "path": relative(source_states[name]["path"]),
