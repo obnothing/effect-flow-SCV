@@ -24,7 +24,11 @@ bash scripts/run_main6_random_090.sh corpus
 test -f data/processed/effect_flow_pretrain/DIVE_main6_random_train_new/train_effect_flow_chunks.jsonl
 test -f data/processed/effect_flow_pretrain/ethereum_19143/train_effect_flow_chunks.jsonl
 
+pretrain_args=(--config configs/pretrain_effect_flow_evm_bert_main6_random_train_new.yaml)
+if [[ -n "${RESUME_FROM:-}" ]]; then
+  pretrain_args+=(--resume "$RESUME_FROM")
+fi
 torchrun --standalone --nproc_per_node=2 src/pretrain_effect_flow_evm_bert_main6.py \
-  --config configs/pretrain_effect_flow_evm_bert_main6_random_train_new.yaml
+  "${pretrain_args[@]}"
 
 test -f checkpoints/pretrain_effect_flow_evm_bert_main6_random_train_new/hf_model/config.json

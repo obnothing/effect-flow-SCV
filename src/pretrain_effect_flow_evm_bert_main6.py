@@ -909,6 +909,21 @@ def main():
         history = checkpoint.get("history", [])
         main_print(rank, f"[RESUME] {relative(resolve(resume_path))} at epoch {start_epoch}")
 
+    if start_epoch > epochs:
+        if rank == 0:
+            valid_dataset.set_epoch(0)
+            last_metrics = evaluate(
+                unwrap(model),
+                valid_loader,
+                device,
+                pattern_names,
+                RELATION_TYPES,
+                vulnerability_names,
+                fp16,
+                bf16,
+            )
+            main_print(rank, "[RESUME] epochs complete; regenerated internal validation metrics.")
+
     main_print(rank, f"[INFO] base_hf_model_path: {relative(config['base_hf_model_path'])}")
     main_print(rank, f"[INFO] base_encoder_init_setting: {config['base_encoder_init_setting']}")
     main_print(
@@ -1255,8 +1270,10 @@ def main():
                 "No valid/test labels are used to construct VEP/VTM pseudo targets.",
                 "P1/P2 pretraining metrics (MOM/ETP/EFPP/ERR/VEP/VTM) are not the final vulnerability-detection metrics.",
             ],
-            "recommendation_for_stage16c": (
-                config["stage16c_recommendation"] if full_success else "Do not start Stage 16C until full Stage 16B success criteria pass."
+            "recommendation_for_downstream_extraction": (
+                "Proceed to Main-6 feature extraction and validation-only model selection."
+                if full_success
+                else "Do not start Main-6 feature extraction until full Effect-Flow pretraining success criteria pass."
             ),
         }
         save_outputs(config, report, history, best_metrics or last_metrics)
