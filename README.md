@@ -7,9 +7,9 @@ Current route:
 ```text
 19,143 unique public runtime-opcode contracts
 + DIVE_main6_random_split train only
--> EVM-BERT MLM and Effect-Flow pretraining
--> 64-chunk feature and semantic caches
--> six-label evidence-guided MIL / MultiScale MIL
+-> EVM-BERT MLM + 17-role multi-label ETP pretraining
+-> 64-chunk feature and token-level Top-2 ETP caches
+-> label-decoupled ETP cross-attention MIL
 ```
 
 Labels: Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS,
@@ -21,22 +21,31 @@ Datasets are not committed. Transfer these directories to the server before
 running:
 
 ```text
-data/processed/DIVE_main6_access4000_clean3952
 data/processed/DIVE_main6_random_split
 data/processed/ethereum_public_pretrain_19143_unique_runtime
 ```
 
 ## Server Run
 
-After public MLM and Effect-Flow pretraining complete, submit the validation-only
-stages from the project root:
+Submit the full pretraining chain from the project root. Every dependency is
+`afterok`, and all ETP pretraining inputs are public 19,143 plus Main-6 train only:
 
 ```bash
 mkdir -p logs
-CACHE=$(sbatch --parsable scripts/slurm_main6_extract_validate_trainvalid.sh)
+BASE=$(sbatch --parsable scripts/slurm_main6_base_19143.sh)
+CONT=$(sbatch --parsable --dependency=afterok:$BASE scripts/slurm_main6_19143_continue.sh)
+ETP=$(sbatch --parsable --dependency=afterok:$CONT scripts/slurm_main6_multirole_etp_pretrain.sh)
+CACHE=$(sbatch --parsable --dependency=afterok:$ETP scripts/slurm_main6_extract_validate_trainvalid.sh)
 TRAIN=$(sbatch --parsable --dependency=afterok:$CACHE scripts/slurm_main6_downstream_valid.sh)
 SELECT=$(sbatch --parsable --dependency=afterok:$TRAIN scripts/slurm_main6_select_valid.sh)
-echo "cache=$CACHE train=$TRAIN select=$SELECT"
+echo "base=$BASE continue=$CONT etp=$ETP cache=$CACHE train=$TRAIN select=$SELECT"
+```
+
+The cache, training, and selection jobs are validation-only:
+
+```bash
+test ! -e data/features/main6_random_multirole_etp/test.pt
+test ! -e data/features/main6_random_multirole_etp_tokens/test.pt
 ```
 
 These jobs generate only train/valid caches and metrics. Review

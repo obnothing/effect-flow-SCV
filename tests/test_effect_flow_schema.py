@@ -83,3 +83,17 @@ def test_panic_selector_is_retained_as_revert_effect():
     labels, _ = annotate_efpp_patterns(units)
     active = {name for name, value in zip(EFPP_PATTERNS, labels) if value}
     assert "panic_selector_present" in active
+
+
+def test_multirole_etp_has_control_transfer_and_maximum_two_roles():
+    units = build_token_units("SLOAD GASPRICE JUMP JUMPDEST CALL ISZERO JUMPI", TinyTokenizer())
+    effects = annotate_effect_types(units)
+    assert len(EFFECT_TO_ID) == 17
+    assert effects[0]["multihot"][EFFECT_TO_ID["StateRead"]] == 1
+    assert effects[0]["multihot"][EFFECT_TO_ID["StorageOrMemoryHeavy"]] == 1
+    assert effects[1]["multihot"][EFFECT_TO_ID["EnvDependency"]] == 1
+    assert effects[1]["multihot"][EFFECT_TO_ID["GasOrValue"]] == 1
+    assert effects[2]["multihot"][EFFECT_TO_ID["ControlTransfer"]] == 1
+    assert effects[3]["multihot"][EFFECT_TO_ID["ControlTransfer"]] == 1
+    assert effects[-1]["multihot"][EFFECT_TO_ID["ControlTransfer"]] == 0
+    assert all(1 <= sum(effect["multihot"]) <= 2 for effect in effects if effect["loss_mask"])

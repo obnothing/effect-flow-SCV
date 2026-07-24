@@ -28,3 +28,5 @@ torchrun --standalone --nproc_per_node=2 src/pretrain_multirole_etp_evm_bert_mai
   --config configs/pretrain_multirole_etp_main6_random.yaml
 
 test -f checkpoints/pretrain_multirole_etp_main6_random/hf_model/config.json
+test -f checkpoints/pretrain_multirole_etp_main6_random/etp_head.pt
+test -f results/pretrain_multirole_etp_main6_random/pretraining_manifest.json

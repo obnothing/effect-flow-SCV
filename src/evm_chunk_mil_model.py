@@ -2577,3 +2577,182 @@ class EVEFMVDV2MultiScaleMIL(EVEFMVDV2SideEvidenceMIL):
             for label_idx, branch in enumerate(self.multiscale_label_branches)
         ]
         return torch.stack(logits, dim=1)
+
+
+class LDETPCrossAttentionMIL(EVMChunkMILClassifier):
+    """Label-decoupled MIL over frozen chunk features and Top-2 ETP tokens."""
+
+    def __init__(self, config):
+        super().__init__(config)
+        if self.recognition_head_type != "label_branch_mlp":
+            raise ValueError("LDETPCrossAttentionMIL requires recognition_head_type=label_branch_mlp")
+        self.num_effect_types = int(config.get("num_effect_types", 17))
+        self.etp_dim = int(config.get("etp_embedding_dim", 64))
+        self.etp_slots = int(config.get("etp_query_slots", 2))
+        self.etp_max_len = int(config.get("etp_max_len", 512))
+        heads = int(config.get("etp_cross_attention_heads", 4))
+        if self.etp_dim % heads:
+            raise ValueError("etp_embedding_dim must be divisible by etp_cross_attention_heads")
+        self.etp_embedding = nn.Embedding(self.num_effect_types + 1, self.etp_dim, padding_idx=self.num_effect_types)
+        self.etp_position = nn.Parameter(torch.empty(self.etp_max_len, self.etp_dim))
+        self.etp_norm = nn.LayerNorm(self.etp_dim)
+        self.etp_conv3 = nn.Conv1d(self.etp_dim, self.etp_dim, 3, padding=1, groups=self.etp_dim)
+        self.etp_conv7 = nn.Conv1d(self.etp_dim, self.etp_dim, 7, padding=3, groups=self.etp_dim)
+        self.etp_pointwise = nn.Linear(self.etp_dim * 2, self.etp_dim)
+        self.label_etp_queries = nn.Parameter(torch.empty(self.num_labels, self.etp_slots, self.etp_dim))
+        self.chunk_to_etp_query = nn.Linear(self.hidden_dim, self.etp_dim)
+        self.etp_cross_attention = nn.MultiheadAttention(self.etp_dim, heads, batch_first=True, dropout=float(config.get("etp_cross_attention_dropout", 0.1)))
+        self.slot_score = nn.Sequential(nn.Linear(self.etp_dim + self.hidden_dim, self.etp_dim), nn.GELU(), nn.Linear(self.etp_dim, 1))
+        self.etp_to_hidden = nn.Linear(self.etp_dim, self.hidden_dim)
+        self.etp_gate = nn.Linear(self.hidden_dim * 2, self.hidden_dim)
+        self.ld_attn_v = nn.Linear(self.hidden_dim, int(config.get("attn_dim", 256)))
+        self.ld_attn_u = nn.Linear(self.hidden_dim, int(config.get("attn_dim", 256)))
+        self.ld_queries = nn.Parameter(torch.empty(self.num_labels, int(config.get("attn_dim", 256))))
+        self.lambda_sep = float(config.get("lambda_sep", 0.0))
+        self.sep_margin = float(config.get("sep_margin", 0.5))
+        self.etp_concat_only = bool(config.get("etp_concat_only", False))
+        self.etp_histogram_projection = nn.Linear(self.num_effect_types, self.hidden_dim)
+        nn.init.normal_(self.etp_position, mean=0.0, std=0.02)
+        nn.init.normal_(self.label_etp_queries, mean=0.0, std=0.02)
+        nn.init.xavier_uniform_(self.ld_queries)
+
+    def _encode_tokens(self, ids, confidence):
+        if ids.ndim != 4 or ids.shape[-1] != 2:
+            raise ValueError("etp_top2_ids must be [B, C, T, 2]")
+        batch, chunks, length, _ = ids.shape
+        if length > self.etp_max_len:
+            raise ValueError("ETP token length exceeds configured maximum")
+        valid = ids != 255
+        safe_ids = ids.masked_fill(~valid, self.num_effect_types).long()
+        weights = confidence.float().div(255.0) * valid.float()
+        embedded = self.etp_embedding(safe_ids)
+        denominator = weights.sum(dim=-1, keepdim=True).clamp_min(1e-6)
+        tokens = (embedded * weights.unsqueeze(-1)).sum(dim=-2) / denominator
+        token_mask = valid.any(dim=-1)
+        tokens = tokens + self.etp_position[:length].view(1, 1, length, -1)
+        flat = tokens.reshape(batch * chunks, length, self.etp_dim)
+        flat_mask = token_mask.reshape(batch * chunks, length)
+        # MultiheadAttention rejects rows whose keys are all padding.  Padded
+        # chunks are masked again by chunk_mask after this local operation.
+        empty_rows = ~flat_mask.any(dim=1)
+        if empty_rows.any():
+            flat_mask = flat_mask.clone()
+            flat_mask[empty_rows, 0] = True
+        normalized = self.etp_norm(flat).transpose(1, 2)
+        local = torch.cat([self.etp_conv3(normalized), self.etp_conv7(normalized)], dim=1).transpose(1, 2)
+        flat = self.etp_norm(flat + F.gelu(self.etp_pointwise(local)))
+        flat = flat.masked_fill(~flat_mask.unsqueeze(-1), 0.0)
+        role_weights = F.one_hot(safe_ids, num_classes=self.num_effect_types + 1)[..., : self.num_effect_types].float()
+        role_weights = (role_weights * weights.unsqueeze(-1)).sum(dim=-2) / denominator
+        return flat, flat_mask, role_weights.reshape(batch, chunks, length, self.num_effect_types)
+
+    def _separation_loss(self, profiles, labels):
+        if self.lambda_sep <= 0:
+            return profiles.sum() * 0.0
+        normalized = F.normalize(profiles, dim=-1)
+        similarity = torch.matmul(normalized, normalized.transpose(1, 2))
+        discordant = labels.bool().unsqueeze(2) ^ labels.bool().unsqueeze(1)
+        eye = torch.eye(self.num_labels, dtype=torch.bool, device=labels.device).unsqueeze(0)
+        active = discordant & ~eye
+        if not active.any():
+            return similarity.sum() * 0.0
+        return F.relu(similarity[active] - self.sep_margin).mean()
+
+    def forward(
+        self,
+        chunk_features,
+        chunk_mask,
+        etp_top2_ids=None,
+        etp_top2_confidence=None,
+        binary_label=None,
+        multi_labels=None,
+        return_attention=False,
+    ):
+        if etp_top2_ids is None or etp_top2_confidence is None:
+            raise ValueError("LDETPCrossAttentionMIL requires Top-2 ETP token caches")
+        chunk_mask = chunk_mask.bool()
+        h = self.chunk_context_encoder(chunk_features, chunk_mask) if self.use_chunk_context else self.chunk_projection(chunk_features)
+        batch, chunks, _ = h.shape
+        token_values, token_mask, token_roles = self._encode_tokens(etp_top2_ids, etp_top2_confidence)
+        if self.etp_concat_only:
+            token_valid = token_roles.sum(dim=-1).gt(0).float()
+            histogram = token_roles.sum(dim=2) / token_valid.sum(dim=2, keepdim=True).clamp_min(1.0)
+            h = h + self.etp_histogram_projection(histogram)
+            recognition_logits, chunk_attention, chunk_logits = self.label_gated_attention(h, chunk_mask)
+            global_h = self.masked_mean(h, chunk_mask)
+            detection_logits = self.compute_detection_logits(global_h, recognition_logits)
+            loss = recognition_loss = detection_loss = None
+            if binary_label is not None and multi_labels is not None:
+                recognition_loss = self.compute_recognition_loss(recognition_logits, multi_labels)
+                if self.detection_loss_weight > 0 and self.detection_classifier is not None:
+                    detection_loss = self.detection_loss_fn(detection_logits, binary_label.float())
+                loss = self.compute_weighted_task_loss(detection_loss, recognition_loss)
+            return {
+                "loss": loss,
+                "detection_loss": detection_loss,
+                "recognition_loss": recognition_loss,
+                "separation_loss": None,
+                "detection_logits": detection_logits,
+                "recognition_logits": recognition_logits,
+                "chunk_logits": chunk_logits,
+                "chunk_scores": chunk_attention,
+                "chunk_attention": chunk_attention,
+                "label_effect_profile": None,
+            }
+        dynamic = self.chunk_to_etp_query(h).unsqueeze(2).unsqueeze(3)
+        queries = self.label_etp_queries.view(1, 1, self.num_labels, self.etp_slots, self.etp_dim) + dynamic
+        flat_queries = queries.reshape(batch * chunks, self.num_labels * self.etp_slots, self.etp_dim)
+        attended, token_attention = self.etp_cross_attention(
+            flat_queries,
+            token_values,
+            token_values,
+            key_padding_mask=~token_mask,
+            need_weights=return_attention or self.lambda_sep > 0,
+            average_attn_weights=True,
+        )
+        attended = attended.reshape(batch, chunks, self.num_labels, self.etp_slots, self.etp_dim)
+        expanded_h = h.unsqueeze(2).unsqueeze(3).expand(-1, -1, self.num_labels, self.etp_slots, -1)
+        slots = torch.softmax(self.slot_score(torch.cat([attended, expanded_h], dim=-1)).squeeze(-1), dim=-1)
+        etp_summary = (attended * slots.unsqueeze(-1)).sum(dim=3)
+        hidden_etp = self.etp_to_hidden(etp_summary)
+        base = h.unsqueeze(2).expand(-1, -1, self.num_labels, -1)
+        gate = torch.sigmoid(self.etp_gate(torch.cat([base, hidden_etp], dim=-1)))
+        label_chunks = base + gate * hidden_etp
+        gated = torch.tanh(self.ld_attn_v(label_chunks)) * torch.sigmoid(self.ld_attn_u(label_chunks))
+        chunk_logits = torch.einsum("bcla,la->bcl", gated, self.ld_queries).masked_fill(~chunk_mask.unsqueeze(-1), -1e9)
+        chunk_attention = torch.softmax(chunk_logits, dim=1)
+        z = torch.einsum("bcl,bclh->blh", chunk_attention, label_chunks)
+        recognition_logits = self.compute_label_logits(z)
+        global_h = self.masked_mean(h, chunk_mask)
+        detection_logits = self.compute_detection_logits(global_h, recognition_logits)
+        token_attention_out = None
+        profiles = None
+        if token_attention is not None:
+            token_attention_out = token_attention.reshape(batch, chunks, self.num_labels, self.etp_slots, -1)
+            weighted = token_attention_out * slots.unsqueeze(-1) * chunk_attention.unsqueeze(-1).unsqueeze(-1)
+            profiles = torch.einsum("bclkt,bctv->blv", weighted, token_roles)
+        loss = detection_loss = recognition_loss = separation_loss = None
+        if binary_label is not None and multi_labels is not None:
+            recognition_loss = self.compute_recognition_loss(recognition_logits, multi_labels)
+            if self.detection_loss_weight > 0 and self.detection_classifier is not None:
+                detection_loss = self.detection_loss_fn(detection_logits, binary_label.float())
+            if profiles is None:
+                profiles = recognition_logits.new_zeros((batch, self.num_labels, self.num_effect_types))
+            separation_loss = self._separation_loss(profiles, multi_labels)
+            loss = self.compute_weighted_task_loss(detection_loss, recognition_loss) + self.lambda_sep * separation_loss
+        result = {
+            "loss": loss,
+            "detection_loss": detection_loss,
+            "recognition_loss": recognition_loss,
+            "separation_loss": separation_loss,
+            "detection_logits": detection_logits,
+            "recognition_logits": recognition_logits,
+            "chunk_logits": chunk_logits,
+            "chunk_scores": chunk_attention,
+            "chunk_attention": chunk_attention,
+            "label_effect_profile": profiles,
+        }
+        if return_attention:
+            result["token_attention"] = token_attention_out
+            result["slot_weights"] = slots
+        return result

@@ -1,0 +1,24 @@
+experiment_name: pretrain_multirole_etp_main6_random
+base_hf_model_path: checkpoints/pretrain_evm_bert_19143_base_continue/hf_model
+vocab_path: checkpoints/pretrain_evm_bert_19143_base_continue/evm_vocab.json
+train_corpora:
+  DIVE_main6_random_train: data/processed/multirole_etp_pretrain/DIVE_main6_random_train/train_multirole_etp_chunks.jsonl
+  ethereum_19143: data/processed/multirole_etp_pretrain/ethereum_19143/train_multirole_etp_chunks.jsonl
+checkpoint_dir: checkpoints/pretrain_multirole_etp_main6_random
+result_dir: results/pretrain_multirole_etp_main6_random
+seed: 42
+internal_valid_ratio: 0.01
+max_len: 512
+mlm_probability: 0.15
+batch_size: 4
+eval_batch_size: 8
+gradient_accumulation_steps: 8
+steps_per_epoch: 12000
+epochs: 3
+learning_rate: 0.00001
+weight_decay: 0.01
+warmup_ratio: 0.06
+max_grad_norm: 1.0
+max_etp_pos_weight: 10.0
+num_workers: 4
+gradient_checkpointing: true

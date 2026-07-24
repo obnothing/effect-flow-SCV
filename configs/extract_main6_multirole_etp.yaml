@@ -1,0 +1,10 @@
+data_dir: data/processed/DIVE_main6_random_split
+checkpoint_dir: checkpoints/pretrain_multirole_etp_main6_random
+vocab_path: checkpoints/pretrain_evm_bert_19143_base_continue/evm_vocab.json
+feature_dir: data/features/main6_random_multirole_etp
+token_semantic_dir: data/features/main6_random_multirole_etp_tokens
+max_chunks: 64
+max_len: 512
+chunk_stride: 256
+batch_size: 32
+allow_test_cache: false

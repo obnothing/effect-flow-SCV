@@ -24,6 +24,7 @@ EFFECT_TYPES = [
     "GasOrValue",
     "HashOrCrypto",
     "StorageOrMemoryHeavy",
+    "ControlTransfer",
 ]
 EFFECT_TO_ID = {name: index for index, name in enumerate(EFFECT_TYPES)}
 
@@ -43,6 +44,7 @@ EFFECT_PRIORITY = [
     "GasOrValue",
     "HashOrCrypto",
     "StorageOrMemoryHeavy",
+    "ControlTransfer",
     "Normal",
 ]
 
@@ -98,6 +100,7 @@ CALL_OPS = {"CALL", "DELEGATECALL", "STATICCALL", "CALLCODE"}
 SENSITIVE_OPS = CALL_OPS | {"SELFDESTRUCT", "SUICIDE", "CREATE", "CREATE2"}
 AUTH_OPS = {"CALLER", "ORIGIN"}
 GUARD_OPS = {"JUMPI", "EQ", "LT", "GT", "SLT", "SGT", "ISZERO"}
+CONTROL_TRANSFER_OPS = {"JUMP", "JUMPDEST"}
 RETURN_CHECK_OPS = {
     "ISZERO",
     "JUMPI",
@@ -276,6 +279,8 @@ def annotate_effect_types(units, include_other_operands=False, return_check_wind
                 names.add("AuthSource")
             if opcode in GUARD_OPS:
                 names.add("ControlGuard")
+            if opcode in CONTROL_TRANSFER_OPS:
+                names.add("ControlTransfer")
             if opcode in ENV_OPS:
                 names.add("EnvDependency")
             if opcode in ARITHMETIC_OPS:
@@ -302,6 +307,12 @@ def annotate_effect_types(units, include_other_operands=False, return_check_wind
                 names.add("ReturnCheck")
         if participates and not names:
             names.add("Normal")
+        if "Normal" in names and len(names) > 1:
+            raise ValueError("Normal effect must not co-occur with another effect")
+        if len(names) > 2:
+            raise ValueError(
+                f"A token may carry at most two ETP roles, got {sorted(names)} for {unit.raw}"
+            )
         primary_name = next(
             (name for name in EFFECT_PRIORITY if name in names), "Normal"
         )

@@ -18,6 +18,7 @@ from evm_chunk_mil_model import (
     EVEFMVDV2SideEvidenceMIL,
     EVMChunkMILClassifier,
     EffectFlowGuidedChunkMIL,
+    LDETPCrossAttentionMIL,
 )
 from metrics import compute_metrics
 
@@ -356,6 +357,11 @@ def collate_batch(batch):
         collated["graph_chunk_evidence"] = torch.stack(
             [item["graph_chunk_evidence"] for item in batch]
         )
+    if "etp_top2_ids" in batch[0]:
+        collated["etp_top2_ids"] = torch.stack([item["etp_top2_ids"] for item in batch])
+        collated["etp_top2_confidence"] = torch.stack(
+            [item["etp_top2_confidence"] for item in batch]
+        )
     return collated
 
 
@@ -400,6 +406,9 @@ def move_batch(batch, device):
     if "graph_contract_evidence" in batch:
         moved["graph_contract_evidence"] = batch["graph_contract_evidence"].to(device)
         moved["graph_chunk_evidence"] = batch["graph_chunk_evidence"].to(device)
+    if "etp_top2_ids" in batch:
+        moved["etp_top2_ids"] = batch["etp_top2_ids"].to(device)
+        moved["etp_top2_confidence"] = batch["etp_top2_confidence"].to(device)
     return moved
 
 
@@ -413,6 +422,8 @@ def build_model(config):
         return EVEFMVDV2MultiScaleMIL(config)
     if model_type == "evm_chunk_mil":
         return EVMChunkMILClassifier(config)
+    if model_type == "ld_etp_cross_attention_mil":
+        return LDETPCrossAttentionMIL(config)
     raise ValueError(f"Unsupported chunk MIL model_type: {model_type}")
 
 

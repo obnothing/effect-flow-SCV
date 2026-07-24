@@ -1,9 +1,5 @@
 common:
-  model_type: evef_mvd_v2_side_evidence_mil
   data_dir: data/processed/DIVE_main6_random_split
-  ontology_path: configs/effect_flow_ontology.yaml
-  template_path: configs/vulnerability_templates_dive_main6_new.yaml
-  efpp_pattern_config: configs/effect_flow_efpp_conservative_22.json
   source_label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
   label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
   num_labels: 6
@@ -11,8 +7,6 @@ common:
   hidden_dim: 512
   attn_dim: 256
   max_chunks: 64
-  chunk_stride: 256
-  feature_pooling: masked_mean
   dropout: 0.1
   task_mode: recognition_only
   detection_head_enabled: false
@@ -29,35 +23,8 @@ common:
   chunk_context_num_heads: 8
   chunk_context_dropout: 0.1
   recognition_aggregation: label_gated_attention
-  top_k: 2
-  side_evidence_enabled: true
-  coefficient_scale: 1.5
-  effect_flow_semantic_mode: reliable_side_evidence
-  semantic_fusion: side_evidence_bias
-  semantic_dropout: 0.2
-  efpp_dim: 22
-  etp_dim: 16
-  relation_dim: 6
-  lambda_gate: 0.0001
-  warmup_epochs_neural_only: 3
-  enable_reliable_semantic_epoch: 4
-  use_weak_semantic_features: false
-  beta_reliable_init: 0.125
-  gamma_reliable_init: 0.125
-  risk_evidence_weight: 1.5
-  missing_check_evidence_weight: 1.5
-  protective_evidence_weight: 1.5
-  effect_type_evidence_weight: 0.75
-  relation_evidence_weight: 0.75
-  front_running_special_enabled: false
-  front_hard_negative_loss_enabled: false
-  front_contrastive_loss_enabled: false
-  rare_negative_subsampling_enabled: false
-  graph_evidence_enabled: false
-  major_global_residual_enabled: false
-  major_multipool_enabled: false
-  batch_size: 128
-  gradient_accumulation_steps: 1
+  batch_size: 32
+  gradient_accumulation_steps: 4
   num_workers: 4
   epochs: 80
   early_stopping_patience: 15
@@ -79,35 +46,48 @@ common:
   split_policy: random_split_train_only_pretraining
   leakage_status: random_split_no_label_retrieval
   ablation_dataset: DIVE_Main6
+  num_effect_types: 17
+  etp_embedding_dim: 64
+  etp_query_slots: 2
+  etp_max_len: 512
+  etp_cross_attention_heads: 4
+  etp_cross_attention_dropout: 0.1
+  sep_margin: 0.5
 variants:
-  mlm_control:
-    experiment_name: main6_random_090_mlm_control
-    ablation_variant: mlm_feature_control
+  mlm_label_mil:
+    experiment_name: main6_mlm_label_mil
+    model_type: evm_chunk_mil
     feature_dir: data/features/main6_random_mlm_control_trainvalid
-    semantic_feature_dir: data/features/main6_random_effectflow_semantics_batch64_continue
-    checkpoint_dir: checkpoints/main6_random_090/mlm_control
-    result_dir: results/main6_random_090/mlm_control
-    report_dir: data/reports
-    log_dir: logs
-  effectflow_control:
-    experiment_name: main6_random_090_effectflow_control
-    ablation_variant: effectflow_feature_control
-    feature_dir: data/features/main6_random_effectflow_batch64_continue
-    semantic_feature_dir: data/features/main6_random_effectflow_semantics_batch64_continue
-    checkpoint_dir: checkpoints/main6_random_090/effectflow_control
-    result_dir: results/main6_random_090/effectflow_control
-    report_dir: data/reports
-    log_dir: logs
-  effectflow_multiscale:
-    experiment_name: main6_random_090_effectflow_multiscale
-    ablation_variant: effectflow_feature_multiscale
-    model_type: evef_mvd_v2_multiscale_mil
-    feature_dir: data/features/main6_random_effectflow_batch64_continue
-    semantic_feature_dir: data/features/main6_random_effectflow_semantics_batch64_continue
-    checkpoint_dir: checkpoints/main6_random_090/effectflow_multiscale
-    result_dir: results/main6_random_090/effectflow_multiscale
-    report_dir: data/reports
-    log_dir: logs
-    multiscale_cross_attention_heads: 8
-    multiscale_cross_attention_dropout: 0.1
-    multiscale_top_k: 2
+    checkpoint_dir: checkpoints/main6_random_090/mlm_label_mil
+    result_dir: results/main6_random_090/mlm_label_mil
+  etp_encoder_mil:
+    experiment_name: main6_etp_encoder_mil
+    model_type: evm_chunk_mil
+    feature_dir: data/features/main6_random_multirole_etp
+    checkpoint_dir: checkpoints/main6_random_090/etp_encoder_mil
+    result_dir: results/main6_random_090/etp_encoder_mil
+  etp_concat_mil:
+    experiment_name: main6_etp_concat_mil
+    model_type: ld_etp_cross_attention_mil
+    feature_dir: data/features/main6_random_multirole_etp
+    token_semantic_dir: data/features/main6_random_multirole_etp_tokens
+    checkpoint_dir: checkpoints/main6_random_090/etp_concat_mil
+    result_dir: results/main6_random_090/etp_concat_mil
+    lambda_sep: 0.0
+    etp_concat_only: true
+  ld_etpca:
+    experiment_name: main6_ld_etpca
+    model_type: ld_etp_cross_attention_mil
+    feature_dir: data/features/main6_random_multirole_etp
+    token_semantic_dir: data/features/main6_random_multirole_etp_tokens
+    checkpoint_dir: checkpoints/main6_random_090/ld_etpca
+    result_dir: results/main6_random_090/ld_etpca
+    lambda_sep: 0.0
+  ld_etpca_sep:
+    experiment_name: main6_ld_etpca_sep
+    model_type: ld_etp_cross_attention_mil
+    feature_dir: data/features/main6_random_multirole_etp
+    token_semantic_dir: data/features/main6_random_multirole_etp_tokens
+    checkpoint_dir: checkpoints/main6_random_090/ld_etpca_sep
+    result_dir: results/main6_random_090/ld_etpca_sep
+    lambda_sep: 0.05

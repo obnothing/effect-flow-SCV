@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from evm_chunk_mil_model import (  # noqa: E402
     EVEFMVDV2MultiScaleMIL,
     EVMChunkMILClassifier,
+    LDETPCrossAttentionMIL,
 )
 
 
@@ -176,6 +177,50 @@ class ChunkContextMILTest(unittest.TestCase):
                 relation_distribution=semantic_relation,
             )["recognition_logits"]
         self.assertTrue(torch.allclose(source_logits, restored_logits, atol=1e-6))
+
+    def test_ld_etp_cross_attention_masks_padding_and_separates_roles(self):
+        config = {
+            "num_labels": 3, "label_names": ["a", "b", "c"], "feature_dim": 12,
+            "hidden_dim": 16, "attn_dim": 8, "max_chunks": 3, "dropout": 0.0,
+            "recognition_head_type": "label_branch_mlp", "label_branch_hidden_dim": 8,
+            "label_branch_dropout": 0.0, "use_chunk_context": True,
+            "chunk_context_num_layers": 1, "chunk_context_num_heads": 4,
+            "chunk_context_dropout": 0.0, "detection_head_enabled": False,
+            "detection_loss_weight": 0.0, "num_effect_types": 17,
+            "etp_embedding_dim": 8, "etp_query_slots": 2, "etp_max_len": 7,
+            "etp_cross_attention_heads": 2, "lambda_sep": 0.05,
+        }
+        model = LDETPCrossAttentionMIL(config).eval()
+        features = torch.randn(2, 3, 12)
+        mask = torch.tensor([[True, True, False], [True, False, False]])
+        role_ids = torch.full((2, 3, 7, 2), 255, dtype=torch.uint8)
+        confidence = torch.zeros_like(role_ids)
+        role_ids[:, :, 1, 0] = 1
+        confidence[:, :, 1, 0] = 255
+        outputs = model(features, mask, role_ids, confidence,
+                        binary_label=torch.ones(2),
+                        multi_labels=torch.tensor([[1., 0., 1.], [0., 1., 0.]]),
+                        return_attention=True)
+        self.assertEqual(tuple(outputs["recognition_logits"].shape), (2, 3))
+        self.assertEqual(tuple(outputs["token_attention"].shape), (2, 3, 3, 2, 7))
+        self.assertTrue(torch.isfinite(outputs["loss"]))
+        self.assertTrue(torch.allclose(outputs["chunk_attention"].sum(dim=1), torch.ones(2, 3), atol=1e-6))
+        outputs["loss"].backward()
+        self.assertIsNotNone(model.etp_embedding.weight.grad)
+
+    def test_ld_etp_separation_uses_only_discordant_label_pairs(self):
+        config = {
+            "num_labels": 3, "label_names": ["a", "b", "c"], "feature_dim": 12,
+            "hidden_dim": 16, "attn_dim": 8, "max_chunks": 2, "dropout": 0.0,
+            "recognition_head_type": "label_branch_mlp", "label_branch_hidden_dim": 8,
+            "use_chunk_context": False, "detection_head_enabled": False,
+            "num_effect_types": 17, "etp_embedding_dim": 8, "etp_query_slots": 2,
+            "etp_max_len": 7, "etp_cross_attention_heads": 2, "lambda_sep": 0.05,
+        }
+        model = LDETPCrossAttentionMIL(config)
+        profiles = torch.tensor([[[1., 0.], [1., 0.], [0., 1.]]])
+        self.assertEqual(model._separation_loss(profiles, torch.tensor([[1., 1., 1.]])).item(), 0.0)
+        self.assertGreater(model._separation_loss(profiles, torch.tensor([[1., 0., 1.]])).item(), 0.0)
 
 
 if __name__ == "__main__":

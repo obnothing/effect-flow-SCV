@@ -30,6 +30,7 @@ class ChunkFeatureDataset(Dataset):
         exclude_augmented_ids=False,
         include_ids_path=None,
         semantic_path=None,
+        token_semantic_path=None,
         front_special_path=None,
         graph_evidence_path=None,
     ):
@@ -70,6 +71,7 @@ class ChunkFeatureDataset(Dataset):
         self.metadata = payload.get("metadata", [{} for _ in self.ids])
         self.report = payload.get("report", {})
         self.semantic_path = Path(semantic_path) if semantic_path else None
+        self.token_semantic_path = Path(token_semantic_path) if token_semantic_path else None
         self.front_special_path = Path(front_special_path) if front_special_path else None
         self.graph_evidence_path = Path(graph_evidence_path) if graph_evidence_path else None
         self.efpp_probs = None
@@ -83,6 +85,11 @@ class ChunkFeatureDataset(Dataset):
         self.semantic_report = {}
         if self.semantic_path is not None:
             self._load_semantic_cache()
+        self.etp_top2_ids = None
+        self.etp_top2_confidence = None
+        self.token_semantic_report = {}
+        if self.token_semantic_path is not None:
+            self._load_token_semantic_cache()
         self.front_special_features = None
         self.front_special_feature_names = []
         self.front_special_report = {}
@@ -174,6 +181,20 @@ class ChunkFeatureDataset(Dataset):
         self.vulnerability_template_matches = payload["vulnerability_template_matches"].float()
         self.active_vulnerability_label_mask = payload["active_vulnerability_label_mask"].float()
         self.semantic_report = payload.get("report", {})
+
+    def _load_token_semantic_cache(self):
+        if not self.token_semantic_path.exists():
+            raise FileNotFoundError(f"Token ETP cache not found: {self.token_semantic_path}")
+        payload = torch.load(self.token_semantic_path, map_location="cpu")
+        if [str(value) for value in payload["ids"]] != [str(value) for value in self.ids]:
+            raise ValueError("Token ETP cache IDs are not aligned with feature cache")
+        if not torch.equal(payload["chunk_mask"].bool(), self.chunk_mask):
+            raise ValueError("Token ETP cache chunk mask does not match feature cache")
+        if not torch.equal(payload["multi_labels"].float(), self.source_multi_labels):
+            raise ValueError("Token ETP cache labels do not match feature cache")
+        self.etp_top2_ids = payload["etp_top2_ids"].to(torch.uint8)
+        self.etp_top2_confidence = payload["etp_top2_confidence"].to(torch.uint8)
+        self.token_semantic_report = payload.get("report", {})
 
     def _load_front_special_cache(self):
         if not self.front_special_path.exists():
@@ -314,6 +335,22 @@ class ChunkFeatureDataset(Dataset):
                 raise ValueError(f"{self.semantic_path} contains NaN/Inf vulnerability_evidence_probs")
             if torch.isnan(self.template_match_scores).any() or torch.isinf(self.template_match_scores).any():
                 raise ValueError(f"{self.semantic_path} contains NaN/Inf template_match_scores")
+        if self.etp_top2_ids is not None:
+            expected_prefix = self.features.shape[:2]
+            if self.etp_top2_ids.ndim != 4 or self.etp_top2_ids.shape[:2] != expected_prefix or self.etp_top2_ids.shape[-1] != 2:
+                raise ValueError("etp_top2_ids must be [N, C, L, 2] aligned to features")
+            if self.etp_top2_confidence.shape != self.etp_top2_ids.shape:
+                raise ValueError("ETP Top-2 confidence shape must match IDs")
+            valid = (self.etp_top2_ids < 17) | (self.etp_top2_ids == 255)
+            if not bool(valid.all()):
+                raise ValueError("Token ETP cache contains an invalid role ID")
+            if torch.any((self.etp_top2_ids[..., 0] == self.etp_top2_ids[..., 1]) & (self.etp_top2_ids[..., 0] != 255)):
+                raise ValueError("Token ETP Top-2 slots must not duplicate a role")
+            if torch.any(self.etp_top2_confidence[self.etp_top2_ids == 255] != 0):
+                raise ValueError("Token ETP sentinel slots must have zero confidence")
+            inactive = ~self.chunk_mask
+            if torch.any(self.etp_top2_ids[inactive] != 255) or torch.any(self.etp_top2_confidence[inactive] != 0):
+                raise ValueError("Padded chunks must have only sentinel ETP Top-2 slots")
         if self.front_special_features is not None:
             if self.front_special_features.shape[:2] != self.features.shape[:2]:
                 raise ValueError(
@@ -388,6 +425,9 @@ class ChunkFeatureDataset(Dataset):
             item["chunk_vulnerability_evidence"] = self.chunk_vulnerability_evidence[real_idx]
             item["vulnerability_template_matches"] = self.vulnerability_template_matches[real_idx]
             item["active_vulnerability_label_mask"] = self.active_vulnerability_label_mask[real_idx]
+        if self.etp_top2_ids is not None:
+            item["etp_top2_ids"] = self.etp_top2_ids[real_idx]
+            item["etp_top2_confidence"] = self.etp_top2_confidence[real_idx]
         if self.front_special_features is not None:
             item["front_special_features"] = self.front_special_features[real_idx]
         if self.graph_contract_evidence is not None:
@@ -399,6 +439,7 @@ class ChunkFeatureDataset(Dataset):
 def build_chunk_feature_datasets(config, required_splits=("train", "valid", "test")):
     feature_dir = Path(config["feature_dir"])
     semantic_dir = Path(config["semantic_feature_dir"]) if config.get("semantic_feature_dir") else None
+    token_semantic_dir = Path(config["token_semantic_dir"]) if config.get("token_semantic_dir") else None
     front_special_dir = (
         Path(config["front_special_feature_dir"])
         if config.get("front_special_feature_dir")
@@ -414,6 +455,9 @@ def build_chunk_feature_datasets(config, required_splits=("train", "valid", "tes
     label_names = config.get("label_names")
     def semantic_path(split):
         return semantic_dir / f"{split}.pt" if semantic_dir is not None else None
+
+    def token_semantic_path(split):
+        return token_semantic_dir / f"{split}.pt" if token_semantic_dir is not None else None
 
     def front_special_path(split):
         return front_special_dir / f"{split}.pt" if front_special_dir is not None else None
@@ -438,6 +482,7 @@ def build_chunk_feature_datasets(config, required_splits=("train", "valid", "tes
             exclude_augmented_ids=bool(config.get("exclude_augmented_ids", False)),
             include_ids_path=config.get("train_include_ids_path"),
             semantic_path=semantic_path("train"),
+            token_semantic_path=token_semantic_path("train"),
             front_special_path=front_special_path("train"),
             graph_evidence_path=graph_evidence_path("train"),
         )
@@ -450,6 +495,7 @@ def build_chunk_feature_datasets(config, required_splits=("train", "valid", "tes
             source_label_names=source_label_names,
             label_names=label_names,
             semantic_path=semantic_path("valid"),
+            token_semantic_path=token_semantic_path("valid"),
             front_special_path=front_special_path("valid"),
             graph_evidence_path=graph_evidence_path("valid"),
         )
@@ -461,6 +507,7 @@ def build_chunk_feature_datasets(config, required_splits=("train", "valid", "tes
             source_label_names=source_label_names,
             label_names=label_names,
             semantic_path=semantic_path("test"),
+            token_semantic_path=token_semantic_path("test"),
             front_special_path=front_special_path("test"),
             graph_evidence_path=graph_evidence_path("test"),
         )

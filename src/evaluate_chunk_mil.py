@@ -16,6 +16,7 @@ from evm_chunk_mil_model import (
     EVEFMVDV2SideEvidenceMIL,
     EVMChunkMILClassifier,
     EffectFlowGuidedChunkMIL,
+    LDETPCrossAttentionMIL,
 )
 from metrics import (
     binary_detection_metrics,
@@ -135,6 +136,8 @@ def load_model(config, checkpoint, device):
         model = EVEFMVDV2SideEvidenceMIL(config).to(device)
     elif model_type == "evef_mvd_v2_multiscale_mil":
         model = EVEFMVDV2MultiScaleMIL(config).to(device)
+    elif model_type == "ld_etp_cross_attention_mil":
+        model = LDETPCrossAttentionMIL(config).to(device)
     else:
         model = EVMChunkMILClassifier(config).to(device)
     if config.get("use_pos_weight", False):
@@ -186,6 +189,9 @@ def collect_predictions(model, loader, device):
         if "graph_contract_evidence" in batch:
             inputs["graph_contract_evidence"] = batch["graph_contract_evidence"].to(device)
             inputs["graph_chunk_evidence"] = batch["graph_chunk_evidence"].to(device)
+        if "etp_top2_ids" in batch:
+            inputs["etp_top2_ids"] = batch["etp_top2_ids"].to(device)
+            inputs["etp_top2_confidence"] = batch["etp_top2_confidence"].to(device)
         outputs = model(**inputs)
         losses.append(float(outputs["loss"].mean().detach().cpu().item()))
         ids.extend(batch["id"])
@@ -942,6 +948,9 @@ def main():
     semantic_path = None
     if config.get("semantic_feature_dir"):
         semantic_path = Path(config["semantic_feature_dir"]) / f"{args.split}.pt"
+    token_semantic_path = None
+    if config.get("token_semantic_dir"):
+        token_semantic_path = Path(config["token_semantic_dir"]) / f"{args.split}.pt"
     front_special_path = None
     if config.get("front_special_feature_dir"):
         front_special_path = Path(config["front_special_feature_dir"]) / f"{args.split}.pt"
@@ -959,6 +968,7 @@ def main():
             and args.split == "train"
         ),
         semantic_path=semantic_path,
+        token_semantic_path=token_semantic_path,
         front_special_path=front_special_path,
         graph_evidence_path=graph_evidence_path,
     )

@@ -47,7 +47,6 @@ def main():
         "--public_corpus",
         default="data/processed/ethereum_public_pretrain_19143_unique_runtime/runtime_opcode.jsonl",
     )
-    parser.add_argument("--template_path", default="configs/vulnerability_templates_dive_main6_new.yaml")
     parser.add_argument("--output", default="data/reports/main6_random_train_pretrain_protocol.json")
     args = parser.parse_args()
 
@@ -83,8 +82,8 @@ def main():
         },
         "random_split_opcode_hash_overlap": overlap,
         "public_corpus_exact_hash_overlap": public_overlap,
-        "template_path": str(resolve(args.template_path).relative_to(PROJECT_ROOT)),
-        "template_sha256": digest_bytes(resolve(args.template_path)),
+        "pretraining_targets": ["MLM", "multi_role_ETP"],
+        "vulnerability_templates_used": False,
     }
     output = resolve(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)

@@ -13,7 +13,7 @@ legacy Slurm pipelines.
 - Labels: Reentrancy, Access Control, Arithmetic, Unchecked Return Values,
   DoS, Time manipulation.
 - Fixed downstream seed: `42`.
-- Effect-Flow pretraining may use only the random train split plus
+- MLM + multi-role ETP pretraining may use only the random train split plus
   `ethereum_public_pretrain_19143_unique_runtime`.
 - Never use valid/test labels or opcodes for model selection, pretraining, or
   feature construction.
@@ -23,15 +23,15 @@ legacy Slurm pipelines.
 
 ```text
 public opcode MLM
--> train-only Effect-Flow pretraining
--> 64 x 768 chunk caches and ETP/EFPP/ERR semantic caches
--> SideEvidenceMIL controls and MultiScaleMIL
+-> train-only MLM + 17-role multi-label ETP pretraining
+-> 64 x 768 chunk caches and token-level Top-2 ETP caches
+-> label-decoupled ETP cross-attention MIL controls
 -> validation-selected per-label thresholds
 ```
 
 Use `configs/train_main6_random_090.yaml` and
-`scripts/run_main6_random_090.sh`. The template authority is
-`configs/vulnerability_templates_dive_main6_new.yaml`.
+`scripts/run_main6_random_090.sh`. Do not use vulnerability templates or
+EFPP/ERR/VEP/VTM in this route.
 
 ## Validation
 

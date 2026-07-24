@@ -14,11 +14,17 @@ conda activate correlascan_a40
 set -euo pipefail
 mkdir -p logs
 
-for variant in mlm_control effectflow_control effectflow_multiscale
+for variant in mlm_label_mil etp_encoder_mil etp_concat_mil ld_etpca ld_etpca_sep
 do
   test -f "results/main6_random_090/$variant/checkpoint_summary.json"
   test -f "checkpoints/main6_random_090/$variant/best_macro_f1.pt"
 done
 
+for variant in ld_etpca ld_etpca_sep
+do
+  test -f "checkpoints/main6_random_090/$variant/best_macro_f1.pt"
+done
+
+bash scripts/run_main6_random_090.sh analyze
 bash scripts/run_main6_random_090.sh select
 test -f results/main6_random_090/validation_selection.json
