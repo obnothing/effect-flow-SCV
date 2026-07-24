@@ -20,6 +20,13 @@ def parse_args():
     parser.add_argument("--expected_global_template_dim", type=int, default=None)
     parser.add_argument("--expected_num_labels", type=int, required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--splits",
+        nargs="+",
+        choices=["train", "valid", "test"],
+        default=["train", "valid", "test"],
+        help="Cache splits to validate. Defaults to all splits.",
+    )
     return parser.parse_args()
 
 
@@ -165,7 +172,7 @@ def main():
         "expected_relation_dim": args.expected_relation_dim,
         "expected_global_template_dim": args.expected_global_template_dim,
         "expected_num_labels": args.expected_num_labels,
-        "splits": {split: check_split(split, args) for split in ["train", "valid", "test"]},
+        "splits": {split: check_split(split, args) for split in args.splits},
     }
     txt_path = resolve_path(args.output)
     json_path = txt_path.with_suffix(".json")

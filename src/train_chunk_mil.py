@@ -1017,7 +1017,7 @@ def main():
     ensure_dir(config["report_dir"])
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    datasets = build_chunk_feature_datasets(config)
+    datasets = build_chunk_feature_datasets(config, required_splits=("train", "valid"))
     train_sampler_stats = {
         "train_sampler": config.get("train_sampler", "shuffle"),
     }

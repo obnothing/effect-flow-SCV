@@ -26,6 +26,13 @@ def parse_args():
         default=None,
         help="Optional txt report path. JSON is written beside it.",
     )
+    parser.add_argument(
+        "--splits",
+        nargs="+",
+        choices=["train", "valid", "test"],
+        default=["train", "valid", "test"],
+        help="Cache splits to validate. Defaults to all splits.",
+    )
     return parser.parse_args()
 
 
@@ -189,7 +196,7 @@ def main():
                 expected_feature_dim=args.expected_feature_dim,
                 expected_num_labels=args.expected_num_labels,
             )
-            for split in ["train", "valid", "test"]
+            for split in args.splits
         },
     }
     add_coverage_comparison(report, args.coverage_baseline_dir)

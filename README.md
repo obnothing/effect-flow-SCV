@@ -28,18 +28,23 @@ data/processed/ethereum_public_pretrain_19143_unique_runtime
 
 ## Server Run
 
-Activate the server environment, then execute the stages in order:
+After public MLM and Effect-Flow pretraining complete, submit the validation-only
+stages from the project root:
 
 ```bash
-conda activate correlascan_a40
-bash scripts/run_main6_random_090.sh audit
-bash scripts/run_main6_random_090.sh corpus
-bash scripts/run_main6_random_090.sh pretrain
-bash scripts/run_main6_random_090.sh extract
-bash scripts/run_main6_random_090.sh validate
-bash scripts/run_main6_random_090.sh train
-bash scripts/run_main6_random_090.sh select
+mkdir -p logs
+CACHE=$(sbatch --parsable scripts/slurm_main6_extract_validate_trainvalid.sh)
+TRAIN=$(sbatch --parsable --dependency=afterok:$CACHE scripts/slurm_main6_downstream_valid.sh)
+SELECT=$(sbatch --parsable --dependency=afterok:$TRAIN scripts/slurm_main6_select_valid.sh)
+echo "cache=$CACHE train=$TRAIN select=$SELECT"
 ```
 
-The final test is intentionally blocked. After reviewing the validation-only
-selection, run `ALLOW_TEST=1 bash scripts/run_main6_random_090.sh final`.
+These jobs generate only train/valid caches and metrics. Review
+`results/main6_random_090/validation_selection.json`, frozen thresholds, and
+per-label validation F1 after `SELECT` completes. The test cache and final
+evaluation are intentionally blocked until that review. Then submit exactly
+one final job:
+
+```bash
+sbatch scripts/slurm_main6_final_test.sh
+```

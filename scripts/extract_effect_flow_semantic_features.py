@@ -43,6 +43,13 @@ def parse_args():
     )
     parser.add_argument("--config", required=True)
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument(
+        "--splits",
+        nargs="+",
+        choices=["train", "valid", "test"],
+        default=["train", "valid", "test"],
+        help="Splits to extract. Defaults to all splits.",
+    )
     return parser.parse_args()
 
 
@@ -635,7 +642,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = EffectFlowSemanticExtractor(config["hf_model_path"]).to(device)
     reports = {}
-    for split in ["train", "valid", "test"]:
+    for split in args.splits:
         reports[split] = extract_split(
             split,
             resolve_path(config[f"{split}_path"]),

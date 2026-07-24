@@ -396,7 +396,7 @@ class ChunkFeatureDataset(Dataset):
         return item
 
 
-def build_chunk_feature_datasets(config):
+def build_chunk_feature_datasets(config, required_splits=("train", "valid", "test")):
     feature_dir = Path(config["feature_dir"])
     semantic_dir = Path(config["semantic_feature_dir"]) if config.get("semantic_feature_dir") else None
     front_special_dir = (
@@ -421,8 +421,14 @@ def build_chunk_feature_datasets(config):
     def graph_evidence_path(split):
         return graph_evidence_dir / f"{split}.pt" if graph_evidence_dir is not None else None
 
-    return {
-        "train": ChunkFeatureDataset(
+    required_splits = tuple(required_splits)
+    unknown_splits = set(required_splits) - {"train", "valid", "test"}
+    if unknown_splits:
+        raise ValueError(f"Unknown required feature splits: {sorted(unknown_splits)}")
+
+    datasets = {}
+    if "train" in required_splits:
+        datasets["train"] = ChunkFeatureDataset(
             feature_dir / "train.pt",
             debug_num_samples=config.get("debug_num_train_samples"),
             seed=seed,
@@ -434,8 +440,9 @@ def build_chunk_feature_datasets(config):
             semantic_path=semantic_path("train"),
             front_special_path=front_special_path("train"),
             graph_evidence_path=graph_evidence_path("train"),
-        ),
-        "valid": ChunkFeatureDataset(
+        )
+    if "valid" in required_splits:
+        datasets["valid"] = ChunkFeatureDataset(
             feature_dir / "valid.pt",
             debug_num_samples=config.get("debug_num_valid_samples"),
             seed=seed,
@@ -445,8 +452,9 @@ def build_chunk_feature_datasets(config):
             semantic_path=semantic_path("valid"),
             front_special_path=front_special_path("valid"),
             graph_evidence_path=graph_evidence_path("valid"),
-        ),
-        "test": ChunkFeatureDataset(
+        )
+    if "test" in required_splits:
+        datasets["test"] = ChunkFeatureDataset(
             feature_dir / "test.pt",
             seed=seed,
             num_labels=config.get("num_labels"),
@@ -455,5 +463,5 @@ def build_chunk_feature_datasets(config):
             semantic_path=semantic_path("test"),
             front_special_path=front_special_path("test"),
             graph_evidence_path=graph_evidence_path("test"),
-        ),
-    }
+        )
+    return datasets

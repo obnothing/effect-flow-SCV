@@ -41,14 +41,14 @@ case "$STAGE" in
     run_python src/pretrain_effect_flow_evm_bert_main6.py --config "$PRETRAIN_CONFIG"
     ;;
   extract)
-    run_python scripts/extract_evm_bert_chunk_features.py --config configs/extract_main6_random_mlm_control_new.yaml
-    run_python scripts/extract_evm_bert_chunk_features.py --config configs/extract_main6_random_effectflow_new.yaml
-    run_python scripts/extract_effect_flow_semantic_features.py --config configs/extract_main6_random_semantics_new.yaml
+    run_python scripts/extract_evm_bert_chunk_features.py --config configs/extract_main6_random_mlm_control_trainvalid.yaml --splits train valid
+    run_python scripts/extract_evm_bert_chunk_features.py --config configs/extract_main6_random_effectflow_batch64_continue.yaml --splits train valid
+    run_python scripts/extract_effect_flow_semantic_features.py --config configs/extract_main6_random_semantics_batch64_continue.yaml --splits train valid
     ;;
   validate)
-    run_python scripts/check_evm_bert_chunk_features.py --feature_dir data/features/main6_random_mlm_control_new --data_dir data/processed/DIVE_main6_random_split --expected_max_chunks 64 --expected_feature_dim 768 --expected_num_labels 6 --output data/reports/check_main6_random_mlm_control_new.txt
-    run_python scripts/check_evm_bert_chunk_features.py --feature_dir data/features/main6_random_effectflow_new --data_dir data/processed/DIVE_main6_random_split --expected_max_chunks 64 --expected_feature_dim 768 --expected_num_labels 6 --output data/reports/check_main6_random_effectflow_new.txt
-    run_python scripts/check_effect_flow_semantic_features.py --semantic_dir data/features/main6_random_effectflow_semantics_new --feature_dir data/features/main6_random_effectflow_new --data_dir data/processed/DIVE_main6_random_split --expected_max_chunks 64 --expected_efpp_dim 22 --expected_etp_dim 16 --expected_relation_dim 6 --expected_global_template_dim 17 --expected_num_labels 6 --output data/reports/check_main6_random_effectflow_semantics_new.txt
+    run_python scripts/check_evm_bert_chunk_features.py --feature_dir data/features/main6_random_mlm_control_trainvalid --data_dir data/processed/DIVE_main6_random_split --expected_max_chunks 64 --expected_feature_dim 768 --expected_num_labels 6 --output data/reports/check_main6_random_mlm_control_trainvalid.txt --splits train valid
+    run_python scripts/check_evm_bert_chunk_features.py --feature_dir data/features/main6_random_effectflow_batch64_continue --data_dir data/processed/DIVE_main6_random_split --expected_max_chunks 64 --expected_feature_dim 768 --expected_num_labels 6 --output data/reports/check_main6_random_effectflow_batch64_continue.txt --splits train valid
+    run_python scripts/check_effect_flow_semantic_features.py --semantic_dir data/features/main6_random_effectflow_semantics_batch64_continue --feature_dir data/features/main6_random_effectflow_batch64_continue --data_dir data/processed/DIVE_main6_random_split --expected_max_chunks 64 --expected_efpp_dim 22 --expected_etp_dim 16 --expected_relation_dim 6 --expected_global_template_dim 17 --expected_num_labels 6 --output data/reports/check_main6_random_effectflow_semantics_batch64_continue.txt --splits train valid
     ;;
   train)
     for variant in mlm_control effectflow_control effectflow_multiscale; do
@@ -57,6 +57,10 @@ case "$STAGE" in
     ;;
   select)
     run_python scripts/select_main6_random_090_candidate.py
+    selection="results/main6_random_090/validation_selection.json"
+    variant="$(run_python -c "import json; print(json.load(open('$selection'))['selected']['variant'])")"
+    checkpoint="$(run_python -c "import json; print(json.load(open('$selection'))['selected']['checkpoint'])")"
+    run_python src/evaluate_chunk_mil.py --config "$TRAIN_CONFIG" --variant "$variant" --checkpoint "$checkpoint" --split valid --threshold_search global_and_per_label
     ;;
   final)
     if [[ "${ALLOW_TEST:-0}" != "1" ]]; then
@@ -64,9 +68,34 @@ case "$STAGE" in
       exit 2
     fi
     selection="results/main6_random_090/validation_selection.json"
+    if [[ ! -f "$selection" ]]; then
+      echo "Validation selection is missing." >&2
+      exit 2
+    fi
+    approved="$(run_python -c "import json; print(json.load(open('$selection'))['approved_for_single_test'])")"
+    if [[ "$approved" != "True" ]]; then
+      echo "Validation selection is not approved for final test." >&2
+      exit 2
+    fi
     variant="$(run_python -c "import json; print(json.load(open('$selection'))['selected']['variant'])")"
     checkpoint="$(run_python -c "import json; print(json.load(open('$selection'))['selected']['checkpoint'])")"
-    run_python src/evaluate_chunk_mil.py --config "$TRAIN_CONFIG" --variant "$variant" --checkpoint "$checkpoint" --split valid --threshold_search global_and_per_label
+    result_dir="results/main6_random_090/$variant"
+    if [[ -e "$result_dir/test_threshold_calibration_metrics.json" ]]; then
+      echo "Final test artifacts already exist for $variant; refusing a second test evaluation." >&2
+      exit 2
+    fi
+    if [[ "$variant" == "mlm_control" ]]; then
+      run_python scripts/extract_evm_bert_chunk_features.py --config configs/extract_main6_random_mlm_control_trainvalid.yaml --splits test
+    fi
+    run_python scripts/extract_evm_bert_chunk_features.py --config configs/extract_main6_random_effectflow_batch64_continue.yaml --splits test
+    run_python scripts/extract_effect_flow_semantic_features.py --config configs/extract_main6_random_semantics_batch64_continue.yaml --splits test
+    if [[ "$variant" == "mlm_control" ]]; then
+      run_python scripts/check_evm_bert_chunk_features.py --feature_dir data/features/main6_random_mlm_control_trainvalid --data_dir data/processed/DIVE_main6_random_split --expected_max_chunks 64 --expected_feature_dim 768 --expected_num_labels 6 --output data/reports/check_main6_random_mlm_control_test.txt --splits test
+    fi
+    run_python scripts/check_evm_bert_chunk_features.py --feature_dir data/features/main6_random_effectflow_batch64_continue --data_dir data/processed/DIVE_main6_random_split --expected_max_chunks 64 --expected_feature_dim 768 --expected_num_labels 6 --output data/reports/check_main6_random_effectflow_batch64_continue_test.txt --splits test
+    run_python scripts/check_effect_flow_semantic_features.py --semantic_dir data/features/main6_random_effectflow_semantics_batch64_continue --feature_dir data/features/main6_random_effectflow_batch64_continue --data_dir data/processed/DIVE_main6_random_split --expected_max_chunks 64 --expected_efpp_dim 22 --expected_etp_dim 16 --expected_relation_dim 6 --expected_global_template_dim 17 --expected_num_labels 6 --output data/reports/check_main6_random_effectflow_semantics_batch64_continue_test.txt --splits test
+    test -f "results/main6_random_090/$variant/per_label_thresholds_valid.json"
+    test -f "results/main6_random_090/$variant/valid_global_threshold_scan.json"
     run_python src/evaluate_chunk_mil.py --config "$TRAIN_CONFIG" --variant "$variant" --checkpoint "$checkpoint" --split test --threshold_file "results/main6_random_090/$variant/per_label_thresholds_valid.json" --global_threshold_file "results/main6_random_090/$variant/valid_global_threshold_scan.json" --save_predictions
     ;;
   *)

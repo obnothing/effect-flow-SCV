@@ -33,6 +33,13 @@ def parse_args():
         action="store_true",
         help="Regenerate feature files even if they already exist.",
     )
+    parser.add_argument(
+        "--splits",
+        nargs="+",
+        choices=["train", "valid", "test"],
+        default=["train", "valid", "test"],
+        help="Splits to extract. Defaults to all splits.",
+    )
     return parser.parse_args()
 
 
@@ -424,7 +431,8 @@ def main():
         "test": resolve_path(config["test_path"]),
     }
     reports = {}
-    for split_name, path in split_paths.items():
+    for split_name in args.splits:
+        path = split_paths[split_name]
         reports[split_name] = extract_split(
             split_name,
             path,

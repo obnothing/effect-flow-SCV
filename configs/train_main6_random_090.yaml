@@ -83,8 +83,8 @@ variants:
   mlm_control:
     experiment_name: main6_random_090_mlm_control
     ablation_variant: mlm_feature_control
-    feature_dir: data/features/main6_random_mlm_control_new
-    semantic_feature_dir: data/features/main6_random_effectflow_semantics_new
+    feature_dir: data/features/main6_random_mlm_control_trainvalid
+    semantic_feature_dir: data/features/main6_random_effectflow_semantics_batch64_continue
     checkpoint_dir: checkpoints/main6_random_090/mlm_control
     result_dir: results/main6_random_090/mlm_control
     report_dir: data/reports
@@ -92,8 +92,8 @@ variants:
   effectflow_control:
     experiment_name: main6_random_090_effectflow_control
     ablation_variant: effectflow_feature_control
-    feature_dir: data/features/main6_random_effectflow_new
-    semantic_feature_dir: data/features/main6_random_effectflow_semantics_new
+    feature_dir: data/features/main6_random_effectflow_batch64_continue
+    semantic_feature_dir: data/features/main6_random_effectflow_semantics_batch64_continue
     checkpoint_dir: checkpoints/main6_random_090/effectflow_control
     result_dir: results/main6_random_090/effectflow_control
     report_dir: data/reports
@@ -102,8 +102,8 @@ variants:
     experiment_name: main6_random_090_effectflow_multiscale
     ablation_variant: effectflow_feature_multiscale
     model_type: evef_mvd_v2_multiscale_mil
-    feature_dir: data/features/main6_random_effectflow_new
-    semantic_feature_dir: data/features/main6_random_effectflow_semantics_new
+    feature_dir: data/features/main6_random_effectflow_batch64_continue
+    semantic_feature_dir: data/features/main6_random_effectflow_semantics_batch64_continue
     checkpoint_dir: checkpoints/main6_random_090/effectflow_multiscale
     result_dir: results/main6_random_090/effectflow_multiscale
     report_dir: data/reports

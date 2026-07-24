@@ -1,0 +1,24 @@
+experiment_name: extract_main6_random_semantics_batch64_continue
+hf_model_path: checkpoints/pretrain_effect_flow_evm_bert_main6_random_train_batch64_continue/hf_model
+vocab_path: checkpoints/pretrain_evm_bert_19143_base_continue/evm_vocab.json
+data_dir: data/processed/DIVE_main6_random_split
+train_path: data/processed/DIVE_main6_random_split/train.jsonl
+valid_path: data/processed/DIVE_main6_random_split/valid.jsonl
+test_path: data/processed/DIVE_main6_random_split/test.jsonl
+reference_feature_dir: data/features/main6_random_effectflow_batch64_continue
+output_dir: data/features/main6_random_effectflow_semantics_batch64_continue
+report_dir: data/reports
+log_dir: logs
+ontology_path: configs/effect_flow_ontology.yaml
+template_path: configs/vulnerability_templates_dive_main6_new.yaml
+num_labels: 6
+label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
+max_len: 512
+chunk_content_size: 510
+chunk_stride: 256
+max_chunks_per_contract: 64
+batch_size: 64
+num_workers: 4
+fp16: true
+is_transductive_pretraining: false
+split_policy: random_split_train_only_pretraining
