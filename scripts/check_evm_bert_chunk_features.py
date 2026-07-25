@@ -78,7 +78,9 @@ def check_split(
     multi_labels = payload["multi_labels"]
     ids = payload["ids"]
     source_report = payload.get("report", {})
-    expected_file = "train_mlsmote.jsonl" if split == "train" else f"{split}.jsonl"
+    # Main-6 caches are built from the original split only.  MLSMOTE is not
+    # part of this route and must never be required for cache validation.
+    expected_file = f"{split}.jsonl"
     expected_samples = count_jsonl(data_dir / expected_file)
     checks = {
         "split": split,
