@@ -46,6 +46,7 @@ common:
   split_policy: random_split_train_only_pretraining
   leakage_status: random_split_no_label_retrieval
   ablation_dataset: DIVE_Main6
+  report_dir: data/reports/main6_random_090
   num_effect_types: 17
   etp_embedding_dim: 64
   etp_query_slots: 2
