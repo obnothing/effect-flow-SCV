@@ -23,6 +23,7 @@ common:
   chunk_context_num_layers: 2
   chunk_context_num_heads: 8
   chunk_context_dropout: 0.1
+  recognition_aggregation: label_gated_attention
   batch_size: 16
   gradient_accumulation_steps: 4
   num_workers: 4

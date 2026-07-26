@@ -1479,7 +1479,9 @@ def main():
             if use_data_parallel
             else batch_size
         ),
-        "recognition_aggregation": config["recognition_aggregation"],
+        "recognition_aggregation": config.get(
+            "recognition_aggregation", "topk_mean"
+        ),
         "top_k": int(config.get("top_k", 2)),
         "use_pos_weight": config.get("use_pos_weight", False),
         "pos_weight_rows": pos_weight_rows,
