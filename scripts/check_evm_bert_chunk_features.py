@@ -15,6 +15,7 @@ def parse_args():
     parser.add_argument("--report_dir", default="data/reports")
     parser.add_argument("--expected_max_chunks", type=int, default=None)
     parser.add_argument("--expected_feature_dim", type=int, default=None)
+    parser.add_argument("--expected_num_views", type=int, default=None)
     parser.add_argument("--expected_num_labels", type=int, default=None)
     parser.add_argument(
         "--coverage_baseline_dir",
@@ -66,6 +67,7 @@ def check_split(
     data_dir,
     expected_max_chunks=None,
     expected_feature_dim=None,
+    expected_num_views=None,
     expected_num_labels=None,
 ):
     path = feature_dir / f"{split}.pt"
@@ -115,17 +117,25 @@ def check_split(
             "is_transductive_pretraining": source_report.get("is_transductive_pretraining"),
         },
     }
-    if features.ndim != 3:
-        raise ValueError(f"{path} features must be [N, C, H], got {features.shape}")
+    if features.ndim not in {3, 4}:
+        raise ValueError(f"{path} features must be [N, C, H] or [N, C, V, H], got {features.shape}")
+    if expected_num_views is not None:
+        if features.ndim != 4 or features.shape[2] != expected_num_views:
+            raise ValueError(
+                f"{path} expected num_views={expected_num_views}, got {list(features.shape)}"
+            )
+    elif features.ndim == 4:
+        raise ValueError(f"{path} is a multi-view cache; pass --expected_num_views")
     if chunk_mask.shape != features.shape[:2]:
         raise ValueError(f"{path} chunk_mask shape mismatch")
     if expected_max_chunks is not None and features.shape[1] != expected_max_chunks:
         raise ValueError(
             f"{path} expected max_chunks={expected_max_chunks}, got {features.shape[1]}"
         )
-    if expected_feature_dim is not None and features.shape[2] != expected_feature_dim:
+    feature_dim = features.shape[-1]
+    if expected_feature_dim is not None and feature_dim != expected_feature_dim:
         raise ValueError(
-            f"{path} expected feature_dim={expected_feature_dim}, got {features.shape[2]}"
+            f"{path} expected feature_dim={expected_feature_dim}, got {feature_dim}"
         )
     if binary_labels.shape[0] != features.shape[0]:
         raise ValueError(f"{path} binary_labels shape mismatch")
@@ -188,6 +198,7 @@ def main():
         "feature_dir": project_relative(feature_dir),
         "expected_max_chunks": args.expected_max_chunks,
         "expected_feature_dim": args.expected_feature_dim,
+        "expected_num_views": args.expected_num_views,
         "expected_num_labels": args.expected_num_labels,
         "splits": {
             split: check_split(
@@ -196,6 +207,7 @@ def main():
                 data_dir,
                 expected_max_chunks=args.expected_max_chunks,
                 expected_feature_dim=args.expected_feature_dim,
+                expected_num_views=args.expected_num_views,
                 expected_num_labels=args.expected_num_labels,
             )
             for split in args.splits
@@ -214,6 +226,7 @@ def main():
     lines.append(f"feature_dir: {report['feature_dir']}")
     lines.append(f"expected_max_chunks: {report.get('expected_max_chunks')}")
     lines.append(f"expected_feature_dim: {report.get('expected_feature_dim')}")
+    lines.append(f"expected_num_views: {report.get('expected_num_views')}")
     lines.append(f"expected_num_labels: {report.get('expected_num_labels')}")
     if report.get("coverage_baseline_dir"):
         lines.append(f"coverage_baseline_dir: {report['coverage_baseline_dir']}")

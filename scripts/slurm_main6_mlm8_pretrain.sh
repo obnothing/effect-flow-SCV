@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#SBATCH --job-name=main6_mlm8_pretrain
+#SBATCH --partition=gpu-l20
+#SBATCH --nodes=1
+#SBATCH --gres=gpu:2
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --output=logs/main6_mlm8_pretrain_%j.out
+#SBATCH --error=logs/main6_mlm8_pretrain_%j.err
+
+cd "${SLURM_SUBMIT_DIR:?Submit this job with sbatch from the project root}"
+source ~/.bashrc
+conda activate correlascan_a40
+set -euo pipefail
+mkdir -p logs
+
+test -f checkpoints/pretrain_evm_bert_19143_base_continue/hf_model/config.json
+test -f checkpoints/pretrain_evm_bert_19143_base_continue/evm_vocab.json
+test -f data/processed/DIVE_main6_random_split/train.jsonl
+
+python scripts/audit_main6_random_pretrain_protocol.py
+torchrun --standalone --nproc_per_node=2 src/pretrain_evm_bert.py \
+  --config configs/pretrain_evm_bert_main6_random_train_mlm8.yaml
+
+test -f checkpoints/pretrain_evm_bert_main6_random_train_mlm8/hf_model/config.json
+test -f data/reports/pretrain_evm_bert_main6_random_train_mlm8_report.json

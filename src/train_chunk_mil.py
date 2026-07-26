@@ -19,6 +19,7 @@ from evm_chunk_mil_model import (
     EVMChunkMILClassifier,
     EffectFlowGuidedChunkMIL,
     LDETPCrossAttentionMIL,
+    MLM8ViewMultiSlotMIL,
 )
 from metrics import compute_metrics
 
@@ -424,6 +425,8 @@ def build_model(config):
         return EVMChunkMILClassifier(config)
     if model_type == "ld_etp_cross_attention_mil":
         return LDETPCrossAttentionMIL(config)
+    if model_type == "mlm8view_multislot_mil":
+        return MLM8ViewMultiSlotMIL(config)
     raise ValueError(f"Unsupported chunk MIL model_type: {model_type}")
 
 

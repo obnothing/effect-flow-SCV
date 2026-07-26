@@ -15,20 +15,14 @@ set -euo pipefail
 mkdir -p logs
 
 for path in \
-  data/features/main6_random_mlm_control_trainvalid/train.pt \
-  data/features/main6_random_mlm_control_trainvalid/valid.pt \
-  data/features/main6_random_multirole_etp/train.pt \
-  data/features/main6_random_multirole_etp/valid.pt \
-  data/features/main6_random_multirole_etp_tokens/train.pt \
-  data/features/main6_random_multirole_etp_tokens/valid.pt
+  data/features/main6_random_mlm8_trainvalid/train.pt \
+  data/features/main6_random_mlm8_trainvalid/valid.pt
 do
   test -f "$path"
 done
 
 for path in \
-  data/features/main6_random_mlm_control_trainvalid/test.pt \
-  data/features/main6_random_multirole_etp/test.pt \
-  data/features/main6_random_multirole_etp_tokens/test.pt
+  data/features/main6_random_mlm8_trainvalid/test.pt
 do
   if [[ -e "$path" ]]; then
     echo "Refusing downstream validation training: locked test cache exists: $path" >&2

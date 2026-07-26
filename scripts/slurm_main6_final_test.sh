@@ -14,5 +14,5 @@ conda activate correlascan_a40
 set -euo pipefail
 mkdir -p logs
 
-test -f results/main6_random_090/validation_selection.json
+test -f results/main6_random_090_mlm8/validation_selection.json
 ALLOW_TEST=1 bash scripts/run_main6_random_090.sh final

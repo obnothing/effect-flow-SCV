@@ -1,0 +1,36 @@
+experiment_name: pretrain_evm_bert_main6_random_train_mlm8
+model_type: evm_bert_base
+tokenizer_type: evm
+
+vocab_path: checkpoints/pretrain_evm_bert_19143_base_continue/evm_vocab.json
+pretrain_corpus_path: data/processed/DIVE_main6_random_split/train.jsonl
+checkpoint_dir: checkpoints/pretrain_evm_bert_main6_random_train_mlm8
+result_dir: results/pretrain_evm_bert_main6_random_train_mlm8
+report_dir: data/reports
+log_dir: logs
+
+base_hf_model_path: checkpoints/pretrain_evm_bert_19143_base_continue/hf_model
+continued_from: public_ethereum_19143_mlm
+is_transductive_pretraining: false
+use_labels: false
+
+max_len: 512
+chunk_content_size: 510
+chunk_stride: 256
+max_chunks_per_contract: 64
+mlm_probability: 0.15
+
+batch_size: 16
+gradient_accumulation_steps: 2
+learning_rate: 0.00001
+weight_decay: 0.01
+warmup_ratio: 0.06
+epochs: 3
+max_grad_norm: 1.0
+seed: 42
+num_workers: 4
+fp16: true
+bf16: false
+save_every_epoch: true
+save_best_mlm_loss: true
+logging_steps: 100

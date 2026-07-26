@@ -2756,3 +2756,106 @@ class LDETPCrossAttentionMIL(EVMChunkMILClassifier):
             result["token_attention"] = token_attention_out
             result["slot_weights"] = slots
         return result
+
+
+class MLM8ViewMultiSlotMIL(EVMChunkMILClassifier):
+    """Pure-MLM label-conditioned multi-slot hierarchical MIL."""
+
+    def __init__(self, config):
+        super().__init__(config)
+        if self.recognition_head_type != "label_branch_mlp":
+            raise ValueError("MLM8ViewMultiSlotMIL requires recognition_head_type=label_branch_mlp")
+        self.num_views = int(config.get("num_views", 8))
+        self.num_slots = int(config.get("label_query_slots", 3))
+        if self.num_views != 8:
+            raise ValueError("MLM8ViewMultiSlotMIL requires the fixed eight-view MLM cache")
+        if self.num_slots < 1:
+            raise ValueError("label_query_slots must be positive")
+        self.view_feature_dim = int(config["feature_dim"])
+        self.view_norm = nn.LayerNorm(self.view_feature_dim)
+        self.view_projection = nn.Linear(self.view_feature_dim, self.hidden_dim)
+        self.label_view_queries = nn.Parameter(
+            torch.empty(self.num_labels, self.num_slots, self.hidden_dim)
+        )
+        self.chunk_to_view_query = nn.Linear(self.hidden_dim, self.hidden_dim)
+        self.view_key = nn.Linear(self.hidden_dim, self.hidden_dim, bias=False)
+        self.view_value = nn.Linear(self.hidden_dim, self.hidden_dim, bias=False)
+        self.view_residual_scale_raw = nn.Parameter(
+            torch.full(
+                (self.num_labels, self.num_slots),
+                softplus_inverse(float(config.get("view_residual_init", 0.1))),
+            )
+        )
+        self.slot_chunk_score = nn.Linear(self.hidden_dim, 1)
+        self.slot_merge_score = nn.Linear(self.hidden_dim, 1)
+        nn.init.normal_(self.label_view_queries, mean=0.0, std=0.02)
+
+    def forward(self, chunk_features, chunk_mask, binary_label=None, multi_labels=None, return_attention=False):
+        if chunk_features.ndim != 4 or chunk_features.shape[2] != self.num_views:
+            raise ValueError(
+                f"chunk_features must be [B, C, {self.num_views}, H] for MLM8ViewMultiSlotMIL"
+            )
+        chunk_mask = chunk_mask.bool()
+        # View 1 is masked-mean pooling, matching the original pure-MLM baseline.
+        base_features = chunk_features[:, :, 1, :]
+        h = (
+            self.chunk_context_encoder(base_features, chunk_mask)
+            if self.use_chunk_context
+            else self.chunk_projection(base_features)
+        )
+        views = self.view_projection(self.view_norm(chunk_features))
+        keys = self.view_key(views)
+        values = self.view_value(views)
+        dynamic_query = self.chunk_to_view_query(h).unsqueeze(2).unsqueeze(3)
+        queries = self.label_view_queries.view(
+            1, 1, self.num_labels, self.num_slots, self.hidden_dim
+        ) + dynamic_query
+        view_logits = torch.einsum("bclsh,bcvh->bclsv", queries, keys)
+        view_logits = view_logits / (self.hidden_dim ** 0.5)
+        view_attention = torch.softmax(view_logits, dim=-1)
+        view_summary = torch.einsum("bclsv,bcvh->bclsh", view_attention, values)
+        scale = F.softplus(self.view_residual_scale_raw).view(
+            1, 1, self.num_labels, self.num_slots, 1
+        )
+        slot_chunks = h.unsqueeze(2).unsqueeze(3) + scale * view_summary
+        slot_chunk_logits = self.slot_chunk_score(slot_chunks).squeeze(-1)
+        slot_chunk_logits = slot_chunk_logits.masked_fill(
+            ~chunk_mask.unsqueeze(-1).unsqueeze(-1), -1e9
+        )
+        slot_chunk_attention = torch.softmax(slot_chunk_logits, dim=1)
+        slot_representations = torch.einsum(
+            "bcls,bclsh->blsh", slot_chunk_attention, slot_chunks
+        )
+        slot_weights = torch.softmax(
+            self.slot_merge_score(slot_representations).squeeze(-1), dim=-1
+        )
+        label_representations = torch.einsum(
+            "bls,blsh->blh", slot_weights, slot_representations
+        )
+        recognition_logits = self.compute_label_logits(label_representations)
+        chunk_scores = torch.einsum("bcls,bls->bcl", slot_chunk_attention, slot_weights)
+        chunk_logits = torch.log(chunk_scores.clamp_min(1e-12))
+        global_h = self.masked_mean(h, chunk_mask)
+        detection_logits = self.compute_detection_logits(global_h, recognition_logits)
+
+        loss = detection_loss = recognition_loss = None
+        if binary_label is not None and multi_labels is not None:
+            recognition_loss = self.compute_recognition_loss(recognition_logits, multi_labels)
+            if self.detection_loss_weight > 0 and self.detection_classifier is not None:
+                detection_loss = self.detection_loss_fn(detection_logits, binary_label.float())
+            loss = self.compute_weighted_task_loss(detection_loss, recognition_loss).reshape(1)
+        result = {
+            "loss": loss,
+            "detection_loss": detection_loss,
+            "recognition_loss": recognition_loss,
+            "detection_logits": detection_logits,
+            "recognition_logits": recognition_logits,
+            "chunk_logits": chunk_logits,
+            "chunk_scores": chunk_scores,
+            "chunk_attention": chunk_scores,
+        }
+        if return_attention:
+            result["view_attention"] = view_attention
+            result["slot_chunk_attention"] = slot_chunk_attention
+            result["slot_weights"] = slot_weights
+        return result

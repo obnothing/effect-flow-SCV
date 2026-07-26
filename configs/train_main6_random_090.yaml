@@ -3,6 +3,7 @@ common:
   source_label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
   label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
   num_labels: 6
+  num_views: 8
   feature_dim: 768
   hidden_dim: 512
   attn_dim: 256
@@ -22,8 +23,7 @@ common:
   chunk_context_num_layers: 2
   chunk_context_num_heads: 8
   chunk_context_dropout: 0.1
-  recognition_aggregation: label_gated_attention
-  batch_size: 32
+  batch_size: 16
   gradient_accumulation_steps: 4
   num_workers: 4
   epochs: 80
@@ -46,49 +46,31 @@ common:
   split_policy: random_split_train_only_pretraining
   leakage_status: random_split_no_label_retrieval
   ablation_dataset: DIVE_Main6
-  report_dir: data/reports/main6_random_090
-  num_effect_types: 17
-  etp_embedding_dim: 64
-  etp_query_slots: 2
-  etp_max_len: 512
-  etp_cross_attention_heads: 4
-  etp_cross_attention_dropout: 0.1
-  sep_margin: 0.5
+  report_dir: data/reports/main6_random_090_mlm8
+  model_type: mlm8view_multislot_mil
+  view_residual_init: 0.1
 variants:
-  mlm_label_mil:
-    experiment_name: main6_mlm_label_mil
-    model_type: evm_chunk_mil
-    feature_dir: data/features/main6_random_mlm_control_trainvalid
-    checkpoint_dir: checkpoints/main6_random_090/mlm_label_mil
-    result_dir: results/main6_random_090/mlm_label_mil
-  etp_encoder_mil:
-    experiment_name: main6_etp_encoder_mil
-    model_type: evm_chunk_mil
-    feature_dir: data/features/main6_random_multirole_etp
-    checkpoint_dir: checkpoints/main6_random_090/etp_encoder_mil
-    result_dir: results/main6_random_090/etp_encoder_mil
-  etp_concat_mil:
-    experiment_name: main6_etp_concat_mil
-    model_type: ld_etp_cross_attention_mil
-    feature_dir: data/features/main6_random_multirole_etp
-    token_semantic_dir: data/features/main6_random_multirole_etp_tokens
-    checkpoint_dir: checkpoints/main6_random_090/etp_concat_mil
-    result_dir: results/main6_random_090/etp_concat_mil
-    lambda_sep: 0.0
-    etp_concat_only: true
-  ld_etpca:
-    experiment_name: main6_ld_etpca
-    model_type: ld_etp_cross_attention_mil
-    feature_dir: data/features/main6_random_multirole_etp
-    token_semantic_dir: data/features/main6_random_multirole_etp_tokens
-    checkpoint_dir: checkpoints/main6_random_090/ld_etpca
-    result_dir: results/main6_random_090/ld_etpca
-    lambda_sep: 0.0
-  ld_etpca_sep:
-    experiment_name: main6_ld_etpca_sep
-    model_type: ld_etp_cross_attention_mil
-    feature_dir: data/features/main6_random_multirole_etp
-    token_semantic_dir: data/features/main6_random_multirole_etp_tokens
-    checkpoint_dir: checkpoints/main6_random_090/ld_etpca_sep
-    result_dir: results/main6_random_090/ld_etpca_sep
-    lambda_sep: 0.05
+  mlm8_slot1:
+    experiment_name: main6_mlm8_slot1
+    feature_dir: data/features/main6_random_mlm8_trainvalid
+    checkpoint_dir: checkpoints/main6_random_090_mlm8/mlm8_slot1
+    result_dir: results/main6_random_090_mlm8/mlm8_slot1
+    label_query_slots: 1
+  mlm8_slot2:
+    experiment_name: main6_mlm8_slot2
+    feature_dir: data/features/main6_random_mlm8_trainvalid
+    checkpoint_dir: checkpoints/main6_random_090_mlm8/mlm8_slot2
+    result_dir: results/main6_random_090_mlm8/mlm8_slot2
+    label_query_slots: 2
+  mlm8_slot3:
+    experiment_name: main6_mlm8_slot3
+    feature_dir: data/features/main6_random_mlm8_trainvalid
+    checkpoint_dir: checkpoints/main6_random_090_mlm8/mlm8_slot3
+    result_dir: results/main6_random_090_mlm8/mlm8_slot3
+    label_query_slots: 3
+  mlm8_slot4:
+    experiment_name: main6_mlm8_slot4
+    feature_dir: data/features/main6_random_mlm8_trainvalid
+    checkpoint_dir: checkpoints/main6_random_090_mlm8/mlm8_slot4
+    result_dir: results/main6_random_090_mlm8/mlm8_slot4
+    label_query_slots: 4

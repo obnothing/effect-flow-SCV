@@ -25,6 +25,7 @@ class ChunkFeatureDataset(Dataset):
         debug_num_samples=None,
         seed=42,
         num_labels=None,
+        expected_num_views=None,
         source_label_names=None,
         label_names=None,
         exclude_augmented_ids=False,
@@ -63,6 +64,9 @@ class ChunkFeatureDataset(Dataset):
         self.multi_labels = self.source_multi_labels[:, self.label_indices]
         self.binary_labels = self.multi_labels.gt(0.5).any(dim=1).float()
         self.num_labels = len(self.label_names)
+        self.expected_num_views = (
+            int(expected_num_views) if expected_num_views is not None else None
+        )
         if num_labels is not None and int(num_labels) != self.num_labels:
             raise ValueError(
                 f"num_labels={num_labels} does not match active label_names "
@@ -291,8 +295,16 @@ class ChunkFeatureDataset(Dataset):
 
     def _validate(self):
         n = len(self.ids)
-        if self.features.ndim != 3:
-            raise ValueError(f"features must be [N, C, H], got {self.features.shape}")
+        if self.features.ndim not in {3, 4}:
+            raise ValueError(
+                f"features must be [N, C, H] or [N, C, V, H], got {self.features.shape}"
+            )
+        if self.expected_num_views is not None and (
+            self.features.ndim != 4 or self.features.shape[2] != self.expected_num_views
+        ):
+            raise ValueError(
+                f"features must be [N, C, {self.expected_num_views}, H], got {self.features.shape}"
+            )
         if self.features.shape[0] != n:
             raise ValueError("features/id count mismatch")
         if self.chunk_mask.shape != self.features.shape[:2]:
@@ -477,6 +489,7 @@ def build_chunk_feature_datasets(config, required_splits=("train", "valid", "tes
             debug_num_samples=config.get("debug_num_train_samples"),
             seed=seed,
             num_labels=config.get("num_labels"),
+            expected_num_views=config.get("num_views"),
             source_label_names=source_label_names,
             label_names=label_names,
             exclude_augmented_ids=bool(config.get("exclude_augmented_ids", False)),
@@ -492,6 +505,7 @@ def build_chunk_feature_datasets(config, required_splits=("train", "valid", "tes
             debug_num_samples=config.get("debug_num_valid_samples"),
             seed=seed,
             num_labels=config.get("num_labels"),
+            expected_num_views=config.get("num_views"),
             source_label_names=source_label_names,
             label_names=label_names,
             semantic_path=semantic_path("valid"),
@@ -504,6 +518,7 @@ def build_chunk_feature_datasets(config, required_splits=("train", "valid", "tes
             feature_dir / "test.pt",
             seed=seed,
             num_labels=config.get("num_labels"),
+            expected_num_views=config.get("num_views"),
             source_label_names=source_label_names,
             label_names=label_names,
             semantic_path=semantic_path("test"),

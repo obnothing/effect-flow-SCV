@@ -17,6 +17,7 @@ from evm_chunk_mil_model import (
     EVMChunkMILClassifier,
     EffectFlowGuidedChunkMIL,
     LDETPCrossAttentionMIL,
+    MLM8ViewMultiSlotMIL,
 )
 from metrics import (
     binary_detection_metrics,
@@ -138,6 +139,8 @@ def load_model(config, checkpoint, device):
         model = EVEFMVDV2MultiScaleMIL(config).to(device)
     elif model_type == "ld_etp_cross_attention_mil":
         model = LDETPCrossAttentionMIL(config).to(device)
+    elif model_type == "mlm8view_multislot_mil":
+        model = MLM8ViewMultiSlotMIL(config).to(device)
     else:
         model = EVMChunkMILClassifier(config).to(device)
     if config.get("use_pos_weight", False):
@@ -961,6 +964,7 @@ def main():
         feature_path(config, args.split),
         seed=config.get("seed", 42),
         num_labels=config.get("num_labels"),
+        expected_num_views=config.get("num_views"),
         source_label_names=config.get("source_label_names", config.get("label_names")),
         label_names=config.get("label_names"),
         exclude_augmented_ids=(

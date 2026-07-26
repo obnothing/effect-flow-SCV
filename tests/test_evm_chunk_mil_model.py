@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from evm_chunk_mil_model import (  # noqa: E402
     EVMChunkMILClassifier,
     LDETPCrossAttentionMIL,
+    MLM8ViewMultiSlotMIL,
 )
 
 
@@ -132,6 +133,35 @@ class ChunkContextMILTest(unittest.TestCase):
         profiles = torch.tensor([[[1., 0.], [1., 0.], [0., 1.]]])
         self.assertEqual(model._separation_loss(profiles, torch.tensor([[1., 1., 1.]])).item(), 0.0)
         self.assertGreater(model._separation_loss(profiles, torch.tensor([[1., 0., 1.]])).item(), 0.0)
+
+    def test_mlm8view_multislot_masks_padding_and_normalizes_attention(self):
+        config = {
+            "num_labels": 3, "label_names": ["a", "b", "c"], "num_views": 8,
+            "feature_dim": 12, "hidden_dim": 16, "attn_dim": 8, "max_chunks": 3,
+            "dropout": 0.0, "recognition_head_type": "label_branch_mlp",
+            "label_branch_hidden_dim": 8, "label_branch_dropout": 0.0,
+            "use_chunk_context": True, "chunk_context_num_layers": 1,
+            "chunk_context_num_heads": 4, "chunk_context_dropout": 0.0,
+            "detection_head_enabled": False, "detection_loss_weight": 0.0,
+            "label_query_slots": 3, "view_residual_init": 0.1,
+        }
+        model = MLM8ViewMultiSlotMIL(config).eval()
+        features = torch.randn(2, 3, 8, 12)
+        mask = torch.tensor([[True, True, False], [True, False, False]])
+        outputs = model(
+            features, mask,
+            binary_label=torch.ones(2),
+            multi_labels=torch.tensor([[1., 0., 1.], [0., 1., 0.]]),
+            return_attention=True,
+        )
+        self.assertEqual(tuple(outputs["recognition_logits"].shape), (2, 3))
+        self.assertEqual(tuple(outputs["view_attention"].shape), (2, 3, 3, 3, 8))
+        self.assertTrue(torch.isfinite(outputs["loss"]))
+        self.assertTrue(torch.allclose(outputs["view_attention"].sum(dim=-1), torch.ones(2, 3, 3, 3), atol=1e-6))
+        self.assertTrue(torch.allclose(outputs["slot_chunk_attention"].sum(dim=1), torch.ones(2, 3, 3), atol=1e-6))
+        changed = features.clone()
+        changed[~mask] = 10000.0
+        self.assertTrue(torch.allclose(outputs["recognition_logits"], model(changed, mask)["recognition_logits"], atol=1e-6))
 
 
 if __name__ == "__main__":

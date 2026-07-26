@@ -82,8 +82,8 @@ def main():
         },
         "random_split_opcode_hash_overlap": overlap,
         "public_corpus_exact_hash_overlap": public_overlap,
-        "pretraining_targets": ["MLM", "multi_role_ETP"],
-        "vulnerability_templates_used": False,
+        "pretraining_targets": ["MLM"],
+        "effect_type_targets_used": False,
     }
     output = resolve(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)

@@ -40,6 +40,11 @@ def parse_args():
         default=["train", "valid", "test"],
         help="Splits to extract. Defaults to all splits.",
     )
+    parser.add_argument(
+        "--allow-test-cache",
+        action="store_true",
+        help="Explicitly unlock test feature extraction after valid-only selection.",
+    )
     return parser.parse_args()
 
 
@@ -139,10 +144,15 @@ def existing_feature_cache_matches_config(output_path, config, hidden_size):
         return False, "missing features or chunk_mask", report
     expected_max_chunks = int(config["max_chunks_per_contract"])
     expected_num_labels = int(config.get("num_labels", len(config.get("label_names", [])) or 10))
+    expected_suffix = (
+        [expected_max_chunks, 8, int(hidden_size)]
+        if config.get("pooling") == "eight_view"
+        else [expected_max_chunks, int(hidden_size)]
+    )
     checks = [
         (
-            list(features.shape[1:]) == [expected_max_chunks, int(hidden_size)],
-            f"feature shape suffix {list(features.shape[1:])} != {[expected_max_chunks, int(hidden_size)]}",
+            list(features.shape[1:]) == expected_suffix,
+            f"feature shape suffix {list(features.shape[1:])} != {expected_suffix}",
         ),
         (
             list(chunk_mask.shape) == list(features.shape[:2]),
@@ -188,6 +198,35 @@ def pool_encoder_output(outputs, attention_mask, pooling):
         if fallback_mask.any():
             pooled[fallback_mask] = hidden[fallback_mask, 0, :]
         return pooled, int(fallback_mask.sum().item())
+    if pooling == "eight_view":
+        valid_mask = attention_mask.clone().bool()
+        valid_mask[:, 0] = False
+        lengths = attention_mask.sum(dim=1).long()
+        sep_positions = (lengths - 1).clamp(min=0)
+        valid_mask.scatter_(1, sep_positions.unsqueeze(1), False)
+        valid_counts = valid_mask.sum(dim=1)
+        fallback_mask = valid_counts == 0
+        mask = valid_mask.unsqueeze(-1).type_as(hidden)
+        mean_view = (hidden * mask).sum(dim=1) / valid_counts.clamp(min=1).unsqueeze(-1).type_as(hidden)
+        max_view = hidden.masked_fill(~valid_mask.unsqueeze(-1), float("-inf")).max(dim=1).values
+        segment_views = []
+        positions = torch.arange(hidden.shape[1], device=hidden.device).view(1, -1)
+        for segment in range(5):
+            starts = torch.div(valid_counts * segment, 5, rounding_mode="floor") + 1
+            ends = torch.div(valid_counts * (segment + 1), 5, rounding_mode="floor") + 1
+            segment_mask = (positions >= starts.unsqueeze(1)) & (positions < ends.unsqueeze(1))
+            segment_count = segment_mask.sum(dim=1)
+            segment_mean = (
+                hidden * segment_mask.unsqueeze(-1).type_as(hidden)
+            ).sum(dim=1) / segment_count.clamp(min=1).unsqueeze(-1).type_as(hidden)
+            segment_mean[segment_count == 0] = mean_view[segment_count == 0]
+            segment_views.append(segment_mean)
+        if fallback_mask.any():
+            mean_view[fallback_mask] = hidden[fallback_mask, 0, :]
+            max_view[fallback_mask] = hidden[fallback_mask, 0, :]
+            for segment_mean in segment_views:
+                segment_mean[fallback_mask] = hidden[fallback_mask, 0, :]
+        return torch.stack([hidden[:, 0, :], mean_view, max_view, *segment_views], dim=1), int(fallback_mask.sum().item())
     if pooling == "cls_mean_concat":
         raise ValueError("cls_mean_concat is reserved for a later ablation.")
     raise ValueError(f"Unsupported pooling: {pooling}")
@@ -254,7 +293,12 @@ def extract_split(split_name, input_path, output_path, tokenizer, encoder, confi
     num_labels = int(config.get("num_labels", len(config.get("label_names", [])) or 10))
     hidden_size = int(encoder.config.hidden_size)
     output_dtype = torch.float16 if bool(config.get("fp16", False)) else torch.float32
-    features = torch.zeros(sample_count, max_chunks, hidden_size, dtype=output_dtype)
+    feature_shape = (
+        (sample_count, max_chunks, 8, hidden_size)
+        if config.get("pooling") == "eight_view"
+        else (sample_count, max_chunks, hidden_size)
+    )
+    features = torch.zeros(feature_shape, dtype=output_dtype)
     chunk_mask = torch.zeros(sample_count, max_chunks, dtype=torch.bool)
     binary_labels = torch.zeros(sample_count, dtype=torch.float32)
     multi_labels = torch.zeros(sample_count, num_labels, dtype=torch.float32)
@@ -432,6 +476,10 @@ def main():
     }
     reports = {}
     for split_name in args.splits:
+        if split_name == "test" and not (
+            bool(config.get("allow_test_cache", False)) or args.allow_test_cache
+        ):
+            raise PermissionError("Test feature cache is locked until final selection")
         path = split_paths[split_name]
         reports[split_name] = extract_split(
             split_name,
