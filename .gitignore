@@ -25,6 +25,8 @@ data/reports/*
 data/raw/
 data/processed/*
 !data/processed/.gitkeep
+DIVE_Raw_Data/
+DIVE_Raw_Data.zip
 
 # Local operating-system files
 .DS_Store

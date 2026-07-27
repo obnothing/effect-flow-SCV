@@ -1,0 +1,72 @@
+common:
+  data_dir: data/processed/DIVE_source_main6
+  graph_cache_dir: data/features/dive_source_main6_graphcodebert
+  source_model_path: checkpoints/dive_source_main6/dapt/hf_model
+  source_model_revision: 2b0488a7bb0eefc7041f1bb2cad1ab26b0da269d
+  source_model_asset_manifest: models/graphcodebert-base/asset_manifest.json
+  label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
+  num_labels: 6
+  max_units: 32
+  max_code_tokens: 384
+  max_dfg_nodes: 128
+  max_length: 512
+  hidden_dim: 768
+  num_slots: 3
+  dropout: 0.1
+  batch_size: 2
+  gradient_accumulation_steps: 8
+  num_workers: 2
+  epochs: 80
+  early_stopping_patience: 15
+  learning_rate: 0.0002
+  weight_decay: 0.01
+  warmup_epochs: 3
+  min_learning_rate: 0.000001
+  seed: 42
+  pos_weight_mode: sqrt_ratio
+  max_pos_weight: 5.0
+  contrastive_weight: 0.1
+  contrastive_temperature: 0.1
+  rdrop_weight: 0.05
+  lora_rank: 8
+  lora_alpha: 16
+  lora_dropout: 0.05
+  lora_target_modules: [query, key, value]
+  report_dir: data/reports/dive_source_main6
+  threshold_candidates: [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
+variants:
+  source_seq_mean:
+    use_dfg: false
+    use_mil: false
+    use_contrastive: false
+    use_rdrop: false
+    checkpoint_dir: checkpoints/dive_source_main6/source_seq_mean
+    result_dir: results/dive_source_main6/source_seq_mean
+  source_graph_mean:
+    use_dfg: true
+    use_mil: false
+    use_contrastive: false
+    use_rdrop: false
+    checkpoint_dir: checkpoints/dive_source_main6/source_graph_mean
+    result_dir: results/dive_source_main6/source_graph_mean
+  source_graph_mil:
+    use_dfg: true
+    use_mil: true
+    use_contrastive: false
+    use_rdrop: false
+    checkpoint_dir: checkpoints/dive_source_main6/source_graph_mil
+    result_dir: results/dive_source_main6/source_graph_mil
+  source_graph_mil_contrast:
+    use_dfg: true
+    use_mil: true
+    use_contrastive: true
+    use_rdrop: false
+    checkpoint_dir: checkpoints/dive_source_main6/source_graph_mil_contrast
+    result_dir: results/dive_source_main6/source_graph_mil_contrast
+  source_graph_mil_full:
+    use_dfg: true
+    use_mil: true
+    use_contrastive: true
+    use_rdrop: true
+    checkpoint_dir: checkpoints/dive_source_main6/source_graph_mil_full
+    result_dir: results/dive_source_main6/source_graph_mil_full

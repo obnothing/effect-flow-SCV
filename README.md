@@ -56,3 +56,31 @@ one final job:
 ```bash
 sbatch scripts/slurm_main6_final_test.sh
 ```
+
+## DIVE Source-Main6 GraphCodeBERT
+
+This independent route uses only source files that can be runtime-aligned to
+the six-label Main-6 records. It is a new seed-42 source-grouped split and is
+not comparable as a numeric continuation of the opcode-only result.
+
+Transfer `DIVE_Raw_Data/Raw` to the project root, install `requirements.txt`,
+then fetch the pinned base asset once on a login node:
+
+```bash
+python scripts/fetch_graphcodebert_asset.py \
+  --revision 2b0488a7bb0eefc7041f1bb2cad1ab26b0da269d
+```
+
+Submit validation-only work in dependency order:
+
+```bash
+PREP=$(sbatch --parsable scripts/slurm_dive_source_main6_prepare.sh)
+DAPT=$(sbatch --parsable --dependency=afterok:$PREP scripts/slurm_dive_source_main6_dapt.sh)
+TRAIN=$(sbatch --parsable --dependency=afterok:$DAPT scripts/slurm_dive_source_main6_train.sh)
+SELECT=$(sbatch --parsable --dependency=afterok:$TRAIN scripts/slurm_dive_source_main6_select.sh)
+echo "prepare=$PREP dapt=$DAPT train=$TRAIN select=$SELECT"
+```
+
+Review `results/dive_source_main6/validation_selection.json` and the selected
+candidate's valid thresholds before submitting `scripts/slurm_dive_source_main6_final.sh`.
+That final job is the only path that creates Source-Main6 test artifacts.

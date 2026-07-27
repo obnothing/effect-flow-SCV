@@ -1,0 +1,16 @@
+base_model_path: models/graphcodebert-base
+base_model_revision: 2b0488a7bb0eefc7041f1bb2cad1ab26b0da269d
+base_model_asset_manifest: models/graphcodebert-base/asset_manifest.json
+graph_cache_dir: data/features/dive_source_main6_graphcodebert
+checkpoint_dir: checkpoints/dive_source_main6/dapt
+report_dir: data/reports/dive_source_main6
+seed: 42
+epochs: 3
+batch_size: 16
+gradient_accumulation_steps: 2
+learning_rate: 0.00002
+weight_decay: 0.01
+warmup_ratio: 0.06
+mlm_probability: 0.15
+num_workers: 2
+fp16: true
