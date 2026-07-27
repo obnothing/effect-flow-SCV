@@ -61,7 +61,8 @@ def load_solidity_parser():
         raise RuntimeError(
             "Solidity parsing requires tree-sitter==0.22.3 and tree-sitter-solidity==1.2.13"
         ) from exc
-    parser = Parser(Language(solidity_language(), "solidity"))
+    parser = Parser()
+    parser.set_language(Language(solidity_language(), "solidity"))
     return parser
 
 
