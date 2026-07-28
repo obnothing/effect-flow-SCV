@@ -64,9 +64,13 @@ the six-label Main-6 records. It is a new seed-42 source-grouped split and is
 not comparable as a numeric continuation of the opcode-only result.
 
 Transfer `DIVE_Raw_Data/Raw` to the project root, install `requirements.txt`,
-then fetch the pinned base asset once on a login node:
+then install the Python 3.8 Solidity parser exception and fetch the pinned base
+asset once on a login node:
 
 ```bash
+python -m pip install -r requirements.txt
+bash scripts/install_source_main6_dependencies.sh
+
 python scripts/fetch_graphcodebert_asset.py \
   --revision 2b0488a7bb0eefc7041f1bb2cad1ab26b0da269d
 ```

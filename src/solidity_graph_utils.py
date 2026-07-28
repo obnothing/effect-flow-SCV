@@ -59,7 +59,7 @@ def load_solidity_parser():
         from tree_sitter_solidity import language as solidity_language
     except ImportError as exc:
         raise RuntimeError(
-            "Solidity parsing requires tree-sitter==0.22.3 and tree-sitter-solidity==1.2.13"
+            "Run scripts/install_source_main6_dependencies.sh to install the Solidity parser"
         ) from exc
     parser = Parser()
     parser.set_language(Language(solidity_language(), "solidity"))

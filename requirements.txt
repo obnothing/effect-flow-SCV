@@ -8,5 +8,4 @@ tqdm
 requests
 pyevmasm
 tree-sitter==0.21.3
-tree-sitter-solidity==1.2.13
 peft==0.12.0

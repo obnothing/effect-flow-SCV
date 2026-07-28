@@ -36,7 +36,7 @@ class SolidityGraphCodeBERTMultiSlotMIL(nn.Module):
         try:
             from peft import LoraConfig, TaskType, get_peft_model
         except ImportError as exc:
-            raise RuntimeError("LoRA requires peft==0.19.1") from exc
+            raise RuntimeError("LoRA requires peft==0.12.0; run scripts/install_source_main6_dependencies.sh") from exc
         lora_config = LoraConfig(
             task_type=TaskType.FEATURE_EXTRACTION,
             r=int(config.get("lora_rank", 8)), lora_alpha=int(config.get("lora_alpha", 16)),
