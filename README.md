@@ -64,26 +64,28 @@ the six-label Main-6 records. It is a new seed-42 source-grouped split and is
 not comparable as a numeric continuation of the opcode-only result.
 
 Transfer `DIVE_Raw_Data/Raw` to the project root, install `requirements.txt`,
-then install the Python 3.8 Solidity parser exception and fetch the pinned base
-asset once on a login node:
+then install the Python 3.8 Solidity parser and fetch the pinned base asset
+once on a login node. The parser installer requires the fixed ABI-14 grammar
+archive shown below:
 
 ```bash
 python -m pip install -r requirements.txt
-bash scripts/install_source_main6_dependencies.sh
+bash scripts/install_source_main6_dependencies.sh \
+  third_party_wheels/tree-sitter-solidity-v1.2.2.tar.gz
 
 python scripts/fetch_graphcodebert_asset.py \
   --revision 2b0488a7bb0eefc7041f1bb2cad1ab26b0da269d
 ```
 
-On a compute server without PyPI/DNS access, download the matching Linux
-runtime source archive and grammar wheel on a networked machine, copy them to
-the repository, and pass both paths to the installer instead of asking pip to
-resolve package names:
+The grammar archive is platform-independent and pinned by SHA256 in the
+installer. On a compute server without GitHub/PyPI access, transfer this exact
+archive from a networked machine:
 
 ```bash
+curl -L https://github.com/JoranHonig/tree-sitter-solidity/archive/refs/tags/v1.2.2.tar.gz \
+  -o third_party_wheels/tree-sitter-solidity-v1.2.2.tar.gz
 bash scripts/install_source_main6_dependencies.sh \
-  third_party_wheels/tree-sitter-0.22.3.tar.gz \
-  third_party_wheels/tree_sitter_solidity-1.2.13-cp38-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  third_party_wheels/tree-sitter-solidity-v1.2.2.tar.gz
 ```
 
 Submit validation-only work in dependency order:

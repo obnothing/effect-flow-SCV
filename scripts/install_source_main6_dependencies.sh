@@ -1,22 +1,35 @@
 #!/usr/bin/env bash
-# tree-sitter 0.22.3 and tree-sitter-solidity 1.2.13 declare Python >=3.9,
-# but their runtime implementation is compatible with Python 3.8. Solidity's
-# grammar uses language ABI 15, which requires the 0.22 runtime.
+# Python 3.8 supports tree-sitter 0.21.3 (language ABI 13-14), but not the
+# current Solidity wheel (ABI 15 and a Python >=3.9 runtime). Build the pinned
+# ABI 14 grammar source instead of bypassing those version constraints.
 set -euo pipefail
 
-TREE_SITTER_SOURCE="${1:-tree-sitter==0.22.3}"
-SOLIDITY_WHEEL="${2:-tree-sitter-solidity==1.2.13}"
+GRAMMAR_ARCHIVE="${1:?Pass the pinned tree-sitter-solidity-v1.2.2.tar.gz archive}"
+EXPECTED_ARCHIVE_SHA256="bdd3f2834426b28e1fe1eb3c83b3507956ab90a1924592414e8b8040c903a48c"
+BUILD_DIR="third_party_grammars/build_solidity_v1_2_2"
+GRAMMAR_DIR="$BUILD_DIR/tree-sitter-solidity-1.2.2"
+GRAMMAR_LIBRARY="third_party_grammars/solidity_v1_2_2_abi14.so"
 
-# Passing local paths supports compute servers without PyPI/DNS access.
-python -m pip install --ignore-requires-python --no-build-isolation --no-deps "$TREE_SITTER_SOURCE"
+actual_sha256=$(sha256sum "$GRAMMAR_ARCHIVE" | awk '{print $1}')
+if [[ "$actual_sha256" != "$EXPECTED_ARCHIVE_SHA256" ]]; then
+  echo "Unexpected Solidity grammar archive SHA256: $actual_sha256" >&2
+  exit 1
+fi
+
+python -m pip install "tree-sitter==0.21.3"
 python -m pip install "peft==0.12.0"
-python -m pip install --ignore-requires-python --no-deps "$SOLIDITY_WHEEL"
 
-python - <<'PY'
+mkdir -p "$BUILD_DIR" third_party_grammars
+tar -xzf "$GRAMMAR_ARCHIVE" -C "$BUILD_DIR"
+gcc -shared -fPIC -O2 -I"$GRAMMAR_DIR/src" \
+  "$GRAMMAR_DIR/src/parser.c" -o "$GRAMMAR_LIBRARY"
+
+SOLIDITY_GRAMMAR_LIBRARY="$GRAMMAR_LIBRARY" python - <<'PY'
+import os
 from tree_sitter import Language, Parser
-from tree_sitter_solidity import language
 
-parser = Parser(Language(language()))
+parser = Parser()
+parser.set_language(Language(os.environ["SOLIDITY_GRAMMAR_LIBRARY"], "solidity"))
 assert parser.parse(b"pragma solidity ^0.4.24; contract C {} ").root_node.type
 print("[OK] Python 3.8 Solidity parser and LoRA dependencies are ready")
 PY

@@ -7,4 +7,5 @@ pyyaml
 tqdm
 requests
 pyevmasm
+tree-sitter==0.21.3
 peft==0.12.0

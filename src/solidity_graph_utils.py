@@ -56,12 +56,18 @@ def source_sha256(text: str) -> str:
 def load_solidity_parser():
     try:
         from tree_sitter import Language, Parser
-        from tree_sitter_solidity import language as solidity_language
     except ImportError as exc:
         raise RuntimeError(
             "Run scripts/install_source_main6_dependencies.sh to install the Solidity parser"
         ) from exc
-    return Parser(Language(solidity_language()))
+    grammar_library = Path(__file__).resolve().parents[1] / "third_party_grammars" / "solidity_v1_2_2_abi14.so"
+    if not grammar_library.is_file():
+        raise RuntimeError(
+            "Solidity grammar library is missing; run scripts/install_source_main6_dependencies.sh"
+        )
+    parser = Parser()
+    parser.set_language(Language(str(grammar_library), "solidity"))
+    return parser
 
 
 def parse_solidity(text: str):

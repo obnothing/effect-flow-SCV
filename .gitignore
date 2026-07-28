@@ -18,7 +18,10 @@ models/
 tmp/
 server_upload/
 third_party_wheels/
+third_party_grammars/
 .tmp-source-main6-wheel/
+.tmp-solidity-grammar/
+.tmp-tree-languages/
 data/features/
 data/reports/*
 !data/reports/.gitkeep
