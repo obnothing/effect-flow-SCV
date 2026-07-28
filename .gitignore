@@ -17,6 +17,8 @@ results/
 models/
 tmp/
 server_upload/
+third_party_wheels/
+.tmp-source-main6-wheel/
 data/features/
 data/reports/*
 !data/reports/.gitkeep
