@@ -61,9 +61,7 @@ def load_solidity_parser():
         raise RuntimeError(
             "Run scripts/install_source_main6_dependencies.sh to install the Solidity parser"
         ) from exc
-    parser = Parser()
-    parser.set_language(Language(solidity_language(), "solidity"))
-    return parser
+    return Parser(Language(solidity_language()))
 
 
 def parse_solidity(text: str):
