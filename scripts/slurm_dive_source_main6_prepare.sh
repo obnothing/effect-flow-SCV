@@ -7,9 +7,10 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --output=logs/source_main6_prepare_%j.out
 #SBATCH --error=logs/source_main6_prepare_%j.err
-set -euo pipefail
+set -eo pipefail
 cd "${SLURM_SUBMIT_DIR:?Submit from project root}"
 source ~/.bashrc
+set -u
 conda activate correlascan_a40
 mkdir -p logs
 python scripts/build_dive_source_main6.py --config configs/build_dive_source_main6.yaml

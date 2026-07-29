@@ -7,9 +7,10 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --output=logs/source_main6_select_%j.out
 #SBATCH --error=logs/source_main6_select_%j.err
-set -euo pipefail
+set -eo pipefail
 cd "${SLURM_SUBMIT_DIR:?Submit from project root}"
 source ~/.bashrc
+set -u
 conda activate correlascan_a40
 mkdir -p logs
 test ! -e data/features/dive_source_main6_graphcodebert/test.pt
