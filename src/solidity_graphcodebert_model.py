@@ -50,16 +50,16 @@ class SolidityGraphCodeBERTMultiSlotMIL(nn.Module):
         flat_active = unit_mask.reshape(-1)
         flat_ids = input_ids.reshape(batch * units, length)
         flat_tokens = token_mask.reshape(batch * units, length)
-        flat_graph = graph_mask.reshape(batch * units, length, length)
+        flat_graph = graph_mask.reshape(batch * units, length, length) if self.use_dfg else None
         embeddings = input_ids.new_zeros((batch * units, self.hidden_dim), dtype=torch.float32)
         if flat_active.any():
-            active_ids = flat_ids[flat_active]
-            if self.use_dfg:
-                attention_mask = flat_graph[flat_active].long()
-            else:
-                attention_mask = flat_tokens[flat_active].long()
-            output = self.encoder(input_ids=active_ids, attention_mask=attention_mask, return_dict=True)
-            embeddings[flat_active] = output.last_hidden_state[:, 0].float()
+            active_indices = flat_active.nonzero(as_tuple=False).flatten()
+            microbatch = int(self.config.get("encoder_microbatch_size", 8))
+            for start in range(0, active_indices.numel(), microbatch):
+                index = active_indices[start:start + microbatch]
+                attention_mask = flat_graph[index].long() if self.use_dfg else flat_tokens[index].long()
+                output = self.encoder(input_ids=flat_ids[index], attention_mask=attention_mask, return_dict=True)
+                embeddings[index] = output.last_hidden_state[:, 0].float()
         return embeddings.reshape(batch, units, self.hidden_dim)
 
     @staticmethod

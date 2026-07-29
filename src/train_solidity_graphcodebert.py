@@ -20,6 +20,7 @@ from torch.utils.data.distributed import DistributedSampler
 
 from metrics import compute_multilabel_metrics_from_probs, sigmoid
 from solidity_graph_dataset import SolidityGraphDataset, collate_solidity_graph
+from solidity_source_v2_dataset import SoliditySourceV2Dataset, collate_source_v2
 from solidity_graphcodebert_model import SolidityGraphCodeBERTMultiSlotMIL, multilabel_supervised_contrastive, symmetric_kl
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -85,11 +86,16 @@ def main():
     cache_dir = ROOT / config["graph_cache_dir"]
     if (cache_dir / "test.pt").exists():
         raise RuntimeError("Refusing validation training because a locked test source cache exists")
-    train_set, valid_set = SolidityGraphDataset(cache_dir / "train.pt"), SolidityGraphDataset(cache_dir / "valid.pt")
+    schema = torch.load(cache_dir / "train.pt", map_location="cpu").get("schema")
+    if schema == "solidity_source_windows_v2":
+        dataset_type, collate = SoliditySourceV2Dataset, collate_source_v2
+    else:
+        dataset_type, collate = SolidityGraphDataset, collate_solidity_graph
+    train_set, valid_set = dataset_type(cache_dir / "train.pt"), dataset_type(cache_dir / "valid.pt")
     sampler = DistributedSampler(train_set, num_replicas=world_size, rank=rank, shuffle=True, seed=int(config["seed"])) if world_size > 1 else None
     train_loader = DataLoader(train_set, batch_size=int(config["batch_size"]), sampler=sampler, shuffle=sampler is None,
-                              num_workers=int(config["num_workers"]), pin_memory=True, collate_fn=collate_solidity_graph)
-    valid_loader = DataLoader(valid_set, batch_size=int(config["batch_size"]), shuffle=False, num_workers=int(config["num_workers"]), pin_memory=True, collate_fn=collate_solidity_graph)
+                              num_workers=int(config["num_workers"]), pin_memory=True, collate_fn=collate)
+    valid_loader = DataLoader(valid_set, batch_size=int(config["batch_size"]), shuffle=False, num_workers=int(config["num_workers"]), pin_memory=True, collate_fn=collate)
     model = SolidityGraphCodeBERTMultiSlotMIL(config); model.apply_lora(config); model.to(device)
     wrapped = DDP(model, device_ids=[device.index]) if world_size > 1 else model
     weights = pos_weight(train_set, config["pos_weight_mode"], float(config["max_pos_weight"])).to(device)

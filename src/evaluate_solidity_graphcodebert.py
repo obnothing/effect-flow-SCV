@@ -13,6 +13,7 @@ from torch.utils.data import DataLoader
 
 from metrics import compute_multilabel_metrics_from_probs
 from solidity_graph_dataset import SolidityGraphDataset, collate_solidity_graph
+from solidity_source_v2_dataset import SoliditySourceV2Dataset, collate_source_v2
 from solidity_graphcodebert_model import SolidityGraphCodeBERTMultiSlotMIL
 from train_solidity_graphcodebert import evaluate, move
 
@@ -26,8 +27,11 @@ def config_for(path, variant):
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument("--config", required=True); parser.add_argument("--variant", required=True); parser.add_argument("--checkpoint", required=True); parser.add_argument("--split", required=True, choices=["valid", "test"]); parser.add_argument("--threshold-file"); parser.add_argument("--threshold-search", action="store_true"); parser.add_argument("--save-predictions", action="store_true")
     args = parser.parse_args(); config = config_for(args.config, args.variant); device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    dataset = SolidityGraphDataset(ROOT / config["graph_cache_dir"] / f"{args.split}.pt")
-    loader = DataLoader(dataset, batch_size=int(config["batch_size"]), shuffle=False, num_workers=int(config["num_workers"]), collate_fn=collate_solidity_graph)
+    cache_path = ROOT / config["graph_cache_dir"] / f"{args.split}.pt"
+    schema = torch.load(cache_path, map_location="cpu").get("schema")
+    dataset_type, collate = (SoliditySourceV2Dataset, collate_source_v2) if schema == "solidity_source_windows_v2" else (SolidityGraphDataset, collate_solidity_graph)
+    dataset = dataset_type(cache_path)
+    loader = DataLoader(dataset, batch_size=int(config["batch_size"]), shuffle=False, num_workers=int(config["num_workers"]), collate_fn=collate)
     model = SolidityGraphCodeBERTMultiSlotMIL(config); model.apply_lora(config); checkpoint = torch.load(args.checkpoint, map_location="cpu"); model.load_state_dict(checkpoint["model_state_dict"]); model.to(device)
     result_dir = ROOT / config["result_dir"]
     if args.threshold_search:

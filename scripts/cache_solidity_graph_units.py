@@ -10,7 +10,8 @@ from transformers import AutoTokenizer
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from solidity_graph_dataset import build_cache  # noqa: E402
+from solidity_graph_dataset import build_cache as build_graph_cache  # noqa: E402
+from solidity_source_v2_dataset import build_cache as build_source_v2_cache, coverage_report  # noqa: E402
 
 
 def load_config(path, variant=None):
@@ -40,7 +41,15 @@ def main():
     )
     data_dir, cache_dir = ROOT / config["data_dir"], ROOT / config["graph_cache_dir"]
     for split in args.splits:
-        count = build_cache(data_dir / f"{split}.jsonl", cache_dir / f"{split}.pt", tokenizer, config, ROOT)
+        output = cache_dir / f"{split}.pt"
+        if config.get("cache_schema") == "solidity_source_windows_v2":
+            count = build_source_v2_cache(data_dir / f"{split}.jsonl", output, tokenizer, config, ROOT)
+            report = coverage_report(output)
+            report_path = ROOT / config["report_dir"] / f"{split}_window_coverage.json"
+            report_path.parent.mkdir(parents=True, exist_ok=True)
+            report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        else:
+            count = build_graph_cache(data_dir / f"{split}.jsonl", output, tokenizer, config, ROOT)
         print(f"[OK] cached {split}: {count}")
 
 

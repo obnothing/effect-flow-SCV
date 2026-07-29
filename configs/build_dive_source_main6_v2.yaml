@@ -1,0 +1,10 @@
+raw_dir: DIVE_Raw_Data/Raw
+main6_data_dir: data/processed/DIVE_main6_random_split
+output_dir: data/processed/DIVE_source_main6_v2
+report_dir: data/reports/dive_source_main6_v2
+seed: 42
+split_ratios: [0.8, 0.1, 0.1]
+label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
+require_runtime_opcode_match: true
+exclude_conflicting_source_groups: true
+require_ast_parse: true

@@ -10,9 +10,9 @@ CANDIDATES = ("source_seq_mean", "source_graph_mean", "source_graph_mil", "sourc
 
 
 def main():
-    parser = argparse.ArgumentParser(); parser.add_argument("--result-root", default="results/dive_source_main6"); parser.add_argument("--checkpoint-root", default="checkpoints/dive_source_main6"); parser.add_argument("--output", default="results/dive_source_main6/validation_selection.json"); args = parser.parse_args()
+    parser = argparse.ArgumentParser(); parser.add_argument("--result-root", default="results/dive_source_main6"); parser.add_argument("--checkpoint-root", default="checkpoints/dive_source_main6"); parser.add_argument("--output", default="results/dive_source_main6/validation_selection.json"); parser.add_argument("--candidates", nargs="+", default=CANDIDATES); args = parser.parse_args()
     rows = []
-    for variant in CANDIDATES:
+    for variant in args.candidates:
         summary = json.loads((ROOT / args.result_root / variant / "checkpoint_summary.json").read_text(encoding="utf-8"))
         checkpoint = ROOT / args.checkpoint_root / variant / "best_macro_f1.pt"
         if not checkpoint.exists(): raise FileNotFoundError(checkpoint)

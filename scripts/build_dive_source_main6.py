@@ -16,7 +16,7 @@ from iterstrat.ml_stratifiers import MultilabelStratifiedShuffleSplit
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from solidity_graph_utils import extract_source_units, source_file_text, source_sha256  # noqa: E402
+from solidity_contract_graph_v2 import extract_audit_units, normalized_sha256, source_file_text  # noqa: E402
 
 
 def resolve(path: str) -> Path:
@@ -112,7 +112,11 @@ def main():
                 exclusions.append({"id": row["id"], "reason": reason, "contract_id": contract_id})
                 continue
             text = source_cache.setdefault(str(contract_id), source_file_text(source_path))
-            digest = source_sha256(text)
+            try:
+                digest = normalized_sha256(text)
+            except Exception as exc:
+                exclusions.append({"id": row["id"], "reason": "solidity_parse_or_normalize_failure", "detail": str(exc), "contract_id": contract_id})
+                continue
             audit_rows.append({
                 "original_id": row["id"], "contract_id": str(contract_id),
                 "source_path": str(source_path.relative_to(ROOT)).replace("\\", "/"),
@@ -130,7 +134,7 @@ def main():
             exclusions.extend({"id": row["original_id"], "reason": "conflicting_duplicate_source_label", "source_sha256": digest} for row in group)
             continue
         try:
-            extract_source_units(source_cache[group[0]["contract_id"]])
+            extract_audit_units(source_cache[group[0]["contract_id"]])
         except Exception as exc:
             exclusions.extend({"id": row["original_id"], "reason": "solidity_parse_or_unit_failure", "detail": str(exc), "source_sha256": digest} for row in group)
             continue

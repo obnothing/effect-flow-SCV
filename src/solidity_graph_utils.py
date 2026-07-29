@@ -61,13 +61,17 @@ def load_solidity_parser():
             "Run scripts/install_source_main6_dependencies.sh to install the Solidity parser"
         ) from exc
     grammar_library = Path(__file__).resolve().parents[1] / "third_party_grammars" / "solidity_v1_2_2_abi14.so"
-    if not grammar_library.is_file():
+    if grammar_library.is_file():
+        parser = Parser()
+        parser.set_language(Language(str(grammar_library), "solidity"))
+        return parser
+    try:
+        from tree_sitter_solidity import language as solidity_language
+    except ImportError as exc:
         raise RuntimeError(
             "Solidity grammar library is missing; run scripts/install_source_main6_dependencies.sh"
-        )
-    parser = Parser()
-    parser.set_language(Language(str(grammar_library), "solidity"))
-    return parser
+        ) from exc
+    return Parser(Language(solidity_language()))
 
 
 def parse_solidity(text: str):
