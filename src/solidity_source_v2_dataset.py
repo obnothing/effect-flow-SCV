@@ -48,7 +48,9 @@ def encode_record(record, tokenizer, config, root: Path):
     width, stride = int(config["max_code_tokens"]), int(config["window_stride"])
     mandatory, ordinary = [], []
     for unit in units:
-        ids = tokenizer(unit.source, add_special_tokens=False)["input_ids"]
+        # The complete unit may exceed the model limit; it is deliberately
+        # windowed below, so suppress the tokenizer's pre-window warning.
+        ids = tokenizer(unit.source, add_special_tokens=False, truncation=False, verbose=False)["input_ids"]
         unit_windows = _windows(ids, width, stride)
         if unit.mandatory:
             mandatory.extend(unit_windows)

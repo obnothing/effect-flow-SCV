@@ -26,8 +26,9 @@ def main():
     counts, mandatory, token_counts = [], [], []
     for index, row in enumerate(rows, 1):
         units = extract_audit_units(source_file_text(ROOT / row["source_path"]))
-        per_unit = [windows_for_tokens(len(tokenizer(unit.source, add_special_tokens=False)["input_ids"])) for unit in units]
-        counts.append(sum(per_unit)); mandatory.append(sum(value for unit, value in zip(units, per_unit) if unit.mandatory)); token_counts.append(sum(len(tokenizer(unit.source, add_special_tokens=False)["input_ids"]) for unit in units))
+        per_unit_tokens = [tokenizer(unit.source, add_special_tokens=False, truncation=False, verbose=False)["input_ids"] for unit in units]
+        per_unit = [windows_for_tokens(len(tokens)) for tokens in per_unit_tokens]
+        counts.append(sum(per_unit)); mandatory.append(sum(value for unit, value in zip(units, per_unit) if unit.mandatory)); token_counts.append(sum(len(tokens) for tokens in per_unit_tokens))
         if index % 250 == 0:
             print(f"budget: {index}/{len(rows)}", flush=True)
     p95 = int(np.percentile(counts, 95, method="higher"))
