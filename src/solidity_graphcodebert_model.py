@@ -20,6 +20,10 @@ class SolidityGraphCodeBERTMultiSlotMIL(nn.Module):
         self.encoder = AutoModel.from_pretrained(
             config["source_model_path"], local_files_only=True
         )
+        if bool(config.get("gradient_checkpointing", False)):
+            self.encoder.gradient_checkpointing_enable()
+            self.encoder.enable_input_require_grads()
+            self.encoder.config.use_cache = False
         if self.encoder.config.hidden_size != self.hidden_dim:
             raise ValueError("GraphCodeBERT hidden size does not match hidden_dim")
         self.dropout = nn.Dropout(float(config.get("dropout", 0.1)))

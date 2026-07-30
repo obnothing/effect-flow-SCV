@@ -100,6 +100,8 @@ def main():
     wrapped = DDP(model, device_ids=[device.index]) if world_size > 1 else model
     weights = pos_weight(train_set, config["pos_weight_mode"], float(config["max_pos_weight"])).to(device)
     optimizer = torch.optim.AdamW([item for item in wrapped.parameters() if item.requires_grad], lr=float(config["learning_rate"]), weight_decay=float(config["weight_decay"]))
+    amp_enabled = bool(config.get("fp16", True)) and device.type == "cuda"
+    scaler = torch.cuda.amp.GradScaler(enabled=amp_enabled)
     warmup, total = int(config["warmup_epochs"]), int(config["epochs"])
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda epoch: min(1.0, (epoch + 1) / max(1, warmup)) if epoch < warmup else max(float(config["min_learning_rate"]) / float(config["learning_rate"]), 0.5 * (1 + math.cos(math.pi * (epoch - warmup) / max(1, total - warmup)))) )
     checkpoint_dir, result_dir = ROOT / config["checkpoint_dir"], ROOT / config["result_dir"]
@@ -111,15 +113,16 @@ def main():
         wrapped.train(); optimizer.zero_grad(set_to_none=True); train_losses = []
         for step, batch in enumerate(train_loader, 1):
             batch = move(batch, device); kwargs = {key: batch[key] for key in ("input_ids", "token_mask", "graph_mask", "unit_mask")}
-            first = wrapped(**kwargs); bce = torch.nn.functional.binary_cross_entropy_with_logits(first["logits"], batch["multi_labels"], pos_weight=weights)
-            contrast = multilabel_supervised_contrastive(first["projection"], batch["multi_labels"], config["contrastive_temperature"]) if config["use_contrastive"] else bce * 0.0
-            rdrop = bce * 0.0
-            if config["use_rdrop"]:
-                second = wrapped(**kwargs); rdrop = symmetric_kl(first["logits"], second["logits"])
-            loss = bce + float(config["contrastive_weight"]) * contrast + float(config["rdrop_weight"]) * rdrop
-            (loss / int(config["gradient_accumulation_steps"])).backward(); train_losses.append(float(loss.detach()))
+            with torch.cuda.amp.autocast(enabled=amp_enabled):
+                first = wrapped(**kwargs); bce = torch.nn.functional.binary_cross_entropy_with_logits(first["logits"], batch["multi_labels"], pos_weight=weights)
+                contrast = multilabel_supervised_contrastive(first["projection"], batch["multi_labels"], config["contrastive_temperature"]) if config["use_contrastive"] else bce * 0.0
+                rdrop = bce * 0.0
+                if config["use_rdrop"]:
+                    second = wrapped(**kwargs); rdrop = symmetric_kl(first["logits"], second["logits"])
+                loss = bce + float(config["contrastive_weight"]) * contrast + float(config["rdrop_weight"]) * rdrop
+            scaler.scale(loss / int(config["gradient_accumulation_steps"])).backward(); train_losses.append(float(loss.detach()))
             if step % int(config["gradient_accumulation_steps"]) == 0 or step == len(train_loader):
-                torch.nn.utils.clip_grad_norm_(wrapped.parameters(), 1.0); optimizer.step(); optimizer.zero_grad(set_to_none=True)
+                scaler.unscale_(optimizer); torch.nn.utils.clip_grad_norm_(wrapped.parameters(), 1.0); scaler.step(optimizer); scaler.update(); optimizer.zero_grad(set_to_none=True)
         if rank == 0:
             result = evaluate(model, valid_loader, device, [0.5] * int(config["num_labels"]))
             metric = float(result["metrics"]["recognition_macro_f1"])

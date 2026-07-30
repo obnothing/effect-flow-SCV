@@ -13,7 +13,9 @@ common:
   max_length: 512
   hidden_dim: 768
   num_slots: 3
-  encoder_microbatch_size: 8
+  encoder_microbatch_size: 4
+  gradient_checkpointing: true
+  fp16: true
   dropout: 0.1
   batch_size: 2
   gradient_accumulation_steps: 8
