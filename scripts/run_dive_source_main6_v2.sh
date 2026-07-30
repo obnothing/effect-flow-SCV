@@ -2,6 +2,7 @@
 set -euo pipefail
 
 STAGE="${1:-prepare}"
+NPROC_PER_NODE="${NPROC_PER_NODE:-2}"
 CONFIG="configs/train_dive_source_main6_v2.yaml"
 PRETRAIN_CONFIG="configs/pretrain_dive_source_main6_v2.yaml"
 CACHE_DIR="data/features/dive_source_main6_v2_windows"
@@ -25,13 +26,13 @@ PY
   pretrain)
     test -f "$CACHE_DIR/train.pt"
     test ! -e "$CACHE_DIR/test.pt"
-    torchrun --standalone --nproc_per_node=2 src/pretrain_solidity_graphcodebert.py --config "$PRETRAIN_CONFIG"
+    torchrun --standalone --nproc_per_node="$NPROC_PER_NODE" src/pretrain_solidity_graphcodebert.py --config "$PRETRAIN_CONFIG"
     ;;
   train)
     test -f checkpoints/dive_source_main6_v2/dapt/hf_model/config.json
     test ! -e "$CACHE_DIR/test.pt"
     for variant in "${CANDIDATES[@]}"; do
-      torchrun --standalone --nproc_per_node=2 src/train_solidity_graphcodebert.py --config "$CONFIG" --variant "$variant"
+      torchrun --standalone --nproc_per_node="$NPROC_PER_NODE" src/train_solidity_graphcodebert.py --config "$CONFIG" --variant "$variant"
     done
     ;;
   select)
