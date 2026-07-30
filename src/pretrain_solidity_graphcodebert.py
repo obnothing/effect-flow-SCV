@@ -80,7 +80,9 @@ def main():
     wrapped = DDP(model, device_ids=[device.index]) if world > 1 else model
     optimizer = torch.optim.AdamW(wrapped.parameters(), lr=float(config["learning_rate"]), weight_decay=float(config["weight_decay"]))
     total_steps = max(1, (len(loader) * int(config["epochs"])) // int(config["gradient_accumulation_steps"])); scheduler = get_linear_schedule_with_warmup(optimizer, int(total_steps * float(config["warmup_ratio"])), total_steps)
-    scaler = torch.amp.GradScaler("cuda", enabled=bool(config["fp16"]) and device.type == "cuda"); losses = []; optimizer.zero_grad(set_to_none=True)
+    # PyTorch 2.0 exposes GradScaler under torch.cuda.amp; torch.amp gained
+    # this constructor in later releases.
+    scaler = torch.cuda.amp.GradScaler(enabled=bool(config["fp16"]) and device.type == "cuda"); losses = []; optimizer.zero_grad(set_to_none=True)
     for epoch in range(1, int(config["epochs"]) + 1):
         if sampler: sampler.set_epoch(epoch)
         wrapped.train()
