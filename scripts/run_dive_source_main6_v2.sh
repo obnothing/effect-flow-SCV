@@ -31,8 +31,10 @@ PY
   train)
     test -f checkpoints/dive_source_main6_v2/dapt/hf_model/config.json
     test ! -e "$CACHE_DIR/test.pt"
+    train_args=()
+    [[ "${RESUME:-0}" == "1" ]] && train_args+=(--resume)
     for variant in "${CANDIDATES[@]}"; do
-      torchrun --standalone --nproc_per_node="$NPROC_PER_NODE" src/train_solidity_graphcodebert.py --config "$CONFIG" --variant "$variant"
+      torchrun --standalone --nproc_per_node="$NPROC_PER_NODE" src/train_solidity_graphcodebert.py --config "$CONFIG" --variant "$variant" "${train_args[@]}"
     done
     ;;
   select)

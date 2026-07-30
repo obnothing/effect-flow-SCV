@@ -13,4 +13,4 @@ source ~/.bashrc
 set -u
 conda activate correlascan_a40
 mkdir -p logs
-bash scripts/run_dive_source_main6_v2.sh train
+RESUME="${RESUME:-0}" bash scripts/run_dive_source_main6_v2.sh train

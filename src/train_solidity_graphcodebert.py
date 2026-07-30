@@ -80,7 +80,7 @@ def evaluate(model, loader, device, thresholds):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", required=True); parser.add_argument("--variant", required=True)
+    parser.add_argument("--config", required=True); parser.add_argument("--variant", required=True); parser.add_argument("--resume", action="store_true")
     args = parser.parse_args(); config = load_config(args.config, args.variant)
     rank, world_size, device = setup_distributed(); set_seed(int(config["seed"]) + rank)
     cache_dir = ROOT / config["graph_cache_dir"]
@@ -107,8 +107,25 @@ def main():
     checkpoint_dir, result_dir = ROOT / config["checkpoint_dir"], ROOT / config["result_dir"]
     if rank == 0: checkpoint_dir.mkdir(parents=True, exist_ok=True); result_dir.mkdir(parents=True, exist_ok=True)
     if world_size > 1: dist.barrier()
-    best, patience, history = -1.0, 0, []
-    for epoch in range(1, total + 1):
+    best, patience, history, start_epoch = -1.0, 0, [], 1
+    checkpoint_path = checkpoint_dir / "best_macro_f1.pt"
+    if args.resume and checkpoint_path.exists():
+        resumed = torch.load(checkpoint_path, map_location="cpu")
+        model.load_state_dict(resumed["model_state_dict"])
+        best = float(resumed["best_metrics"]["recognition_macro_f1"])
+        start_epoch = int(resumed["epoch"]) + 1
+        patience = int(resumed.get("patience", 0))
+        history_path = result_dir / "epoch_history.json"
+        history = json.loads(history_path.read_text(encoding="utf-8")) if history_path.exists() else []
+        if "optimizer_state_dict" in resumed:
+            optimizer.load_state_dict(resumed["optimizer_state_dict"])
+            scheduler.load_state_dict(resumed["scheduler_state_dict"])
+            scaler.load_state_dict(resumed["scaler_state_dict"])
+        elif rank == 0:
+            print(json.dumps({"resume": "model_only", "start_epoch": start_epoch, "reason": "legacy checkpoint lacks optimizer state"}))
+        if rank == 0:
+            print(json.dumps({"resume": True, "checkpoint": str(checkpoint_path), "start_epoch": start_epoch, "best_macro_f1": best}))
+    for epoch in range(start_epoch, total + 1):
         if sampler: sampler.set_epoch(epoch)
         wrapped.train(); optimizer.zero_grad(set_to_none=True); train_losses = []
         for step, batch in enumerate(train_loader, 1):
@@ -130,7 +147,7 @@ def main():
             history.append(record); print(json.dumps(record))
             if metric > best:
                 best, patience = metric, 0
-                torch.save({"epoch": epoch, "config": config, "model_state_dict": model.state_dict(), "best_metrics": result["metrics"]}, checkpoint_dir / "best_macro_f1.pt")
+                torch.save({"epoch": epoch, "config": config, "model_state_dict": model.state_dict(), "best_metrics": result["metrics"], "optimizer_state_dict": optimizer.state_dict(), "scheduler_state_dict": scheduler.state_dict(), "scaler_state_dict": scaler.state_dict(), "patience": patience}, checkpoint_path)
             else: patience += 1
             (result_dir / "epoch_history.json").write_text(json.dumps(history, indent=2) + "\n", encoding="utf-8")
         scheduler.step()
@@ -138,7 +155,7 @@ def main():
         if world_size > 1: dist.broadcast(stop, 0)
         if bool(stop.item()): break
     if rank == 0:
-        checkpoint = torch.load(checkpoint_dir / "best_macro_f1.pt", map_location="cpu")
+        checkpoint = torch.load(checkpoint_path, map_location="cpu")
         summary = {"experiment_name": f"dive_source_main6_{args.variant}", "variant": args.variant, "best_macro_f1_value": float(checkpoint["best_metrics"]["recognition_macro_f1"]), "best_micro_f1_value": float(checkpoint["best_metrics"]["recognition_micro_f1"]), "mean_pr_auc": float(checkpoint["best_metrics"]["mean_pr_auc"]), "best_macro_f1_epoch": int(checkpoint["epoch"]), "selection_source": "validation_only", "test_labels_read": False, "per_label_f1": checkpoint["best_metrics"]["per_label_f1"]}
         (result_dir / "checkpoint_summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     if world_size > 1: dist.destroy_process_group()
