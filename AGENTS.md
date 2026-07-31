@@ -2,9 +2,9 @@
 
 ## Scope
 
-This repository has two isolated experiment routes: historical opcode-only
-DIVE Main-6, and DIVE Source-Main6. Do not mix their data, checkpoints,
-metrics, or claims. Do not reintroduce BJUT, legacy DIVE-8 labels, Front
+This repository has three isolated experiment routes: historical opcode-only
+DIVE Main-6, DIVE Source-Main6, and DIVE Main6 Opcode-CSDG. Do not mix their
+data, checkpoints, metrics, or claims. Do not reintroduce BJUT, legacy DIVE-8 labels, Front
 Running, Bad Randomness, MLSMOTE, ASL, retrieval-label overrides, or legacy
 Slurm pipelines.
 
@@ -38,6 +38,25 @@ public opcode MLM
 Use `configs/train_main6_random_090.yaml` and
 `scripts/run_main6_random_090.sh`. Do not use ETP, vulnerability templates,
 EFPP/ERR/VEP/VTM, graph evidence, or label retrieval in this route.
+
+## Opcode-CSDG Route
+
+```text
+Main-6 train-only continued MLM
+-> existing 64 x 8 x 768 sequence branch
+-> opcode-native basic-block CFG + conservative stack def-use graph
+-> label-conditioned graph residual MIL
+-> optional validation-qualified Gumbel-TopK node selection
+```
+
+Use `configs/train_main6_opcode_csdg.yaml` and the route-specific Slurm
+scripts. This route may use only generic EVM control-flow and stack
+dependencies; it must not use vulnerability templates, label retrieval, ETP,
+EFPP/ERR/VEP/VTM, hard-negative mining, ASL, MLSMOTE, or PPO/REINFORCE.
+Its graph caches, checkpoints, reports, and metrics live under the
+`main6_opcode_csdg` directories and must not overwrite historical opcode-only
+artifacts. Test remains locked until validation selection and threshold
+freezing are complete.
 
 ## Source-Main6 Route
 

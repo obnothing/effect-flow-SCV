@@ -14,6 +14,13 @@ Current route:
 Labels: Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS,
 and Time manipulation.
 
+The historical opcode-only route is immutable for comparison. A separate
+`DIVE Main6 Opcode-CSDG` route adds opcode-native basic-block CFG and
+conservative stack def-use edges as a residual graph branch over the frozen
+MLM8 sequence baseline. Its caches, checkpoints, and metrics are stored under
+`main6_opcode_csdg` and must not be mixed with the historical route or the
+Source-Main6 GraphCodeBERT route.
+
 ## Data
 
 Datasets are not committed. Transfer these directories to the server before
@@ -101,3 +108,26 @@ echo "prepare=$PREP dapt=$DAPT train=$TRAIN select=$SELECT"
 Review `results/dive_source_main6/validation_selection.json` and the selected
 candidate's valid thresholds before submitting `scripts/slurm_dive_source_main6_final.sh`.
 That final job is the only path that creates Source-Main6 test artifacts.
+
+## DIVE Main6 Opcode-CSDG
+
+This route uses the same six-label random split and the same train-only
+continued MLM checkpoint as the opcode baseline. It builds generic EVM
+control-flow and conservative stack def-use graphs, then adds a zero-initialized
+label-conditioned graph residual to the frozen `mlm8_slot3` predictor. It does
+not use source code, vulnerability templates, label retrieval, ETP, ASL,
+MLSMOTE, or policy-gradient reinforcement learning.
+
+Run audit, extraction, validation training, and selection in order:
+
+```bash
+AUDIT=$(sbatch --parsable scripts/slurm_main6_opcode_csdg_audit.slurm)
+EXTRACT=$(sbatch --parsable --dependency=afterok:$AUDIT scripts/slurm_main6_opcode_csdg_extract.slurm)
+TRAIN=$(sbatch --parsable --dependency=afterok:$EXTRACT scripts/slurm_main6_opcode_csdg_train_valid.slurm)
+SELECT=$(sbatch --parsable --dependency=afterok:$TRAIN scripts/slurm_main6_opcode_csdg_select_valid.slurm)
+echo "audit=$AUDIT extract=$EXTRACT train=$TRAIN select=$SELECT"
+```
+
+Review `results/main6_opcode_csdg/selection.json`. Only the selected
+validation candidate may create a test cache, and only one final test job may
+be submitted after manual approval.

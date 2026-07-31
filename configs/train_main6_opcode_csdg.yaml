@@ -1,0 +1,112 @@
+common:
+  route_name: DIVE Main6 Opcode-CSDG
+  data_dir: data/processed/DIVE_main6_random_split
+  train_path: data/processed/DIVE_main6_random_split/train.jsonl
+  valid_path: data/processed/DIVE_main6_random_split/valid.jsonl
+  test_path: data/processed/DIVE_main6_random_split/test.jsonl
+  hf_model_path: checkpoints/pretrain_evm_bert_main6_random_train_mlm8/hf_model
+  vocab_path: checkpoints/pretrain_evm_bert_main6_random_train_mlm8/evm_vocab.json
+  label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
+  num_labels: 6
+  seed: 42
+  feature_dim: 768
+  hidden_dim: 512
+  attn_dim: 256
+  max_chunks: 64
+  num_views: 8
+  dropout: 0.1
+  task_mode: recognition_only
+  detection_head_enabled: false
+  detection_loss_weight: 0.0
+  recognition_loss_weight: 1.0
+  derived_detection_from_multilabel: true
+  recognition_head_type: label_branch_mlp
+  label_branch_hidden_dim: 256
+  label_branch_dropout: 0.1
+  label_branch_use_layernorm: true
+  use_chunk_context: true
+  chunk_context_encoder_type: transformer
+  chunk_context_num_layers: 2
+  chunk_context_num_heads: 8
+  chunk_context_dropout: 0.1
+  recognition_aggregation: label_gated_attention
+  sequence_checkpoint: checkpoints/main6_random_090_mlm8/mlm8_slot3/best_macro_f1.pt
+  sequence_feature_dir: data/features/main6_opcode_csdg/sequence
+  graph_cache_dir: data/features/main6_opcode_csdg/graph
+  graph_hidden_dim: 256
+  graph_query_slots: 3
+  graph_dropout: 0.1
+  graph_batch_size: 32
+  graph_chunk_content_size: 510
+  graph_chunk_stride: 256
+  max_stack_producers: 4
+  include_storage_edges: true
+  learning_rate: 0.0001
+  weight_decay: 0.01
+  batch_size: 16
+  gradient_accumulation_steps: 4
+  num_workers: 4
+  epochs: 80
+  early_stopping_patience: 15
+  scheduler: cosine
+  scheduler_warmup_epochs: 3
+  min_learning_rate: 0.000001
+  warmup_graph_epochs: 5
+  graph_auxiliary_loss_weight: 0.2
+  use_pos_weight: true
+  pos_weight_mode: sqrt_ratio
+  max_pos_weight: 5.0
+  thresholds: [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
+  graph_sparse_topk: 0
+  graph_gumbel_temperature: 0.5
+  gradient_clip_norm: 1.0
+  fp16: true
+  baseline_summary: results/main6_random_090_mlm8/mlm8_slot3/checkpoint_summary.json
+  report_dir: data/reports/main6_opcode_csdg
+  checkpoint_root: checkpoints/main6_opcode_csdg
+  result_root: results/main6_opcode_csdg
+  leakage_status: random_split_no_label_retrieval
+  split_policy: random_split_train_only_pretraining
+
+variants:
+  cfg_residual:
+    experiment_name: main6_opcode_csdg_cfg_residual
+    checkpoint_dir: checkpoints/main6_opcode_csdg/cfg_residual
+    result_dir: results/main6_opcode_csdg/cfg_residual
+    use_graph_edges: true
+    include_storage_edges: false
+    use_stack_edges: false
+    graph_edge_type_mask: [0, 1, 2, 3]
+  cfg_stack_residual:
+    experiment_name: main6_opcode_csdg_cfg_stack_residual
+    checkpoint_dir: checkpoints/main6_opcode_csdg/cfg_stack_residual
+    result_dir: results/main6_opcode_csdg/cfg_stack_residual
+    use_graph_edges: true
+    include_storage_edges: false
+    use_stack_edges: true
+    graph_edge_type_mask: [0, 1, 2, 3, 4]
+  cfg_stack_storage_residual:
+    experiment_name: main6_opcode_csdg_cfg_stack_storage_residual
+    checkpoint_dir: checkpoints/main6_opcode_csdg/cfg_stack_storage_residual
+    result_dir: results/main6_opcode_csdg/cfg_stack_storage_residual
+    use_graph_edges: true
+    include_storage_edges: true
+    use_stack_edges: true
+    graph_edge_type_mask: [0, 1, 2, 3, 4, 5]
+  graph_mlp_control:
+    experiment_name: main6_opcode_csdg_graph_mlp_control
+    checkpoint_dir: checkpoints/main6_opcode_csdg/graph_mlp_control
+    result_dir: results/main6_opcode_csdg/graph_mlp_control
+    use_graph_edges: false
+    include_storage_edges: false
+    use_stack_edges: false
+    graph_edge_type_mask: []
+  cfg_stack_sparse_topk:
+    experiment_name: main6_opcode_csdg_cfg_stack_sparse_topk
+    checkpoint_dir: checkpoints/main6_opcode_csdg/cfg_stack_sparse_topk
+    result_dir: results/main6_opcode_csdg/cfg_stack_sparse_topk
+    use_graph_edges: true
+    include_storage_edges: false
+    use_stack_edges: true
+    graph_edge_type_mask: [0, 1, 2, 3, 4]
+    graph_sparse_topk: 16
