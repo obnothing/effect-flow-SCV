@@ -21,7 +21,14 @@ class SolidityGraphCodeBERTMultiSlotMIL(nn.Module):
             config["source_model_path"], local_files_only=True
         )
         if bool(config.get("gradient_checkpointing", False)):
-            self.encoder.gradient_checkpointing_enable()
+            # Reentrant checkpointing reuses the same LoRA parameter across
+            # window microbatches and is incompatible with PyTorch 2.0 DDP.
+            try:
+                self.encoder.gradient_checkpointing_enable(
+                    gradient_checkpointing_kwargs={"use_reentrant": False}
+                )
+            except TypeError:
+                self.encoder.gradient_checkpointing_enable()
             self.encoder.enable_input_require_grads()
             self.encoder.config.use_cache = False
         if self.encoder.config.hidden_size != self.hidden_dim:
