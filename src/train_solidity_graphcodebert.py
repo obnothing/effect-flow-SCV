@@ -97,7 +97,9 @@ def main():
                               num_workers=int(config["num_workers"]), pin_memory=True, collate_fn=collate)
     valid_loader = DataLoader(valid_set, batch_size=int(config["batch_size"]), shuffle=False, num_workers=int(config["num_workers"]), pin_memory=True, collate_fn=collate)
     model = SolidityGraphCodeBERTMultiSlotMIL(config); model.apply_lora(config); model.to(device)
-    wrapped = DDP(model, device_ids=[device.index]) if world_size > 1 else model
+    # Ablation variants deliberately bypass either the mean or MIL head, so
+    # their inactive branch parameters have no gradient in a given iteration.
+    wrapped = DDP(model, device_ids=[device.index], find_unused_parameters=True) if world_size > 1 else model
     weights = pos_weight(train_set, config["pos_weight_mode"], float(config["max_pos_weight"])).to(device)
     optimizer = torch.optim.AdamW([item for item in wrapped.parameters() if item.requires_grad], lr=float(config["learning_rate"]), weight_decay=float(config["weight_decay"]))
     amp_enabled = bool(config.get("fp16", True)) and device.type == "cuda"
