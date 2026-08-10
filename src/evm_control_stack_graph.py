@@ -203,11 +203,13 @@ def build_evm_graph(opcode_text: str, tokenizer=None, include_storage_edges: boo
     starts = sorted(boundaries)
     start_to_block = {start: idx for idx, start in enumerate(starts)}
     pc_to_block = {}
+    instruction_to_block = {}
     nodes = []
     for block_id, start in enumerate(starts):
         end = starts[block_id + 1] if block_id + 1 < len(starts) else len(instructions)
         block_instructions = instructions[start:end]
         for item in block_instructions:
+            instruction_to_block[item.index] = block_id
             if item.opcode == "JUMPDEST" or item.index == 0:
                 pc_to_block[item.pc] = block_id
         nodes.append({
@@ -292,17 +294,14 @@ def build_evm_graph(opcode_text: str, tokenizer=None, include_storage_edges: boo
 
     if include_storage_edges:
         for events in storage_events.values():
-            for left, _ in events:
-                for right, _ in events:
-                    if left != right:
-                        src = next((item.index for item in instructions if item.index == left), None)
-                        dst = next((item.index for item in instructions if item.index == right), None)
-                        if src is not None and dst is not None:
-                            stack_edges.add((src, dst, EDGE_TYPES["storage_dependency"]))
+            # Preserve the conservative access order without creating every
+            # pair of accesses to the same slot.
+            for (left, _), (right, _) in zip(events, events[1:]):
+                stack_edges.add((left, right, EDGE_TYPES["storage_dependency"]))
 
     for src_instruction, dst_instruction, edge_type in stack_edges:
-        src_block = next((block_id for block_id, node in enumerate(nodes) if node["instruction_start"] <= src_instruction < node["instruction_end"]), None)
-        dst_block = next((block_id for block_id, node in enumerate(nodes) if node["instruction_start"] <= dst_instruction < node["instruction_end"]), None)
+        src_block = instruction_to_block.get(src_instruction)
+        dst_block = instruction_to_block.get(dst_instruction)
         if src_block is not None and dst_block is not None and src_block != dst_block:
             edge_set.add((src_block, dst_block, edge_type))
 

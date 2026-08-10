@@ -16,7 +16,6 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from evm_control_stack_graph import EDGE_TYPES, build_evm_graph  # noqa: E402
-from evm_tokenizer import EVMOpcodeTokenizer  # noqa: E402
 
 
 def resolve(path):
@@ -42,7 +41,6 @@ def main():
     args = parser.parse_args()
     payload = yaml.safe_load(resolve(args.config).read_text(encoding="utf-8"))
     config = {**payload.get("common", {}), **payload.get("graph_cache", {})}
-    tokenizer = EVMOpcodeTokenizer.from_vocab_file(resolve(config["vocab_path"]))
     report = {
         "route": config["route_name"],
         "seed": 42,
@@ -65,8 +63,11 @@ def main():
         for _, item in tqdm(iter_jsonl(config[f"{split}_path"]), desc=f"audit:{split}"):
             graph = build_evm_graph(
                 item.get("opcode", ""),
-                tokenizer=tokenizer,
-                include_storage_edges=bool(config.get("include_storage_edges", False)),
+                # Audit only the generic CFG and conservative stack graph. The
+                # storage relation is an optional downstream ablation and can
+                # be quadratic on contracts with many slot accesses.
+                tokenizer=None,
+                include_storage_edges=False,
                 max_producers=int(config.get("max_stack_producers", 4)),
             )
             samples += 1
@@ -107,4 +108,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
