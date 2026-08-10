@@ -8,10 +8,11 @@
 #SBATCH --output=logs/main6_csdg_final_%j.out
 #SBATCH --error=logs/main6_csdg_final_%j.err
 
-set -euo pipefail
+set -eo pipefail
 cd "$SLURM_SUBMIT_DIR"
 source ~/.bashrc
 conda activate correlascan_a40
+set -u
 mkdir -p logs
 test "${ALLOW_TEST:-0}" = "1"
 test -f results/main6_opcode_csdg/selection.json

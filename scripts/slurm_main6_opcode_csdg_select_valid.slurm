@@ -8,12 +8,12 @@
 #SBATCH --output=logs/main6_csdg_select_%j.out
 #SBATCH --error=logs/main6_csdg_select_%j.err
 
-set -euo pipefail
+set -eo pipefail
 cd "$SLURM_SUBMIT_DIR"
 source ~/.bashrc
 conda activate correlascan_a40
+set -u
 mkdir -p logs
 python scripts/select_main6_opcode_csdg.py \
   --config configs/train_main6_opcode_csdg.yaml \
   --require-ablation
-

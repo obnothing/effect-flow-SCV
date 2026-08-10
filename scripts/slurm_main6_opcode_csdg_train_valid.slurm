@@ -8,10 +8,11 @@
 #SBATCH --output=logs/main6_csdg_train_%j.out
 #SBATCH --error=logs/main6_csdg_train_%j.err
 
-set -euo pipefail
+set -eo pipefail
 cd "$SLURM_SUBMIT_DIR"
 source ~/.bashrc
 conda activate correlascan_a40
+set -u
 mkdir -p logs
 for variant in cfg_residual cfg_stack_residual cfg_stack_storage_residual graph_mlp_control; do
   torchrun --standalone --nproc_per_node=2 scripts/train_main6_opcode_csdg.py \

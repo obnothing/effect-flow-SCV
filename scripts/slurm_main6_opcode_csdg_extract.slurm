@@ -8,10 +8,11 @@
 #SBATCH --output=logs/main6_csdg_extract_%j.out
 #SBATCH --error=logs/main6_csdg_extract_%j.err
 
-set -euo pipefail
+set -eo pipefail
 cd "$SLURM_SUBMIT_DIR"
 source ~/.bashrc
 conda activate correlascan_a40
+set -u
 mkdir -p logs
 python scripts/extract_evm_bert_chunk_features.py \
   --config configs/extract_main6_opcode_csdg_sequence.yaml \
@@ -21,4 +22,3 @@ python scripts/extract_main6_opcode_graph_cache.py \
   --splits train valid
 python scripts/check_main6_opcode_graph_cache.py \
   --config configs/train_main6_opcode_csdg.yaml
-
