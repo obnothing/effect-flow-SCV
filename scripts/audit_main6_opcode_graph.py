@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import multiprocessing as mp
 import sys
 from collections import Counter
 from pathlib import Path
@@ -34,10 +35,33 @@ def percentile(values, value):
     return float(np.percentile(values, value)) if values else 0.0
 
 
+def audit_opcode(task):
+    """Build one label-agnostic graph and return only audit statistics."""
+    opcode, max_producers = task
+    graph = build_evm_graph(
+        opcode,
+        tokenizer=None,
+        include_storage_edges=False,
+        max_producers=max_producers,
+    )
+    return graph["report"], [edge["type"] for edge in graph["edges"]]
+
+
+def split_tasks(path, max_producers):
+    for _, item in iter_jsonl(path):
+        yield item.get("opcode", ""), max_producers
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="configs/train_main6_opcode_csdg.yaml")
     parser.add_argument("--output", default="data/reports/main6_opcode_csdg/graph_audit.json")
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="CPU worker processes; each process audits independent opcode samples.",
+    )
     args = parser.parse_args()
     payload = yaml.safe_load(resolve(args.config).read_text(encoding="utf-8"))
     config = {**payload.get("common", {}), **payload.get("graph_cache", {})}
@@ -60,28 +84,22 @@ def main():
         token_coverage = []
         edge_counter = Counter()
         samples = 0
-        for _, item in tqdm(iter_jsonl(config[f"{split}_path"]), desc=f"audit:{split}"):
-            graph = build_evm_graph(
-                item.get("opcode", ""),
-                # Audit only the generic CFG and conservative stack graph. The
-                # storage relation is an optional downstream ablation and can
-                # be quadratic on contracts with many slot accesses.
-                tokenizer=None,
-                include_storage_edges=False,
-                max_producers=int(config.get("max_stack_producers", 4)),
-            )
-            samples += 1
-            stats = graph["report"]
-            block_counts.append(stats["basic_block_count"])
-            edge_counts.append(stats["edge_count"])
-            instruction_counts.append(stats["instruction_count"])
-            direct += stats["direct_jump_count"]
-            unresolved += stats["unresolved_jump_count"]
-            stack_edges += stats["stack_edge_count"]
-            storage_edges += stats["storage_edge_count"]
-            token_coverage.append(stats["token_coverage"])
-            for edge in graph["edges"]:
-                edge_counter[str(edge["type"])] += 1
+        max_producers = int(config.get("max_stack_producers", 4))
+        tasks = split_tasks(config[f"{split}_path"], max_producers)
+        worker_count = max(1, args.workers)
+        with mp.Pool(processes=worker_count) as pool:
+            results = pool.imap_unordered(audit_opcode, tasks, chunksize=8)
+            for stats, edge_types in tqdm(results, desc=f"audit:{split}"):
+                samples += 1
+                block_counts.append(stats["basic_block_count"])
+                edge_counts.append(stats["edge_count"])
+                instruction_counts.append(stats["instruction_count"])
+                direct += stats["direct_jump_count"]
+                unresolved += stats["unresolved_jump_count"]
+                stack_edges += stats["stack_edge_count"]
+                storage_edges += stats["storage_edge_count"]
+                token_coverage.append(stats["token_coverage"])
+                edge_counter.update(str(edge_type) for edge_type in edge_types)
         report["splits"][split] = {
             "samples": samples,
             "basic_blocks_mean": float(np.mean(block_counts)) if block_counts else 0.0,
@@ -103,6 +121,7 @@ def main():
     output = resolve(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(f"[OK] audit workers: {max(1, args.workers)}")
     print(f"[OK] wrote {output}")
 
 

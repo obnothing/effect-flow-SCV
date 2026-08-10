@@ -14,4 +14,6 @@ source ~/.bashrc
 conda activate correlascan_a40
 set -u
 mkdir -p logs
-python scripts/audit_main6_opcode_graph.py --config configs/train_main6_opcode_csdg.yaml
+python scripts/audit_main6_opcode_graph.py \
+  --config configs/train_main6_opcode_csdg.yaml \
+  --workers "${SLURM_CPUS_PER_TASK:-1}"
