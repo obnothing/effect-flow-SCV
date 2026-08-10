@@ -43,6 +43,7 @@ class Instruction:
 class AbstractValue:
     producers: frozenset
     constant: Optional[int] = None
+    unknown: bool = False
 
 
 def _parse_int(value: Optional[str]) -> Optional[int]:
@@ -155,30 +156,31 @@ def _stack_effect(opcode: str) -> Tuple[int, int]:
 def _merge_stack(old: Optional[List[AbstractValue]], new: List[AbstractValue], max_producers: int):
     if old is None:
         return list(new), True
-    length = max(len(old), len(new))
+    if len(old) != len(new):
+        # A stack-height disagreement at a CFG merge is not precise. Keep the
+        # common depth as unknown values so cyclic dispatchers converge.
+        length = min(len(old), len(new))
+        merged = [AbstractValue(frozenset(), None, True) for _ in range(length)]
+        return merged, merged != old
+    length = len(old)
     merged = []
-    changed = len(old) != len(new)
+    changed = False
     for index in range(length):
-        values = []
-        for stack in (old, new):
-            if index < len(stack):
-                values.append(stack[index])
+        values = [old[index], new[index]]
+        unknown = any(value.unknown for value in values)
         producers = set()
         constants = set()
         for value in values:
             producers.update(value.producers)
             if value.constant is not None:
                 constants.add(value.constant)
-        if len(producers) > max_producers:
-            producers = set()
-            constant = None
+        if unknown or len(producers) > max_producers:
+            item = AbstractValue(frozenset(), None, True)
         else:
-            constant = next(iter(constants)) if len(constants) == 1 and len(values) == 2 else (
-                next(iter(constants)) if len(values) == 1 and constants else None
-            )
-        item = AbstractValue(frozenset(producers), constant)
+            constant = next(iter(constants)) if len(constants) == 1 else None
+            item = AbstractValue(frozenset(producers), constant)
         merged.append(item)
-        if index >= len(old) or old[index] != item:
+        if old[index] != item:
             changed = True
     return merged, changed
 
@@ -261,6 +263,7 @@ def build_evm_graph(
 
     entry_stacks: Dict[int, Optional[List[AbstractValue]]] = {0: []}
     queue = deque([0])
+    pending = {0}
     stack_edges: Set[Tuple[int, int, int]] = set()
     storage_events: Dict[int, List[Tuple[int, bool]]] = {}
     worklist_steps = 0
@@ -271,6 +274,7 @@ def build_evm_graph(
             stack_analysis_capped = True
             break
         block_id = queue.popleft()
+        pending.discard(block_id)
         worklist_steps += 1
         stack = list(entry_stacks.get(block_id) or [])
         node = nodes[block_id]
@@ -293,7 +297,7 @@ def build_evm_graph(
                 stack = stack[:-min(pops, len(stack))]
             if instruction.opcode in DUP_OPCODES:
                 depth = int(instruction.opcode[3:])
-                value = stack[-depth] if len(stack) >= depth else AbstractValue(frozenset())
+                value = stack[-depth] if len(stack) >= depth else AbstractValue(frozenset(), None, True)
                 stack.append(value)
             elif instruction.opcode in SWAP_OPCODES:
                 depth = int(instruction.opcode[4:])
@@ -329,8 +333,9 @@ def build_evm_graph(
         for successor, _ in block_successors:
             merged, changed = _merge_stack(entry_stacks.get(successor), stack, max_producers)
             entry_stacks[successor] = merged
-            if changed:
+            if changed and successor not in pending:
                 queue.append(successor)
+                pending.add(successor)
 
     if include_storage_edges:
         for events in storage_events.values():

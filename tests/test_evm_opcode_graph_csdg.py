@@ -66,11 +66,17 @@ class OpcodeGraphTest(unittest.TestCase):
     def test_stack_analysis_budget_caps_pathological_loop(self):
         graph = build_evm_graph(
             "JUMPDEST PUSH1 0x00 DUP1 JUMP",
-            max_worklist_steps=8,
+            max_worklist_steps=20000,
             max_instruction_visits=64,
         )
-        self.assertTrue(graph["report"]["stack_analysis_capped"])
+        self.assertFalse(graph["report"]["stack_analysis_capped"])
         self.assertEqual(graph["report"]["basic_block_count"], 1)
+        capped = build_evm_graph(
+            "JUMPDEST PUSH1 0x00 DUP1 JUMP",
+            max_worklist_steps=0,
+            max_instruction_visits=64,
+        )
+        self.assertTrue(capped["report"]["stack_analysis_capped"])
 
     def test_zero_residual_reproduces_sequence_logits(self):
         config = model_config()

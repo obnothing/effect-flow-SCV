@@ -4,6 +4,7 @@ import argparse
 import json
 import multiprocessing as mp
 import sys
+import time
 from collections import Counter
 from pathlib import Path
 
@@ -37,7 +38,8 @@ def percentile(values, value):
 
 def audit_opcode(task):
     """Build one label-agnostic graph and return only audit statistics."""
-    opcode, max_producers, max_worklist_steps, max_instruction_visits = task
+    sample_id, opcode, max_producers, max_worklist_steps, max_instruction_visits = task
+    started = time.monotonic()
     graph = build_evm_graph(
         opcode,
         tokenizer=None,
@@ -46,12 +48,23 @@ def audit_opcode(task):
         max_worklist_steps=max_worklist_steps,
         max_instruction_visits=max_instruction_visits,
     )
-    return graph["report"], [edge["type"] for edge in graph["edges"]]
+    return (
+        sample_id,
+        time.monotonic() - started,
+        graph["report"],
+        [edge["type"] for edge in graph["edges"]],
+    )
 
 
 def split_tasks(path, max_producers, max_worklist_steps, max_instruction_visits):
-    for _, item in iter_jsonl(path):
-        yield item.get("opcode", ""), max_producers, max_worklist_steps, max_instruction_visits
+    for line_number, item in iter_jsonl(path):
+        yield (
+            str(item.get("id") or f"audit:{line_number}"),
+            item.get("opcode", ""),
+            max_producers,
+            max_worklist_steps,
+            max_instruction_visits,
+        )
 
 
 def main():
@@ -87,6 +100,7 @@ def main():
         worklist_steps = []
         instruction_visits = []
         capped_samples = 0
+        sample_times = []
         edge_counter = Counter()
         samples = 0
         max_producers = int(config.get("max_stack_producers", 4))
@@ -98,7 +112,7 @@ def main():
         worker_count = max(1, args.workers)
         with mp.Pool(processes=worker_count) as pool:
             results = pool.imap_unordered(audit_opcode, tasks, chunksize=1)
-            for stats, edge_types in tqdm(results, desc=f"audit:{split}"):
+            for sample_id, elapsed_seconds, stats, edge_types in tqdm(results, desc=f"audit:{split}"):
                 samples += 1
                 block_counts.append(stats["basic_block_count"])
                 edge_counts.append(stats["edge_count"])
@@ -111,6 +125,7 @@ def main():
                 worklist_steps.append(stats["stack_worklist_steps"])
                 instruction_visits.append(stats["stack_instruction_visits"])
                 capped_samples += int(stats["stack_analysis_capped"])
+                sample_times.append((elapsed_seconds, sample_id, stats))
                 edge_counter.update(str(edge_type) for edge_type in edge_types)
         report["splits"][split] = {
             "samples": samples,
@@ -130,6 +145,17 @@ def main():
             "stack_analysis_capped_rate": capped_samples / max(1, samples),
             "stack_worklist_steps_max": int(max(worklist_steps)) if worklist_steps else 0,
             "stack_instruction_visits_max": int(max(instruction_visits)) if instruction_visits else 0,
+            "max_sample_seconds": max((item[0] for item in sample_times), default=0.0),
+            "slowest_samples": [
+                {
+                    "id": sample_id,
+                    "seconds": elapsed_seconds,
+                    "instruction_count": stats["instruction_count"],
+                    "basic_block_count": stats["basic_block_count"],
+                    "stack_analysis_capped": stats["stack_analysis_capped"],
+                }
+                for elapsed_seconds, sample_id, stats in sorted(sample_times, reverse=True)[:20]
+            ],
             "mean_token_coverage": float(np.mean(token_coverage)) if token_coverage else 0.0,
             "edge_type_counts": dict(edge_counter),
             "batch_budget_over_256": int(sum(value > 256 for value in block_counts)),
