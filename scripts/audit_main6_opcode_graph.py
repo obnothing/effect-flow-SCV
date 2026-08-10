@@ -37,19 +37,21 @@ def percentile(values, value):
 
 def audit_opcode(task):
     """Build one label-agnostic graph and return only audit statistics."""
-    opcode, max_producers = task
+    opcode, max_producers, max_worklist_steps, max_instruction_visits = task
     graph = build_evm_graph(
         opcode,
         tokenizer=None,
         include_storage_edges=False,
         max_producers=max_producers,
+        max_worklist_steps=max_worklist_steps,
+        max_instruction_visits=max_instruction_visits,
     )
     return graph["report"], [edge["type"] for edge in graph["edges"]]
 
 
-def split_tasks(path, max_producers):
+def split_tasks(path, max_producers, max_worklist_steps, max_instruction_visits):
     for _, item in iter_jsonl(path):
-        yield item.get("opcode", ""), max_producers
+        yield item.get("opcode", ""), max_producers, max_worklist_steps, max_instruction_visits
 
 
 def main():
@@ -82,13 +84,20 @@ def main():
         stack_edges = 0
         storage_edges = 0
         token_coverage = []
+        worklist_steps = []
+        instruction_visits = []
+        capped_samples = 0
         edge_counter = Counter()
         samples = 0
         max_producers = int(config.get("max_stack_producers", 4))
-        tasks = split_tasks(config[f"{split}_path"], max_producers)
+        max_worklist_steps = int(config.get("max_stack_worklist_steps", 20000))
+        max_instruction_visits = int(config.get("max_stack_instruction_visits", 250000))
+        tasks = split_tasks(
+            config[f"{split}_path"], max_producers, max_worklist_steps, max_instruction_visits
+        )
         worker_count = max(1, args.workers)
         with mp.Pool(processes=worker_count) as pool:
-            results = pool.imap_unordered(audit_opcode, tasks, chunksize=8)
+            results = pool.imap_unordered(audit_opcode, tasks, chunksize=1)
             for stats, edge_types in tqdm(results, desc=f"audit:{split}"):
                 samples += 1
                 block_counts.append(stats["basic_block_count"])
@@ -99,6 +108,9 @@ def main():
                 stack_edges += stats["stack_edge_count"]
                 storage_edges += stats["storage_edge_count"]
                 token_coverage.append(stats["token_coverage"])
+                worklist_steps.append(stats["stack_worklist_steps"])
+                instruction_visits.append(stats["stack_instruction_visits"])
+                capped_samples += int(stats["stack_analysis_capped"])
                 edge_counter.update(str(edge_type) for edge_type in edge_types)
         report["splits"][split] = {
             "samples": samples,
@@ -114,6 +126,10 @@ def main():
             "unresolved_jump_count": unresolved,
             "stack_edge_count": stack_edges,
             "storage_edge_count": storage_edges,
+            "stack_analysis_capped_samples": capped_samples,
+            "stack_analysis_capped_rate": capped_samples / max(1, samples),
+            "stack_worklist_steps_max": int(max(worklist_steps)) if worklist_steps else 0,
+            "stack_instruction_visits_max": int(max(instruction_visits)) if instruction_visits else 0,
             "mean_token_coverage": float(np.mean(token_coverage)) if token_coverage else 0.0,
             "edge_type_counts": dict(edge_counter),
             "batch_budget_over_256": int(sum(value > 256 for value in block_counts)),

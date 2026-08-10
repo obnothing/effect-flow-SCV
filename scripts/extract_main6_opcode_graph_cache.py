@@ -144,6 +144,8 @@ def main():
                 tokenizer=tokenizer,
                 include_storage_edges=bool(config.get("include_storage_edges", False)),
                 max_producers=int(config.get("max_stack_producers", 4)),
+                max_worklist_steps=int(config.get("max_stack_worklist_steps", 20000)),
+                max_instruction_visits=int(config.get("max_stack_instruction_visits", 250000)),
             )
             features, feature_mask, windows, token_count = extract_nodes(
                 encoder, tokenizer, opcode, graph, config, device

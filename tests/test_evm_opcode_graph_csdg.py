@@ -63,6 +63,15 @@ class OpcodeGraphTest(unittest.TestCase):
         )
         self.assertGreaterEqual(graph["report"]["stack_edge_count"], 1)
 
+    def test_stack_analysis_budget_caps_pathological_loop(self):
+        graph = build_evm_graph(
+            "JUMPDEST PUSH1 0x00 DUP1 JUMP",
+            max_worklist_steps=8,
+            max_instruction_visits=64,
+        )
+        self.assertTrue(graph["report"]["stack_analysis_capped"])
+        self.assertEqual(graph["report"]["basic_block_count"], 1)
+
     def test_zero_residual_reproduces_sequence_logits(self):
         config = model_config()
         model = OpcodeGraphResidualMIL(config).eval()

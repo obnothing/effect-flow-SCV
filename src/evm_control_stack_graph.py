@@ -183,7 +183,14 @@ def _merge_stack(old: Optional[List[AbstractValue]], new: List[AbstractValue], m
     return merged, changed
 
 
-def build_evm_graph(opcode_text: str, tokenizer=None, include_storage_edges: bool = False, max_producers: int = 4):
+def build_evm_graph(
+    opcode_text: str,
+    tokenizer=None,
+    include_storage_edges: bool = False,
+    max_producers: int = 4,
+    max_worklist_steps: int = 20000,
+    max_instruction_visits: int = 250000,
+):
     token_spans = None
     token_count = None
     if tokenizer is not None:
@@ -191,7 +198,26 @@ def build_evm_graph(opcode_text: str, tokenizer=None, include_storage_edges: boo
         token_count = len(tokens)
     instructions = _raw_instructions(opcode_text, token_spans)
     if not instructions:
-        return {"nodes": [], "edges": [], "edge_types": EDGE_TYPES.copy(), "report": {"token_count": 0}}
+        return {
+            "nodes": [],
+            "edges": [],
+            "edge_types": EDGE_TYPES.copy(),
+            "report": {
+                "instruction_count": 0,
+                "token_count": 0,
+                "basic_block_count": 0,
+                "edge_count": 0,
+                "direct_jump_count": 0,
+                "unresolved_jump_count": 0,
+                "direct_jump_resolution_rate": 0.0,
+                "stack_edge_count": 0,
+                "storage_edge_count": 0,
+                "token_coverage": 0.0,
+                "stack_worklist_steps": 0,
+                "stack_instruction_visits": 0,
+                "stack_analysis_capped": False,
+            },
+        }
 
     boundaries = {0}
     for instruction in instructions:
@@ -237,12 +263,23 @@ def build_evm_graph(opcode_text: str, tokenizer=None, include_storage_edges: boo
     queue = deque([0])
     stack_edges: Set[Tuple[int, int, int]] = set()
     storage_events: Dict[int, List[Tuple[int, bool]]] = {}
-    while queue:
+    worklist_steps = 0
+    instruction_visits = 0
+    stack_analysis_capped = False
+    while queue and not stack_analysis_capped:
+        if worklist_steps >= max_worklist_steps:
+            stack_analysis_capped = True
+            break
         block_id = queue.popleft()
+        worklist_steps += 1
         stack = list(entry_stacks.get(block_id) or [])
         node = nodes[block_id]
         block_successors: List[Tuple[int, int]] = []
         for instruction in instructions[node["instruction_start"]:node["instruction_end"]]:
+            if instruction_visits >= max_instruction_visits:
+                stack_analysis_capped = True
+                break
+            instruction_visits += 1
             pops, pushes = _stack_effect(instruction.opcode)
             consumed = stack[-pops:] if pops else []
             for value in consumed:
@@ -270,6 +307,9 @@ def build_evm_graph(opcode_text: str, tokenizer=None, include_storage_edges: boo
                     stack.append(AbstractValue(frozenset({instruction.index}), constant))
             if len(stack) > 1024:
                 stack = stack[-1024:]
+
+        if stack_analysis_capped:
+            break
 
         last = instructions[node["instruction_end"] - 1]
         if last.opcode in {"JUMP", "JUMPI"}:
@@ -318,5 +358,8 @@ def build_evm_graph(opcode_text: str, tokenizer=None, include_storage_edges: boo
         "stack_edge_count": sum(edge["type"] == EDGE_TYPES["stack_def_use"] for edge in edges),
         "storage_edge_count": sum(edge["type"] == EDGE_TYPES["storage_dependency"] for edge in edges),
         "token_coverage": sum(end > start for start, end in node_token_ranges) / max(1, len(nodes)),
+        "stack_worklist_steps": worklist_steps,
+        "stack_instruction_visits": instruction_visits,
+        "stack_analysis_capped": stack_analysis_capped,
     }
     return {"nodes": nodes, "edges": edges, "edge_types": EDGE_TYPES.copy(), "report": report}
