@@ -2820,7 +2820,8 @@ class MLM8ViewMultiSlotMIL(EVMChunkMILClassifier):
         slot_chunks = h.unsqueeze(2).unsqueeze(3) + scale * view_summary
         slot_chunk_logits = self.slot_chunk_score(slot_chunks).squeeze(-1)
         slot_chunk_logits = slot_chunk_logits.masked_fill(
-            ~chunk_mask.unsqueeze(-1).unsqueeze(-1), -1e9
+            ~chunk_mask.unsqueeze(-1).unsqueeze(-1),
+            torch.finfo(slot_chunk_logits.dtype).min,
         )
         slot_chunk_attention = torch.softmax(slot_chunk_logits, dim=1)
         slot_representations = torch.einsum(

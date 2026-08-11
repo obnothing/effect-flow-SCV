@@ -145,7 +145,9 @@ class OpcodeGraphResidualMIL(nn.Module):
         values = self.graph_value(x)
         slots = self.graph_queries + keys.new_zeros((self.num_labels, self.graph_queries.shape[1], keys.shape[-1]))
         slot_logits = torch.einsum("lsd,vd->lsv", slots, keys) / (keys.shape[-1] ** 0.5)
-        slot_logits = slot_logits.masked_fill(~valid.view(1, 1, -1), -1e9)
+        slot_logits = slot_logits.masked_fill(
+            ~valid.view(1, 1, -1), torch.finfo(slot_logits.dtype).min
+        )
         selected = None
         if self.sparse_topk > 0 and int(valid.sum()) > self.sparse_topk:
             label_scores = slot_logits.max(dim=1).values
@@ -154,7 +156,9 @@ class OpcodeGraphResidualMIL(nn.Module):
             top_indices = label_scores.topk(self.sparse_topk, dim=-1).indices
             selected = torch.zeros_like(label_scores, dtype=torch.bool)
             selected.scatter_(1, top_indices, True)
-            slot_logits = slot_logits.masked_fill(~selected.unsqueeze(1), -1e9)
+            slot_logits = slot_logits.masked_fill(
+                ~selected.unsqueeze(1), torch.finfo(slot_logits.dtype).min
+            )
         attention = torch.softmax(slot_logits, dim=-1)
         slot_repr = torch.einsum("lsv,vd->lsd", attention, values)
         merge = torch.softmax(self.graph_slot_merge(slot_repr).squeeze(-1), dim=-1)

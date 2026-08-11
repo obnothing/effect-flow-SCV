@@ -122,6 +122,19 @@ class OpcodeGraphTest(unittest.TestCase):
         )
         self.assertTrue(torch.isfinite(output["recognition_logits"]).all())
 
+    def test_graph_half_precision_mask_is_finite(self):
+        config = model_config()
+        model = OpcodeGraphResidualMIL(config).eval().half()
+        output = model(
+            torch.randn(1, 2, 8, 768).half(),
+            torch.ones(1, 2, dtype=torch.bool),
+            [torch.randn(3, 768).half()],
+            [torch.tensor([True, True, False])],
+            [torch.empty((2, 0), dtype=torch.long)],
+            [torch.empty((0,), dtype=torch.long)],
+        )
+        self.assertTrue(torch.isfinite(output["recognition_logits"]).all())
+
 
 if __name__ == "__main__":
     unittest.main()
