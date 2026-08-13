@@ -94,36 +94,7 @@ def thresholds_and_metrics(logits, labels, candidates):
     }
 
 
-def collect_predictions(logits, labels, world):
-    if world == 1:
-        return logits.detach().cpu().numpy(), labels.detach().cpu().numpy()
-
-    # NCCL collectives should exchange tensors, not Python/NumPy objects.
-    # all_gather_object can stall while creating the NCCL communicator for the
-    # object-size exchange, especially in interactive torchrun sessions.
-    local_count = torch.tensor([logits.shape[0]], device=logits.device, dtype=torch.long)
-    counts = [torch.zeros_like(local_count) for _ in range(world)]
-    dist.all_gather(counts, local_count)
-    counts = [int(value.item()) for value in counts]
-    max_count = max(counts)
-
-    def gather_tensor(value):
-        padded = torch.zeros(
-            (max_count,) + tuple(value.shape[1:]),
-            device=value.device,
-            dtype=value.dtype,
-        )
-        padded[: value.shape[0]] = value.detach()
-        gathered = [torch.empty_like(padded) for _ in range(world)]
-        dist.all_gather(gathered, padded)
-        return torch.cat([item[:count] for item, count in zip(gathered, counts)], dim=0)
-
-    gathered_logits = gather_tensor(logits)
-    gathered_labels = gather_tensor(labels)
-    return gathered_logits.cpu().numpy(), gathered_labels.cpu().numpy()
-
-
-def run_epoch(model, loader, optimizer, scaler, device, pos_weight, config, train, world):
+def run_epoch(model, loader, optimizer, scaler, device, pos_weight, config, train, world, epoch, collect_logits=False):
     model.train(train)
     if not train:
         model.eval()
@@ -135,19 +106,23 @@ def run_epoch(model, loader, optimizer, scaler, device, pos_weight, config, trai
         optimizer.zero_grad(set_to_none=True)
     for step, batch in enumerate(loader):
         batch = move_graph_batch(batch, device)
-        with torch.cuda.amp.autocast(enabled=bool(config.get("fp16", True)) and device.type == "cuda"):
-            output = model(
-                batch["sequence_features"], batch["sequence_mask"], batch["node_features"],
-                batch["node_mask"], batch["edge_index"], batch["edge_type"], return_attention=False,
-            )
-            final_loss = nn.functional.binary_cross_entropy_with_logits(
-                output["recognition_logits"], batch["multi_labels"], pos_weight=pos_weight
-            )
-            graph_loss = nn.functional.binary_cross_entropy_with_logits(
-                output["graph_logits"], batch["multi_labels"], pos_weight=pos_weight
-            )
-            loss = final_loss + float(config.get("graph_auxiliary_loss_weight", 0.2)) * graph_loss
-            scaled_loss = loss / accumulation
+        with torch.set_grad_enabled(train):
+            with torch.cuda.amp.autocast(enabled=bool(config.get("fp16", True)) and device.type == "cuda"):
+                output = model(
+                    batch["sequence_features"], batch["sequence_mask"], batch["node_features"],
+                    batch["node_mask"], batch["edge_index"], batch["edge_type"], return_attention=False,
+                )
+                final_loss = nn.functional.binary_cross_entropy_with_logits(
+                    output["recognition_logits"], batch["multi_labels"], pos_weight=pos_weight
+                )
+                graph_loss = nn.functional.binary_cross_entropy_with_logits(
+                    output["graph_logits"], batch["multi_labels"], pos_weight=pos_weight
+                )
+                if train and epoch <= int(config.get("warmup_graph_epochs", 0)):
+                    loss = graph_loss
+                else:
+                    loss = final_loss + float(config.get("graph_auxiliary_loss_weight", 0.2)) * graph_loss
+                scaled_loss = loss / accumulation
         if train:
             scaler.scale(scaled_loss).backward()
             if (step + 1) % accumulation == 0 or step + 1 == len(loader):
@@ -158,12 +133,16 @@ def run_epoch(model, loader, optimizer, scaler, device, pos_weight, config, trai
                 optimizer.zero_grad(set_to_none=True)
         total_loss += float(loss.detach().item()) * batch["multi_labels"].shape[0]
         total_count += batch["multi_labels"].shape[0]
-        logits_list.append(output["recognition_logits"].detach())
-        labels_list.append(batch["multi_labels"].detach())
-    local_logits = torch.cat(logits_list, dim=0)
-    local_labels = torch.cat(labels_list, dim=0)
-    logits, labels = collect_predictions(local_logits, local_labels, world)
-    return total_loss / max(1, total_count), logits, labels
+        if collect_logits:
+            logits_list.append(output["recognition_logits"].detach().cpu())
+            labels_list.append(batch["multi_labels"].detach().cpu())
+    loss_stats = torch.tensor([total_loss, float(total_count)], device=device, dtype=torch.float64)
+    if world > 1:
+        dist.all_reduce(loss_stats, op=dist.ReduceOp.SUM)
+    loss_value = float((loss_stats[0] / loss_stats[1].clamp_min(1.0)).item())
+    if not collect_logits:
+        return loss_value, None, None
+    return loss_value, torch.cat(logits_list, dim=0).numpy(), torch.cat(labels_list, dim=0).numpy()
 
 
 def save_json(path, value):
@@ -196,7 +175,17 @@ def main():
     if not trainable:
         raise RuntimeError("No trainable graph parameters")
     optimizer = torch.optim.AdamW(trainable, lr=float(config["learning_rate"]), weight_decay=float(config.get("weight_decay", 0.01)))
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=int(config["epochs"]), eta_min=float(config.get("min_learning_rate", 1e-6)))
+    warmup_epochs = int(config.get("scheduler_warmup_epochs", 0))
+    total_epochs = int(config["epochs"])
+    min_lr = float(config.get("min_learning_rate", 1e-6))
+    base_lr = float(config["learning_rate"])
+    def lr_lambda(step):
+        if warmup_epochs > 0 and step < warmup_epochs:
+            return float(step + 1) / float(warmup_epochs)
+        progress = (step - warmup_epochs) / max(1, total_epochs - warmup_epochs)
+        cosine = 0.5 * (1.0 + np.cos(np.pi * min(1.0, max(0.0, progress))))
+        return (min_lr / base_lr) + (1.0 - min_lr / base_lr) * cosine
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lr_lambda)
     scaler = torch.cuda.amp.GradScaler(enabled=bool(config.get("fp16", True)) and device.type == "cuda")
     pos_weight = compute_pos_weight(train_set, config.get("max_pos_weight", 5.0)).to(device)
     checkpoint_dir = resolve(config["checkpoint_dir"])
@@ -213,12 +202,12 @@ def main():
     for epoch in range(1, int(config["epochs"]) + 1):
         if train_sampler is not None:
             train_sampler.set_epoch(epoch)
-        train_loss, _, _ = run_epoch(model, train_loader, optimizer, scaler, device, pos_weight, config, True, world)
-        valid_loss, valid_logits, valid_labels = run_epoch(model, valid_loader, optimizer, scaler, device, pos_weight, config, False, world)
-        metrics = thresholds_and_metrics(valid_logits, valid_labels, config["thresholds"])
-        record = {"epoch": epoch, "train_loss": train_loss, "valid_loss": valid_loss, **metrics, "learning_rate": optimizer.param_groups[0]["lr"], "residual_gate": (model.module if world > 1 else model).alpha.detach().cpu().tanh().tolist()}
-        history.append(record)
+        train_loss, _, _ = run_epoch(model, train_loader, optimizer, scaler, device, pos_weight, config, True, world, epoch)
+        valid_loss, valid_logits, valid_labels = run_epoch(model, valid_loader, optimizer, scaler, device, pos_weight, config, False, world, epoch, collect_logits=is_main(rank))
         if is_main(rank):
+            metrics = thresholds_and_metrics(valid_logits, valid_labels, config["thresholds"])
+            record = {"epoch": epoch, "train_loss": train_loss, "valid_loss": valid_loss, **metrics, "learning_rate": optimizer.param_groups[0]["lr"], "residual_gate": (model.module if world > 1 else model).alpha.detach().cpu().tanh().tolist()}
+            history.append(record)
             save_json(result_dir / "epoch_history.json", history)
             payload = {
                 "schema": "main6_opcode_csdg_checkpoint_v1",
@@ -239,9 +228,9 @@ def main():
                 patience += 1
             print(f"[{config['variant']}] epoch={epoch} train_loss={train_loss:.6f} valid_loss={valid_loss:.6f} macro_f1={metrics['macro_f1']:.6f} micro_f1={metrics['micro_f1']:.6f}")
         if world > 1:
-            stop = [patience >= int(config["early_stopping_patience"]) if is_main(rank) else False]
-            dist.broadcast_object_list(stop, src=0)
-            if stop[0]:
+            stop = torch.tensor([int(is_main(rank) and patience >= int(config["early_stopping_patience"]))], device=device, dtype=torch.int32)
+            dist.broadcast(stop, src=0)
+            if bool(stop.item()):
                 break
         elif patience >= int(config["early_stopping_patience"]):
             break
