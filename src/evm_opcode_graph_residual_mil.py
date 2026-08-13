@@ -32,12 +32,15 @@ class RelationGraphLayer(nn.Module):
     def _edge_softmax(scores, destinations, node_count):
         if scores.numel() == 0:
             return scores
-        maximum = torch.full((node_count,), -torch.inf, device=scores.device, dtype=scores.dtype)
-        maximum.scatter_reduce_(0, destinations, scores, reduce="amax", include_self=True)
-        weights = torch.exp(scores - maximum[destinations])
-        denominator = torch.zeros(node_count, device=scores.device, dtype=scores.dtype)
+        # Keep the reduction in fp32 under autocast. The resulting weights are
+        # cast back so message aggregation has one consistent dtype.
+        scores_float = scores.float()
+        maximum = torch.full((node_count,), -torch.inf, device=scores.device, dtype=torch.float32)
+        maximum.scatter_reduce_(0, destinations, scores_float, reduce="amax", include_self=True)
+        weights = torch.exp(scores_float - maximum[destinations])
+        denominator = torch.zeros(node_count, device=scores.device, dtype=torch.float32)
         denominator.index_add_(0, destinations, weights)
-        return weights / denominator[destinations].clamp_min(1e-8)
+        return (weights / denominator[destinations].clamp_min(1e-8)).to(scores.dtype)
 
     def forward(self, node_features, edge_index, edge_type, node_mask, use_edges=True):
         if node_features.ndim != 2:

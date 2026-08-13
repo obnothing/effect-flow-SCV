@@ -130,8 +130,8 @@ class OpcodeGraphTest(unittest.TestCase):
             torch.ones(1, 2, dtype=torch.bool),
             [torch.randn(3, 768).half()],
             [torch.tensor([True, True, False])],
-            [torch.empty((2, 0), dtype=torch.long)],
-            [torch.empty((0,), dtype=torch.long)],
+            [torch.tensor([[0, 1], [1, 0]], dtype=torch.long)],
+            [torch.tensor([0, 1], dtype=torch.long)],
         )
         self.assertTrue(torch.isfinite(output["recognition_logits"]).all())
 
