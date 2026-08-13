@@ -58,7 +58,9 @@ class RelationGraphLayer(nn.Module):
             weights = self._edge_softmax(scores, destination_index, x.shape[0])
             messages = self.message(source + relation) * weights.unsqueeze(1)
             aggregate = torch.zeros_like(x)
-            aggregate.index_add_(0, destination_index, messages)
+            # Autocast may produce half-precision messages while x remains
+            # float32; index_add_ requires both tensors to have one dtype.
+            aggregate.index_add_(0, destination_index, messages.to(aggregate.dtype))
         else:
             aggregate = torch.zeros_like(x)
         updated = self.norm(x + self.dropout(F.gelu(self.self_update(x) + aggregate)))

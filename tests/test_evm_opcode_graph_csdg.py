@@ -135,6 +135,19 @@ class OpcodeGraphTest(unittest.TestCase):
         )
         self.assertTrue(torch.isfinite(output["recognition_logits"]).all())
 
+    def test_graph_mixed_precision_edge_aggregation_is_finite(self):
+        config = model_config()
+        model = OpcodeGraphResidualMIL(config).eval()
+        output = model(
+            torch.randn(1, 2, 8, 768),
+            torch.ones(1, 2, dtype=torch.bool),
+            [torch.randn(3, 768)],
+            [torch.tensor([True, True, False])],
+            [torch.tensor([[0, 1], [1, 0]], dtype=torch.long)],
+            [torch.tensor([0, 1], dtype=torch.long)],
+        )
+        self.assertTrue(torch.isfinite(output["recognition_logits"]).all())
+
 
 if __name__ == "__main__":
     unittest.main()

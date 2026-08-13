@@ -95,12 +95,32 @@ def thresholds_and_metrics(logits, labels, candidates):
 
 
 def collect_predictions(logits, labels, world):
-    local = (logits.detach().cpu().numpy(), labels.detach().cpu().numpy())
     if world == 1:
-        return local
-    gathered = [None for _ in range(world)]
-    dist.all_gather_object(gathered, local)
-    return np.concatenate([item[0] for item in gathered]), np.concatenate([item[1] for item in gathered])
+        return logits.detach().cpu().numpy(), labels.detach().cpu().numpy()
+
+    # NCCL collectives should exchange tensors, not Python/NumPy objects.
+    # all_gather_object can stall while creating the NCCL communicator for the
+    # object-size exchange, especially in interactive torchrun sessions.
+    local_count = torch.tensor([logits.shape[0]], device=logits.device, dtype=torch.long)
+    counts = [torch.zeros_like(local_count) for _ in range(world)]
+    dist.all_gather(counts, local_count)
+    counts = [int(value.item()) for value in counts]
+    max_count = max(counts)
+
+    def gather_tensor(value):
+        padded = torch.zeros(
+            (max_count,) + tuple(value.shape[1:]),
+            device=value.device,
+            dtype=value.dtype,
+        )
+        padded[: value.shape[0]] = value.detach()
+        gathered = [torch.empty_like(padded) for _ in range(world)]
+        dist.all_gather(gathered, padded)
+        return torch.cat([item[:count] for item, count in zip(gathered, counts)], dim=0)
+
+    gathered_logits = gather_tensor(logits)
+    gathered_labels = gather_tensor(labels)
+    return gathered_logits.cpu().numpy(), gathered_labels.cpu().numpy()
 
 
 def run_epoch(model, loader, optimizer, scaler, device, pos_weight, config, train, world):
@@ -250,4 +270,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
