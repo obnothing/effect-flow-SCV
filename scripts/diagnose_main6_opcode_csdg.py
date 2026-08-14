@@ -163,6 +163,12 @@ def main():
     parser.add_argument("--config", default="configs/train_main6_opcode_csdg.yaml")
     parser.add_argument("--variant", required=True)
     parser.add_argument("--output")
+    parser.add_argument(
+        "--num-workers",
+        type=int,
+        default=0,
+        help="DataLoader workers; keep 0 for ragged graph-cache diagnostics on low-FD systems.",
+    )
     args = parser.parse_args()
 
     config = load_config(args.config, args.variant)
@@ -177,7 +183,13 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device).eval()
     dataset = OpcodeGraphSequenceDataset(graph_dir / "valid.pt", sequence_dir / "valid.pt", config["label_names"])
-    loader = DataLoader(dataset, batch_size=int(config["batch_size"]), shuffle=False, num_workers=int(config.get("num_workers", 0)), collate_fn=collate_opcode_graph)
+    loader = DataLoader(
+        dataset,
+        batch_size=int(config["batch_size"]),
+        shuffle=False,
+        num_workers=max(0, args.num_workers),
+        collate_fn=collate_opcode_graph,
+    )
 
     full = predict(model, loader, device, collect_attention=True)
     labels = full["labels"]

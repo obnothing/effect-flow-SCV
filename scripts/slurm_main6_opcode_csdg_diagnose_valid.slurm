@@ -20,6 +20,7 @@ for variant in cfg_residual cfg_stack_residual cfg_stack_storage_residual graph_
   if [[ -f "$checkpoint" ]]; then
     python scripts/diagnose_main6_opcode_csdg.py \
       --config configs/train_main6_opcode_csdg.yaml \
-      --variant "$variant"
+      --variant "$variant" \
+      --num-workers 0
   fi
 done
