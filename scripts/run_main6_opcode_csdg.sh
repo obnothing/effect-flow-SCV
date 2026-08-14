@@ -31,6 +31,28 @@ PY
       python scripts/analyze_main6_opcode_csdg.py --config configs/train_main6_opcode_csdg.yaml --variant cfg_stack_sparse_topk
     fi
     ;;
+  dynamic)
+    for variant in cfg_stack_dynamic_gate cfg_stack_dynamic_gate_shuffled graph_mlp_dynamic_gate; do
+      torchrun --standalone --nproc_per_node=2 scripts/train_main6_opcode_csdg.py --config configs/train_main6_opcode_csdg.yaml --variant "$variant"
+      python scripts/analyze_main6_opcode_csdg.py --config configs/train_main6_opcode_csdg.yaml --variant "$variant"
+      python scripts/diagnose_main6_opcode_csdg.py --config configs/train_main6_opcode_csdg.yaml --variant "$variant" --num-workers 0
+    done
+    ;;
+  extract-local)
+    python scripts/extract_main6_opcode_graph_cache.py --config configs/train_main6_opcode_csdg.yaml --variant cfg_stack_local_attention --splits train valid
+    python scripts/check_main6_opcode_graph_cache.py --config configs/train_main6_opcode_csdg.yaml --variant cfg_stack_local_attention
+    ;;
+  extract-instruction-value)
+    python scripts/extract_main6_opcode_graph_cache.py --config configs/train_main6_opcode_csdg.yaml --variant instruction_value_dynamic_gate --splits train valid
+    python scripts/check_main6_opcode_graph_cache.py --config configs/train_main6_opcode_csdg.yaml --variant instruction_value_dynamic_gate
+    ;;
+  train-local)
+    for variant in cfg_stack_local_attention instruction_value_dynamic_gate; do
+      torchrun --standalone --nproc_per_node=2 scripts/train_main6_opcode_csdg.py --config configs/train_main6_opcode_csdg.yaml --variant "$variant"
+      python scripts/analyze_main6_opcode_csdg.py --config configs/train_main6_opcode_csdg.yaml --variant "$variant"
+      python scripts/diagnose_main6_opcode_csdg.py --config configs/train_main6_opcode_csdg.yaml --variant "$variant" --num-workers 0
+    done
+    ;;
   select)
     python scripts/select_main6_opcode_csdg.py --config configs/train_main6_opcode_csdg.yaml --require-ablation
     ;;
@@ -52,7 +74,7 @@ PY
     python scripts/evaluate_main6_opcode_csdg.py --config configs/train_main6_opcode_csdg.yaml --split test
     ;;
   *)
-    echo "usage: $0 {audit|extract|train|select|final}" >&2
+    echo "usage: $0 {audit|extract|train|dynamic|extract-local|extract-instruction-value|train-local|select|final}" >&2
     exit 2
     ;;
 esac

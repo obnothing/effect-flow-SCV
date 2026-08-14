@@ -19,6 +19,8 @@ EDGE_TYPES = {
     "direct_jump": 3,
     "stack_def_use": 4,
     "storage_dependency": 5,
+    "value_produces": 6,
+    "value_consumes": 7,
 }
 
 TERMINATORS = {"STOP", "RETURN", "REVERT", "SELFDESTRUCT", "INVALID", "JUMP"}
@@ -204,6 +206,7 @@ def build_evm_graph(
             "nodes": [],
             "edges": [],
             "edge_types": EDGE_TYPES.copy(),
+            "instruction_value": {"nodes": [], "edges": []},
             "report": {
                 "instruction_count": 0,
                 "token_count": 0,
@@ -351,6 +354,33 @@ def build_evm_graph(
             edge_set.add((src_block, dst_block, edge_type))
 
     edges = [{"src": src, "dst": dst, "type": edge_type} for src, dst, edge_type in sorted(edge_set)]
+    # Preserve producer-consumer evidence before it is collapsed to basic
+    # blocks. Value nodes make this a genuine instruction/value graph.
+    value_producers = sorted({src for src, _, kind in stack_edges if kind == EDGE_TYPES["stack_def_use"]})
+    value_node = {producer: len(instructions) + index for index, producer in enumerate(value_producers)}
+    instruction_nodes = [{
+        "id": item.index, "token_start": item.token_start, "token_end": item.token_end,
+        "pc_start": item.pc, "pc_end": item.pc, "node_type": 0,
+    } for item in instructions]
+    instruction_nodes.extend({
+        "id": value_node[producer], "token_start": instructions[producer].token_start,
+        "token_end": instructions[producer].token_end, "pc_start": instructions[producer].pc,
+        "pc_end": instructions[producer].pc, "node_type": 1,
+    } for producer in value_producers)
+    instruction_edges: Set[Tuple[int, int, int]] = set()
+    for block_id, node in enumerate(nodes):
+        for instruction_id in range(node["instruction_start"], node["instruction_end"] - 1):
+            instruction_edges.add((instruction_id, instruction_id + 1, EDGE_TYPES["fallthrough"]))
+    for src, dst, kind in edge_set:
+        source_instruction = nodes[src]["instruction_end"] - 1
+        destination_instruction = nodes[dst]["instruction_start"]
+        instruction_edges.add((source_instruction, destination_instruction, kind))
+    for src, dst, kind in stack_edges:
+        if kind != EDGE_TYPES["stack_def_use"] or src not in value_node:
+            continue
+        value_id = value_node[src]
+        instruction_edges.add((src, value_id, EDGE_TYPES["value_produces"]))
+        instruction_edges.add((value_id, dst, EDGE_TYPES["value_consumes"]))
     node_token_ranges = [(node["token_start"], node["token_end"]) for node in nodes]
     report = {
         "instruction_count": len(instructions),
@@ -367,4 +397,10 @@ def build_evm_graph(
         "stack_instruction_visits": instruction_visits,
         "stack_analysis_capped": stack_analysis_capped,
     }
-    return {"nodes": nodes, "edges": edges, "edge_types": EDGE_TYPES.copy(), "report": report}
+    return {
+        "nodes": nodes, "edges": edges, "edge_types": EDGE_TYPES.copy(), "report": report,
+        "instruction_value": {
+            "nodes": instruction_nodes,
+            "edges": [{"src": src, "dst": dst, "type": kind} for src, dst, kind in sorted(instruction_edges)],
+        },
+    }

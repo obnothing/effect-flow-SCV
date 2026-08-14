@@ -57,8 +57,8 @@ def extract_nodes(encoder, tokenizer, opcode, graph, config, device):
     tokens, _ = build_token_spans(opcode, tokenizer)
     node_count = len(graph["nodes"])
     hidden_size = int(encoder.config.hidden_size)
-    sums = torch.zeros(node_count, hidden_size, dtype=torch.float32)
-    counts = torch.zeros(node_count, dtype=torch.float32)
+    token_sums = torch.zeros(len(tokens), hidden_size, dtype=torch.float32)
+    token_counts = torch.zeros(len(tokens), dtype=torch.float32)
     content_size = int(config.get("graph_chunk_content_size", 510))
     stride = int(config.get("graph_chunk_stride", 256))
     max_len = content_size + 2
@@ -80,30 +80,35 @@ def extract_nodes(encoder, tokenizer, opcode, graph, config, device):
                 hidden = encoder(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state
         hidden = hidden.float().cpu()
         for local_index, (start, _) in enumerate(selected):
-            for node_index, node in enumerate(graph["nodes"]):
-                left = max(int(node["token_start"]), start)
-                right = min(int(node["token_end"]), start + content_size)
-                if right <= left:
-                    continue
-                local_left = left - start + 1
-                local_right = right - start + 1
-                sums[node_index] += hidden[local_index, local_left:local_right].sum(dim=0)
-                counts[node_index] += float(local_right - local_left)
-    valid = counts > 0
-    features = sums / counts.clamp_min(1.0).unsqueeze(1)
-    return features.to(torch.float16), valid, len(windows), len(tokens)
+            left, right = start, min(len(tokens), start + content_size)
+            if right > left:
+                token_sums[left:right] += hidden[local_index, 1 : 1 + right - left]
+                token_counts[left:right] += 1.0
+    token_features = token_sums / token_counts.clamp_min(1.0).unsqueeze(1)
+    features, local_features, offsets = [], [], [0]
+    for node in graph["nodes"]:
+        left, right = int(node["token_start"]), int(node["token_end"])
+        current = token_features[left:right]
+        features.append(current.mean(dim=0) if current.numel() else torch.zeros(hidden_size))
+        local_features.append(current)
+        offsets.append(offsets[-1] + current.shape[0])
+    feature_tensor = torch.stack(features) if features else torch.empty((0, hidden_size))
+    local_tensor = torch.cat(local_features, dim=0) if local_features else torch.empty((0, hidden_size))
+    valid = torch.tensor([right > left and bool(token_counts[left:right].all()) for left, right in [(int(n["token_start"]), int(n["token_end"])) for n in graph["nodes"]]], dtype=torch.bool)
+    return feature_tensor.to(torch.float16), valid, local_tensor.to(torch.float16), torch.tensor(offsets, dtype=torch.long), len(windows), len(tokens)
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="configs/train_main6_opcode_csdg.yaml")
+    parser.add_argument("--variant", default=None, help="Optional cache-specific CSDG variant.")
     parser.add_argument("--splits", nargs="+", choices=["train", "valid", "test"], default=["train", "valid"])
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--allow-test-cache", action="store_true")
     args = parser.parse_args()
     config = yaml.safe_load(resolve(args.config).read_text(encoding="utf-8"))
     if "common" in config:
-        config = {**config["common"], **config.get("graph_cache", {})}
+        config = {**config["common"], **config.get("graph_cache", {}), **(config.get("variants", {}).get(args.variant, {}) if args.variant else {})}
     tokenizer = EVMOpcodeTokenizer.from_vocab_file(resolve(config["vocab_path"]))
     model_path = resolve(config["hf_model_path"])
     model = BertForMaskedLM.from_pretrained(model_path, local_files_only=True)
@@ -147,24 +152,28 @@ def main():
                 max_worklist_steps=int(config.get("max_stack_worklist_steps", 20000)),
                 max_instruction_visits=int(config.get("max_stack_instruction_visits", 250000)),
             )
-            features, feature_mask, windows, token_count = extract_nodes(
-                encoder, tokenizer, opcode, graph, config, device
+            graph_view = graph["instruction_value"] if str(config.get("graph_granularity", "basic_block")) == "instruction_value" else graph
+            features, feature_mask, local_features, local_offsets, windows, token_count = extract_nodes(
+                encoder, tokenizer, opcode, graph_view, config, device
             )
             ids.append(sample_id)
             labels.append([float(value) for value in item["multi_labels"]])
             edge_index = torch.tensor(
-                [[edge["src"] for edge in graph["edges"]], [edge["dst"] for edge in graph["edges"]]],
+                [[edge["src"] for edge in graph_view["edges"]], [edge["dst"] for edge in graph_view["edges"]]],
                 dtype=torch.long,
-            ) if graph["edges"] else torch.empty((2, 0), dtype=torch.long)
-            edge_type = torch.tensor([edge["type"] for edge in graph["edges"]], dtype=torch.long)
+            ) if graph_view["edges"] else torch.empty((2, 0), dtype=torch.long)
+            edge_type = torch.tensor([edge["type"] for edge in graph_view["edges"]], dtype=torch.long)
             records.append({
                 "node_features": features,
                 "node_mask": feature_mask.bool(),
+                "node_local_features": local_features,
+                "node_local_offsets": local_offsets,
+                "node_type": torch.tensor([int(node.get("node_type", 0)) for node in graph_view["nodes"]], dtype=torch.long),
                 "edge_index": edge_index,
                 "edge_type": edge_type,
                 "block_ranges": [
                     [int(node["pc_start"]), int(node["pc_end"]), int(node["token_start"]), int(node["token_end"])]
-                    for node in graph["nodes"]
+                    for node in graph_view["nodes"]
                 ],
             })
             report = dict(graph["report"])
@@ -178,7 +187,7 @@ def main():
         if len(label_names) != len(labels[0]) if labels else False:
             raise ValueError("Graph cache label width differs from Main-6 labels")
         payload = {
-            "schema": "main6_opcode_csdg_v1",
+            "schema": "main6_opcode_csdg_v2",
             "ids": ids,
             "records": records,
             "multi_labels": torch.tensor(labels, dtype=torch.float32),
@@ -195,6 +204,8 @@ def main():
                 "tokenizer_path": str(resolve(config["vocab_path"])),
                 "tokenizer_sha256": sha256(resolve(config["vocab_path"])),
                 "edge_types": graph["edge_types"] if records else {},
+                "graph_pooling_cache": "token_features_available",
+                "graph_granularity": str(config.get("graph_granularity", "basic_block")),
                 "max_stack_producers": int(config.get("max_stack_producers", 4)),
                 "reports": reports,
             },

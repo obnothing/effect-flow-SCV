@@ -9,7 +9,7 @@ import torch
 from torch.utils.data import Dataset
 
 
-SCHEMA = "main6_opcode_csdg_v1"
+SCHEMAS = {"main6_opcode_csdg_v1", "main6_opcode_csdg_v2"}
 
 
 class OpcodeGraphSequenceDataset(Dataset):
@@ -18,7 +18,7 @@ class OpcodeGraphSequenceDataset(Dataset):
         sequence_path = Path(sequence_path)
         graph_payload = torch.load(graph_path, map_location="cpu")
         sequence_payload = torch.load(sequence_path, map_location="cpu")
-        if graph_payload.get("schema") != SCHEMA:
+        if graph_payload.get("schema") not in SCHEMAS:
             raise ValueError(f"Unsupported graph cache schema: {graph_payload.get('schema')}")
         self.ids = list(graph_payload["ids"])
         sequence_ids = list(sequence_payload["ids"])
@@ -48,18 +48,29 @@ class OpcodeGraphSequenceDataset(Dataset):
         edge_index = record["edge_index"].long()
         edge_type = record["edge_type"].long()
         node_mask = record.get("node_mask", torch.ones(node_features.shape[0], dtype=torch.bool)).bool()
+        node_local_features = record.get("node_local_features")
+        node_local_offsets = record.get("node_local_offsets")
+        node_type = record.get("node_type", torch.zeros(node_features.shape[0], dtype=torch.long)).long()
         if node_features.ndim != 2 or node_features.shape[1] != 768:
             raise ValueError(f"Invalid node_features shape for {self.ids[index]}")
         if edge_index.ndim != 2 or edge_index.shape[0] != 2 or edge_type.shape[0] != edge_index.shape[1]:
             raise ValueError(f"Invalid edge tensors for {self.ids[index]}")
         if edge_index.numel() and int(edge_index.max()) >= node_features.shape[0]:
             raise ValueError(f"Out-of-range graph edge for {self.ids[index]}")
+        if node_local_features is not None:
+            node_local_features = node_local_features.float()
+            node_local_offsets = node_local_offsets.long()
+            if node_local_offsets.numel() != node_features.shape[0] + 1 or int(node_local_offsets[-1]) != node_local_features.shape[0]:
+                raise ValueError(f"Invalid node-local feature offsets for {self.ids[index]}")
         return {
             "id": self.ids[index],
             "sequence_features": self.sequence_features[index],
             "sequence_mask": self.sequence_mask[index],
             "node_features": node_features,
             "node_mask": node_mask,
+            "node_local_features": node_local_features,
+            "node_local_offsets": node_local_offsets,
+            "node_type": node_type,
             "edge_index": edge_index,
             "edge_type": edge_type,
             "block_ranges": record.get("block_ranges", []),
@@ -76,6 +87,9 @@ def collate_opcode_graph(batch: Sequence[Dict]):
         "sequence_mask": torch.stack([item["sequence_mask"] for item in batch]),
         "node_features": [item["node_features"] for item in batch],
         "node_mask": [item["node_mask"] for item in batch],
+        "node_local_features": [item["node_local_features"] for item in batch],
+        "node_local_offsets": [item["node_local_offsets"] for item in batch],
+        "node_type": [item["node_type"] for item in batch],
         "edge_index": [item["edge_index"] for item in batch],
         "edge_type": [item["edge_type"] for item in batch],
         "block_ranges": [item["block_ranges"] for item in batch],
@@ -90,7 +104,9 @@ def move_graph_batch(batch, device):
     moved["multi_labels"] = batch["multi_labels"].to(device, non_blocking=True)
     moved["node_features"] = [value.to(device, non_blocking=True) for value in batch["node_features"]]
     moved["node_mask"] = [value.to(device, non_blocking=True) for value in batch["node_mask"]]
+    moved["node_local_features"] = [None if value is None else value.to(device, non_blocking=True) for value in batch["node_local_features"]]
+    moved["node_local_offsets"] = [None if value is None else value.to(device, non_blocking=True) for value in batch["node_local_offsets"]]
+    moved["node_type"] = [value.to(device, non_blocking=True) for value in batch["node_type"]]
     moved["edge_index"] = [value.to(device, non_blocking=True) for value in batch["edge_index"]]
     moved["edge_type"] = [value.to(device, non_blocking=True) for value in batch["edge_type"]]
     return moved
-

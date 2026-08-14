@@ -19,7 +19,7 @@ if str(SRC) not in sys.path:
 
 from evm_control_stack_graph import EDGE_TYPES  # noqa: E402
 from evm_opcode_graph_dataset import OpcodeGraphSequenceDataset, collate_opcode_graph, move_graph_batch  # noqa: E402
-from evm_opcode_graph_residual_mil import OpcodeGraphResidualMIL  # noqa: E402
+from evm_opcode_graph_residual_mil import OpcodeGraphResidualMIL, load_opcode_graph_state  # noqa: E402
 from train_main6_opcode_csdg import thresholds_and_metrics  # noqa: E402
 
 
@@ -55,7 +55,7 @@ def metrics_at_thresholds(logits, labels, thresholds):
 
 
 def predict(model, loader, device, collect_attention=False):
-    sequence_logits, graph_logits, final_logits, labels = [], [], [], []
+    sequence_logits, graph_logits, final_logits, labels, dynamic_gates = [], [], [], [], []
     attention_summary = defaultdict(lambda: defaultdict(float))
     attention_samples = defaultdict(int)
     with torch.no_grad():
@@ -64,12 +64,14 @@ def predict(model, loader, device, collect_attention=False):
             output = model(
                 moved["sequence_features"], moved["sequence_mask"], moved["node_features"],
                 moved["node_mask"], moved["edge_index"], moved["edge_type"],
-                return_attention=collect_attention,
+                return_attention=collect_attention, node_local_features=moved["node_local_features"], node_local_offsets=moved["node_local_offsets"], node_type=moved["node_type"],
             )
             sequence_logits.append(output["sequence_logits"].cpu())
             graph_logits.append(output["graph_logits"].cpu())
             final_logits.append(output["recognition_logits"].cpu())
             labels.append(moved["multi_labels"].cpu())
+            if output["dynamic_gate"] is not None:
+                dynamic_gates.append(output["dynamic_gate"].float().cpu())
             if not collect_attention:
                 continue
             for item in output["graph_attention"]:
@@ -112,6 +114,7 @@ def predict(model, loader, device, collect_attention=False):
         "graph_logits": torch.cat(graph_logits).numpy(),
         "final_logits": torch.cat(final_logits).numpy(),
         "labels": torch.cat(labels).numpy(),
+        "dynamic_gate": torch.cat(dynamic_gates).numpy() if dynamic_gates else None,
         "attention_concentration": concentration,
     }
 
@@ -179,7 +182,7 @@ def main():
     checkpoint_path = resolve(config["checkpoint_dir"]) / "best_macro_f1.pt"
     checkpoint = torch.load(checkpoint_path, map_location="cpu")
     model = OpcodeGraphResidualMIL(config)
-    model.load_state_dict(checkpoint["model_state_dict"], strict=True)
+    load_opcode_graph_state(model, checkpoint["model_state_dict"])
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device).eval()
     dataset = OpcodeGraphSequenceDataset(graph_dir / "valid.pt", sequence_dir / "valid.pt", config["label_names"])
@@ -231,6 +234,15 @@ def main():
         "residual_summary": residual_summary(
             full["sequence_logits"], full["graph_logits"], gate, config["label_names"],
         ),
+        "dynamic_gate_summary": None if full["dynamic_gate"] is None else {
+            label: {
+                "mean": float(full["dynamic_gate"][:, index].mean()),
+                "p10": float(np.percentile(full["dynamic_gate"][:, index], 10)),
+                "p50": float(np.percentile(full["dynamic_gate"][:, index], 50)),
+                "p90": float(np.percentile(full["dynamic_gate"][:, index], 90)),
+            }
+            for index, label in enumerate(config["label_names"])
+        },
         "edge_type_removal": edge_removal,
         "attention_concentration": {
             config["label_names"][int(label_id)]: value

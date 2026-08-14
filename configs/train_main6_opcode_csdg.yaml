@@ -34,6 +34,11 @@ common:
   sequence_feature_dir: data/features/main6_opcode_csdg/sequence
   graph_cache_dir: data/features/main6_opcode_csdg/graph
   graph_hidden_dim: 256
+  graph_num_edge_types: 6
+  graph_node_type_count: 1
+  graph_pooling: mean
+  graph_granularity: basic_block
+  fusion_mode: static_residual
   graph_query_slots: 3
   graph_dropout: 0.1
   graph_batch_size: 32
@@ -112,3 +117,48 @@ variants:
     use_stack_edges: true
     graph_edge_type_mask: [0, 1, 2, 3, 4]
     graph_sparse_topk: 16
+  cfg_stack_dynamic_gate:
+    experiment_name: main6_opcode_csdg_cfg_stack_dynamic_gate
+    checkpoint_dir: checkpoints/main6_opcode_csdg/cfg_stack_dynamic_gate
+    result_dir: results/main6_opcode_csdg/cfg_stack_dynamic_gate
+    use_graph_edges: true
+    use_stack_edges: true
+    graph_edge_type_mask: [0, 1, 2, 3, 4]
+    fusion_mode: dynamic_convex
+  cfg_stack_dynamic_gate_shuffled:
+    experiment_name: main6_opcode_csdg_cfg_stack_dynamic_gate_shuffled
+    checkpoint_dir: checkpoints/main6_opcode_csdg/cfg_stack_dynamic_gate_shuffled
+    result_dir: results/main6_opcode_csdg/cfg_stack_dynamic_gate_shuffled
+    use_graph_edges: true
+    use_stack_edges: true
+    shuffle_graph_edges: true
+    graph_edge_type_mask: [0, 1, 2, 3, 4]
+    fusion_mode: dynamic_convex
+  graph_mlp_dynamic_gate:
+    experiment_name: main6_opcode_csdg_graph_mlp_dynamic_gate
+    checkpoint_dir: checkpoints/main6_opcode_csdg/graph_mlp_dynamic_gate
+    result_dir: results/main6_opcode_csdg/graph_mlp_dynamic_gate
+    use_graph_edges: false
+    graph_edge_type_mask: []
+    fusion_mode: dynamic_convex
+  cfg_stack_local_attention:
+    experiment_name: main6_opcode_csdg_cfg_stack_local_attention
+    checkpoint_dir: checkpoints/main6_opcode_csdg/cfg_stack_local_attention
+    result_dir: results/main6_opcode_csdg/cfg_stack_local_attention
+    graph_cache_dir: data/features/main6_opcode_csdg/graph_local_attention
+    use_graph_edges: true
+    use_stack_edges: true
+    graph_edge_type_mask: [0, 1, 2, 3, 4]
+    graph_pooling: local_attention
+    fusion_mode: dynamic_convex
+  instruction_value_dynamic_gate:
+    experiment_name: main6_opcode_csdg_instruction_value_dynamic_gate
+    checkpoint_dir: checkpoints/main6_opcode_csdg/instruction_value_dynamic_gate
+    result_dir: results/main6_opcode_csdg/instruction_value_dynamic_gate
+    graph_cache_dir: data/features/main6_opcode_csdg/graph_instruction_value
+    graph_granularity: instruction_value
+    graph_num_edge_types: 8
+    graph_node_type_count: 2
+    use_graph_edges: true
+    graph_edge_type_mask: [0, 1, 2, 3, 4, 6, 7]
+    fusion_mode: dynamic_convex

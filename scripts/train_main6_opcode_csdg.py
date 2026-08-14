@@ -111,6 +111,7 @@ def run_epoch(model, loader, optimizer, scaler, device, pos_weight, config, trai
                 output = model(
                     batch["sequence_features"], batch["sequence_mask"], batch["node_features"],
                     batch["node_mask"], batch["edge_index"], batch["edge_type"], return_attention=False,
+                    node_local_features=batch["node_local_features"], node_local_offsets=batch["node_local_offsets"], node_type=batch["node_type"],
                 )
                 final_loss = nn.functional.binary_cross_entropy_with_logits(
                     output["recognition_logits"], batch["multi_labels"], pos_weight=pos_weight
@@ -249,7 +250,7 @@ def main():
             "valid_metrics": best_payload["metrics"],
             "checkpoint": str(checkpoint_dir / "best_macro_f1.pt"),
             "sequence_checkpoint": config["sequence_checkpoint"],
-            "residual_gate": (model.module if world > 1 else model).alpha.detach().cpu().tanh().tolist(),
+            "residual_gate": best_payload["model_state_dict"]["alpha"].detach().cpu().tanh().tolist(),
         }
         save_json(result_dir / "valid_summary.json", summary)
     if world > 1:

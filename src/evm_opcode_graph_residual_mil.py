@@ -11,6 +11,15 @@ import torch.nn.functional as F
 from evm_chunk_mil_model import MLM8ViewMultiSlotMIL
 
 
+def load_opcode_graph_state(model, state):
+    """Load legacy CSDG checkpoints while rejecting non-additive mismatches."""
+    missing, unexpected = model.load_state_dict(state, strict=False)
+    allowed_prefixes = ("node_type_embedding.", "block_pool_query", "dynamic_gates.")
+    invalid_missing = [key for key in missing if not key.startswith(allowed_prefixes)]
+    if invalid_missing or unexpected:
+        raise ValueError(f"CSDG checkpoint mismatch: missing={invalid_missing} unexpected={unexpected}")
+
+
 class RelationGraphLayer(nn.Module):
     def __init__(self, hidden_dim: int, num_edge_types: int, dropout: float):
         super().__init__()
@@ -90,8 +99,9 @@ class OpcodeGraphResidualMIL(nn.Module):
             nn.Linear(768, graph_dim),
             nn.GELU(),
         )
+        self.num_edge_types = int(config.get("graph_num_edge_types", 6))
         self.graph_layers = nn.ModuleList([
-            RelationGraphLayer(graph_dim, 6, float(config.get("graph_dropout", 0.1)))
+            RelationGraphLayer(graph_dim, self.num_edge_types, float(config.get("graph_dropout", 0.1)))
             for _ in range(2)
         ])
         self.graph_queries = nn.Parameter(torch.empty(self.num_labels, int(config.get("graph_query_slots", 3)), graph_dim))
@@ -105,11 +115,22 @@ class OpcodeGraphResidualMIL(nn.Module):
         ])
         self.empty_graph = nn.Parameter(torch.zeros(graph_dim))
         self.alpha = nn.Parameter(torch.zeros(self.num_labels))
+        self.graph_pooling = str(config.get("graph_pooling", "mean"))
+        self.node_type_embedding = nn.Embedding(int(config.get("graph_node_type_count", 1)), graph_dim)
+        self.block_pool_query = nn.Parameter(torch.empty(graph_dim))
+        self.fusion_mode = str(config.get("fusion_mode", "static_residual"))
+        self.dynamic_gates = nn.ModuleList([
+            nn.Sequential(nn.LayerNorm(graph_dim + 2), nn.Linear(graph_dim + 2, graph_dim // 2), nn.GELU(), nn.Linear(graph_dim // 2, 1))
+            for _ in range(self.num_labels)
+        ])
         self.sparse_topk = int(config.get("graph_sparse_topk", 0))
         self.gumbel_temperature = float(config.get("graph_gumbel_temperature", 0.5))
         self.use_graph_edges = bool(config.get("use_graph_edges", True))
+        self.shuffle_graph_edges = bool(config.get("shuffle_graph_edges", False))
         self.graph_edge_type_mask = set(int(value) for value in config.get("graph_edge_type_mask", [0, 1, 2, 3, 4, 5]))
         nn.init.normal_(self.graph_queries, mean=0.0, std=0.02)
+        nn.init.normal_(self.block_pool_query, mean=0.0, std=0.02)
+        nn.init.zeros_(self.node_type_embedding.weight)
 
     def _load_sequence_checkpoint(self, checkpoint_path):
         payload = torch.load(checkpoint_path, map_location="cpu")
@@ -127,8 +148,26 @@ class OpcodeGraphResidualMIL(nn.Module):
         self.sequence_branch.eval()
         return self
 
-    def _graph_one(self, node_features, node_mask, edge_index, edge_type, return_attention):
+    def _pool_nodes(self, node_features, node_mask, local_features, local_offsets):
         x = self.graph_projection(node_features)
+        if self.graph_pooling != "local_attention" or local_features is None or local_offsets is None:
+            return x
+        pooled = []
+        local_features = local_features.to(node_features.dtype)
+        for node_id in range(x.shape[0]):
+            left, right = int(local_offsets[node_id]), int(local_offsets[node_id + 1])
+            if right <= left:
+                pooled.append(x[node_id])
+                continue
+            values = self.graph_projection(local_features[left:right])
+            scores = torch.matmul(values, self.block_pool_query) / (values.shape[-1] ** 0.5)
+            pooled.append(torch.sum(torch.softmax(scores, dim=0).unsqueeze(1) * values, dim=0))
+        return torch.stack(pooled, dim=0) if pooled else x
+
+    def _graph_one(self, node_features, node_mask, edge_index, edge_type, return_attention, local_features=None, local_offsets=None, node_type=None):
+        x = self._pool_nodes(node_features, node_mask, local_features, local_offsets)
+        if node_type is not None:
+            x = x + self.node_type_embedding(node_type.clamp_min(0).clamp_max(self.node_type_embedding.num_embeddings - 1))
         if x.shape[0] == 0 or not bool(node_mask.bool().any()):
             label_repr = self.empty_graph.view(1, -1).expand(self.num_labels, -1)
             graph_logits = torch.cat(
@@ -140,9 +179,9 @@ class OpcodeGraphResidualMIL(nn.Module):
                     "node_attention": x.new_zeros((self.num_labels, self.graph_queries.shape[1], x.shape[0])),
                     "slot_weights": x.new_full((self.num_labels, self.graph_queries.shape[1]), 1.0 / self.graph_queries.shape[1]),
                     "selected_nodes": None,
-                    "node_features": x,
+                    "node_features": x, "label_repr": label_repr,
                 }
-            return graph_logits, None
+            return graph_logits, label_repr
         for layer in self.graph_layers:
             x = layer(x, edge_index, edge_type, node_mask, use_edges=self.use_graph_edges)
         valid = node_mask.bool()
@@ -170,37 +209,57 @@ class OpcodeGraphResidualMIL(nn.Module):
         label_repr = torch.einsum("ls,lsd->ld", merge, slot_repr)
         graph_logits = torch.cat([head(label_repr[label_id]) for label_id, head in enumerate(self.graph_heads)], dim=0)
         if return_attention:
-            return graph_logits, {"node_attention": attention, "slot_weights": merge, "selected_nodes": selected, "node_features": x}
-        return graph_logits, None
+            return graph_logits, {"node_attention": attention, "slot_weights": merge, "selected_nodes": selected, "node_features": x, "label_repr": label_repr}
+        return graph_logits, label_repr
 
-    def forward(self, sequence_features, sequence_mask, node_features, node_mask, edge_index, edge_type, return_attention=False):
+    def forward(self, sequence_features, sequence_mask, node_features, node_mask, edge_index, edge_type, return_attention=False, node_local_features=None, node_local_offsets=None, node_type=None):
         with torch.no_grad():
             sequence_output = self.sequence_branch(sequence_features, sequence_mask, return_attention=return_attention)
         sequence_logits = sequence_output["recognition_logits"]
         graph_logits = []
+        graph_representations = []
         graph_attention = []
         for index in range(len(node_features)):
             current_edge_index = edge_index[index]
             current_edge_type = edge_type[index]
-            if current_edge_type.numel() and self.graph_edge_type_mask != set(range(6)):
+            if self.shuffle_graph_edges and current_edge_index.shape[1] > 1:
+                current_edge_index = current_edge_index.clone()
+                # Deterministic destination permutation: a reproducible
+                # topology-negative control without touching node evidence.
+                current_edge_index[1] = torch.roll(current_edge_index[1], shifts=1, dims=0)
+            if current_edge_type.numel() and self.graph_edge_type_mask != set(range(self.num_edge_types)):
                 keep = torch.zeros_like(current_edge_type, dtype=torch.bool)
                 for edge_type_id in self.graph_edge_type_mask:
                     keep |= current_edge_type == edge_type_id
                 current_edge_index = current_edge_index[:, keep]
                 current_edge_type = current_edge_type[keep]
             current_logits, current_attention = self._graph_one(
-                node_features[index], node_mask[index], current_edge_index, current_edge_type, return_attention
+                node_features[index], node_mask[index], current_edge_index, current_edge_type, return_attention,
+                None if node_local_features is None else node_local_features[index],
+                None if node_local_offsets is None else node_local_offsets[index],
+                None if node_type is None else node_type[index],
             )
             graph_logits.append(current_logits)
+            graph_representations.append(current_attention["label_repr"] if return_attention else current_attention)
             if return_attention:
                 graph_attention.append(current_attention)
         graph_logits = torch.stack(graph_logits, dim=0)
-        final_logits = sequence_logits + torch.tanh(self.alpha).view(1, -1) * graph_logits
+        graph_representations = torch.stack(graph_representations, dim=0)
+        if self.fusion_mode == "dynamic_convex":
+            dynamic_gate = torch.cat([
+                gate(torch.cat([sequence_logits[:, label_id : label_id + 1], graph_logits[:, label_id : label_id + 1], graph_representations[:, label_id]], dim=1))
+                for label_id, gate in enumerate(self.dynamic_gates)
+            ], dim=1).sigmoid()
+            final_logits = (1.0 - dynamic_gate) * sequence_logits + dynamic_gate * graph_logits
+        else:
+            dynamic_gate = None
+            final_logits = sequence_logits + torch.tanh(self.alpha).view(1, -1) * graph_logits
         result = {
             "recognition_logits": final_logits,
             "sequence_logits": sequence_logits,
             "graph_logits": graph_logits,
             "residual_gate": torch.tanh(self.alpha),
+            "dynamic_gate": dynamic_gate,
         }
         if return_attention:
             result["sequence_attention"] = sequence_output

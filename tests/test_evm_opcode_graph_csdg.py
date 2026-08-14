@@ -62,6 +62,9 @@ class OpcodeGraphTest(unittest.TestCase):
             SimpleTokenizer(),
         )
         self.assertGreaterEqual(graph["report"]["stack_edge_count"], 1)
+        value_graph = graph["instruction_value"]
+        self.assertTrue(any(edge["type"] == EDGE_TYPES["value_produces"] for edge in value_graph["edges"]))
+        self.assertTrue(any(node["node_type"] == 1 for node in value_graph["nodes"]))
 
     def test_stack_analysis_budget_caps_pathological_loop(self):
         graph = build_evm_graph(
@@ -145,6 +148,32 @@ class OpcodeGraphTest(unittest.TestCase):
             [torch.tensor([True, True, False])],
             [torch.tensor([[0, 1], [1, 0]], dtype=torch.long)],
             [torch.tensor([0, 1], dtype=torch.long)],
+        )
+        self.assertTrue(torch.isfinite(output["recognition_logits"]).all())
+
+    def test_dynamic_gate_is_labelwise_and_bounded(self):
+        config = model_config()
+        config["fusion_mode"] = "dynamic_convex"
+        model = OpcodeGraphResidualMIL(config).eval()
+        output = model(
+            torch.randn(2, 2, 8, 768), torch.ones(2, 2, dtype=torch.bool),
+            [torch.randn(2, 768), torch.randn(2, 768)],
+            [torch.ones(2, dtype=torch.bool), torch.ones(2, dtype=torch.bool)],
+            [torch.tensor([[0], [1]]), torch.tensor([[0], [1]])],
+            [torch.tensor([4]), torch.tensor([4])],
+        )
+        self.assertEqual(tuple(output["dynamic_gate"].shape), (2, 6))
+        self.assertTrue(bool(((output["dynamic_gate"] >= 0) & (output["dynamic_gate"] <= 1)).all()))
+
+    def test_local_pooling_accepts_ragged_token_features(self):
+        config = model_config()
+        config["graph_pooling"] = "local_attention"
+        model = OpcodeGraphResidualMIL(config).eval()
+        output = model(
+            torch.randn(1, 2, 8, 768), torch.ones(1, 2, dtype=torch.bool),
+            [torch.randn(2, 768)], [torch.ones(2, dtype=torch.bool)],
+            [torch.tensor([[0], [1]])], [torch.tensor([4])],
+            node_local_features=[torch.randn(5, 768)], node_local_offsets=[torch.tensor([0, 2, 5])],
         )
         self.assertTrue(torch.isfinite(output["recognition_logits"]).all())
 

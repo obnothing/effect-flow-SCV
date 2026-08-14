@@ -18,7 +18,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from evm_opcode_graph_dataset import OpcodeGraphSequenceDataset, collate_opcode_graph, move_graph_batch  # noqa: E402
-from evm_opcode_graph_residual_mil import OpcodeGraphResidualMIL  # noqa: E402
+from evm_opcode_graph_residual_mil import OpcodeGraphResidualMIL, load_opcode_graph_state  # noqa: E402
 
 
 def resolve(path):
@@ -71,7 +71,7 @@ def main():
     checkpoint_path = resolve(config["checkpoint_dir"]) / "best_macro_f1.pt"
     checkpoint = torch.load(checkpoint_path, map_location="cpu")
     model = OpcodeGraphResidualMIL(config)
-    model.load_state_dict(checkpoint["model_state_dict"], strict=True)
+    load_opcode_graph_state(model, checkpoint["model_state_dict"])
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device).eval()
     dataset = OpcodeGraphSequenceDataset(resolve(config["graph_cache_dir"]) / "test.pt", resolve(config["sequence_feature_dir"]) / "test.pt", config["label_names"])
@@ -80,7 +80,7 @@ def main():
     with torch.no_grad():
         for batch in loader:
             batch = move_graph_batch(batch, device)
-            output = model(batch["sequence_features"], batch["sequence_mask"], batch["node_features"], batch["node_mask"], batch["edge_index"], batch["edge_type"])
+            output = model(batch["sequence_features"], batch["sequence_mask"], batch["node_features"], batch["node_mask"], batch["edge_index"], batch["edge_type"], node_local_features=batch["node_local_features"], node_local_offsets=batch["node_local_offsets"], node_type=batch["node_type"])
             all_logits.append(output["recognition_logits"].cpu())
             all_labels.append(batch["multi_labels"].cpu())
     logits = torch.cat(all_logits).numpy()

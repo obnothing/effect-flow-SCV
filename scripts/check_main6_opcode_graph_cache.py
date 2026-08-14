@@ -26,7 +26,7 @@ def check_split(graph_path, sequence_path, label_width):
     sidecar = json.loads(sidecar_path.read_text(encoding="utf-8"))
     if sidecar.get("cache_file_sha256") != digest:
         raise ValueError(f"Graph cache hash mismatch: {graph_path}")
-    if graph.get("schema") != "main6_opcode_csdg_v1":
+    if graph.get("schema") not in {"main6_opcode_csdg_v1", "main6_opcode_csdg_v2"}:
         raise ValueError(f"Unsupported graph schema: {graph.get('schema')}")
     if graph["ids"] != sequence["ids"]:
         raise ValueError("Graph and sequence IDs are not exactly aligned")
@@ -56,6 +56,12 @@ def check_split(graph_path, sequence_path, label_width):
             raise ValueError(f"Invalid edge type for {sample_id}")
         if torch.isnan(features.float()).any() or torch.isinf(features.float()).any():
             raise ValueError(f"NaN/Inf node feature for {sample_id}")
+        local = record.get("node_local_features")
+        offsets = record.get("node_local_offsets")
+        if (local is None) != (offsets is None):
+            raise ValueError(f"Incomplete local-node cache for {sample_id}")
+        if local is not None and (offsets.numel() != features.shape[0] + 1 or int(offsets[-1]) != local.shape[0]):
+            raise ValueError(f"Invalid local-node offsets for {sample_id}")
         node_count += int(mask.sum())
         edge_count += int(types.numel())
     return {"samples": len(graph["ids"]), "valid_nodes": node_count, "edges": edge_count}
@@ -64,10 +70,11 @@ def check_split(graph_path, sequence_path, label_width):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="configs/train_main6_opcode_csdg.yaml")
+    parser.add_argument("--variant", default=None)
     parser.add_argument("--splits", nargs="+", choices=["train", "valid"], default=["train", "valid"])
     args = parser.parse_args()
     payload = yaml.safe_load(resolve(args.config).read_text(encoding="utf-8"))
-    config = payload["common"]
+    config = {**payload["common"], **(payload.get("variants", {}).get(args.variant, {}) if args.variant else {})}
     result = {"route": config["route_name"], "test_checked": False, "splits": {}}
     for split in args.splits:
         result["splits"][split] = check_split(

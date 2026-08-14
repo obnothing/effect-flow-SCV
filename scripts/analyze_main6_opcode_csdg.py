@@ -16,7 +16,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from evm_opcode_graph_dataset import OpcodeGraphSequenceDataset, collate_opcode_graph, move_graph_batch  # noqa: E402
-from evm_opcode_graph_residual_mil import OpcodeGraphResidualMIL  # noqa: E402
+from evm_opcode_graph_residual_mil import OpcodeGraphResidualMIL, load_opcode_graph_state  # noqa: E402
 from train_main6_opcode_csdg import thresholds_and_metrics  # noqa: E402
 
 
@@ -37,7 +37,7 @@ def evaluate(model, loader, device, thresholds):
     with torch.no_grad():
         for batch in loader:
             batch = move_graph_batch(batch, device)
-            output = model(batch["sequence_features"], batch["sequence_mask"], batch["node_features"], batch["node_mask"], batch["edge_index"], batch["edge_type"])
+            output = model(batch["sequence_features"], batch["sequence_mask"], batch["node_features"], batch["node_mask"], batch["edge_index"], batch["edge_type"], node_local_features=batch["node_local_features"], node_local_offsets=batch["node_local_offsets"], node_type=batch["node_type"])
             logits.append(output["recognition_logits"].cpu())
             labels.append(batch["multi_labels"].cpu())
     values = torch.cat(logits).numpy()
@@ -65,7 +65,7 @@ def main():
     checkpoint_path = resolve(config["checkpoint_dir"]) / "best_macro_f1.pt"
     checkpoint = torch.load(checkpoint_path, map_location="cpu")
     model = OpcodeGraphResidualMIL(config)
-    model.load_state_dict(checkpoint["model_state_dict"], strict=True)
+    load_opcode_graph_state(model, checkpoint["model_state_dict"])
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device).eval()
     dataset = OpcodeGraphSequenceDataset(resolve(config["graph_cache_dir"]) / "valid.pt", resolve(config["sequence_feature_dir"]) / "valid.pt", config["label_names"])
@@ -82,7 +82,7 @@ def main():
         for batch in loader:
             moved = move_graph_batch(batch, device)
             moved["edge_index"] = shuffled_edges(moved, random_generator)
-            output = model(moved["sequence_features"], moved["sequence_mask"], moved["node_features"], moved["node_mask"], moved["edge_index"], moved["edge_type"])
+            output = model(moved["sequence_features"], moved["sequence_mask"], moved["node_features"], moved["node_mask"], moved["edge_index"], moved["edge_type"], node_local_features=moved["node_local_features"], node_local_offsets=moved["node_local_offsets"], node_type=moved["node_type"])
             shuffled_logits.append(output["recognition_logits"].cpu())
             labels.append(moved["multi_labels"].cpu())
     shuffled = thresholds_and_metrics(torch.cat(shuffled_logits).numpy(), torch.cat(labels).numpy(), thresholds)
@@ -107,4 +107,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
