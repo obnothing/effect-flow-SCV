@@ -210,7 +210,16 @@ def main():
                 "reports": reports,
             },
         }
-        torch.save(payload, output_path)
+        # Never expose a partial cache as a completed split. Quota exhaustion
+        # otherwise leaves a corrupt .pt file that later runs would skip.
+        temporary_path = output_path.with_name(f".{output_path.name}.tmp")
+        temporary_path.unlink(missing_ok=True)
+        try:
+            torch.save(payload, temporary_path)
+            os.replace(temporary_path, output_path)
+        except Exception:
+            temporary_path.unlink(missing_ok=True)
+            raise
         sidecar = {
             "schema": payload["schema"],
             "split": split,
