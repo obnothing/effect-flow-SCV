@@ -34,6 +34,7 @@ class ChunkFeatureDataset(Dataset):
         token_semantic_path=None,
         front_special_path=None,
         graph_evidence_path=None,
+        view_indices=None,
     ):
         self.path = Path(path)
         if not self.path.exists():
@@ -41,6 +42,16 @@ class ChunkFeatureDataset(Dataset):
         payload = torch.load(self.path, map_location="cpu")
         self.ids = payload["ids"]
         self.features = payload["features"]
+        if view_indices is not None:
+            indices = [int(value) for value in view_indices]
+            if self.features.ndim != 4 or self.features.shape[2] != 8:
+                raise ValueError("view_indices requires the original eight-view cache")
+            if not indices or len(set(indices)) != len(indices) or min(indices) < 0 or max(indices) >= 8:
+                raise ValueError(f"Invalid view_indices: {indices}")
+            self.features = self.features[:, :, indices, :]
+            self.view_indices = indices
+        else:
+            self.view_indices = list(range(self.features.shape[2])) if self.features.ndim == 4 else None
         self.chunk_mask = payload["chunk_mask"].bool()
         self.source_binary_labels = payload["binary_labels"].float()
         self.source_multi_labels = payload["multi_labels"].float()
