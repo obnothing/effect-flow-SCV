@@ -113,11 +113,11 @@ def run_epoch(model, loader, device, pos_weight, config, optimizer=None, scaler=
 
 
 def gather_arrays(logits, labels, world):
-    if world == 1:
-        return logits, labels
-    gathered = [None for _ in range(world)]
-    dist.all_gather_object(gathered, (logits, labels))
-    return np.concatenate([item[0] for item in gathered]), np.concatenate([item[1] for item in gathered])
+    # The validation loader intentionally has no DistributedSampler, so every
+    # rank evaluates the complete validation split. Avoid all_gather_object:
+    # object collectives use NCCL for their internal metadata exchange and can
+    # deadlock on clusters where the NCCL key-value store is fragile.
+    return logits, labels
 
 
 def save_json(path, value):
