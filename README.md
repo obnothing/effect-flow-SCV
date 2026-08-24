@@ -140,9 +140,13 @@ python scripts/check_main6_execution_cache.py
 python scripts/train_main6_execution_aware_mil.py \
   --config configs/train_main6_execution_aware_mil.yaml
 python scripts/select_main6_execution_aware_valid.py
+python scripts/diagnose_main6_execution_aware_valid.py
 ```
 
 The default path never creates test execution features or test predictions.
+The diagnostic writes validation-only PR-AUC, fixed-0.5 F1, threshold history,
+probability distributions, Brier score, ECE, and TP/FP/FN to
+`results/main6_opcode_execution_aware/valid_calibration_diagnostics.json`.
 
 Run audit, extraction, validation training, and selection in order:
 
