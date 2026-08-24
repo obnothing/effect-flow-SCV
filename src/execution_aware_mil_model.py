@@ -35,7 +35,10 @@ class ExecutionAwareMIL(nn.Module):
         mask = chunk_mask.bool()
         views = self.view_projection(self.input_norm(features))
         base = views.mean(dim=2)
-        context = self.context(base, src_key_padding_mask=~mask)
+        context = self.context(
+            base,
+            src_key_padding_mask=(~mask).to(torch.bool),
+        )
         execution = self.exec_projection(self.exec_norm(execution_features))
         gate = torch.sigmoid(self.exec_gate(torch.cat([context, execution], dim=-1)))
         fused = context + gate * execution
