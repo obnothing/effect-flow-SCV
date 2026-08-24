@@ -30,7 +30,9 @@ def main():
             raise ValueError(f"{split}: execution mask does not match semantic cache")
         if not torch.equal(labels.float(), semantic["multi_labels"].float()):
             raise ValueError(f"{split}: execution labels do not match semantic cache")
-        if not torch.isfinite(features).all() or not mask.all(dim=1).all():
+        # Contracts can have fewer than max_chunks; only require one real
+        # chunk per sample. Padding rows are expected to be zero-filled.
+        if not torch.isfinite(features).all() or not mask.any(dim=1).all():
             raise ValueError(f"{split}: NaN/Inf or empty sample")
         print(f"[OK] {split}: samples={len(ids)} shape={tuple(features.shape)} active_chunks={int(mask.sum())}")
 
