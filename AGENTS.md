@@ -2,9 +2,9 @@
 
 ## Scope
 
-This repository has four isolated experiment routes: historical opcode-only
-DIVE Main-6, DIVE Source-Main6, DIVE Main6 Opcode-CSDG, and DIVE Main6
-Opcode-Execution-Aware. Do not mix their
+This repository has five isolated experiment routes: historical opcode-only
+DIVE Main-6, DIVE Source-Main6, DIVE Main6 Opcode-CSDG, DIVE Main6
+Opcode-Execution-Aware, and the Four Vulnerability Dataset route. Do not mix their
 data, checkpoints, metrics, or claims. Do not reintroduce BJUT, legacy DIVE-8 labels, Front
 Running, Bad Randomness, MLSMOTE, ASL, retrieval-label overrides, or legacy
 Slurm pipelines.
@@ -92,6 +92,18 @@ graphs, ETP, templates, label retrieval, ASL, MLSMOTE, PPO, or REINFORCE.
 Its artifacts live under `main6_opcode_execution_aware`. The initial feature
 implementation is bounded local stack analysis; unresolved underflow and
 unsupported effects become unknown values rather than guessed dependencies.
+
+## Four Vulnerability Dataset Route
+
+The added `dataset_preprocessing_for_vulnerabilities` source is an independent
+four-label benchmark: Delegatecall, Integer Overflow/Underflow, Reentrancy,
+and Timestamp Dependence. Use `scripts/audit_four_vulnerability_dataset.py`
+to merge the per-vulnerability name/label files, extract opcode from compiled
+bytecode, and create a seed-42 contract-ID grouped split. Use only its
+route-specific `four_vulnerability_*` data, checkpoints, reports, and results.
+Do not mix its metrics with Main-6 metrics. The raw dataset and generated
+JSONL/cache files are not Git artifacts. Test remains locked until validation
+selection and threshold freezing.
 
 ## Validation
 

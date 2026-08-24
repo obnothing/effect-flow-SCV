@@ -148,6 +148,38 @@ The diagnostic writes validation-only PR-AUC, fixed-0.5 F1, threshold history,
 probability distributions, Brier score, ECE, and TP/FP/FN to
 `results/main6_opcode_execution_aware/valid_calibration_diagnostics.json`.
 
+## Four Vulnerability Dataset
+
+The repository also contains an independent four-label dataset with
+Delegatecall, Integer Overflow/Underflow, Reentrancy, and Timestamp
+Dependence. Its original files are converted into contract-ID grouped JSONL;
+the route is isolated from every Main-6 experiment.
+
+Run locally or on a server after the dataset directory is present:
+
+```bash
+bash scripts/run_four_vulnerability_opcode.sh audit
+bash scripts/run_four_vulnerability_opcode.sh extract
+bash scripts/run_four_vulnerability_opcode.sh validate
+bash scripts/run_four_vulnerability_opcode.sh train
+bash scripts/run_four_vulnerability_opcode.sh select
+```
+
+For Slurm:
+
+```bash
+AUDIT=$(sbatch --parsable scripts/slurm_four_vulnerability_audit.slurm)
+EXTRACT=$(sbatch --parsable --dependency=afterok:$AUDIT scripts/slurm_four_vulnerability_extract.slurm)
+TRAIN=$(sbatch --parsable --dependency=afterok:$EXTRACT scripts/slurm_four_vulnerability_train.slurm)
+SELECT=$(sbatch --parsable --dependency=afterok:$TRAIN scripts/slurm_four_vulnerability_select_valid.slurm)
+echo "AUDIT=$AUDIT EXTRACT=$EXTRACT TRAIN=$TRAIN SELECT=$SELECT"
+```
+
+The route uses only train/valid caches by default. Review
+`data/processed/four_vulnerability_random_split/audit_report.json` and
+`results/four_vulnerability_opcode_mlm8/validation_selection.json`; no test
+artifact is created by these commands.
+
 Run audit, extraction, validation training, and selection in order:
 
 ```bash
