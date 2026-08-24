@@ -2,8 +2,9 @@
 
 ## Scope
 
-This repository has three isolated experiment routes: historical opcode-only
-DIVE Main-6, DIVE Source-Main6, and DIVE Main6 Opcode-CSDG. Do not mix their
+This repository has four isolated experiment routes: historical opcode-only
+DIVE Main-6, DIVE Source-Main6, DIVE Main6 Opcode-CSDG, and DIVE Main6
+Opcode-Execution-Aware. Do not mix their
 data, checkpoints, metrics, or claims. Do not reintroduce BJUT, legacy DIVE-8 labels, Front
 Running, Bad Randomness, MLSMOTE, ASL, retrieval-label overrides, or legacy
 Slurm pipelines.
@@ -73,6 +74,24 @@ Use `configs/train_dive_source_main6_graphcodebert.yaml` and
 GraphCodeBERT and conservative Solidity def-use graphs only; it must not use
 opcode caches, ETP, templates, hard-negative mining, ASL, MLSMOTE, or labels
 outside the six Main-6 labels.
+
+## Opcode-Execution-Aware Route
+
+```text
+existing MLM8 opcode chunk views
+-> conservative local EVM stack lineage/role analysis
+-> chunk execution summaries
+-> gated execution-aware multi-slot MIL
+```
+
+Use `configs/train_main6_execution_aware_mil.yaml` and its route-specific
+scripts. This route uses generic EVM stack semantics only: producer/consumer
+lineage, stack effects, stack height, role categories, and provenance. It does
+not use vulnerability labels to construct features, and does not use AST/CFG
+graphs, ETP, templates, label retrieval, ASL, MLSMOTE, PPO, or REINFORCE.
+Its artifacts live under `main6_opcode_execution_aware`. The initial feature
+implementation is bounded local stack analysis; unresolved underflow and
+unsupported effects become unknown values rather than guessed dependencies.
 
 ## Validation
 

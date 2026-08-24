@@ -118,6 +118,32 @@ label-conditioned graph residual to the frozen `mlm8_slot3` predictor. It does
 not use source code, vulnerability templates, label retrieval, ETP, ASL,
 MLSMOTE, or policy-gradient reinforcement learning.
 
+## DIVE Main6 Opcode-Execution-Aware
+
+This is a fourth isolated route. It reuses the existing train/valid MLM8
+sequence cache and derives label-agnostic execution summaries from EVM stack
+semantics: producer-consumer lineage, pop/push effects, stack-height buckets,
+opcode roles, and value provenance. A gated execution branch is fused into a
+multi-slot MIL model. It does not use Solidity source, AST/CFG graphs, ETP,
+vulnerability templates, label retrieval, ASL, MLSMOTE, or policy-gradient
+reinforcement learning. Artifacts are stored under
+`data/features/main6_opcode_execution_aware`,
+`checkpoints/main6_opcode_execution_aware`, and
+`results/main6_opcode_execution_aware`.
+
+Run after the existing MLM8 sequence cache is present:
+
+```bash
+python scripts/extract_main6_execution_features.py \
+  --config configs/train_main6_execution_aware_mil.yaml --splits train valid
+python scripts/check_main6_execution_cache.py
+python scripts/train_main6_execution_aware_mil.py \
+  --config configs/train_main6_execution_aware_mil.yaml
+python scripts/select_main6_execution_aware_valid.py
+```
+
+The default path never creates test execution features or test predictions.
+
 Run audit, extraction, validation training, and selection in order:
 
 ```bash
