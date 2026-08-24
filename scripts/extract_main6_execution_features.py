@@ -35,7 +35,8 @@ def main():
     parser.add_argument("--splits", nargs="+", choices=["train", "valid", "test"], default=["train", "valid"])
     parser.add_argument("--allow-test-cache", action="store_true")
     args = parser.parse_args()
-    config = yaml.safe_load(resolve(args.config).read_text(encoding="utf-8"))
+    payload = yaml.safe_load(resolve(args.config).read_text(encoding="utf-8"))
+    config = payload.get("common", payload)
     if "test" in args.splits and not (args.allow_test_cache and str(__import__("os").environ.get("ALLOW_TEST", "0")) == "1"):
         raise RuntimeError("Test execution cache is locked; use --allow-test-cache with ALLOW_TEST=1 after validation selection")
     tokenizer = EVMOpcodeTokenizer.from_vocab_file(resolve(config["vocab_path"]))
