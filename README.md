@@ -169,6 +169,15 @@ bash scripts/run_main6_stack_relational.sh train
 bash scripts/run_main6_stack_relational.sh select
 ```
 
+If the train/valid relation cache has already been extracted and checked, the
+remaining stages can be submitted as dependent Slurm jobs. The chain requests
+one GPU for pretraining, one GPU for downstream training, and CPU resources for
+validation-only selection:
+
+```bash
+bash scripts/submit_main6_stack_relational.sh
+```
+
 The relation cache is ragged and sparse; no dense 512x512 cache is written.
 The default path does not read test labels, create a test cache, or generate
 test predictions. Do not compare this route's eventual test result directly
