@@ -120,7 +120,7 @@ MLSMOTE, or policy-gradient reinforcement learning.
 
 ## DIVE Main6 Opcode-Execution-Aware
 
-This is a fourth isolated route. It reuses the existing train/valid MLM8
+This is an isolated route. It reuses the existing train/valid MLM8
 sequence cache and derives label-agnostic execution summaries from EVM stack
 semantics: producer-consumer lineage, pop/push effects, stack-height buckets,
 opcode roles, and value provenance. A gated execution branch is fused into a
@@ -147,6 +147,32 @@ The default path never creates test execution features or test predictions.
 The diagnostic writes validation-only PR-AUC, fixed-0.5 F1, threshold history,
 probability distributions, Brier score, ECE, and TP/FP/FN to
 `results/main6_opcode_execution_aware/valid_calibration_diagnostics.json`.
+
+## DIVE Main6 Opcode-Stack-Relational
+
+This independent route injects EVM stack execution relations directly into
+the BERT input and the last four self-attention layers. It does not create a
+post-BERT stack branch and does not use a GNN. The relation representation
+keeps producer-consumer value lineage, operand slots, `DUP` aliases, `SWAP`
+reordering, distance buckets, and conservative unknown states. The route uses
+the same six-label seed-42 split and train-only continued MLM, with artifacts
+under `data/features/main6_opcode_stack_relational`,
+`checkpoints/main6_opcode_stack_relational`, and
+`results/main6_opcode_stack_relational`.
+
+Run the validation-only route in order:
+
+```bash
+bash scripts/run_main6_stack_relational.sh extract
+bash scripts/run_main6_stack_relational.sh pretrain
+bash scripts/run_main6_stack_relational.sh train
+bash scripts/run_main6_stack_relational.sh select
+```
+
+The relation cache is ragged and sparse; no dense 512x512 cache is written.
+The default path does not read test labels, create a test cache, or generate
+test predictions. Do not compare this route's eventual test result directly
+with another isolated route without reporting the route name and protocol.
 
 ## Four Vulnerability Dataset
 
