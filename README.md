@@ -179,6 +179,9 @@ bash scripts/submit_main6_stack_relational.sh
 ```
 
 The relation cache is ragged and sparse; no dense 512x512 cache is written.
+The route uses a one-contract downstream batch and one-chunk encoder
+microbatch with gradient accumulation and checkpointed BERT layers to keep
+long contracts within the GPU memory budget.
 The default path does not read test labels, create a test cache, or generate
 test predictions. Do not compare this route's eventual test result directly
 with another isolated route without reporting the route name and protocol.

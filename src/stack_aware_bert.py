@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 import torch
 import torch.nn as nn
+from torch.utils.checkpoint import checkpoint
 from transformers import BertForMaskedLM
 from transformers.models.bert.modeling_bert import BertSelfAttention
 
@@ -66,6 +67,11 @@ class StackAwareBertForMaskedLM(nn.Module):
     def __init__(self, base_model, num_relation_types=8, num_slots=16, num_distance_buckets=9):
         super().__init__()
         self.base = base_model
+        # The downstream route freezes the base BERT weights but still needs
+        # gradients through BERT to train the injected stack parameters. A
+        # checkpointed layer recomputes activations during backward instead of
+        # retaining every 512-token attention tensor for every chunk.
+        self.gradient_checkpointing = True
         _replace_attention_modules(self.base)
         hidden = int(self.base.config.hidden_size)
         heads = int(self.base.config.num_attention_heads)
@@ -158,12 +164,26 @@ class StackAwareBertForMaskedLM(nn.Module):
         attentions = []
         for layer_index, layer in enumerate(self.base.bert.encoder.layer):
             layer.attention.self._relation_bias = relation_bias if layer_index >= max(0, len(self.base.bert.encoder.layer) - 4) else None
-            outputs = layer(hidden, attention_mask=extended_mask, head_mask=None, output_attentions=output_attentions)
-            hidden = outputs[0]
+            if self.gradient_checkpointing and self.training and not output_attentions:
+                def run_layer(layer_hidden, current_layer=layer):
+                    return current_layer(
+                        layer_hidden,
+                        attention_mask=extended_mask,
+                        head_mask=None,
+                        output_attentions=False,
+                    )[0]
+
+                hidden = checkpoint(run_layer, hidden)
+                outputs = (hidden,)
+            else:
+                outputs = layer(hidden, attention_mask=extended_mask, head_mask=None, output_attentions=output_attentions)
+                hidden = outputs[0]
             if output_attentions:
                 attentions.append(outputs[1])
         token_hidden = outputs[0]
-        logits = self.base.cls(token_hidden)
+        # Downstream MIL only consumes last_hidden_state. Avoid materializing
+        # the vocabulary projection unless MLM labels are actually supplied.
+        logits = self.base.cls(token_hidden) if labels is not None else None
         loss = None
         if labels is not None:
             loss = nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), labels.view(-1), ignore_index=-100)
