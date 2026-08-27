@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=main6_csdg_train
-#SBATCH --partition=gpu-l20
+#SBATCH --partition=gpu-a30
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:2
 #SBATCH --ntasks=1

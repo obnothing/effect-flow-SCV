@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=main6_lse_mil
-#SBATCH --partition=gpu-l20
+#SBATCH --partition=gpu-a10
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:2
 #SBATCH --ntasks=1

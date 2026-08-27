@@ -5,7 +5,6 @@
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=32G
 #SBATCH --output=logs/main6_stack_relational_pretrain_%j.out
 #SBATCH --error=logs/main6_stack_relational_pretrain_%j.err
 

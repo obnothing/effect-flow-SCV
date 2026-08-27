@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=source_m6_v2_select
-#SBATCH --partition=gpu-l20
+#SBATCH --partition=gpu-a10
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
 #SBATCH --ntasks=1

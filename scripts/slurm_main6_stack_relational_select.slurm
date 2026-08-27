@@ -2,7 +2,6 @@
 #SBATCH --job-name=main6-stack-select
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=4G
 #SBATCH --output=logs/main6_stack_relational_select_%j.out
 #SBATCH --error=logs/main6_stack_relational_select_%j.err
 
