@@ -37,7 +37,7 @@ common:
   recognition_head_type: label_branch_mlp
   recognition_aggregation: label_gated_attention
   use_chunk_context: true
-  chunk_context_num_layers: 2
+  chunk_context_num_layers: 1
   chunk_context_num_heads: 8
   chunk_context_dropout: 0.1
   label_branch_hidden_dim: 256
