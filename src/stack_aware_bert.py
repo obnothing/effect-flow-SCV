@@ -157,15 +157,37 @@ class StackAwareBertForMaskedLM(nn.Module):
         inputs = inputs + self._embedding_delta(stack_state.long(), boundary_state.long() if boundary_state is not None else None).to(inputs.dtype)
         extended_mask = attention_mask[:, None, None, :].to(inputs.dtype)
         extended_mask = (1.0 - extended_mask) * torch.finfo(inputs.dtype).min
+        relation_args = None
         relation_bias = None
         if edge_offsets is not None:
-            relation_bias = self._relation_bias(edge_offsets, edge_src, edge_dst, edge_type, edge_slot, edge_distance, edge_confidence, input_ids.shape[0], input_ids.shape[1], input_ids.device, inputs.dtype)
+            relation_args = (
+                edge_offsets, edge_src, edge_dst, edge_type, edge_slot,
+                edge_distance, edge_confidence,
+            )
+            # Checkpointed layers must not share one autograd graph for the
+            # dense relation bias. It is rebuilt independently during each
+            # checkpoint recomputation below.
+            if not (self.gradient_checkpointing and self.training and not output_attentions):
+                relation_bias = self._relation_bias(
+                    *relation_args,
+                    input_ids.shape[0], input_ids.shape[1],
+                    input_ids.device, inputs.dtype,
+                )
         hidden = inputs
         attentions = []
         for layer_index, layer in enumerate(self.base.bert.encoder.layer):
-            layer.attention.self._relation_bias = relation_bias if layer_index >= max(0, len(self.base.bert.encoder.layer) - 4) else None
+            use_relation = layer_index >= max(0, len(self.base.bert.encoder.layer) - 4)
+            layer.attention.self._relation_bias = relation_bias if use_relation else None
             if self.gradient_checkpointing and self.training and not output_attentions:
-                def run_layer(layer_hidden, current_layer=layer):
+                def run_layer(layer_hidden, current_layer=layer, apply_relation=use_relation):
+                    if relation_args is not None and apply_relation:
+                        current_layer.attention.self._relation_bias = self._relation_bias(
+                            *relation_args,
+                            input_ids.shape[0], input_ids.shape[1],
+                            input_ids.device, layer_hidden.dtype,
+                        )
+                    else:
+                        current_layer.attention.self._relation_bias = None
                     return current_layer(
                         layer_hidden,
                         attention_mask=extended_mask,
