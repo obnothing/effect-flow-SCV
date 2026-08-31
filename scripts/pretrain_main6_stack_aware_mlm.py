@@ -35,8 +35,10 @@ def main():
     model = StackAwareBertForMaskedLM.from_pretrained(config["hf_model_path"], local_files_only=True).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=float(config.get("mlm_learning_rate", 1e-5)), weight_decay=0.01)
     # MLM is the only stage that backpropagates through the full BERT stack.
-    # Keep it in fp32 by default; downstream MIL can still use fp16 safely.
-    mlm_fp16 = bool(config.get("mlm_fp16", False)) and device.type == "cuda"
+    # Prefer BF16 on supported GPUs: it has FP32-like exponent range without
+    # the memory cost of FP32. FP16 remains opt-in for older accelerators.
+    mlm_bf16 = bool(config.get("mlm_bf16", True)) and device.type == "cuda"
+    mlm_fp16 = bool(config.get("mlm_fp16", False)) and device.type == "cuda" and not mlm_bf16
     scaler = torch.cuda.amp.GradScaler(enabled=mlm_fp16)
     epochs = int(config.get("mlm_epochs", 3)); history = []
     checkpoint_dir = resolve(config["checkpoint_dir"]); result_dir = resolve(config["result_dir"])
@@ -51,7 +53,11 @@ def main():
             if target_count == 0:
                 skipped_empty += 1
                 continue
-            with torch.cuda.amp.autocast(enabled=scaler.is_enabled()):
+            if mlm_bf16:
+                autocast_context = torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+            else:
+                autocast_context = torch.cuda.amp.autocast(enabled=mlm_fp16)
+            with autocast_context:
                 loss = model(**batch).loss
             if not torch.isfinite(loss):
                 finite = {name: bool(torch.isfinite(value).all().item()) for name, value in model.named_parameters() if value.requires_grad}
