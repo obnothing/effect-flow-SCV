@@ -165,9 +165,16 @@ Run the validation-only route in order:
 ```bash
 bash scripts/run_main6_stack_relational.sh extract
 bash scripts/run_main6_stack_relational.sh pretrain
+bash scripts/run_main6_stack_relational.sh cache
 bash scripts/run_main6_stack_relational.sh train
 bash scripts/run_main6_stack_relational.sh select
 ```
+
+After the train-only Stack-Aware MLM step, `cache` freezes the encoder and
+extracts train/valid eight-view features once. The default `train` step then
+optimizes only the MIL head, avoiding a full BERT pass for every epoch. To
+rebuild the v2 structural cache after code changes, run
+`REBUILD_STACK_CACHE=1 bash scripts/run_main6_stack_relational.sh extract`.
 
 If the train/valid relation cache has already been extracted and checked, the
 remaining stages can be submitted as dependent Slurm jobs. The chain requests

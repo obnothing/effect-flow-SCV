@@ -14,7 +14,10 @@ from transformers.models.bert.modeling_bert import BertSelfAttention
 class StackAwareSelfAttention(BertSelfAttention):
     def __init__(self, config):
         super().__init__(config)
+        # Keep the scalar for checkpoint compatibility, but give each head a
+        # separate modulation so one head can specialize in stack relations.
         self.relation_scale = nn.Parameter(torch.zeros(()))
+        self.relation_head_scale = nn.Parameter(torch.zeros(self.num_attention_heads))
         self._relation_bias = None
 
     def forward(
@@ -37,8 +40,12 @@ class StackAwareSelfAttention(BertSelfAttention):
         attention_scores = torch.matmul(query_layer, key_layer.transpose(-1, -2))
         attention_scores = attention_scores / (self.attention_head_size ** 0.5)
         if self._relation_bias is not None:
-            scale = torch.tanh(self.relation_scale).to(attention_scores.dtype)
-            attention_scores = attention_scores + scale * self._relation_bias.to(attention_scores.dtype)
+            # A positive floor makes the structural signal active at the
+            # start of a downstream run; tanh keeps learned amplification
+            # bounded and the head term avoids a single global scale.
+            scale = (0.25 + 0.20 * torch.tanh(self.relation_scale)).to(attention_scores.dtype)
+            head_scale = (1.0 + 0.5 * torch.tanh(self.relation_head_scale)).to(attention_scores.dtype)
+            attention_scores = attention_scores + scale * head_scale.view(1, -1, 1, 1) * self._relation_bias.to(attention_scores.dtype)
         if attention_mask is not None:
             attention_scores = attention_scores + attention_mask
         attention_probs = nn.functional.softmax(attention_scores, dim=-1)
@@ -86,12 +93,19 @@ class StackAwareBertForMaskedLM(nn.Module):
         self.relation_embedding = nn.Embedding(num_relation_types, heads)
         self.slot_embedding = nn.Embedding(num_slots, heads)
         self.distance_embedding = nn.Embedding(num_distance_buckets, heads)
+        self.relation_presence_bias = nn.Parameter(torch.full((heads,), 0.35))
+        # The structural channel must not start as an all-zero perturbation.
+        # Small random values preserve stability while allowing MLM to learn
+        # a useful execution-aware basis from the first update.
         for module in list(self.stack_embeddings) + list(self.boundary_embeddings):
-            nn.init.zeros_(module.weight)
-        nn.init.zeros_(self.relation_embedding.weight)
-        nn.init.zeros_(self.slot_embedding.weight)
-        nn.init.zeros_(self.distance_embedding.weight)
-        self.relation_embedding.weight.data[1:].normal_(std=0.01)
+            nn.init.normal_(module.weight, std=0.02)
+        nn.init.normal_(self.relation_embedding.weight, std=0.08)
+        nn.init.zeros_(self.relation_embedding.weight[0])
+        nn.init.normal_(self.slot_embedding.weight, std=0.04)
+        nn.init.normal_(self.distance_embedding.weight, std=0.04)
+        nn.init.zeros_(self.slot_embedding.weight[0])
+        nn.init.zeros_(self.distance_embedding.weight[0])
+        self.relation_dropout = 0.10
 
     @classmethod
     def from_pretrained(cls, path, local_files_only=True):
@@ -128,7 +142,15 @@ class StackAwareBertForMaskedLM(nn.Module):
             values = self.relation_embedding(edge_type[left:right].to(device))
             values = values + self.slot_embedding(edge_slot[left:right].to(device))
             values = values + self.distance_embedding(edge_distance[left:right].to(device))
+            # Every explicit edge gets a small positive prior.  The learned
+            # type/slot/distance terms can specialize it, while unrelated
+            # token pairs remain completely unconstrained by this channel.
+            values = values + self.relation_presence_bias.view(1, -1)
             values = values * edge_confidence[left:right].to(device=device, dtype=values.dtype).unsqueeze(-1)
+            values = torch.tanh(values)
+            if self.training and self.relation_dropout > 0:
+                keep = (torch.rand(values.shape[0], device=device) >= self.relation_dropout).to(values.dtype)
+                values = values * keep.unsqueeze(-1)
             src = edge_src[left:right].long().to(device)
             dst = edge_dst[left:right].long().to(device)
             for head in range(heads):

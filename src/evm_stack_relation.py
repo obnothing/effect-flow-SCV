@@ -60,17 +60,26 @@ def distance_bucket(distance: int) -> int:
 
 def _merge_values(left: Value, right: Value, max_producers: int) -> Value:
     producers = tuple(sorted(set(left.producers).union(right.producers)))
-    if left.unknown or right.unknown or len(producers) > max_producers:
-        return _unknown()
-    return Value(producers=producers)
+    # Preserve bounded possible producers even when a join is uncertain.  The
+    # old implementation discarded every producer as soon as a join exceeded
+    # the cap, which made long-lived values disappear from the relation cache.
+    uncertain = left.unknown or right.unknown or len(producers) > max_producers
+    if len(producers) > max_producers:
+        producers = producers[-max_producers:]
+    return Value(producers=producers, unknown=uncertain)
 
 
 def _merge_stack(old: Optional[List[Value]], new: List[Value], max_producers: int):
     if old is None:
         return list(new), True
     if len(old) != len(new):
-        size = min(len(old), len(new))
+        # EVM consumers address the stack from the top.  Aligning the common
+        # suffix preserves reliable top-of-stack values across a conservative
+        # control-flow join while marking unmatched lower values unknown.
+        size = max(len(old), len(new))
         merged = [_unknown() for _ in range(size)]
+        for offset in range(1, min(len(old), len(new)) + 1):
+            merged[-offset] = _merge_values(old[-offset], new[-offset], max_producers)
         return merged, merged != old
     merged = [_merge_values(a, b, max_producers) for a, b in zip(old, new)]
     return merged, merged != old
@@ -344,8 +353,17 @@ def pack_contract_relations(
                     local_edges.append((target_token - start + 1, source_token - start + 1, RELATION_INDEX["direct_reverse"], relation["slot"], distance, relation["confidence"]))
             elif target_inside:
                 incoming += 1
+                target_local = target_token - start + 1
+                # CLS represents producer context that lives in another
+                # chunk.  Add both directions so the target can read the
+                # summary and CLS can aggregate local evidence.
+                local_edges.append((0, target_local, RELATION_INDEX["direct_forward"], relation["slot"], distance_bucket(relation["distance"]), relation["confidence"]))
+                local_edges.append((target_local, 0, RELATION_INDEX["direct_reverse"], relation["slot"], distance_bucket(relation["distance"]), relation["confidence"]))
             elif source_inside:
                 outgoing += 1
+                source_local = source_token - start + 1
+                local_edges.append((source_local, 0, RELATION_INDEX["direct_forward"], relation["slot"], distance_bucket(relation["distance"]), relation["confidence"]))
+                local_edges.append((0, source_local, RELATION_INDEX["direct_reverse"], relation["slot"], distance_bucket(relation["distance"]), relation["confidence"]))
         boundary.append([min(incoming, 15), min(outgoing, 15), min(analysis["report"]["unknown_consumption_count"], 15), min(max((e[4] for e in local_edges), default=0), 8)])
         chunk["stack_state"] = local_state
         chunk["edges"] = local_edges

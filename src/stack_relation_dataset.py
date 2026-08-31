@@ -14,6 +14,8 @@ class StackRelationDataset(Dataset):
         if not self.path.exists():
             raise FileNotFoundError(self.path)
         payload = torch.load(self.path, map_location="cpu")
+        if payload.get("schema") != "main6_opcode_stack_relational_v2":
+            raise ValueError("stack relation cache is stale; rebuild it with the v2 extractor")
         self.ids = [str(x) for x in payload["ids"]]
         self.chunk_offsets = payload["chunk_offsets"].long()
         self.input_ids = payload["input_ids"]
@@ -128,4 +130,3 @@ def collate_stack_relation(batch):
         "multi_labels": torch.stack([item["multi_labels"] for item in batch]),
         "binary_labels": torch.stack([item["binary_label"] for item in batch]),
     }
-

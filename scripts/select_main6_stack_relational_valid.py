@@ -21,7 +21,7 @@ def main():
     baseline_path = resolve(config["baseline_summary"])
     baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
     baseline_score = float(baseline.get("valid_macro_f1", baseline.get("best_macro_f1_value")))
-    result_dir = resolve(config["result_dir"])
+    result_dir = resolve(config.get("cached_result_dir", config["result_dir"])) if config.get("use_cached_encoder_features", False) else resolve(config["result_dir"])
     summary_path = result_dir / "valid_summary.json"
     candidates = []
     if summary_path.exists():
@@ -45,4 +45,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

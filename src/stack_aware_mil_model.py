@@ -49,7 +49,10 @@ class StackAwareMLM8MIL(nn.Module):
                 checkpoint_path = Path(__file__).resolve().parents[1] / checkpoint_path
             try:
                 payload = torch.load(checkpoint_path, map_location="cpu")
-                self.encoder.load_state_dict(payload["model_state_dict"], strict=True)
+                # Newer checkpoints add per-head relation gates.  Loading an
+                # older route-local MLM checkpoint remains valid because the
+                # new gates keep their configured initialization.
+                self.encoder.load_state_dict(payload["model_state_dict"], strict=False)
             except FileNotFoundError:
                 # Downstream-only MVP can start from the frozen continued MLM
                 # while the optional train-only stack-aware MLM is unavailable.
@@ -62,6 +65,12 @@ class StackAwareMLM8MIL(nn.Module):
         mil_config["feature_dim"] = int(self.encoder.config.hidden_size)
         mil_config["num_views"] = 8
         self.mil = MLM8ViewMultiSlotMIL(mil_config)
+
+    def freeze_encoder(self):
+        """Freeze the complete Stack-Aware BERT for offline feature extraction."""
+        for parameter in self.encoder.parameters():
+            parameter.requires_grad = False
+        self.encoder.eval()
 
     def _encode(self, batch):
         ids = batch["input_ids"]

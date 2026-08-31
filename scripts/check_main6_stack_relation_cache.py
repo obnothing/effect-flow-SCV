@@ -17,6 +17,8 @@ def resolve(value):
 
 def check(path):
     payload = torch.load(resolve(path), map_location="cpu")
+    if payload.get("schema") != "main6_opcode_stack_relational_v2":
+        raise ValueError(f"{path}: stale stack relation cache; rebuild with --overwrite")
     ids = payload["ids"]
     chunks = payload["input_ids"]
     n_chunks = chunks.shape[0]
@@ -58,4 +60,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

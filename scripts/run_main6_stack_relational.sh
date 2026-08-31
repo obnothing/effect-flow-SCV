@@ -6,8 +6,16 @@ CONFIG="configs/train_main6_stack_relational.yaml"
 
 case "$MODE" in
   extract)
-    python scripts/extract_main6_stack_relation_cache.py --config "$CONFIG" --splits train valid
+    if [[ "${REBUILD_STACK_CACHE:-0}" == "1" ]]; then
+      python scripts/extract_main6_stack_relation_cache.py --config "$CONFIG" --splits train valid --overwrite
+    else
+      python scripts/extract_main6_stack_relation_cache.py --config "$CONFIG" --splits train valid
+    fi
     python scripts/check_main6_stack_relation_cache.py --config "$CONFIG"
+    ;;
+  cache)
+    python scripts/extract_main6_stack_relational_features.py --config "$CONFIG" --splits train valid
+    python scripts/check_main6_stack_relational_feature_cache.py --config "$CONFIG"
     ;;
   train)
     python scripts/train_main6_stack_relational.py --config "$CONFIG"
@@ -21,11 +29,12 @@ case "$MODE" in
   all)
     bash scripts/run_main6_stack_relational.sh extract
     bash scripts/run_main6_stack_relational.sh pretrain
+    bash scripts/run_main6_stack_relational.sh cache
     bash scripts/run_main6_stack_relational.sh train
     bash scripts/run_main6_stack_relational.sh select
     ;;
   *)
-    echo "usage: bash scripts/run_main6_stack_relational.sh {extract|train|select|all}" >&2
+    echo "usage: bash scripts/run_main6_stack_relational.sh {extract|pretrain|cache|train|select|all}" >&2
     exit 2
     ;;
 esac

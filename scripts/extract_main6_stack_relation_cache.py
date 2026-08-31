@@ -73,7 +73,7 @@ def extract_split(split, config, tokenizer, output):
         metadata.append({"id": contract_id, "source_split": split, **analysis["report"]})
 
     payload = {
-        "schema": "main6_opcode_stack_relational_v1",
+        "schema": "main6_opcode_stack_relational_v2",
         "ids": ids,
         "chunk_offsets": torch.tensor(chunk_offsets, dtype=torch.long),
         "input_ids": torch.stack(input_ids) if input_ids else torch.empty((0, max_len), dtype=torch.int32),
@@ -132,4 +132,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

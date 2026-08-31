@@ -103,6 +103,13 @@ train-only continued EVM MLM
 -> label-conditioned multi-slot MIL
 ```
 
+The Stack-Relational route must use the v2 relation cache after structural
+changes. Its recommended downstream protocol is train-only Stack-Aware MLM,
+one-time frozen train/valid encoder feature extraction, then MIL-only training;
+the live encoder training path is retained only for diagnostics. The v2 cache
+passes cross-chunk lineage through CLS summary edges, uses per-head relation
+gates, and preserves bounded producers at conservative control-flow joins.
+
 Use `configs/train_main6_stack_relational.yaml` and
 `scripts/run_main6_stack_relational.sh`. This is an independent input-encoding
 route, not a post-BERT execution branch and not a graph/GNN route. It uses only

@@ -48,3 +48,16 @@ def test_packed_relations_do_not_include_padding_edges():
     assert all(0 < edge[0] < 16 and 0 < edge[1] < 16 for chunk in chunks for edge in chunk["edges"])
     assert len(boundary) == len(chunks)
     assert analysis["report"]["token_count"] == 3
+
+
+def test_cross_chunk_relation_is_summarized_through_cls():
+    tokenizer = TinyTokenizer()
+    chunks, _, _ = pack_contract_relations(
+        "PUSH1 0x01 PUSH1 0x02 ADD SSTORE",
+        tokenizer,
+        max_len=5,
+        chunk_stride=3,
+        max_chunks=3,
+    )
+    # The second chunk starts at token 3, so SSTORE's producer is outside it.
+    assert any(edge[0] == 0 and edge[1] > 0 for edge in chunks[1]["edges"])

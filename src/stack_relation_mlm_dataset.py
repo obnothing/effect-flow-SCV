@@ -7,6 +7,8 @@ from torch.utils.data import Dataset
 class StackRelationMLMDataset(Dataset):
     def __init__(self, path, seed=42, mlm_probability=0.15):
         payload = torch.load(path, map_location="cpu")
+        if payload.get("schema") != "main6_opcode_stack_relational_v2":
+            raise ValueError("stack relation cache is stale; rebuild it with the v2 extractor")
         self.input_ids = payload["input_ids"].long()
         self.attention_mask = payload["attention_mask"].bool()
         self.stack_state = payload["stack_state"].long()
@@ -77,4 +79,3 @@ def collate_stack_relation_mlm(batch):
         "labels": torch.stack([x["labels"] for x in batch]), "edge_offsets": torch.tensor(offsets, dtype=torch.long),
         **{name: torch.cat(values) if values else (empty_float if name == "edge_confidence" else empty_long) for name, values in fields.items()},
     }
-
