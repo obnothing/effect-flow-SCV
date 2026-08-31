@@ -230,5 +230,15 @@ class StackAwareBertForMaskedLM(nn.Module):
         logits = self.base.cls(token_hidden) if labels is not None else None
         loss = None
         if labels is not None:
-            loss = nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), labels.view(-1), ignore_index=-100)
+            # PyTorch returns NaN when every target is ignore_index because
+            # the reduced loss divides by zero. Empty/metadata-only opcode
+            # chunks are valid inference inputs but must not poison MLM.
+            valid = labels.reshape(-1).ne(-100)
+            if valid.any():
+                loss = nn.functional.cross_entropy(
+                    logits.float().reshape(-1, logits.size(-1))[valid],
+                    labels.reshape(-1)[valid],
+                )
+            else:
+                loss = token_hidden.float().sum() * 0.0
         return SimpleNamespace(loss=loss, logits=logits, last_hidden_state=token_hidden, attentions=tuple(attentions) if output_attentions else None)

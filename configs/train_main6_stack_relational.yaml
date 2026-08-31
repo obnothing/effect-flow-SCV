@@ -66,3 +66,4 @@ common:
   mlm_epochs: 3
   mlm_batch_size: 1
   mlm_learning_rate: 0.00001
+  mlm_fp16: false

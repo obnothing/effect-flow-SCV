@@ -1,9 +1,12 @@
 import sys
 from pathlib import Path
 
+import torch
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from evm_stack_relation import RELATION_INDEX, analyze_stack_relations, pack_contract_relations  # noqa: E402
+from stack_relation_mlm_dataset import StackRelationMLMDataset  # noqa: E402
 
 
 class TinyTokenizer:
@@ -61,3 +64,33 @@ def test_cross_chunk_relation_is_summarized_through_cls():
     )
     # The second chunk starts at token 3, so SSTORE's producer is outside it.
     assert any(edge[0] == 0 and edge[1] > 0 for edge in chunks[1]["edges"])
+
+
+def test_empty_opcode_chunk_has_no_mlm_targets_instead_of_nan():
+    # The trainer must skip this batch; the model loss path separately guards
+    # the all-ignore-index case for callers that still execute the forward.
+    path = Path(__file__).with_name("_empty_stack_cache.pt")
+    payload = {
+        "schema": "main6_opcode_stack_relational_v2",
+        "input_ids": torch.tensor([[1, 2, 0, 0]], dtype=torch.int32),
+        "attention_mask": torch.tensor([[True, True, False, False]]),
+        "stack_state": torch.zeros((1, 4, 5), dtype=torch.uint8),
+        "boundary_state": torch.zeros((1, 4), dtype=torch.uint8),
+        "edge_offsets": torch.tensor([0, 0]),
+        "edge_src": torch.empty(0, dtype=torch.int16),
+        "edge_dst": torch.empty(0, dtype=torch.int16),
+        "edge_type": torch.empty(0, dtype=torch.uint8),
+        "edge_slot": torch.empty(0, dtype=torch.uint8),
+        "edge_distance": torch.empty(0, dtype=torch.uint8),
+        "edge_confidence": torch.empty(0, dtype=torch.float16),
+        "multi_labels": torch.zeros((1, 6)),
+        "binary_labels": torch.zeros(1),
+    }
+    torch.save(payload, path)
+    try:
+        dataset = StackRelationMLMDataset(path)
+        dataset.special_ids = {0, 1, 2, 3, 4}
+        dataset.set_random_token_ids([], 4)
+        assert int(dataset[0]["labels"].ne(-100).sum()) == 0
+    finally:
+        path.unlink(missing_ok=True)
