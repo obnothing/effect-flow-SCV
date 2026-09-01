@@ -17,8 +17,13 @@ common:
   allow_test_cache: false
   seed: 42
   num_workers: 0
-  feature_extract_batch_size: 1
-  cached_batch_size: 16
+  # 20 GB GPU starting point. The extractor still encodes one chunk at a time
+  # because encoder_chunk_microbatch remains 1 below.
+  feature_extract_batch_size: 4
+  encoder_chunk_microbatch: 1
+  cached_batch_size: 64
+  gradient_accumulation_steps: 1
+  gradient_clip_norm: 1.0
   cached_epochs: 30
   cached_early_stopping_patience: 5
   cached_learning_rate: 0.0001
@@ -52,7 +57,7 @@ common:
   lora_dropout: 0.05
   fusion_init: 0.05
   mlm_epochs: 3
-  mlm_batch_size: 1
+  mlm_batch_size: 2
   mlm_learning_rate: 0.0001
   mlm_weight_decay: 0.01
   mlm_fp16: false
