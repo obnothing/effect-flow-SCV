@@ -16,6 +16,11 @@ def resolve(value):
 
 def check(path):
     payload = torch.load(path, map_location="cpu")
+    if payload.get("schema") not in {
+        "main6_opcode_stack_relational_encoder_features_v1",
+        "main6_opcode_stack_adapter_encoder_features_v1",
+    }:
+        raise ValueError(f"{path}: unsupported feature cache schema")
     ids = payload["ids"]
     offsets = payload["chunk_offsets"]
     features = payload["chunk_features"]

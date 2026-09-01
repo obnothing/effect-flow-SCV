@@ -12,7 +12,10 @@ class StackRelationFeatureDataset(Dataset):
     def __init__(self, path, num_labels=6, label_names=None):
         self.path = Path(path)
         payload = torch.load(self.path, map_location="cpu")
-        if payload.get("schema") != "main6_opcode_stack_relational_encoder_features_v1":
+        if payload.get("schema") not in {
+            "main6_opcode_stack_relational_encoder_features_v1",
+            "main6_opcode_stack_adapter_encoder_features_v1",
+        }:
             raise ValueError("Stack-Aware encoder feature cache has an unsupported schema")
         self.ids = [str(value) for value in payload["ids"]]
         self.chunk_offsets = payload["chunk_offsets"].long()

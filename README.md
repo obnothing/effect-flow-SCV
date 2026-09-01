@@ -189,6 +189,12 @@ The relation cache is ragged and sparse; no dense 512x512 cache is written.
 The route uses a one-contract downstream batch and one-chunk encoder
 microbatch with gradient accumulation and checkpointed BERT layers to keep
 long contracts within the GPU memory budget.
+
+The isolated Stack-Adapter v3 variant implements parameter-efficient execution
+adaptation: a one-layer stack structural encoder processes stack state and
+typed producer-consumer relations, a gated projection is added to the
+EVM-BERT embeddings, and Q/V LoRA adapters are trainable while the original
+EVM-BERT is frozen. Its artifacts use the separate `adapter_v3` paths.
 The default path does not read test labels, create a test cache, or generate
 test predictions. Do not compare this route's eventual test result directly
 with another isolated route without reporting the route name and protocol.

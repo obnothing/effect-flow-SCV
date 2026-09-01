@@ -110,6 +110,11 @@ the live encoder training path is retained only for diagnostics. The v2 cache
 passes cross-chunk lineage through CLS summary edges, uses per-head relation
 gates, and preserves bounded producers at conservative control-flow joins.
 
+An isolated `adapter_v3` diagnostic variant adds a lightweight Stack
+Structural Encoder, gated embedding fusion, and Q/V LoRA adapters while
+freezing the original EVM-BERT. Its artifacts use separate `adapter_v3` paths
+and must not be mixed with v2 metrics.
+
 Use `configs/train_main6_stack_relational.yaml` and
 `scripts/run_main6_stack_relational.sh`. This is an independent input-encoding
 route, not a post-BERT execution branch and not a graph/GNN route. It uses only
