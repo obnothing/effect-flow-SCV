@@ -67,8 +67,12 @@ def move_batch(batch, device):
 def forward_model(model, batch, use_cached):
     """Call the matching interface for cached MIL or live encoder mode."""
     if use_cached:
+        # Encoder caches are stored as fp16 to reduce disk/RAM usage.  The
+        # cached MIL path also runs during validation without autocast, while
+        # its LayerNorm parameters are fp32; normalize the input dtype here.
+        chunk_features = batch["chunk_features"].float()
         return model(
-            batch["chunk_features"],
+            chunk_features,
             batch["chunk_mask"],
             multi_labels=None,
         )
