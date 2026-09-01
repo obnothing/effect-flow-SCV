@@ -64,12 +64,24 @@ def move_batch(batch, device):
     return {key: value.to(device) if torch.is_tensor(value) else value for key, value in batch.items()}
 
 
+def forward_model(model, batch, use_cached):
+    """Call the matching interface for cached MIL or live encoder mode."""
+    if use_cached:
+        return model(
+            batch["chunk_features"],
+            batch["chunk_mask"],
+            multi_labels=None,
+        )
+    return model(batch)
+
+
 def evaluate(model, loader, device, pos_weight, config):
     model.eval(); losses = []; logits = []; labels = []
+    use_cached = bool(config.get("use_cached_encoder_features", False))
     with torch.no_grad():
         for batch in loader:
             batch = move_batch(batch, device)
-            output = model(batch)
+            output = forward_model(model, batch, use_cached)
             target = batch["multi_labels"]
             losses.append(float(nn.functional.binary_cross_entropy_with_logits(output["recognition_logits"], target, pos_weight=pos_weight)))
             logits.append(output["recognition_logits"].float().cpu()); labels.append(target.float().cpu())
@@ -130,7 +142,7 @@ def main():
         for step, raw_batch in enumerate(loader, 1):
             batch = move_batch(raw_batch, device)
             with torch.cuda.amp.autocast(enabled=bool(config["fp16"]) and device.type == "cuda"):
-                output = model(batch)
+                output = forward_model(model, batch, use_cached)
                 loss = nn.functional.binary_cross_entropy_with_logits(output["recognition_logits"], batch["multi_labels"], pos_weight=pos_weight)
                 scaled = loss / int(config["gradient_accumulation_steps"])
             scaler.scale(scaled).backward()
