@@ -17,6 +17,8 @@ from torch.utils.data import DataLoader, TensorDataset
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from metrics import compute_multilabel_metrics_from_probs  # noqa: E402
+from evm_chunk_mil_model import MLM8ViewMultiSlotMIL  # noqa: E402
+from train_chunk_mil import load_config as load_mil_config  # noqa: E402
 
 
 LABELS = ["Reentrancy", "Access Control", "Arithmetic", "Unchecked Return Values", "DoS", "Time manipulation"]
@@ -148,6 +150,39 @@ def load_cache(config, split):
     }
 
 
+def extract_baseline_logits(config, cache_data, split):
+    checkpoint_path = resolve(config["baseline_checkpoint"])
+    if not checkpoint_path.exists():
+        raise FileNotFoundError(
+            f"historical baseline checkpoint not found: {checkpoint_path}"
+        )
+    baseline_config = load_mil_config(
+        resolve(config["baseline_config"]), config.get("baseline_variant", "mlm8_slot3")
+    )
+    model = MLM8ViewMultiSlotMIL(baseline_config)
+    state = torch.load(checkpoint_path, map_location="cpu")
+    model.load_state_dict(state["model_state_dict"], strict=True)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device).eval()
+    raw_path = resolve(config["feature_dir"]) / f"{split}.pt"
+    raw = torch.load(raw_path, map_location="cpu")
+    features = raw["features"].float()
+    masks = raw["chunk_mask"].bool()
+    batch_size = int(config.get("baseline_batch_size", 16))
+    outputs = []
+    with torch.no_grad():
+        for left in range(0, len(features), batch_size):
+            right = min(left + batch_size, len(features))
+            batch_features = features[left:right].to(device)
+            batch_masks = masks[left:right].to(device)
+            logits = model(batch_features, batch_masks)["recognition_logits"]
+            outputs.append(logits.float().cpu())
+    result = torch.cat(outputs, dim=0)
+    if result.shape != (len(cache_data["ids"]), int(config["num_labels"])):
+        raise ValueError(f"baseline logits have unexpected shape: {tuple(result.shape)}")
+    return result
+
+
 def validate_cache_alignment(config, data, split):
     expected = [str(row["id"]) for row in read_jsonl(resolve(config["data_dir"]) / f"{split}.jsonl")]
     if data["ids"] != expected:
@@ -210,6 +245,8 @@ def prepare(config):
     valid = load_cache(config, "valid")
     validate_cache_alignment(config, train, "train")
     validate_cache_alignment(config, valid, "valid")
+    train["base_logits"] = extract_baseline_logits(config, train, "train")
+    valid["base_logits"] = extract_baseline_logits(config, valid, "valid")
     memory = {
         "schema": "main6_retrieval_memory_v1",
         "route": config["route_name"],
@@ -233,6 +270,7 @@ def prepare(config):
             "query_ids": data["ids"],
             "query_contract": data["contract"].half(),
             "query_chunk_counts": data["mask"].sum(1),
+            "base_logits": data["base_logits"],
             "labels": data["labels"],
             **indices,
         }, root / f"{split}_queries.pt")
@@ -240,22 +278,14 @@ def prepare(config):
     print(f"[OK] wrote {root / 'retrieval_memory.pt'}")
 
 
-class M0(nn.Module):
-    def __init__(self, dim, hidden, labels, dropout):
-        super().__init__()
-        self.net = nn.Sequential(nn.Linear(dim, hidden), nn.GELU(), nn.Dropout(dropout), nn.Linear(hidden, labels))
-
-    def forward(self, query, **_):
-        return self.net(query)
-
-
 class M1(nn.Module):
     def __init__(self, dim, hidden, labels, dropout):
         super().__init__()
         self.net = nn.Sequential(nn.Linear(dim * 2, hidden), nn.GELU(), nn.Dropout(dropout), nn.Linear(hidden, labels))
 
-    def forward(self, query, contract_evidence=None, **_):
-        return self.net(torch.cat([query, contract_evidence], dim=-1))
+    def forward(self, query, contract_evidence=None, base_logits=None, **_):
+        residual = self.net(torch.cat([query, contract_evidence], dim=-1))
+        return base_logits + residual
 
 
 class M2(nn.Module):
@@ -264,11 +294,11 @@ class M2(nn.Module):
         self.label_embedding = nn.Parameter(torch.randn(labels, dim) * 0.02)
         self.net = nn.Sequential(nn.Linear(dim * 4, hidden), nn.GELU(), nn.Dropout(dropout), nn.Linear(hidden, 1))
 
-    def forward(self, query, evidence, **_):
+    def forward(self, query, evidence, base_logits=None, **_):
         q = query.unsqueeze(1).expand(-1, evidence.shape[1], -1)
         label = self.label_embedding.unsqueeze(0).expand(query.shape[0], -1, -1)
         x = torch.cat([q, evidence, q * evidence, label], dim=-1)
-        return self.net(x).squeeze(-1)
+        return base_logits + self.net(x).squeeze(-1)
 
 
 def load_prepared(config, split):
@@ -325,13 +355,15 @@ def train_one(config, name, model_cls, memory, train_payload, valid_payload, dev
     valid_labels = valid_payload["labels"].float()
     train_q, train_contract, train_evidence = gather_features(memory, train_payload, device)
     valid_q, valid_contract, valid_evidence = gather_features(memory, valid_payload, device)
+    train_base = train_payload["base_logits"].float().to(device)
+    valid_base = valid_payload["base_logits"].float().to(device)
     model = model_cls(int(config["feature_dim"]), int(config["hidden_dim"]), int(config["num_labels"]), float(config["dropout"])).to(device)
     pos = train_labels.sum(0).to(device)
     neg = train_labels.shape[0] - pos
     weight = torch.sqrt(neg / pos.clamp_min(1)).clamp(1.0, 5.0)
     loss_fn = nn.BCEWithLogitsLoss(pos_weight=weight)
     optimizer = torch.optim.AdamW(model.parameters(), lr=float(config["learning_rate"]), weight_decay=float(config["weight_decay"]))
-    train_ds = TensorDataset(train_q, train_contract, train_evidence, train_labels.to(device))
+    train_ds = TensorDataset(train_q, train_contract, train_evidence, train_base, train_labels.to(device))
     loader = DataLoader(train_ds, batch_size=int(config["batch_size"]), shuffle=True)
     best = None
     patience = 0
@@ -339,9 +371,9 @@ def train_one(config, name, model_cls, memory, train_payload, valid_payload, dev
     for epoch in range(1, int(config["epochs"]) + 1):
         model.train()
         losses = []
-        for query, contract_ev, evidence, labels in loader:
+        for query, contract_ev, evidence, base_logits, labels in loader:
             optimizer.zero_grad(set_to_none=True)
-            logits = model(query, contract_evidence=contract_ev, evidence=evidence)
+            logits = model(query, contract_evidence=contract_ev, evidence=evidence, base_logits=base_logits)
             loss = loss_fn(logits, labels)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -349,7 +381,7 @@ def train_one(config, name, model_cls, memory, train_payload, valid_payload, dev
             losses.append(float(loss.item()))
         model.eval()
         with torch.no_grad():
-            valid_logits = model(valid_q, contract_evidence=valid_contract, evidence=valid_evidence)
+            valid_logits = model(valid_q, contract_evidence=valid_contract, evidence=valid_evidence, base_logits=valid_base)
         valid_metrics, valid_probs = metrics(valid_labels, valid_logits)
         record = {"epoch": epoch, "train_loss": float(np.mean(losses)), "valid_loss": float(loss_fn(valid_logits, valid_labels.to(device)).item()), "valid_fixed_macro_f1": valid_metrics["recognition_macro_f1"], "valid_fixed_micro_f1": valid_metrics["recognition_micro_f1"]}
         history.append(record)
@@ -462,12 +494,35 @@ def train(config):
     train_payload = load_prepared(config, "train")
     valid_payload = load_prepared(config, "valid")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    results = {}
-    for name, cls in (("m0_control", M0), ("m1_contract_retrieval", M1), ("m2_evidence_retrieval", M2)):
+    baseline_logits = valid_payload["base_logits"].float()
+    baseline_metrics, baseline_probs = metrics(valid_payload["labels"].float(), baseline_logits)
+    baseline_thresholds = select_thresholds(
+        valid_payload["labels"].numpy().astype(int),
+        baseline_probs,
+        config["thresholds"],
+    )
+    baseline_tuned = compute_multilabel_metrics_from_probs(
+        valid_payload["labels"].numpy(), baseline_probs, baseline_thresholds
+    )
+    baseline_tuned["pr_auc_per_label"] = baseline_metrics["pr_auc_per_label"]
+    baseline_tuned["pr_auc_macro"] = baseline_metrics["pr_auc_macro"]
+    results = {
+        "m0_historical_baseline": {
+            "variant": "m0_historical_baseline",
+            "best_epoch": None,
+            "fixed_0.5": baseline_metrics,
+            "tuned_valid": baseline_tuned,
+            "thresholds": baseline_thresholds,
+            "epoch_history": [],
+            "valid_probs": baseline_probs.tolist(),
+            "valid_labels": valid_payload["labels"].tolist(),
+        }
+    }
+    for name, cls in (("m1_contract_retrieval", M1), ("m2_evidence_retrieval", M2)):
         results[name] = train_one(config, name, cls, memory, train_payload, valid_payload, device)
     baseline_path = resolve(config["baseline_summary"])
     baseline = json.loads(baseline_path.read_text(encoding="utf-8")) if baseline_path.exists() else {"missing": str(baseline_path)}
-    (root / "baseline.json").write_text(json.dumps({"variant": "M0 historical opcode-only mlm8_slot3", "source": str(baseline_path), "summary": baseline, "control_model": results["m0_control"]}, indent=2), encoding="utf-8")
+    (root / "baseline.json").write_text(json.dumps({"variant": "M0 historical opcode-only mlm8_slot3", "source": str(baseline_path), "summary": baseline, "recomputed_from_checkpoint": results["m0_historical_baseline"]}, indent=2), encoding="utf-8")
     (root / "contract_retrieval.json").write_text(json.dumps(results["m1_contract_retrieval"], indent=2), encoding="utf-8")
     (root / "evidence_retrieval.json").write_text(json.dumps(results["m2_evidence_retrieval"], indent=2), encoding="utf-8")
     analyze(config, results, valid_payload, {"valid_chunk_counts": torch.load(resolve(config["feature_dir"]) / "valid.pt", map_location="cpu")["chunk_mask"].sum(1).numpy()})

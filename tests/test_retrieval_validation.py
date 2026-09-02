@@ -4,7 +4,7 @@ from pathlib import Path
 import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from run_retrieval_validation import M0, M1, M2, build_retrieval_indices  # noqa: E402
+from run_retrieval_validation import M1, M2, build_retrieval_indices  # noqa: E402
 
 
 def synthetic_memory():
@@ -35,6 +35,6 @@ def test_retrieval_models_have_expected_shapes():
     query = torch.randn(2, 4)
     contract = torch.randn(2, 4)
     evidence = torch.randn(2, 2, 4)
-    assert M0(4, 8, 2, 0.0)(query).shape == (2, 2)
-    assert M1(4, 8, 2, 0.0)(query, contract_evidence=contract).shape == (2, 2)
-    assert M2(4, 8, 2, 0.0)(query, evidence=evidence).shape == (2, 2)
+    base = torch.randn(2, 2)
+    assert M1(4, 8, 2, 0.0)(query, contract_evidence=contract, base_logits=base).shape == (2, 2)
+    assert M2(4, 8, 2, 0.0)(query, evidence=evidence, base_logits=base).shape == (2, 2)

@@ -2,6 +2,9 @@ route_name: DIVE Main6 Retrieval Hypothesis Validation
 data_dir: data/processed/DIVE_main6_random_split
 feature_dir: data/features/main6_random_mlm8_trainvalid
 baseline_summary: results/main6_random_090_mlm8/mlm8_slot3/valid_summary.json
+baseline_config: configs/train_main6_random_090.yaml
+baseline_variant: mlm8_slot3
+baseline_checkpoint: checkpoints/main6_random_090_mlm8/mlm8_slot3/best_macro_f1.pt
 result_dir: results/retrieval_validation
 label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
 num_labels: 6
