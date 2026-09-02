@@ -231,6 +231,23 @@ contrastive-style ranking objective; the sole proposed contribution remains
 evidence-centric retrieval. Review the scorer history and validation metrics
 before any later test decision.
 
+### Evidence Retrieval Diagnosis
+
+This validation-only diagnosis isolates why retrieval has not improved the
+historical opcode-only baseline. It reports an Oracle upper bound, candidate
+pool K ablations (8/16/32/64/128/256), flatten-first versus balanced chunk
+budgets, cosine/learned/random ranking metrics, weak contract-label purity,
+hard negatives, label shuffle, and a classification-loss-trained MIL scorer.
+Purity and ranking relevance are contract-label proxies, not local evidence
+ground truth. Oracle Evidence uses validation labels by design and is upper
+bound analysis only.
+
+After the train/valid retrieval cache has been prepared, run
+`bash scripts/run_retrieval_diagnosis.sh`, or submit
+`sbatch scripts/slurm_retrieval_diagnosis.slurm`. Outputs are written to
+`results/retrieval_validation/diagnosis`. The route never reads test labels,
+creates a test cache, generates test predictions, or unlocks test.
+
 ## Four Vulnerability Dataset
 
 The repository also contains an independent four-label dataset with

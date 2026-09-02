@@ -144,6 +144,15 @@ and negative candidate contracts to train a relevance scorer. Contrastive or
 pairwise ranking is an optimization objective, not a second claimed
 contribution. It must preserve the same valid-only evaluation and test lock.
 
+The retrieval diagnosis route is validation-only and must be run before any
+new evidence model is treated as a contribution. It compares Oracle Evidence,
+candidate K, chunk-budget fairness, cosine/learned/random ranking, weak
+contract-label purity, hard negatives, label shuffle, and classification-loss
+MIL supervision. Oracle label use is explicitly upper-bound analysis; purity is
+not local evidence ground truth. Its artifacts live under
+`results/retrieval_validation/diagnosis`, and it must not read or create any
+test cache or prediction.
+
 ## Four Vulnerability Dataset Route
 
 The added `dataset_preprocessing_for_vulnerabilities` source is an independent

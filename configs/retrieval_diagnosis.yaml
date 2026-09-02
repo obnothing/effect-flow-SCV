@@ -1,0 +1,24 @@
+base_config: configs/retrieval_validation.yaml
+route_name: DIVE Main6 Evidence Retrieval Diagnosis
+result_dir: results/retrieval_validation/diagnosis
+diagnosis_epochs: 5
+diagnosis_patience: 2
+diagnosis_batch_size: 128
+diagnosis_learning_rate: 0.0001
+diagnosis_hidden_dim: 256
+diagnosis_dropout: 0.1
+candidate_k_values: [8, 16, 32, 64, 128, 256]
+candidate_all: false
+# Set true only when the validation-only all-candidate run is affordable.
+# It is intentionally disabled by default because it expands each query to
+# every chunk in the 64-contract candidate pool.
+chunk_budget: 512
+balanced_chunks_per_contract: 8
+ranking_top_k_values: [1, 3, 5, 10]
+oracle_candidate_contracts: 256
+scorer_epochs: 5
+scorer_batch_size: 512
+scorer_hidden_dim: 128
+rerank_chunk_budget: 512
+# This route never reads test.jsonl, creates test_queries.pt, or predicts test.
+allow_test: false
