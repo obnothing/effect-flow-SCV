@@ -385,6 +385,13 @@ def train_one(config, name, model_cls, memory, train_payload, valid_payload, dev
         valid_metrics, valid_probs = metrics(valid_labels, valid_logits)
         record = {"epoch": epoch, "train_loss": float(np.mean(losses)), "valid_loss": float(loss_fn(valid_logits, valid_labels.to(device)).item()), "valid_fixed_macro_f1": valid_metrics["recognition_macro_f1"], "valid_fixed_micro_f1": valid_metrics["recognition_micro_f1"]}
         history.append(record)
+        print(
+            f"[{name}] epoch={epoch} train_loss={record['train_loss']:.6f} "
+            f"valid_loss={record['valid_loss']:.6f} "
+            f"fixed_macro={record['valid_fixed_macro_f1']:.6f} "
+            f"fixed_micro={record['valid_fixed_micro_f1']:.6f}",
+            flush=True,
+        )
         score = record["valid_fixed_macro_f1"]
         if best is None or score > best["score"]:
             best = {"score": score, "epoch": epoch, "state": {key: value.detach().cpu() for key, value in model.state_dict().items()}, "probs": valid_probs}
@@ -518,6 +525,13 @@ def train(config):
             "valid_labels": valid_payload["labels"].tolist(),
         }
     }
+    print(
+        f"[m0_historical_baseline] fixed_macro="
+        f"{baseline_metrics['recognition_macro_f1']:.6f} "
+        f"fixed_micro={baseline_metrics['recognition_micro_f1']:.6f} "
+        f"tuned_macro={baseline_tuned['recognition_macro_f1']:.6f}",
+        flush=True,
+    )
     for name, cls in (("m1_contract_retrieval", M1), ("m2_evidence_retrieval", M2)):
         results[name] = train_one(config, name, cls, memory, train_payload, valid_payload, device)
     baseline_path = resolve(config["baseline_summary"])
