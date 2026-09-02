@@ -58,6 +58,11 @@ class EvidenceRelevanceScorer(nn.Module):
         )
 
     def forward(self, query, evidence, label_ids):
+        # Retrieval caches are stored in fp16, while the scorer is trained in fp32.
+        # Normalize both feature inputs before Linear to keep every call consistent.
+        dtype = self.query_projection.weight.dtype
+        query = query.to(dtype=dtype)
+        evidence = evidence.to(dtype=dtype)
         query = self.query_projection(query)
         evidence = self.evidence_projection(evidence)
         label = self.label_embedding[label_ids]
