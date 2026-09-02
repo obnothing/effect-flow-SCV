@@ -217,6 +217,20 @@ label-conditioned evidence retrieval. It does not load the test cache, create
 test predictions, or unlock test. Reports must disclose the official
 non-grouped split and opcode-hash overlap risk.
 
+The next prototype stage learns a weakly supervised evidence relevance scorer
+from training-only positive/negative candidate contracts. It reranks local
+chunks before training the evidence residual MIL head:
+
+```bash
+python scripts/train_learned_evidence_retrieval.py \
+  --config configs/retrieval_learned_evidence.yaml
+```
+
+This is a method prototype, not a final claim. Its pairwise scorer uses a
+contrastive-style ranking objective; the sole proposed contribution remains
+evidence-centric retrieval. Review the scorer history and validation metrics
+before any later test decision.
+
 ## Four Vulnerability Dataset
 
 The repository also contains an independent four-label dataset with

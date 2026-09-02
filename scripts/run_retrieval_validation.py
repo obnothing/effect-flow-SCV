@@ -233,6 +233,7 @@ def build_retrieval_indices(config, train, query, query_split):
     return {
         "contract_neighbors": neighbors,
         "contract_neighbor_scores": neighbor_scores,
+        "candidate_contracts": candidates,
         "evidence_indices": evidence_indices,
         "evidence_scores": evidence_scores,
         "label_prototypes": label_proto,

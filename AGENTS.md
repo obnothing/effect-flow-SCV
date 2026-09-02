@@ -139,6 +139,11 @@ established vulnerability-evidence method. Do not use templates, ETP, graph or
 stack features, label lookup, ASL, MLSMOTE, hard-negative mining, PPO, or
 REINFORCE. Report the official non-grouped split and opcode-hash overlap risk.
 
+The learned evidence prototype may use weakly supervised train-only positive
+and negative candidate contracts to train a relevance scorer. Contrastive or
+pairwise ranking is an optimization objective, not a second claimed
+contribution. It must preserve the same valid-only evaluation and test lock.
+
 ## Four Vulnerability Dataset Route
 
 The added `dataset_preprocessing_for_vulnerabilities` source is an independent

@@ -1,0 +1,12 @@
+base_config: configs/retrieval_validation.yaml
+route_name: DIVE Main6 Learned Evidence Retrieval Prototype v1
+result_dir: results/retrieval_validation/learned_evidence_v1
+scorer_epochs: 5
+scorer_patience: 2
+scorer_batch_size: 512
+scorer_learning_rate: 0.0001
+scorer_hidden_dim: 128
+scorer_dropout: 0.1
+pair_margin: 0.2
+pairs_per_query_label: 1
+rerank_chunk_budget: 512
