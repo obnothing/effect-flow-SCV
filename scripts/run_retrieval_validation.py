@@ -351,7 +351,7 @@ def train_one(config, name, model_cls, memory, train_payload, valid_payload, dev
         with torch.no_grad():
             valid_logits = model(valid_q, contract_evidence=valid_contract, evidence=valid_evidence)
         valid_metrics, valid_probs = metrics(valid_labels, valid_logits)
-        record = {"epoch": epoch, "train_loss": float(np.mean(losses)), "valid_loss": float(loss_fn(valid_logits, valid_labels.to(device)).item()), "valid_fixed_macro_f1": valid_metrics["macro_f1"], "valid_fixed_micro_f1": valid_metrics["micro_f1"]}
+        record = {"epoch": epoch, "train_loss": float(np.mean(losses)), "valid_loss": float(loss_fn(valid_logits, valid_labels.to(device)).item()), "valid_fixed_macro_f1": valid_metrics["recognition_macro_f1"], "valid_fixed_micro_f1": valid_metrics["recognition_micro_f1"]}
         history.append(record)
         score = record["valid_fixed_macro_f1"]
         if best is None or score > best["score"]:
@@ -371,7 +371,7 @@ def train_one(config, name, model_cls, memory, train_payload, valid_payload, dev
     out = resolve(config["result_dir"]) / f"{name}.json"
     out.write_text(json.dumps(result, indent=2), encoding="utf-8")
     torch.save({"schema": "main6_retrieval_model_v1", "variant": name, "state_dict": best["state"], "thresholds": thresholds}, resolve(config["result_dir"]) / f"{name}.pt")
-    print(f"[{name}] epoch={best['epoch']} fixed_macro={fixed['macro_f1']:.6f} tuned_macro={tuned['macro_f1']:.6f}")
+    print(f"[{name}] epoch={best['epoch']} fixed_macro={fixed['recognition_macro_f1']:.6f} tuned_macro={tuned['recognition_macro_f1']:.6f}")
     return result
 
 
@@ -388,7 +388,7 @@ def analyze(config, results, valid_payload, train):
         row = {"group": group, "samples": int(len(indices)), "mean_chunks": float(counts[indices].mean())}
         for name, result in results.items():
             probs = np.asarray(result["valid_probs"])[indices]
-            row[name] = compute_multilabel_metrics_from_probs(labels[indices], probs, result["thresholds"])["macro_f1"]
+            row[name] = compute_multilabel_metrics_from_probs(labels[indices], probs, result["thresholds"])["recognition_macro_f1"]
         length_rows.append(row)
     (resolve(config["result_dir"]) / "length_analysis.csv").write_text(
         "group,samples,mean_chunks," + ",".join(results) + "\n" + "\n".join(
@@ -472,7 +472,7 @@ def train(config):
     (root / "evidence_retrieval.json").write_text(json.dumps(results["m2_evidence_retrieval"], indent=2), encoding="utf-8")
     analyze(config, results, valid_payload, {"valid_chunk_counts": torch.load(resolve(config["feature_dir"]) / "valid.pt", map_location="cpu")["chunk_mask"].sum(1).numpy()})
     retrieval_quality(config, memory, train_payload, valid_payload)
-    (root / "retrieval_validation_summary.json").write_text(json.dumps({"route": config["route_name"], "test_checked": False, "models": {name: {"fixed_macro_f1": value["fixed_0.5"]["macro_f1"], "tuned_macro_f1": value["tuned_valid"]["macro_f1"], "tuned_micro_f1": value["tuned_valid"]["micro_f1"]} for name, value in results.items()}}, indent=2), encoding="utf-8")
+    (root / "retrieval_validation_summary.json").write_text(json.dumps({"route": config["route_name"], "test_checked": False, "models": {name: {"fixed_macro_f1": value["fixed_0.5"]["recognition_macro_f1"], "tuned_macro_f1": value["tuned_valid"]["recognition_macro_f1"], "tuned_micro_f1": value["tuned_valid"]["recognition_micro_f1"]} for name, value in results.items()}}, indent=2), encoding="utf-8")
 
 
 def main():
