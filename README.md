@@ -199,6 +199,24 @@ The default path does not read test labels, create a test cache, or generate
 test predictions. Do not compare this route's eventual test result directly
 with another isolated route without reporting the route name and protocol.
 
+## Retrieval Hypothesis Validation
+
+This independent route tests whether label-conditioned chunk evidence retrieval
+helps more than globally similar contract retrieval. It reuses the historical
+train/valid MLM8 cache, builds retrieval memory from training contracts only,
+and stores all artifacts under `results/retrieval_validation`.
+
+```bash
+bash scripts/run_retrieval_validation.sh audit
+bash scripts/run_retrieval_validation.sh prepare
+bash scripts/run_retrieval_validation.sh train
+```
+
+The route compares M0 frozen-cache control, M1 contract retrieval, and M2
+label-conditioned evidence retrieval. It does not load the test cache, create
+test predictions, or unlock test. Reports must disclose the official
+non-grouped split and opcode-hash overlap risk.
+
 ## Four Vulnerability Dataset
 
 The repository also contains an independent four-label dataset with

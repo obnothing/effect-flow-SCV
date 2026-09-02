@@ -2,7 +2,7 @@
 
 ## Scope
 
-This repository has six isolated experiment routes: historical opcode-only
+This repository has isolated experiment routes: historical opcode-only
 DIVE Main-6, DIVE Source-Main6, DIVE Main6 Opcode-CSDG, DIVE Main6
 Opcode-Execution-Aware, DIVE Main6 Opcode-Stack-Relational, and the Four Vulnerability Dataset route. Do not mix their
 data, checkpoints, metrics, or claims. Do not reintroduce BJUT, legacy DIVE-8 labels, Front
@@ -125,6 +125,19 @@ to construct relations, templates, retrieval, ETP, ASL, MLSMOTE, PPO, or
 REINFORCE. Its artifacts live under `main6_opcode_stack_relational` and never
 overwrite other routes. The default commands create only train/valid caches;
 test remains locked until validation selection and threshold freezing.
+
+## Retrieval Hypothesis Validation Route
+
+This independent route validates contract-level retrieval against
+label-conditioned vulnerability-evidence retrieval. It may reuse the historical
+MLM8 train/valid feature cache, but its prepared memory, models, reports, and
+metrics live under `results/retrieval_validation` and must not overwrite
+historical opcode-only artifacts. Retrieval memory is built from training
+contracts only; valid contracts are queries and test remains locked. This is an
+MVP validation of a research hypothesis, not a claim that retrieval is an
+established vulnerability-evidence method. Do not use templates, ETP, graph or
+stack features, label lookup, ASL, MLSMOTE, hard-negative mining, PPO, or
+REINFORCE. Report the official non-grouped split and opcode-hash overlap risk.
 
 ## Four Vulnerability Dataset Route
 
