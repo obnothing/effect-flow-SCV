@@ -9,10 +9,10 @@
 #SBATCH --error=logs/main6_evidence_mvp_%j.err
 
 set -eo pipefail
-cd "\${SLURM_SUBMIT_DIR}"
-source "\${HOME}/.bashrc"
+cd "${SLURM_SUBMIT_DIR}"
+source "${HOME}/.bashrc"
 conda activate correlascan_a40
 set -u
 mkdir -p logs
-test "\${ALLOW_TEST:-0}" != "1"
-python scripts/train_evidence_retrieval_mvp.py all --config "\${CONFIG:-configs/evidence_retrieval_mvp.yaml}"
+test "${ALLOW_TEST:-0}" != "1"
+python scripts/train_evidence_retrieval_mvp.py all --config "${CONFIG:-configs/evidence_retrieval_mvp.yaml}"
