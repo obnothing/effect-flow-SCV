@@ -1,0 +1,20 @@
+base_config: configs/retrieval_validation.yaml
+route_name: DIVE Main6 Evidence Identifiability Diagnosis
+result_dir: results/retrieval_validation/evidence_identifiability
+allow_test: false
+chunk_max_train_per_class: 30000
+chunk_max_valid_per_class: 20000
+chunk_classifier_batch_size: 2048
+chunk_classifier_hidden_dim: 128
+chunk_classifier_epochs: 8
+chunk_classifier_learning_rate: 0.0005
+chunk_classifier_weight_decay: 0.0001
+chunk_classifier_patience: 2
+influence_batch_size: 16
+influence_progress_every: 100
+retrieval_candidate_k: 64
+retrieval_chunk_budget: 512
+retrieval_balanced_chunks_per_contract: 8
+ranking_top_k_values: [1, 3, 5, 10]
+phase4_batch_size: 8
+phase4_random_seed: 4242
