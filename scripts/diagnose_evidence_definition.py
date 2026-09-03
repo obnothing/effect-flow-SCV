@@ -476,7 +476,22 @@ def train_m0_copy(config, train, device, seed, output_path):
         for features, masks, targets in loader:
             optimizer.zero_grad(set_to_none=True)
             output = model(features.to(device), masks.to(device), multi_labels=targets.to(device))
-            loss = output["loss"].mean()
+            loss = output.get("loss")
+            # Some historical M0 implementations serialize the aggregate loss
+            # as a Python scalar. Rebuild it from the component losses so the
+            # automatically trained stability copy still has a grad graph.
+            if not torch.is_tensor(loss) or not loss.requires_grad:
+                recognition_loss = output.get("recognition_loss")
+                detection_loss = output.get("detection_loss")
+                if recognition_loss is None:
+                    raise RuntimeError(
+                        f"M0 copy returned no differentiable recognition loss at seed={seed}, epoch={epoch}"
+                    )
+                loss = model.compute_weighted_task_loss(
+                    detection_loss,
+                    recognition_loss,
+                )
+            loss = loss.mean()
             if not torch.isfinite(loss):
                 raise RuntimeError(f"non-finite M0 copy loss at seed={seed}, epoch={epoch}")
             loss.backward()
