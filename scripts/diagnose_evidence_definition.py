@@ -202,7 +202,11 @@ def infer(model, features, masks, device, batch_size, attention=False):
     with torch.no_grad():
         for left in range(0, len(features), int(batch_size)):
             right = min(left + int(batch_size), len(features))
-            result = model(features[left:right].to(device), masks[left:right].to(device), return_attention=attention)
+            result = model(
+                features[left:right].to(device),
+                masks[left:right].to(device=device, dtype=torch.bool),
+                return_attention=attention,
+            )
             logits.append(result["recognition_logits"].float().cpu())
             if attention:
                 weights.append(result["chunk_attention"].float().cpu())
@@ -249,6 +253,15 @@ def compute_influence(config, data, model, device):
 def rank_indices(values, finite_mask, k, largest=True):
     valid = torch.where(finite_mask)[0].tolist()
     return sorted(valid, key=lambda i: float(values[i]), reverse=largest)[:min(int(k), len(valid))]
+
+
+def select_ranked_or_fallback(values, active_mask, k):
+    """Select ranked finite chunks while keeping every sample non-empty."""
+    selected = rank_indices(values, active_mask & torch.isfinite(values), k)
+    if selected:
+        return selected
+    active = torch.where(active_mask)[0].tolist()
+    return active[:min(int(k), len(active))]
 
 
 def jaccard(left, right):
@@ -421,7 +434,7 @@ def isolated_classification(config, data, influence, attention, model, device):
                         selected = random_choices[row][:min(int(k), len(random_choices[row]))]
                     else:
                         values = attention[row, :, label_id] if method == "attention" else influence["influence"][row, :, label_id]
-                        selected = rank_indices(values, data["mask"][row] & torch.isfinite(values), k)
+                        selected = select_ranked_or_fallback(values, data["mask"][row], k)
                     if selected:
                         masks[row, selected] = True
                 output = infer(model, data["features"], masks, device, int(config["phase4_batch_size"]), False)
@@ -444,6 +457,10 @@ def span_classification(config, data, influence, model, device):
                 local = influence["influence"][row, :, label_id]
                 spans = contiguous_spans(local, data["mask"][row] & torch.isfinite(local), int(span_count), seed_k)
                 selected = [chunk for span in spans for chunk in span]
+                if not selected:
+                    active = torch.where(data["mask"][row])[0].tolist()
+                    selected = active[:min(int(span_count), len(active))]
+                    spans = [[chunk] for chunk in selected]
                 selections.append({
                     "row": row,
                     "label": config["label_names"][label_id],

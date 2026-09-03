@@ -4,7 +4,12 @@ from pathlib import Path
 import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from diagnose_evidence_definition import contiguous_spans, jaccard, rank_indices  # noqa: E402
+from diagnose_evidence_definition import (  # noqa: E402
+    contiguous_spans,
+    jaccard,
+    rank_indices,
+    select_ranked_or_fallback,
+)
 
 
 def test_jaccard_and_masked_ranking():
@@ -24,3 +29,9 @@ def test_contiguous_spans_falls_back_when_no_window_exists():
     values = torch.tensor([0.9, 0.1, 0.8])
     mask = torch.tensor([True, False, True])
     assert contiguous_spans(values, mask, 2, 3) == [[0], [2]]
+
+
+def test_ranked_selection_falls_back_to_active_chunk_for_nan_influence():
+    values = torch.tensor([float("nan"), float("nan"), float("nan")])
+    mask = torch.tensor([False, True, False])
+    assert select_ranked_or_fallback(values, mask, 5) == [1]
