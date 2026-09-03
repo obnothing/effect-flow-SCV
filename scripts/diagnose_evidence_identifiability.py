@@ -372,6 +372,12 @@ def spearman(values_a, values_b):
 
 def load_retrieval_inputs(config):
     root = resolve("results/retrieval_validation")
+    forbidden = [
+        root / "test_queries.pt",
+        resolve(config["result_dir"]) / "test_queries.pt",
+    ]
+    if any(path.exists() for path in forbidden):
+        raise RuntimeError("test retrieval artifacts exist; refusing evidence identifiability diagnosis")
     memory = torch.load(root / "retrieval_memory.pt", map_location="cpu")
     valid_path = root / "valid_queries.pt"
     if not valid_path.exists():
