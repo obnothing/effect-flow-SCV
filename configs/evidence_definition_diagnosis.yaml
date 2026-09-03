@@ -1,0 +1,37 @@
+base_config: configs/retrieval_validation.yaml
+route_name: DIVE Main6 Evidence Definition Diagnosis
+result_dir: results/retrieval_validation/evidence_definition
+allow_test: false
+
+# Existing same-architecture checkpoints can be supplied as a YAML list.  The
+# historical slot3 checkpoint is always used as the first reference model.
+stability_checkpoints:
+  - checkpoints/main6_random_090_mlm8/mlm8_slot3/best_macro_f1.pt
+stability_train_seeds: [43, 44]
+stability_auto_train: true
+stability_train_epochs: 12
+stability_train_batch_size: 16
+stability_train_learning_rate: 0.0001
+stability_train_weight_decay: 0.01
+stability_train_max_grad_norm: 1.0
+
+chunk_score_max_train_per_class: 30000
+chunk_score_max_valid_per_class: 20000
+chunk_score_batch_size: 2048
+chunk_score_hidden_dim: 128
+chunk_score_epochs: 8
+chunk_score_learning_rate: 0.0005
+chunk_score_weight_decay: 0.0001
+
+influence_batch_size: 16
+influence_progress_every: 100
+ranking_top_k_values: [1, 3, 5, 10]
+phase4_batch_size: 8
+phase4_random_seed: 4242
+contiguous_span_count_values: [1, 3, 5]
+contiguous_span_seed_k: 10
+
+# GO/NO-GO thresholds are diagnostics, not tuned model hyperparameters.
+go_min_top5_stability_jaccard: 0.40
+go_min_influence_attention_macro_margin: 0.01
+go_max_label_pair_top5_jaccard: 0.80
