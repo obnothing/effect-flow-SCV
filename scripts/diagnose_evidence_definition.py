@@ -475,7 +475,15 @@ def train_m0_copy(config, train, device, seed, output_path):
         losses = []
         for features, masks, targets in loader:
             optimizer.zero_grad(set_to_none=True)
-            output = model(features.to(device), masks.to(device), multi_labels=targets.to(device))
+            features = features.to(device)
+            masks = masks.to(device)
+            targets = targets.to(device)
+            output = model(
+                features,
+                masks,
+                binary_label=targets.any(dim=1).float(),
+                multi_labels=targets,
+            )
             loss = output.get("loss")
             # Some historical M0 implementations serialize the aggregate loss
             # as a Python scalar. Rebuild it from the component losses so the
