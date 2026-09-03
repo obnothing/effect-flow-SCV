@@ -1,0 +1,33 @@
+base_config: configs/retrieval_validation.yaml
+route_name: DIVE Main6 Evidence Definition Final Diagnosis
+data_dir: data/processed/DIVE_main6_random_split
+feature_dir: data/features/main6_random_mlm8_trainvalid
+baseline_config: configs/train_main6_random_090.yaml
+baseline_variant: mlm8_slot3
+result_dir: results/retrieval_validation/evidence_definition_final
+source_result_dir: results/retrieval_validation/evidence_definition
+model_checkpoints:
+  - checkpoints/main6_random_090_mlm8/mlm8_slot3/best_macro_f1.pt
+  - results/retrieval_validation/evidence_definition/m0_copies/seed_43.pt
+  - results/retrieval_validation/evidence_definition/m0_copies/seed_44.pt
+label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
+num_labels: 6
+feature_dim: 768
+num_views: 8
+max_chunks: 64
+seed: 42
+allow_test: false
+influence_batch_size: 16
+influence_progress_every: 100
+phase4_batch_size: 8
+ranking_top_k_values: [1, 3, 5, 10]
+region_count_values: [1, 3, 5]
+region_adjacency: 1
+go_min_top5_region_iou: 0.50
+go_min_region_macro_margin: 0.01
+label_pairs:
+  - [Reentrancy, Access Control]
+  - [Reentrancy, Arithmetic]
+  - [Access Control, Arithmetic]
+  - [Unchecked Return Values, DoS]
+  - [DoS, Time manipulation]
