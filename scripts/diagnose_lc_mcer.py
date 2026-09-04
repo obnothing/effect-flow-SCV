@@ -161,6 +161,7 @@ def oracle_evidence(train, payload, config):
 
 
 def forward_batches(model, data, device, batch_size, override=None, return_diag=False):
+    model.eval()
     loader = DataLoader(
         TensorDataset(data["features"], data["mask"]), batch_size=int(batch_size), shuffle=False
     )
@@ -254,9 +255,22 @@ def train_model(config, train, valid, device, name, *, scale=None, simple=False,
             optimizer.zero_grad(set_to_none=True)
         valid_out = forward_batches(model, valid, device, config["eval_batch_size"], oracle_valid)
         metric = metric_pack(config, valid["labels"], valid_out["logits"])
-        row = {"epoch": epoch, "train_loss": float(np.mean(losses)), **metric}
+        valid_loss = F.binary_cross_entropy_with_logits(
+            valid_out["logits"].to(device), valid["labels"].to(device), pos_weight=weight
+        )
+        row = {
+            "epoch": epoch,
+            "train_loss": float(np.mean(losses)),
+            "valid_loss": float(valid_loss.detach().cpu()),
+            **metric,
+        }
         history.append(row)
-        print(f"[{name}] epoch={epoch} train_loss={row['train_loss']:.6f} valid_loss=not_recomputed tuned_macro={row['tuned_macro_f1']:.6f}", flush=True)
+        print(
+            f"[{name}] epoch={epoch} train_loss={row['train_loss']:.6f} "
+            f"valid_loss={row['valid_loss']:.6f} "
+            f"tuned_macro={row['tuned_macro_f1']:.6f}",
+            flush=True,
+        )
         if row["tuned_macro_f1"] > best_score:
             best_score, best_epoch, stale = row["tuned_macro_f1"], epoch, 0
             best_state = {key: value.detach().cpu() for key, value in model.state_dict().items()}
@@ -372,7 +386,7 @@ def main():
     generator = torch.Generator().manual_seed(int(config["seed"]))
     shuffled = torch.stack([evidence[row, torch.randperm(int(config["num_labels"]), generator=generator)] for row in range(len(evidence))])
     ablations = [learned_eval, eval_override(config, learned_model, valid, device, shuffled, "learned_shuffled_label_condition"), eval_override(config, learned_model, valid, device, torch.zeros_like(evidence), "learned_zero_evidence")]
-    scale_stats = [{"experiment": item["name"], "macro_f1": item["tuned_macro_f1"], "micro_f1": item["tuned_micro_f1"], "delta_vs_m0": item["tuned_macro_f1"] - m0_metrics["tuned_macro_f1"], "mean_abs_residual": item["residual_stats"]["mean_abs_residual"], "mean_abs_scaled_residual": item["residual_stats"]["mean_abs_scaled_residual"], "residual_std": item["residual_stats"]["residual_std"], "per_label_f1": item["per_label_f1"]} for item in results]
+    scale_stats = [{"experiment": item["name"], "macro_f1": item["tuned_macro_f1"], "micro_f1": item["tuned_micro_f1"], "delta_vs_m0": item["tuned_macro_f1"] - m0_metrics["tuned_macro_f1"], "valid_loss": item["history"][-1]["valid_loss"], "mean_abs_residual": item["residual_stats"]["mean_abs_residual"], "mean_abs_scaled_residual": item["residual_stats"]["mean_abs_scaled_residual"], "residual_std": item["residual_stats"]["residual_std"], "per_label_f1": item["per_label_f1"]} for item in results]
     report = {
         "route": config["route_name"], "dataset": "DIVE Main6 random split", "seed": int(config["seed"]), "train_only": True, "test_checked": False, "phase5_started": False,
         "m0": {**m0_metrics, "residual_stats": {"mean_abs_residual": 0.0}},
