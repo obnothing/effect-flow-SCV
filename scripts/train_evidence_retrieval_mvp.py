@@ -124,6 +124,31 @@ def threshold_metrics(config, labels, logits):
     return fixed, tuned, selected
 
 
+def confusion_rows(config, labels, probs, thresholds):
+    targets = labels.numpy().astype(int)
+    predictions = (
+        probs >= np.asarray(thresholds, dtype=float).reshape(1, -1)
+    ).astype(int)
+    rows = []
+    for label_id, label_name in enumerate(config["label_names"]):
+        target = targets[:, label_id]
+        prediction = predictions[:, label_id]
+        rows.append(
+            {
+                "label_id": int(label_id),
+                "label_name": label_name,
+                "threshold": float(thresholds[label_id]),
+                "tp": int(((prediction == 1) & (target == 1)).sum()),
+                "fp": int(((prediction == 1) & (target == 0)).sum()),
+                "fn": int(((prediction == 0) & (target == 1)).sum()),
+                "tn": int(((prediction == 0) & (target == 0)).sum()),
+                "support": int(target.sum()),
+                "predicted_positive": int(prediction.sum()),
+            }
+        )
+    return rows
+
+
 def length_metrics(config, labels, probs, mask, thresholds):
     lengths = mask.sum(dim=1).numpy()
     q1, q2 = np.quantile(lengths, [1 / 3, 2 / 3])
@@ -480,6 +505,9 @@ def train_one(config, variant, seed, train, valid, device, root):
         "per_label_f1": [float(x) for x in tuned["per_label_f1"]],
         "per_label_precision": [float(x) for x in tuned["per_label_precision"]],
         "per_label_recall": [float(x) for x in tuned["per_label_recall"]],
+        "confusion_matrix": confusion_rows(
+            config, valid["labels"], probabilities, threshold_report["thresholds"]
+        ),
         "thresholds": threshold_report["thresholds"],
         "length_metrics": length_metrics(
             config,
@@ -530,6 +558,7 @@ def load_reference(config, valid, device):
             config,
         )
     fixed, tuned, selected = threshold_metrics(config, valid["labels"], logits)
+    probabilities = torch.sigmoid(logits).numpy()
     return {
         "name": "M0",
         "checkpoint": str(config["baseline_checkpoint"]),
@@ -539,14 +568,31 @@ def load_reference(config, valid, device):
         "tuned_micro_f1": float(tuned["recognition_micro_f1"]),
         "per_label_f1": [float(x) for x in tuned["per_label_f1"]],
         "thresholds": selected["thresholds"],
+        "confusion_matrix": confusion_rows(
+            config, valid["labels"], probabilities, selected["thresholds"]
+        ),
         "test_checked": False,
     }
 
 
 def aggregate(config, summaries, m0, root):
+    confusion_rows_all = []
+    confusion_rows_all.extend(
+        {
+            "variant": "M0",
+            "seed": "reference",
+            **row,
+        }
+        for row in m0["confusion_matrix"]
+    )
     variants = {}
     for variant in config["variants"]:
         rows = [item for item in summaries if item["variant"] == variant]
+        for item in rows:
+            confusion_rows_all.extend(
+                {"variant": variant, "seed": item["seed"], **row}
+                for row in item["confusion_matrix"]
+            )
         values = [item["tuned_macro_f1"] for item in rows]
         deltas = [value - m0["tuned_macro_f1"] for value in values]
         variants[variant] = {
@@ -591,6 +637,21 @@ def aggregate(config, summaries, m0, root):
             "No test data, label, cache, or prediction",
             "Evidence outputs are diagnostic and not ground-truth localization",
         ],
+    }
+    (root / "evidence_retrieval_mvp_report.json").write_text(
+        json.dumps(report, indent=2), encoding="utf-8"
+    )
+    with (root / "confusion_matrix.csv").open("w", encoding="utf-8") as handle:
+        columns = [
+            "variant", "seed", "label_id", "label_name", "threshold",
+            "tp", "fp", "fn", "tn", "support", "predicted_positive",
+        ]
+        handle.write(",".join(columns) + "\n")
+        for row in confusion_rows_all:
+            handle.write(",".join(str(row[column]) for column in columns) + "\n")
+    report["artifacts"] = {
+        "confusion_matrix": "confusion_matrix.csv",
+        "summary": "evidence_retrieval_mvp_summary.md",
     }
     (root / "evidence_retrieval_mvp_report.json").write_text(
         json.dumps(report, indent=2), encoding="utf-8"
