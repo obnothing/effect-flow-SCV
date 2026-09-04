@@ -37,6 +37,22 @@ def resolve(value):
     return path if path.is_absolute() else ROOT / path
 
 
+def json_safe(value):
+    """Convert diagnostic values to JSON without serializing model tensors."""
+    if isinstance(value, torch.Tensor):
+        value = value.detach().cpu()
+        return value.item() if value.numel() == 1 else value.tolist()
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, dict):
+        return {str(key): json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [json_safe(item) for item in value]
+    return value
+
+
 def load_config(path):
     return yaml.safe_load(resolve(path).read_text(encoding="utf-8"))
 
@@ -728,7 +744,8 @@ def main():
         "wall_time_seconds": float(time.perf_counter() - start),
     }
     finalize_conclusions(report)
-    (root / "lc_mcer_diagnosis_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    safe_report = json_safe(report)
+    (root / "lc_mcer_diagnosis_report.json").write_text(json.dumps(safe_report, indent=2), encoding="utf-8")
     save_csv(root / "innovation_ablation.csv", innovation_rows)
     save_csv(root / "residual_scale.csv", scale_summary)
     save_csv(root / "residual_scale_summary.csv", scale_summary)
@@ -738,7 +755,7 @@ def main():
     save_csv(root / "evidence_ranking_diagnostics.csv", ranking_rows)
     save_csv(root / "gradient_diagnostics.csv", gradient_rows)
     save_csv(root / "oracle_head_diagnostics.csv", oracle_rows)
-    (root / "final_diagnosis.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    (root / "final_diagnosis.json").write_text(json.dumps(safe_report, indent=2), encoding="utf-8")
     lines = [
         "# FINAL DIAGNOSIS: LC-MCER",
         "",

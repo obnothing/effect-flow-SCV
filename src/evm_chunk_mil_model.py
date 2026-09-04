@@ -232,7 +232,7 @@ class ClassicLocalGlobalContextEncoder(nn.Module):
             local = self.local_pointwise(local).transpose(1, 2)
             local = self.local_dropout(self.local_activation(local))
             h = (h + local).masked_fill(~chunk_mask.unsqueeze(-1), 0.0)
-        padding_mask = (~chunk_mask).contiguous()
+        padding_mask = (~chunk_mask).contiguous().to(dtype=torch.bool)
         for layer in self.transformer:
             h = layer(h, padding_mask)
             h = h.masked_fill(~chunk_mask.unsqueeze(-1), 0.0)
@@ -2559,7 +2559,7 @@ class EVEFMVDV2MultiScaleMIL(EVEFMVDV2SideEvidenceMIL):
             queries,
             h,
             h,
-            key_padding_mask=(~chunk_mask).contiguous(),
+            key_padding_mask=(~chunk_mask).contiguous().to(dtype=torch.bool),
             need_weights=False,
         )
         cross = self.multiscale_cross_norm(cross + queries)
@@ -2706,7 +2706,7 @@ class LDETPCrossAttentionMIL(EVMChunkMILClassifier):
             flat_queries,
             token_values,
             token_values,
-            key_padding_mask=~token_mask,
+            key_padding_mask=(~token_mask).contiguous().to(dtype=torch.bool),
             need_weights=return_attention or self.lambda_sep > 0,
             average_attn_weights=True,
         )
