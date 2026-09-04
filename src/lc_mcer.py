@@ -22,6 +22,7 @@ class LCMCER(nn.Module):
         residual_scale=0.1,
         residual_hidden_dim=256,
         dropout=0.1,
+        include_base_logit=False,
     ):
         super().__init__()
         self.base_model = base_model
@@ -33,12 +34,14 @@ class LCMCER(nn.Module):
         self.top_k = int(top_k)
         self.diversity_lambda = float(diversity_lambda)
         self.use_competition = bool(use_competition)
+        self.include_base_logit = bool(include_base_logit)
         self.query_projection = nn.Linear(self.feature_dim, self.retrieval_dim)
         self.chunk_projection = nn.Linear(self.feature_dim, self.retrieval_dim)
         self.label_embedding = nn.Parameter(torch.empty(self.num_labels, self.retrieval_dim))
+        residual_input_dim = self.feature_dim * 2 + (1 if self.include_base_logit else 0)
         self.residual_classifier = nn.Sequential(
-            nn.LayerNorm(self.feature_dim * 2),
-            nn.Linear(self.feature_dim * 2, int(residual_hidden_dim)),
+            nn.LayerNorm(residual_input_dim),
+            nn.Linear(residual_input_dim, int(residual_hidden_dim)),
             nn.GELU(),
             nn.Dropout(float(dropout)),
             nn.Linear(int(residual_hidden_dim), 1),
@@ -86,10 +89,17 @@ class LCMCER(nn.Module):
                 selected_mask[batch_id, label_id, :take] = True
         return selected_indices, selected_scores, selected_mask
 
-    def forward(self, chunk_features, chunk_mask, return_diagnostics=False):
+    def forward(
+        self,
+        chunk_features,
+        chunk_mask,
+        return_diagnostics=False,
+        evidence_override=None,
+    ):
         if chunk_features.ndim != 4 or chunk_features.shape[2] != 8:
             raise ValueError("LC-MCER expects [B, C, 8, feature_dim] chunk features")
         mask = chunk_mask.to(dtype=torch.bool)
+        batch = chunk_features.shape[0]
         chunks = chunk_features[:, :, 1, :]
         if chunks.shape[-1] != self.feature_dim:
             raise ValueError(f"expected feature_dim={self.feature_dim}, got {chunks.shape[-1]}")
@@ -123,8 +133,21 @@ class LCMCER(nn.Module):
         )
         gathered = torch.gather(expanded, 1, gather_index).permute(0, 2, 1, 3)
         evidence = (gathered * weights.unsqueeze(-1)).sum(dim=2)
+        if evidence_override is not None:
+            if evidence_override.shape != (batch, self.num_labels, self.feature_dim):
+                raise ValueError(
+                    "evidence_override must have shape "
+                    f"[{batch}, {self.num_labels}, {self.feature_dim}]"
+                )
+            evidence = evidence_override.to(dtype=chunks.dtype)
+        residual_parts = [
+            contract.unsqueeze(1).expand(-1, self.num_labels, -1),
+            evidence,
+        ]
+        if self.include_base_logit:
+            residual_parts.append(base_logits.unsqueeze(-1))
         residual_input = torch.cat(
-            [contract.unsqueeze(1).expand(-1, self.num_labels, -1), evidence], dim=-1
+            residual_parts, dim=-1
         )
         residual = self.residual_classifier(residual_input).squeeze(-1)
         logits = base_logits + self.residual_scale * residual
@@ -138,6 +161,7 @@ class LCMCER(nn.Module):
             "ranked_indices": ranked_indices.permute(0, 2, 1),
             "ranked_scores": ranked_scores.permute(0, 2, 1),
             "competition_scores": competition_scores,
+            "evidence_representation": evidence,
         }
         if return_diagnostics:
             result["contract_representation"] = contract
