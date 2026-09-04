@@ -1,0 +1,38 @@
+route_name: DIVE Main6 LC-MCER-v2 Evidence Routing
+data_dir: data/processed/DIVE_main6_random_split
+feature_dir: data/features/main6_random_mlm8_trainvalid
+baseline_config: configs/train_main6_random_090.yaml
+baseline_variant: mlm8_slot3
+baseline_checkpoint: checkpoints/main6_random_090_mlm8/mlm8_slot3/best_macro_f1.pt
+result_dir: results/retrieval_validation/lc_mcer_v2
+label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
+num_labels: 6
+feature_dim: 768
+seed: 42
+train_only: true
+allow_test: false
+batch_size: 16
+eval_batch_size: 32
+gradient_accumulation_steps: 4
+epochs: 15
+early_stopping_patience: 3
+learning_rate: 0.0001
+weight_decay: 0.01
+gradient_clip_norm: 1.0
+fp16: true
+retrieval_dim: 256
+top_k: 5
+evidence_routing_mode: soft
+evidence_temperature: 0.5
+evidence_loss_enabled: true
+evidence_loss_weight: 0.1
+evidence_contrastive_temperature: 0.1
+prototype_momentum: 0.9
+residual_scale: 0.1
+residual_hidden_dim: 256
+dropout: 0.1
+use_competition: false
+diversity_lambda: 0.0
+baseline_diversity_lambda: 0.1
+thresholds: [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
+experiments: [A0, A1, A2, A3]

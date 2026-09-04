@@ -23,6 +23,8 @@ class LCMCER(nn.Module):
         residual_hidden_dim=256,
         dropout=0.1,
         include_base_logit=False,
+        routing_mode="hard",
+        routing_temperature=0.5,
     ):
         super().__init__()
         self.base_model = base_model
@@ -35,6 +37,12 @@ class LCMCER(nn.Module):
         self.diversity_lambda = float(diversity_lambda)
         self.use_competition = bool(use_competition)
         self.include_base_logit = bool(include_base_logit)
+        if routing_mode not in ("hard", "soft"):
+            raise ValueError("routing_mode must be 'hard' or 'soft'")
+        self.routing_mode = str(routing_mode)
+        self.routing_temperature = float(routing_temperature)
+        if self.routing_temperature <= 0:
+            raise ValueError("routing_temperature must be positive")
         self.query_projection = nn.Linear(self.feature_dim, self.retrieval_dim)
         self.chunk_projection = nn.Linear(self.feature_dim, self.retrieval_dim)
         self.label_embedding = nn.Parameter(torch.empty(self.num_labels, self.retrieval_dim))
@@ -133,6 +141,22 @@ class LCMCER(nn.Module):
         )
         gathered = torch.gather(expanded, 1, gather_index).permute(0, 2, 1, 3)
         evidence = (gathered * weights.unsqueeze(-1)).sum(dim=2)
+        use_soft_routing = self.routing_mode == "soft" and self.training
+        if use_soft_routing:
+            routing_weights = torch.softmax(
+                competition_scores / self.routing_temperature, dim=1
+            )
+            evidence = torch.einsum("bcl,bch->blh", routing_weights, chunks)
+        else:
+            routing_weights = torch.zeros(
+                batch, chunks.shape[1], self.num_labels,
+                dtype=weights.dtype, device=weights.device,
+            )
+            routing_weights.scatter_add_(
+                1,
+                selected_indices.permute(0, 2, 1),
+                (weights * selected_mask.to(dtype=weights.dtype)).permute(0, 2, 1),
+            )
         if evidence_override is not None:
             if evidence_override.shape != (batch, self.num_labels, self.feature_dim):
                 raise ValueError(
@@ -162,9 +186,74 @@ class LCMCER(nn.Module):
             "ranked_scores": ranked_scores.permute(0, 2, 1),
             "competition_scores": competition_scores,
             "evidence_representation": evidence,
+            "routing_weights": routing_weights,
+            "routing_scores": competition_scores,
+            "routing_mode_used": "soft" if use_soft_routing else "hard",
         }
         if return_diagnostics:
             result["contract_representation"] = contract
             result["chunk_representation"] = chunks
             result["selected_mask"] = selected_mask
         return result
+
+
+class LCMCERV2(LCMCER):
+    """LC-MCER-v2 with train-only EMA prototypes for weak evidence learning."""
+
+    def __init__(self, *args, prototype_momentum=0.9, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.prototype_momentum = float(prototype_momentum)
+        if not 0.0 <= self.prototype_momentum < 1.0:
+            raise ValueError("prototype_momentum must be in [0, 1)")
+        self.register_buffer(
+            "label_prototypes",
+            torch.zeros(self.num_labels, self.feature_dim),
+        )
+        self.register_buffer("prototype_counts", torch.zeros(self.num_labels))
+
+    def evidence_discrimination_loss(self, evidence, labels, temperature=0.1):
+        if temperature <= 0:
+            raise ValueError("evidence contrastive temperature must be positive")
+        normalized = F.normalize(evidence, dim=-1)
+        prototypes = F.normalize(self.label_prototypes, dim=-1)
+        losses = []
+        for row in range(evidence.shape[0]):
+            for label_id in torch.where(labels[row] > 0.5)[0].tolist():
+                if self.prototype_counts[label_id] <= 0:
+                    continue
+                positive = torch.sum(normalized[row, label_id] * prototypes[label_id])
+                logits = [positive]
+                for other_id in range(self.num_labels):
+                    if other_id == label_id or self.prototype_counts[other_id] <= 0:
+                        continue
+                    logits.append(torch.sum(normalized[row, label_id] * prototypes[other_id]))
+                negative_rows = torch.where(labels[:, label_id] < 0.5)[0]
+                if len(negative_rows):
+                    hard_scores = torch.sum(
+                        normalized[negative_rows, label_id] * normalized[row, label_id], dim=-1
+                    )
+                    logits.append(hard_scores.max())
+                if len(logits) > 1:
+                    values = torch.stack(logits) / float(temperature)
+                    losses.append(-values[0] + torch.logsumexp(values, dim=0))
+        if not losses:
+            return evidence.sum() * 0.0
+        return torch.stack(losses).mean()
+
+    @torch.no_grad()
+    def update_prototypes(self, evidence, labels):
+        normalized = F.normalize(evidence.detach(), dim=-1)
+        for label_id in range(self.num_labels):
+            rows = torch.where(labels[:, label_id] > 0.5)[0]
+            if len(rows) == 0:
+                continue
+            batch_value = F.normalize(normalized[rows, label_id].mean(dim=0), dim=0)
+            if self.prototype_counts[label_id] <= 0:
+                self.label_prototypes[label_id].copy_(batch_value)
+            else:
+                value = (
+                    self.prototype_momentum * self.label_prototypes[label_id]
+                    + (1.0 - self.prototype_momentum) * batch_value
+                )
+                self.label_prototypes[label_id].copy_(F.normalize(value, dim=0))
+            self.prototype_counts[label_id] += float(len(rows))
