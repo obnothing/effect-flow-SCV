@@ -4,7 +4,7 @@ feature_dir: data/features/main6_random_mlm8_trainvalid
 baseline_config: configs/train_main6_random_090.yaml
 baseline_variant: mlm8_slot3
 baseline_checkpoint: checkpoints/main6_random_090_mlm8/mlm8_slot3/best_macro_f1.pt
-result_dir: results/retrieval_validation/lc_mcer_diagnosis
+result_dir: results/retrieval_validation/crer
 label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
 rare_label_names: [DoS, Time manipulation]
 num_labels: 6
@@ -34,3 +34,10 @@ max_pos_weight: 5.0
 thresholds: [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
 oracle_top_k: 5
 oracle_candidate_chunk_count: 10
+crer_gate_temperature: 0.5
+crer_margin: 0.1
+crer_lambda_cf: 0.5
+crer_lambda_preserve: 0.05
+crer_lambda_sparse: 0.01
+crer_sparse_target: 0.1
+experiments: [A0, A1, A2, A3, A4, A5]

@@ -197,6 +197,183 @@ class LCMCER(nn.Module):
         return result
 
 
+class CRER(nn.Module):
+    """Counterfactual Residual Evidence Routing.
+
+    The M0 detector remains frozen. Evidence is learned only through the
+    classification objective and optional counterfactual losses; no local
+    evidence labels or prototype memory are used.
+    """
+
+    def __init__(
+        self,
+        base_model,
+        feature_dim,
+        num_labels,
+        retrieval_dim=256,
+        gate_temperature=0.5,
+        residual_scale=0.1,
+        residual_hidden_dim=256,
+        dropout=0.1,
+    ):
+        super().__init__()
+        self.base_model = base_model
+        for parameter in self.base_model.parameters():
+            parameter.requires_grad = False
+        self.feature_dim = int(feature_dim)
+        self.num_labels = int(num_labels)
+        self.retrieval_dim = int(retrieval_dim)
+        self.gate_temperature = float(gate_temperature)
+        if self.gate_temperature <= 0:
+            raise ValueError("gate_temperature must be positive")
+        self.residual_scale = float(residual_scale)
+        self.query_projection = nn.Linear(self.feature_dim, self.retrieval_dim)
+        self.chunk_projection = nn.Linear(self.feature_dim, self.retrieval_dim)
+        self.label_embedding = nn.Parameter(
+            torch.empty(self.num_labels, self.retrieval_dim)
+        )
+        self.gate_threshold = nn.Parameter(torch.zeros(self.num_labels))
+        residual_input_dim = self.feature_dim * 2 + 1
+        self.residual_classifier = nn.Sequential(
+            nn.LayerNorm(residual_input_dim),
+            nn.Linear(residual_input_dim, int(residual_hidden_dim)),
+            nn.GELU(),
+            nn.Dropout(float(dropout)),
+            nn.Linear(int(residual_hidden_dim), 1),
+        )
+        nn.init.normal_(self.label_embedding, mean=0.0, std=0.02)
+
+    def train(self, mode=True):
+        super().train(mode)
+        self.base_model.eval()
+        return self
+
+    @staticmethod
+    def _masked_mean(values, mask):
+        weights = mask.unsqueeze(-1).to(dtype=values.dtype)
+        return (values * weights).sum(dim=1) / weights.sum(dim=1).clamp_min(1.0)
+
+    def _residual(self, contract, evidence, base_logits):
+        contract = contract.unsqueeze(1).expand(-1, self.num_labels, -1)
+        base = base_logits.unsqueeze(-1).expand(-1, -1, 1)
+        inputs = torch.cat([contract, evidence, base], dim=-1)
+        return self.residual_classifier(inputs).squeeze(-1)
+
+    def _counterfactual_residuals(self, contract, evidence_full, evidence_empty, base_logits):
+        # Use the same deterministic head for both worlds so Delta measures
+        # evidence effect rather than two independent dropout masks.
+        was_training = self.residual_classifier.training
+        self.residual_classifier.eval()
+        residual_full = self._residual(contract, evidence_full, base_logits)
+        residual_empty = self._residual(contract, evidence_empty, base_logits)
+        self.residual_classifier.train(was_training)
+        return residual_full, residual_empty
+
+    def forward(self, chunk_features, chunk_mask, return_diagnostics=False):
+        if chunk_features.ndim != 4 or chunk_features.shape[2] != 8:
+            raise ValueError("CRER expects [B, C, 8, feature_dim] chunk features")
+        mask = chunk_mask.to(dtype=torch.bool)
+        if (~mask).all(dim=1).any():
+            raise ValueError("each sample must contain at least one valid chunk")
+        chunks = chunk_features[:, :, 1, :]
+        if chunks.shape[-1] != self.feature_dim:
+            raise ValueError(
+                f"expected feature_dim={self.feature_dim}, got {chunks.shape[-1]}"
+            )
+        with torch.no_grad():
+            base_output = self.base_model(chunk_features, mask)
+            base_logits = base_output["recognition_logits"].float()
+        contract = self._masked_mean(chunks, mask)
+        projected = self.chunk_projection(chunks)
+        query = self.query_projection(contract).unsqueeze(1)
+        query = query + self.label_embedding.unsqueeze(0)
+        scores = torch.einsum("bld,bcd->bcl", query, projected)
+        scores = scores / math.sqrt(self.retrieval_dim)
+        scores = scores.masked_fill(~mask.unsqueeze(-1), 0.0)
+        thresholds = self.gate_threshold.view(1, 1, -1)
+        gates = torch.sigmoid((scores - thresholds) / self.gate_temperature)
+        gates = gates * mask.unsqueeze(-1).to(dtype=gates.dtype)
+        denominator = gates.sum(dim=1).clamp_min(1e-6)
+        evidence_full = torch.einsum("bcl,bch->blh", gates, chunks) / denominator.unsqueeze(-1)
+        evidence_empty = torch.zeros_like(evidence_full)
+        residual_full, residual_empty = self._counterfactual_residuals(
+            contract, evidence_full, evidence_empty, base_logits
+        )
+        counterfactual_delta = residual_full - residual_empty
+        logits = base_logits + self.residual_scale * residual_full
+        active_count = mask.sum(dim=1, keepdim=True).to(dtype=gates.dtype)
+        gate_distribution = gates / denominator.unsqueeze(1)
+        gate_entropy = -(
+            gate_distribution * gate_distribution.clamp_min(1e-12).log()
+        ).sum(dim=1)
+        result = {
+            "recognition_logits": logits,
+            "base_logits": base_logits,
+            "residual_logits": residual_full,
+            "residual_empty": residual_empty,
+            "counterfactual_delta": counterfactual_delta,
+            "evidence_representation": evidence_full,
+            "gate": gates,
+            "gate_entropy": gate_entropy,
+            "active_chunk_count": (gates > 0.5).sum(dim=1).float(),
+            "routing_scores": scores,
+            "routing_weights": gate_distribution,
+            "chunk_mask": mask,
+        }
+        if return_diagnostics:
+            result["contract_representation"] = contract
+            result["chunk_representation"] = chunks
+            result["chunk_mask"] = mask
+        return result
+
+    def auxiliary_loss(
+        self,
+        output,
+        labels,
+        pos_weight,
+        *,
+        counterfactual_weight=0.0,
+        error_weighting=False,
+        preservation_weight=0.0,
+        sparsity_weight=0.0,
+        sparsity_target=0.1,
+        margin=0.1,
+    ):
+        cls_loss = F.binary_cross_entropy_with_logits(
+            output["recognition_logits"], labels, pos_weight=pos_weight
+        )
+        delta = output["counterfactual_delta"]
+        target_direction = labels.mul(2.0).sub(1.0)
+        if error_weighting:
+            error_weight = (labels - torch.sigmoid(output["base_logits"])).abs().detach()
+        else:
+            error_weight = torch.ones_like(labels)
+        cf_loss = (
+            error_weight * F.relu(float(margin) - target_direction * delta)
+        ).mean()
+        preserve_weight = float(preservation_weight)
+        preserve_loss = (
+            (1.0 - error_weight) * delta.abs()
+        ).mean()
+        gates = output["gate"]
+        active = output["chunk_mask"].to(dtype=gates.dtype)
+        gate_fraction = gates.sum(dim=1) / active.sum(dim=1, keepdim=True).clamp_min(1.0)
+        sparse_loss = (gate_fraction - float(sparsity_target)).abs().mean()
+        total = (
+            cls_loss
+            + float(counterfactual_weight) * cf_loss
+            + preserve_weight * preserve_loss
+            + float(sparsity_weight) * sparse_loss
+        )
+        return {
+            "loss": total,
+            "classification_loss": cls_loss,
+            "counterfactual_loss": cf_loss,
+            "preservation_loss": preserve_loss,
+            "sparsity_loss": sparse_loss,
+        }
+
+
 class LCMCERV2(LCMCER):
     """LC-MCER-v2 with train-only EMA prototypes for weak evidence learning."""
 

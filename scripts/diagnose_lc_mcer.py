@@ -17,6 +17,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import yaml
+from sklearn.metrics import roc_auc_score
 from torch.utils.data import DataLoader, TensorDataset
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,7 +25,7 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from evm_chunk_mil_model import MLM8ViewMultiSlotMIL  # noqa: E402
-from lc_mcer import LCMCER  # noqa: E402
+from lc_mcer import CRER, LCMCER  # noqa: E402
 from metrics import (  # noqa: E402
     compute_multilabel_metrics_from_probs,
     select_per_label_thresholds,
@@ -471,8 +472,13 @@ def eval_override(config, model, valid, device, override, name):
 def save_csv(path, rows):
     if not rows:
         return
+    fieldnames = []
+    for row in rows:
+        for key in row:
+            if key not in fieldnames:
+                fieldnames.append(key)
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, extrasaction="ignore")
         writer.writeheader(); writer.writerows(rows)
 
 
@@ -501,7 +507,7 @@ def finalize_conclusions(report):
         conclusion["recommended_next_architecture"] = "Retain the simplest selector that matches the full variant; confirm on three seeds before any expansion."
 
 
-def main():
+def legacy_main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="configs/lc_mcer_diagnosis.yaml")
     args = parser.parse_args()
@@ -785,5 +791,408 @@ def main():
     print(json.dumps({"report": str(root / "final_diagnosis.json"), "m0_tuned_macro_f1": m0_metrics["tuned_macro_f1"], "completed": True}, indent=2), flush=True)
 
 
+def crer_safe_auc(positive, negative):
+    positive = np.asarray(positive, dtype=np.float64)
+    negative = np.asarray(negative, dtype=np.float64)
+    if len(positive) == 0 or len(negative) == 0:
+        return 0.5
+    values = np.concatenate([positive, negative])
+    if not np.isfinite(values).all():
+        values = np.nan_to_num(values)
+    targets = np.concatenate([np.ones(len(positive)), np.zeros(len(negative))])
+    return float(roc_auc_score(targets, values))
+
+
+def crer_forward_batches(model, data, device, batch_size):
+    loader = DataLoader(
+        TensorDataset(data["features"], data["mask"]),
+        batch_size=int(batch_size),
+        shuffle=False,
+        num_workers=0,
+    )
+    keys = (
+        "recognition_logits", "base_logits", "residual_logits", "residual_empty",
+        "counterfactual_delta", "evidence_representation", "gate", "gate_entropy",
+        "active_chunk_count", "routing_scores", "routing_weights", "chunk_mask",
+    )
+    collected = {key: [] for key in keys}
+    model.eval()
+    with torch.no_grad():
+        for features, masks in loader:
+            output = model(features.to(device), masks.to(device))
+            for key in keys:
+                collected[key].append(output[key].detach().float().cpu())
+    return {key: torch.cat(values) for key, values in collected.items()}
+
+
+def crer_gate_diagnostics(config, data, output):
+    labels = data["labels"].bool()
+    mask = output["chunk_mask"].bool()
+    scores = output["routing_scores"].float()
+    gates = output["gate"].float()
+    valid = mask.unsqueeze(-1).expand_as(gates)
+    valid_gates = gates[valid]
+    current_vs_other_positive = []
+    other_vs_current_positive = []
+    positive_vs_negative = []
+    for label_id in range(int(config["num_labels"])):
+        positive_values, negative_values = [], []
+        for row in range(len(labels)):
+            active = mask[row]
+            current = scores[row, active, label_id]
+            if bool(labels[row, label_id]):
+                positive_values.extend(current.tolist())
+                other_ids = [x for x in range(scores.shape[-1]) if x != label_id]
+                if other_ids:
+                    other = scores[row, active][:, other_ids].mean(dim=-1)
+                    current_vs_other_positive.extend(current.tolist())
+                    other_vs_current_positive.extend(other.tolist())
+            else:
+                negative_values.extend(current.tolist())
+        positive_vs_negative.append(crer_safe_auc(positive_values, negative_values))
+    # This is a weak score proxy: the current label is known at contract level,
+    # but no chunk-level evidence target is available.
+    other_label_auc = crer_safe_auc(
+        current_vs_other_positive, other_vs_current_positive
+    )
+    return {
+        "mean_gate": float(valid_gates.mean()) if valid_gates.numel() else 0.0,
+        "gate_std": float(valid_gates.std()) if valid_gates.numel() > 1 else 0.0,
+        "mean_gate_entropy": float(output["gate_entropy"].mean()),
+        "mean_active_chunk_count": float(output["active_chunk_count"].mean()),
+        "current_label_ranking_auc": float(np.mean(positive_vs_negative)),
+        "other_label_ranking_auc": float(other_label_auc),
+        "ranking_proxy_note": "Contract-level label proxy; not chunk-level evidence ground truth.",
+        "mean_counterfactual_delta": float(output["counterfactual_delta"].mean()),
+    }
+
+
+def crer_error_reports(config, data, output):
+    labels = data["labels"].numpy().astype(bool)
+    base = output["base_logits"].numpy() >= 0.0
+    final = output["recognition_logits"].numpy() >= 0.0
+    delta = output["counterfactual_delta"].numpy()
+    correction_rows, delta_rows = [], []
+    all_wrong, all_correct, all_fixed, all_damaged = 0, 0, 0, 0
+    for label_id, label_name in enumerate(config["label_names"]):
+        wrong = base[:, label_id] != labels[:, label_id]
+        correct = ~wrong
+        fixed = wrong & (final[:, label_id] == labels[:, label_id])
+        damaged = correct & (final[:, label_id] != labels[:, label_id])
+        all_wrong += int(wrong.sum())
+        all_correct += int(correct.sum())
+        all_fixed += int(fixed.sum())
+        all_damaged += int(damaged.sum())
+        correction_rows.append({
+            "label": label_name,
+            "m0_wrong_count": int(wrong.sum()),
+            "m0_correct_count": int(correct.sum()),
+            "error_correction_rate": float(fixed.sum() / max(1, wrong.sum())),
+            "error_damage_rate": float(damaged.sum() / max(1, correct.sum())),
+        })
+        fn = labels[:, label_id] & ~base[:, label_id]
+        fp = ~labels[:, label_id] & base[:, label_id]
+        m0_correct = correct
+        delta_rows.append({
+            "label": label_name,
+            "mean_delta": float(delta[:, label_id].mean()),
+            "positive_error_delta_fn": float(delta[fn, label_id].mean()) if fn.any() else 0.0,
+            "negative_error_delta_fp": float(delta[fp, label_id].mean()) if fp.any() else 0.0,
+            "m0_correct_delta": float(delta[m0_correct, label_id].mean()) if m0_correct.any() else 0.0,
+            "m0_correct_abs_delta": float(np.abs(delta[m0_correct, label_id]).mean()) if m0_correct.any() else 0.0,
+        })
+    correction_rows.append({
+        "label": "ALL",
+        "m0_wrong_count": all_wrong,
+        "m0_correct_count": all_correct,
+        "error_correction_rate": float(all_fixed / max(1, all_wrong)),
+        "error_damage_rate": float(all_damaged / max(1, all_correct)),
+    })
+    return {"error_correction": correction_rows, "counterfactual": delta_rows}
+
+
+def crer_build_model(config, device):
+    from lc_mcer import CRER
+    return CRER(
+        load_m0(config, device),
+        feature_dim=int(config["feature_dim"]),
+        num_labels=int(config["num_labels"]),
+        retrieval_dim=int(config["retrieval_dim"]),
+        gate_temperature=float(config["crer_gate_temperature"]),
+        residual_scale=float(config["residual_scale"]),
+        residual_hidden_dim=int(config["residual_hidden_dim"]),
+        dropout=float(config["dropout"]),
+    ).to(device)
+
+
+def crer_train_one(config, train, valid, device, name, *, cf_weight=0.0,
+                   error_weighting=False, preserve_weight=0.0, sparse_weight=0.0):
+    set_seed(int(config["seed"]))
+    model = crer_build_model(config, device)
+    weight = pos_weight(train["labels"], config).to(device)
+    optimizer = torch.optim.AdamW(
+        [p for p in model.parameters() if p.requires_grad],
+        lr=float(config["learning_rate"]), weight_decay=float(config["weight_decay"]),
+    )
+    scaler = torch.cuda.amp.GradScaler(
+        enabled=device.type == "cuda" and bool(config.get("fp16", True))
+    )
+    loader = DataLoader(
+        TensorDataset(train["features"], train["mask"], train["labels"]),
+        batch_size=int(config["batch_size"]), shuffle=True, num_workers=0,
+    )
+    root = resolve(config["result_dir"])
+    out_dir = root / name
+    out_dir.mkdir(parents=True, exist_ok=True)
+    best_score, best_state, best_epoch, stale = -1.0, None, 0, 0
+    history = []
+    for epoch in range(1, int(config["epochs"]) + 1):
+        model.train()
+        optimizer.zero_grad(set_to_none=True)
+        totals, classes, cfs, preserves, sparsities = [], [], [], [], []
+        for step, (features, masks, labels) in enumerate(loader, 1):
+            with torch.cuda.amp.autocast(
+                enabled=device.type == "cuda" and bool(config.get("fp16", True))
+            ):
+                output = model(features.to(device), masks.to(device))
+                parts = model.auxiliary_loss(
+                    output, labels.to(device), weight,
+                    counterfactual_weight=float(cf_weight),
+                    error_weighting=bool(error_weighting),
+                    preservation_weight=float(preserve_weight),
+                    sparsity_weight=float(sparse_weight),
+                    sparsity_target=float(config["crer_sparse_target"]),
+                    margin=float(config["crer_margin"]),
+                )
+                loss = parts["loss"]
+            scaled = loss / int(config["gradient_accumulation_steps"])
+            if scaler.is_enabled():
+                scaler.scale(scaled).backward()
+                if step % int(config["gradient_accumulation_steps"]) == 0:
+                    scaler.unscale_(optimizer)
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), float(config["gradient_clip_norm"]))
+                    scaler.step(optimizer); scaler.update(); optimizer.zero_grad(set_to_none=True)
+            else:
+                scaled.backward()
+                if step % int(config["gradient_accumulation_steps"]) == 0:
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), float(config["gradient_clip_norm"]))
+                    optimizer.step(); optimizer.zero_grad(set_to_none=True)
+            totals.append(float(loss.detach().cpu()))
+            classes.append(float(parts["classification_loss"].detach().cpu()))
+            cfs.append(float(parts["counterfactual_loss"].detach().cpu()))
+            preserves.append(float(parts["preservation_loss"].detach().cpu()))
+            sparsities.append(float(parts["sparsity_loss"].detach().cpu()))
+        if len(loader) % int(config["gradient_accumulation_steps"]):
+            if scaler.is_enabled():
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), float(config["gradient_clip_norm"]))
+                scaler.step(optimizer); scaler.update()
+            else:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), float(config["gradient_clip_norm"]))
+                optimizer.step()
+            optimizer.zero_grad(set_to_none=True)
+        valid_output = crer_forward_batches(model, valid, device, config["eval_batch_size"])
+        valid_loss = F.binary_cross_entropy_with_logits(
+            valid_output["recognition_logits"].to(device), valid["labels"].to(device), pos_weight=weight
+        )
+        metric = metric_pack(config, valid["labels"], valid_output["recognition_logits"])
+        gates = crer_gate_diagnostics(config, valid, valid_output)
+        row = {
+            "epoch": epoch,
+            "train_total_loss": float(np.mean(totals)),
+            "train_classification_loss": float(np.mean(classes)),
+            "train_counterfactual_loss": float(np.mean(cfs)),
+            "train_preservation_loss": float(np.mean(preserves)),
+            "train_sparsity_loss": float(np.mean(sparsities)),
+            "valid_loss": float(valid_loss.detach().cpu()),
+            **metric, **gates,
+        }
+        history.append(row)
+        (out_dir / "training_history.json").write_text(
+            json.dumps(json_safe(history), indent=2), encoding="utf-8"
+        )
+        (root / f"training_history_{name}.json").write_text(
+            json.dumps(json_safe(history), indent=2), encoding="utf-8"
+        )
+        print(
+            f"[{name}] epoch={epoch} train_total={row['train_total_loss']:.6f} "
+            f"train_cls={row['train_classification_loss']:.6f} "
+            f"train_cf={row['train_counterfactual_loss']:.6f} "
+            f"valid_loss={row['valid_loss']:.6f} tuned_macro={row['tuned_macro_f1']:.6f}",
+            flush=True,
+        )
+        if row["tuned_macro_f1"] > best_score:
+            best_score, best_epoch, stale = row["tuned_macro_f1"], epoch, 0
+            best_state = {key: value.detach().cpu() for key, value in model.state_dict().items()}
+            torch.save(
+                {"model_state_dict": best_state, "name": name, "epoch": epoch,
+                 "train_only": True, "test_checked": False}, out_dir / "best.pt"
+            )
+        else:
+            stale += 1
+        if stale >= int(config["early_stopping_patience"]):
+            break
+    model.load_state_dict(best_state, strict=True)
+    valid_output = crer_forward_batches(model, valid, device, config["eval_batch_size"])
+    metrics = metric_pack(config, valid["labels"], valid_output["recognition_logits"])
+    result = {
+        "name": name, "seed": int(config["seed"]), "best_epoch": int(best_epoch),
+        "train_only": True, "test_checked": False,
+        "trainable_parameter_count": int(sum(p.numel() for p in model.parameters() if p.requires_grad)),
+        "frozen_parameter_count": int(sum(p.numel() for p in model.parameters() if not p.requires_grad)),
+        "routing_mode_train": "soft", "routing_mode_validation": "soft",
+        "counterfactual_weight": float(cf_weight), "error_weighting": bool(error_weighting),
+        "preservation_weight": float(preserve_weight), "sparsity_weight": float(sparse_weight),
+        **metrics,
+        "gate_diagnostics": crer_gate_diagnostics(config, valid, valid_output),
+        **crer_error_reports(config, valid, valid_output),
+        "history": history,
+    }
+    (out_dir / "summary.json").write_text(json.dumps(json_safe(result), indent=2), encoding="utf-8")
+    return result
+
+
+def crer_write_report(config, root, m0, results):
+    rows = [{
+        "experiment": "M0", "macro_f1": m0["tuned_macro_f1"],
+        "micro_f1": m0["tuned_micro_f1"], "fixed_macro_f1": m0["fixed_macro_f1"],
+        "delta_vs_m0": 0.0, **{f"f1_{i}": value for i, value in enumerate(m0["per_label_f1"])},
+    }]
+    for item in results:
+        rows.append({
+            "experiment": item["name"], "macro_f1": item["tuned_macro_f1"],
+            "micro_f1": item["tuned_micro_f1"], "fixed_macro_f1": item["fixed_macro_f1"],
+            "delta_vs_m0": item["tuned_macro_f1"] - m0["tuned_macro_f1"],
+            **{f"f1_{i}": value for i, value in enumerate(item["per_label_f1"])},
+            "mean_gate": item.get("gate_diagnostics", {}).get("mean_gate", 0.0),
+            "mean_delta": item.get("gate_diagnostics", {}).get("mean_counterfactual_delta", 0.0),
+            "error_correction_rate": item.get("error_correction", [{}])[-1].get("error_correction_rate", 0.0),
+            "error_damage_rate": item.get("error_correction", [{}])[-1].get("error_damage_rate", 0.0),
+        })
+    save_csv(root / "ablation.csv", rows)
+    correction_rows, delta_rows = [], []
+    for item in results:
+        for row in item.get("error_correction", []):
+            correction_rows.append({"experiment": item["name"], **row})
+        for row in item.get("counterfactual", []):
+            delta_rows.append({"experiment": item["name"], **row})
+    save_csv(root / "error_correction.csv", correction_rows)
+    save_csv(root / "counterfactual_diagnostics.csv", delta_rows)
+    report = {
+        "route": config["route_name"], "dataset": "DIVE Main6 random split",
+        "seed": int(config["seed"]), "train_only": True, "test_checked": False,
+        "phase5_started": False, "m0": m0, "experiments": results,
+        "restrictions": [
+            "No test data/cache/predictions", "M0 frozen", "No prototype/EMA/contrastive loss",
+            "No competition or diversity", "Training and validation use the same soft gate",
+        ],
+    }
+    (root / "crer_report.json").write_text(json.dumps(json_safe(report), indent=2), encoding="utf-8")
+    full = next((x for x in results if x["name"] == "crer_full"), None)
+    current = next((x for x in results if x["name"] == "current_lc_mcer"), None)
+    full_correction = full["error_correction"][-1] if full else {}
+    current_correction = current["error_correction"][-1] if current else {}
+    go = bool(
+        full
+        and full["tuned_macro_f1"] > m0["tuned_macro_f1"] + 0.005
+        and full["fixed_macro_f1"] > m0["fixed_macro_f1"] + 0.005
+        and full_correction.get("error_correction_rate", 0.0) > current_correction.get("error_correction_rate", 0.0) + 0.01
+        and full_correction.get("error_damage_rate", 1.0) <= current_correction.get("error_damage_rate", 0.0) + 0.01
+    )
+    report["decision"] = "GO" if go else "NO-GO"
+    report["decision_rule"] = "Full CRER must improve tuned and fixed Macro-F1 by >0.005, improve correction by >0.01, and not increase damage by >0.01 versus current LC-MCER."
+    (root / "final_diagnosis.json").write_text(json.dumps(json_safe(report), indent=2), encoding="utf-8")
+    lines = [
+        "# CRER Diagnosis", "", "DIVE Main6 random split; seed 42; M0 frozen; validation-only; test locked.", "",
+        "| Experiment | Tuned Macro-F1 | Delta vs M0 | Fixed Macro-F1 | Tuned Micro-F1 |", "|---|---:|---:|---:|---:|",
+        f"| M0 | {m0['tuned_macro_f1']:.6f} | +0.000000 | {m0['fixed_macro_f1']:.6f} | {m0['tuned_micro_f1']:.6f} |",
+    ]
+    for row in rows[1:]:
+        lines.append(f"| {row['experiment']} | {row['macro_f1']:.6f} | {row['delta_vs_m0']:+.6f} | {row['fixed_macro_f1']:.6f} | {row['micro_f1']:.6f} |")
+    lines += [
+        "", f"## Decision: {'GO' if go else 'NO-GO'}", "",
+        "CRER evidence is a learned diagnostic representation, not local evidence ground truth.",
+        "Counterfactual delta is measured as the residual difference between full and zero evidence.",
+        "All A0-A5 results remain validation-only; no test data or predictions were read or written.",
+    ]
+    (root / "FINAL_DIAGNOSIS.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return report
+
+
+def crer_main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", default="configs/lc_mcer_diagnosis.yaml")
+    args = parser.parse_args()
+    config = load_config(args.config)
+    if config.get("allow_test"):
+        raise ValueError("CRER keeps test locked")
+    set_seed(int(config["seed"]))
+    root = resolve(config["result_dir"])
+    root.mkdir(parents=True, exist_ok=True)
+    train, valid = load_split(config, "train"), load_split(config, "valid")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"[setup] device={device} train={len(train['labels'])} valid={len(valid['labels'])}", flush=True)
+    baseline = load_m0(config, device)
+    m0_logits = baseline_batches(baseline, valid, device, config["eval_batch_size"])
+    m0 = metric_pack(config, valid["labels"], m0_logits)
+    (root / "config_snapshot.yaml").write_text(resolve(args.config).read_text(encoding="utf-8"), encoding="utf-8")
+    (root / "m0_reference.json").write_text(json.dumps(json_safe({"name": "M0", **m0, "train_only": True, "test_checked": False}), indent=2), encoding="utf-8")
+    del baseline
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
+
+    results = []
+    # A1 is the current hard Top-K LC-MCER reference; CRER itself is soft-only.
+    current = train_model(
+        config, train, valid, device, "current_lc_mcer",
+        scale=float(config["residual_scale"]), use_competition=True,
+        diversity_lambda=float(config["diversity_lambda"]),
+    )
+    current_report = {
+        "name": "current_lc_mcer", "seed": int(config["seed"]), "train_only": True,
+        "test_checked": False, "tuned_macro_f1": current["tuned_macro_f1"],
+        "tuned_micro_f1": current["tuned_micro_f1"], "fixed_macro_f1": current["fixed_macro_f1"],
+        "fixed_micro_f1": current["fixed_micro_f1"], "per_label_f1": current["per_label_f1"],
+        "per_label_precision": current["per_label_precision"], "per_label_recall": current["per_label_recall"],
+        "thresholds": current["thresholds"],
+        "error_correction": crer_error_reports(
+            config, valid, {"base_logits": current["valid_output"]["base"], "recognition_logits": current["valid_output"]["logits"], "counterfactual_delta": torch.zeros_like(current["valid_output"]["logits"])}
+        )["error_correction"],
+        "counterfactual": [], "gate_diagnostics": {},
+        "trainable_parameter_count": current["trainable_parameter_count"],
+    }
+    results.append(current_report)
+    (root / "current_lc_mcer.json").write_text(json.dumps(json_safe(current_report), indent=2), encoding="utf-8")
+    (root / "training_history_current_lc_mcer.json").write_text(json.dumps(json_safe(current["history"]), indent=2), encoding="utf-8")
+    current.pop("model", None); current.pop("valid_output", None)
+    del current
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
+
+    definitions = {
+        "A2": ("crer_classification_only", 0.0, False, 0.0, 0.0),
+        "A3": ("crer_counterfactual", float(config["crer_lambda_cf"]), False, 0.0, 0.0),
+        "A4": ("crer_error_weighted", float(config["crer_lambda_cf"]), True, 0.0, 0.0),
+        "A5": ("crer_full", float(config["crer_lambda_cf"]), True, float(config["crer_lambda_preserve"]), float(config["crer_lambda_sparse"])),
+    }
+    for experiment in config.get("experiments", ["A0", "A1", "A2", "A3", "A4", "A5"]):
+        if experiment in ("A0", "A1"):
+            continue
+        if experiment not in definitions:
+            raise ValueError(f"unknown CRER experiment {experiment}")
+        name, cf, weighted, preserve, sparse = definitions[experiment]
+        item = crer_train_one(
+            config, train, valid, device, name, cf_weight=cf,
+            error_weighting=weighted, preserve_weight=preserve, sparse_weight=sparse,
+        )
+        results.append(item)
+        crer_write_report(config, root, m0, results)
+        (root / f"{name}.json").write_text(json.dumps(json_safe(item), indent=2), encoding="utf-8")
+        if device.type == "cuda":
+            torch.cuda.empty_cache()
+    report = crer_write_report(config, root, m0, results)
+    print(json.dumps({"result_dir": str(root), "decision": report["decision"], "completed_experiments": [x["name"] for x in results], "test_checked": False}, indent=2), flush=True)
+
+
 if __name__ == "__main__":
-    main()
+    crer_main()
