@@ -109,11 +109,11 @@ def metric_pack(config, labels, logits):
         targets, probabilities, selected["thresholds"]
     )
     return {
-        "fixed_macro_f1": float(fixed["macro_f1"]),
-        "fixed_micro_f1": float(fixed["micro_f1"]),
+        "fixed_macro_f1": float(fixed["recognition_macro_f1"]),
+        "fixed_micro_f1": float(fixed["recognition_micro_f1"]),
         "fixed_per_label_f1": [float(x) for x in fixed["per_label_f1"]],
-        "tuned_macro_f1": float(tuned["macro_f1"]),
-        "tuned_micro_f1": float(tuned["micro_f1"]),
+        "tuned_macro_f1": float(tuned["recognition_macro_f1"]),
+        "tuned_micro_f1": float(tuned["recognition_micro_f1"]),
         "tuned_per_label_f1": [float(x) for x in tuned["per_label_f1"]],
         "tuned_per_label_precision": [float(x) for x in tuned["per_label_precision"]],
         "tuned_per_label_recall": [float(x) for x in tuned["per_label_recall"]],
