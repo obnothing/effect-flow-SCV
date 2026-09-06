@@ -166,6 +166,55 @@ def compute_pos_weight_from_feature_cache(config):
     return torch.tensor(weights, dtype=torch.float32), rows
 
 
+def compute_configured_pos_weight(config):
+    """Apply controlled per-label calibration on top of cache-derived weights."""
+    multipliers = config.get("recognition_pos_weight_multipliers")
+    override = config.get("recognition_pos_weight_override")
+    if multipliers is None and override is None:
+        return compute_pos_weight_from_feature_cache(config)
+    if multipliers is not None and override is not None:
+        raise ValueError(
+            "Set only one of recognition_pos_weight_multipliers or "
+            "recognition_pos_weight_override"
+        )
+    if multipliers is not None:
+        base, base_rows = compute_pos_weight_from_feature_cache(config)
+        values = [float(value) for value in multipliers]
+        expected = len(config.get("label_names", []))
+        if len(values) != expected or any(value <= 0 for value in values):
+            raise ValueError(
+                "recognition_pos_weight_multipliers must contain one positive "
+                f"value per active label ({expected})"
+            )
+        calibrated = base * torch.tensor(values, dtype=torch.float32)
+        rows = []
+        for row, multiplier, value in zip(base_rows, values, calibrated.tolist()):
+            item = dict(row)
+            item["source"] = "cache_derived_times_multiplier"
+            item["multiplier"] = multiplier
+            item["final_pos_weight"] = value
+            rows.append(item)
+        return calibrated, rows
+
+    values = [float(value) for value in override]
+    expected = len(config.get("label_names", []))
+    if len(values) != expected or any(value <= 0 for value in values):
+        raise ValueError(
+            "recognition_pos_weight_override must contain one positive value "
+            f"per active label ({expected})"
+        )
+    rows = [
+        {
+            "label_id": idx,
+            "label_name": config["label_names"][idx],
+            "source": "config_override",
+            "final_pos_weight": value,
+        }
+        for idx, value in enumerate(values)
+    ]
+    return torch.tensor(values, dtype=torch.float32), rows
+
+
 class TargetBalancedBatchSampler:
     def __init__(self, dataset, label_name, batch_size, neg_per_pos, seed=42):
         if label_name not in dataset.label_names:
@@ -1079,7 +1128,7 @@ def main():
         raise ValueError("ASL experiments must set use_pos_weight=false")
     pos_weight_rows = None
     if config.get("use_pos_weight", False):
-        pos_weight, pos_weight_rows = compute_pos_weight_from_feature_cache(config)
+        pos_weight, pos_weight_rows = compute_configured_pos_weight(config)
         model.set_recognition_pos_weight(pos_weight.to(device))
     use_data_parallel = bool(config.get("use_data_parallel", False))
     available_gpus = torch.cuda.device_count() if torch.cuda.is_available() else 0

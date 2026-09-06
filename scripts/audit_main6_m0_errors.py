@@ -55,6 +55,69 @@ def metric_dict(metric):
     }
 
 
+def average_ranks(values):
+    order = np.argsort(values, kind="mergesort")
+    ranks = np.empty(len(values), dtype=float)
+    sorted_values = np.asarray(values)[order]
+    start = 0
+    while start < len(sorted_values):
+        end = start + 1
+        while end < len(sorted_values) and sorted_values[end] == sorted_values[start]:
+            end += 1
+        ranks[order[start:end]] = 0.5 * (start + end - 1) + 1.0
+        start = end
+    return ranks
+
+
+def binary_auc(target, score):
+    target = np.asarray(target).astype(int)
+    score = np.asarray(score, dtype=float)
+    positives = int(target.sum())
+    negatives = int((target == 0).sum())
+    if positives == 0 or negatives == 0:
+        return None
+    ranks = average_ranks(score)
+    rank_sum = float(ranks[target == 1].sum())
+    return float((rank_sum - positives * (positives + 1) / 2.0) / (positives * negatives))
+
+
+def average_precision(target, score):
+    target = np.asarray(target).astype(int)
+    score = np.asarray(score, dtype=float)
+    positives = int(target.sum())
+    if positives == 0:
+        return None
+    order = np.argsort(-score, kind="mergesort")
+    ranked_target = target[order]
+    cumulative = np.cumsum(ranked_target)
+    precision = cumulative / np.arange(1, len(target) + 1)
+    return float((precision * ranked_target).sum() / positives)
+
+
+def score_rows(label_names, labels, probs):
+    rows = []
+    labels = np.asarray(labels)
+    probs = np.asarray(probs)
+    for idx, name in enumerate(label_names):
+        positive = probs[labels[:, idx] == 1, idx]
+        negative = probs[labels[:, idx] == 0, idx]
+        rows.append(
+            {
+                "label_id": idx,
+                "label_name": name,
+                "roc_auc": binary_auc(labels[:, idx], probs[:, idx]),
+                "average_precision": average_precision(labels[:, idx], probs[:, idx]),
+                "positive_count": int(len(positive)),
+                "negative_count": int(len(negative)),
+                "positive_mean_probability": float(positive.mean()) if len(positive) else None,
+                "negative_mean_probability": float(negative.mean()) if len(negative) else None,
+                "positive_median_probability": float(np.median(positive)) if len(positive) else None,
+                "negative_median_probability": float(np.median(negative)) if len(negative) else None,
+            }
+        )
+    return rows
+
+
 def confusion_rows(label_names, labels, probs, thresholds):
     targets = np.asarray(labels).astype(int)
     predictions = (
@@ -331,6 +394,7 @@ def main():
         "tuned_thresholds": tuned_thresholds,
         "tuned_threshold_selection_note": "Descriptive validation-only selection; not an unbiased test estimate.",
         "overall": {"fixed": metric_dict(fixed_metric), "tuned": metric_dict(tuned_metric)},
+        "score_diagnostics": score_rows(label_names, labels, probs),
         "per_label_fixed": confusion_rows(label_names, labels, probs, fixed_thresholds),
         "per_label_tuned": confusion_rows(label_names, labels, probs, tuned_thresholds),
         "cardinality_tuned": cardinality_rows,
