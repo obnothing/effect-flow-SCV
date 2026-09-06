@@ -133,7 +133,7 @@ def build_model(config, variant):
         hidden_dim=int(config["hidden_dim"]),
         num_heads=int(config["num_heads"]),
         shared_encoder_layers=int(config["shared_encoder_layers"]),
-        evidence_blocks=1 if variant == "A4_single_block" else int(config["evidence_blocks"]),
+        evidence_blocks=1 if variant in {"A4_single_block", "A6_minimal"} else int(config["evidence_blocks"]),
         dropout=float(config["dropout"]),
         temperature=float(config["temperature"]),
         use_label_queries=variant != "A5_shared_query",
@@ -209,7 +209,7 @@ def train_one(config, variant, seed, train, valid, device, root):
                 output = model(features.to(device), mask.to(device))
                 values = model.compute_loss(
                     output, labels.to(device), weight,
-                    lambda_cf=0.0 if variant == "A2_no_counterfactual" else float(config["lambda_cf"]),
+                    lambda_cf=0.0 if variant in {"A2_no_counterfactual", "A6_minimal"} else float(config["lambda_cf"]),
                     lambda_sparse=0.0 if variant == "A3_no_sparsity" else float(config["lambda_sparse"]),
                     lambda_entropy=float(config.get("lambda_entropy", 0.0)),
                     margin=float(config["counterfactual_margin"]),
