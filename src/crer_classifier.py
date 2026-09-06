@@ -126,6 +126,7 @@ class CRERClassifier(nn.Module):
         temperature=1.0,
         use_label_queries=True,
         sparsity_target=0.1,
+        view_indices=None,
     ):
         super().__init__()
         if not 0.0 < float(temperature):
@@ -135,6 +136,9 @@ class CRERClassifier(nn.Module):
         self.feature_dim = int(feature_dim)
         self.num_labels = int(num_labels)
         self.chunk_view_index = int(chunk_view_index)
+        self.view_indices = [int(value) for value in (view_indices or [self.chunk_view_index])]
+        if not self.view_indices or any(value < 0 or value >= 8 for value in self.view_indices):
+            raise ValueError("view_indices must contain values in [0, 7]")
         self.temperature = float(temperature)
         self.use_label_queries = bool(use_label_queries)
         self.sparsity_target = float(sparsity_target)
@@ -208,7 +212,14 @@ class CRERClassifier(nn.Module):
         complement = torch.einsum("bcl,bch->blh", complement_weights, value)
         return scores, gates, weights, evidence, complement
 
-    def forward(self, chunk_features, chunk_mask, return_diagnostics=False):
+    def forward(
+        self,
+        chunk_features,
+        chunk_mask,
+        return_diagnostics=False,
+        routing_override=None,
+        evidence_override=None,
+    ):
         if chunk_features.ndim != 4 or chunk_features.shape[2] <= self.chunk_view_index:
             raise ValueError("CRER expects [B, C, V, D] features with configured chunk view")
         if chunk_features.shape[-1] != self.feature_dim:
@@ -216,7 +227,7 @@ class CRERClassifier(nn.Module):
         mask = chunk_mask.bool()
         if (~mask).all(dim=1).any():
             raise ValueError("each sample must contain at least one valid chunk")
-        chunks = chunk_features[:, :, self.chunk_view_index, :]
+        chunks = chunk_features[:, :, self.view_indices, :].mean(dim=2)
         contextual = self.encoder(chunks, mask)
         queries = self._queries(chunks.shape[0])
         block_attentions = []
@@ -226,7 +237,23 @@ class CRERClassifier(nn.Module):
         scores, gates, weights, evidence_raw, complement_raw = self._route(
             queries, contextual, mask
         )
+        if routing_override not in (None, "learned", "uniform", "zero"):
+            raise ValueError("routing_override must be learned, uniform, zero, or None")
+        if routing_override == "uniform":
+            weights = mask.unsqueeze(-1).to(dtype=contextual.dtype)
+            weights = weights / weights.sum(dim=1, keepdim=True).clamp_min(1.0)
+            evidence_raw = torch.einsum("bcl,bch->blh", weights, self.gate_value_projection(contextual))
+        elif routing_override == "zero":
+            evidence_raw = torch.zeros_like(evidence_raw)
         evidence = self.evidence_projection(evidence_raw)
+        if routing_override == "zero":
+            evidence = torch.zeros_like(evidence)
+        if evidence_override is not None:
+            if evidence_override.shape != evidence.shape:
+                raise ValueError(
+                    "evidence_override must match [batch, labels, hidden_dim]"
+                )
+            evidence = evidence_override.to(dtype=evidence.dtype)
         complement = self.evidence_projection(complement_raw)
         logits = self._label_heads(evidence)
         complement_logits = self._label_heads(complement)

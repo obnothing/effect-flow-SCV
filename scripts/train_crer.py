@@ -138,6 +138,7 @@ def build_model(config, variant):
         temperature=float(config["temperature"]),
         use_label_queries=variant != "A5_shared_query",
         sparsity_target=float(config["sparsity_target"]),
+        view_indices=config.get("view_indices"),
     )
 
 
