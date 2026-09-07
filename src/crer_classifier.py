@@ -240,7 +240,10 @@ class CRERClassifier(nn.Module):
         if routing_override not in (None, "learned", "uniform", "zero"):
             raise ValueError("routing_override must be learned, uniform, zero, or None")
         if routing_override == "uniform":
-            weights = mask.unsqueeze(-1).to(dtype=contextual.dtype)
+            # Every label needs its own uniform distribution over valid chunks.
+            weights = mask.unsqueeze(-1).to(dtype=contextual.dtype).expand(
+                -1, -1, self.num_labels
+            )
             weights = weights / weights.sum(dim=1, keepdim=True).clamp_min(1.0)
             evidence_raw = torch.einsum("bcl,bch->blh", weights, self.gate_value_projection(contextual))
         elif routing_override == "zero":
