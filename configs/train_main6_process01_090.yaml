@@ -1,0 +1,89 @@
+common:
+  data_dir: data/processed/DIVE_main6_opcode_process01
+  source_label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
+  label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
+  num_labels: 6
+  num_views: 8
+  feature_dim: 768
+  hidden_dim: 512
+  attn_dim: 256
+  max_chunks: 64
+  dropout: 0.1
+  task_mode: recognition_only
+  detection_head_enabled: false
+  detection_loss_weight: 0.0
+  recognition_loss_weight: 1.0
+  derived_detection_from_multilabel: true
+  recognition_head_type: label_branch_mlp
+  label_branch_hidden_dim: 256
+  label_branch_dropout: 0.1
+  label_branch_use_layernorm: true
+  use_chunk_context: true
+  chunk_context_encoder_type: transformer
+  chunk_context_num_layers: 2
+  chunk_context_num_heads: 8
+  chunk_context_dropout: 0.1
+  recognition_aggregation: label_gated_attention
+  batch_size: 16
+  gradient_accumulation_steps: 4
+  num_workers: 2
+  epochs: 30
+  early_stopping_patience: 5
+  learning_rate: 0.0001
+  weight_decay: 0.01
+  scheduler: cosine
+  scheduler_warmup_epochs: 3
+  min_learning_rate: 0.000001
+  use_pos_weight: true
+  pos_weight_mode: sqrt_ratio
+  max_pos_weight: 5.0
+  threshold: 0.5
+  thresholds: [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
+  seed: 42
+  encoder_frozen: true
+  is_transductive_pretraining: false
+  split_policy: process01_train_only
+  leakage_status: process01_validation_only
+  model_type: mlm8view_multislot_mil
+  view_residual_init: 0.1
+  report_dir: data/reports/main6_process01_090_mlm8
+
+variants:
+  mlm8_slot1:
+    experiment_name: main6_process01_mlm8_slot1
+    feature_dir: data/features/main6_process01_mlm8_trainvalid
+    checkpoint_dir: checkpoints/main6_process01_090_mlm8/mlm8_slot1
+    result_dir: results/main6_process01_090_mlm8/mlm8_slot1
+    label_query_slots: 1
+  mlm8_slot2:
+    experiment_name: main6_process01_mlm8_slot2
+    feature_dir: data/features/main6_process01_mlm8_trainvalid
+    checkpoint_dir: checkpoints/main6_process01_090_mlm8/mlm8_slot2
+    result_dir: results/main6_process01_090_mlm8/mlm8_slot2
+    label_query_slots: 2
+  mlm8_slot3:
+    experiment_name: main6_process01_mlm8_slot3
+    feature_dir: data/features/main6_process01_mlm8_trainvalid
+    checkpoint_dir: checkpoints/main6_process01_090_mlm8/mlm8_slot3
+    result_dir: results/main6_process01_090_mlm8/mlm8_slot3
+    label_query_slots: 3
+  mlm8_slot4:
+    experiment_name: main6_process01_mlm8_slot4
+    feature_dir: data/features/main6_process01_mlm8_trainvalid
+    checkpoint_dir: checkpoints/main6_process01_090_mlm8/mlm8_slot4
+    result_dir: results/main6_process01_090_mlm8/mlm8_slot4
+    label_query_slots: 4
+  shared_query_slot3:
+    experiment_name: main6_process01_shared_query_slot3
+    feature_dir: data/features/main6_process01_mlm8_trainvalid
+    checkpoint_dir: checkpoints/main6_process01_090_mlm8/shared_query_slot3
+    result_dir: results/main6_process01_090_mlm8/shared_query_slot3
+    label_query_slots: 3
+    label_conditioned_queries: false
+  shared_view_slot3:
+    experiment_name: main6_process01_shared_view_slot3
+    feature_dir: data/features/main6_process01_mlm8_trainvalid
+    checkpoint_dir: checkpoints/main6_process01_090_mlm8/shared_view_slot3
+    result_dir: results/main6_process01_090_mlm8/shared_view_slot3
+    label_query_slots: 3
+    label_conditioned_views: false

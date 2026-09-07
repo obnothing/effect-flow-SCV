@@ -2772,10 +2772,13 @@ class MLM8ViewMultiSlotMIL(EVMChunkMILClassifier):
         if self.num_slots < 1:
             raise ValueError("label_query_slots must be positive")
         self.view_feature_dim = int(config["feature_dim"])
+        self.label_conditioned_queries = bool(config.get("label_conditioned_queries", True))
+        self.label_conditioned_views = bool(config.get("label_conditioned_views", True))
         self.view_norm = nn.LayerNorm(self.view_feature_dim)
         self.view_projection = nn.Linear(self.view_feature_dim, self.hidden_dim)
+        query_labels = self.num_labels if self.label_conditioned_queries else 1
         self.label_view_queries = nn.Parameter(
-            torch.empty(self.num_labels, self.num_slots, self.hidden_dim)
+            torch.empty(query_labels, self.num_slots, self.hidden_dim)
         )
         self.chunk_to_view_query = nn.Linear(self.hidden_dim, self.hidden_dim)
         self.view_key = nn.Linear(self.hidden_dim, self.hidden_dim, bias=False)
@@ -2808,8 +2811,13 @@ class MLM8ViewMultiSlotMIL(EVMChunkMILClassifier):
         values = self.view_value(views)
         dynamic_query = self.chunk_to_view_query(h).unsqueeze(2).unsqueeze(3)
         queries = self.label_view_queries.view(
-            1, 1, self.num_labels, self.num_slots, self.hidden_dim
+            1, 1, -1, self.num_slots, self.hidden_dim
         ) + dynamic_query
+        if not self.label_conditioned_queries:
+            queries = queries.expand(-1, -1, self.num_labels, -1, -1)
+        elif not self.label_conditioned_views:
+            shared_query = queries.mean(dim=2, keepdim=True)
+            queries = shared_query.expand(-1, -1, self.num_labels, -1, -1)
         view_logits = torch.einsum("bclsh,bcvh->bclsv", queries, keys)
         view_logits = view_logits / (self.hidden_dim ** 0.5)
         view_attention = torch.softmax(view_logits, dim=-1)
