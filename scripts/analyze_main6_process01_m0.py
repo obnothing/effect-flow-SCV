@@ -118,7 +118,6 @@ def evaluate(config, variant, checkpoint_path, device, batch_size):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="configs/train_main6_process01_090.yaml")
-    parser.add_argument("--root", default="results/main6_process01_090_mlm8")
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--output", default="results/main6_process01_090_mlm8/process01_analysis.json")
     args = parser.parse_args()
@@ -126,18 +125,24 @@ def main():
     if config.get("allow_test"):
         raise ValueError("process01 analysis is validation-only")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    root = resolve(args.root)
     variants = ["mlm8_slot1", "mlm8_slot2", "mlm8_slot3", "mlm8_slot4", "shared_query_slot3", "shared_view_slot3"]
     reports = []
+    missing_checkpoints = []
     for variant in variants:
-        checkpoint = root / variant / "best_macro_f1.pt"
-        if not checkpoint.exists():
-            continue
         variant_config = load_config(args.config, variant)
+        checkpoint = resolve(variant_config["checkpoint_dir"]) / "best_macro_f1.pt"
+        if not checkpoint.exists():
+            missing_checkpoints.append(str(checkpoint))
+            continue
         reports.append(evaluate(variant_config, variant, checkpoint, device, args.batch_size))
+    if not reports:
+        checked = "\n  ".join(missing_checkpoints)
+        raise FileNotFoundError(
+            "No process01 checkpoints were found. Checked:\n  " + checked
+        )
     output = resolve(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    report = {"route": "DIVE Main6 process01 M0 analysis", "dataset": "DIVE_main6_opcode_process01", "validation_only": True, "test_checked": False, "variants": reports}
+    report = {"route": "DIVE Main6 process01 M0 analysis", "dataset": "DIVE_main6_opcode_process01", "validation_only": True, "test_checked": False, "variants": reports, "missing_checkpoints": missing_checkpoints}
     output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     rows = []
     for item in reports:
