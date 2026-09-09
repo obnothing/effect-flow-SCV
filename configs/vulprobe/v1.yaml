@@ -1,0 +1,39 @@
+route_name: DIVE Main6 process01 VulProbe-V1
+data_dir: data/processed/DIVE_main6_opcode_process01
+backbone_path: checkpoints/pretrain_evm_bert_main6_random_train_mlm8/hf_model
+vocab_path: checkpoints/pretrain_evm_bert_main6_random_train_mlm8/evm_vocab.json
+checkpoint_root: checkpoints/vulprobe_v1
+result_root: results/vulprobe_v1
+report_root: reports
+label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
+num_labels: 6
+max_len: 512
+chunk_stride: 256
+max_chunks: 64
+tau: 1.0
+num_heads: 8
+interaction_dim: 128
+encoder_chunk_batch: 4
+contract_batch_size: 1
+gradient_accumulation_steps: 8
+num_workers: 2
+fp16: true
+gradient_clip_norm: 1.0
+head_learning_rate: 0.0001
+backbone_learning_rate: 0.00001
+weight_decay: 0.01
+frozen_epochs: 10
+joint_epochs: 20
+early_stopping_patience: 5
+unfreeze_last_layers: 2
+pos_weight_mode: sqrt_ratio
+max_pos_weight: 5.0
+thresholds: [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
+seed: 42
+variants: [b0_shared_representation, b1_shared_probe, b2_label_probe]
+scorer: shared
+smoke_train_samples: 3
+smoke_valid_samples: 2
+m0_validation_macro_f1: 0.8225349234782438
+allow_test: false
+
