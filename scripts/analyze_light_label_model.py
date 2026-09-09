@@ -61,6 +61,12 @@ def main():
         lines += [f"| {x['variant']} | {x['tuned']['macro_f1']:.6f} | {x['memory']:.1f} | {x['epoch_seconds']:.2f} |" for x in records]
         lines += ["",f"B2 attention diagnostics gate: `{gate}`."]
         (report_dir/"smoke_test.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
+    if args.run=="full":
+        report_dir=resolve(configs[0]["report_dir"]); report_dir.mkdir(parents=True,exist_ok=True)
+        lines=["# LabelGuidedOpcodeNet Hypothesis Experiment","","Dataset: `DIVE_main6_opcode_process01`.","Validation only; seed 42; test remains locked.","","## Main Results","","| Variant | Fixed Macro-F1 | Tuned Macro-F1 | Micro-F1 | Detection-F1 | Params | Δ B0 | Δ B1 |","|---|---:|---:|---:|---:|---:|---:|---:|"]
+        lines += [f"| {x['variant']} | {x['fixed']['macro_f1']:.6f} | {x['tuned']['macro_f1']:.6f} | {x['tuned']['micro_f1']:.6f} | {x['detection_f1']:.6f} | {x['params']} | {x['delta_b0']:.6f} | {x['delta_b1']:.6f} |" for x in records]
+        lines += ["", "## Current Interpretation", "", f"B2 attention gate: **{gate}**.", "Mechanism diagnostics are generated separately after B2 exceeds B1.", "", "Hypothesis verdict: `[Pending attention diagnostics]`.", "Recommendation: `[Pending attention diagnostics]`."]
+        (report_dir/"final_report.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
     print(json.dumps({"run":args.run,"variants":len(records),"attention_diagnostics_allowed":gate,"test_checked":False},indent=2))
 
 

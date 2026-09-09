@@ -88,6 +88,12 @@ def main():
     (root / "attention_diagnostics.json").write_text(json.dumps(report,indent=2)+"\n",encoding="utf-8")
     report_dir=resolve(config["report_dir"]); report_dir.mkdir(parents=True,exist_ok=True); lines=["# Label Attention Diagnostics","",f"B2-B1 tuned Macro-F1: {b2_b1:.6f}",f"Query-shuffle Macro-F1 drop: {shuffle_drop:.6f}",f"Top-{args.top_k} masking Macro-F1 drop: {top_drop:.6f}",f"Random-{args.top_k} masking Macro-F1 drop: {random_drop:.6f}",f"Valid truncation ratio: {report['truncated_valid_ratio']:.4f}","",f"Hypothesis verdict: **{verdict}**.",f"Recommendation: **{recommendation}**."]
     (report_dir / "attention_diagnostics.md").write_text("\n".join(lines)+"\n",encoding="utf-8"); print(json.dumps({"verdict":verdict,"test_checked":False},indent=2))
+    final_report=report_dir / "final_report.md"
+    if final_report.exists():
+        text=final_report.read_text(encoding="utf-8")
+        text=text.replace("Hypothesis verdict: `[Pending attention diagnostics]`.",f"Hypothesis verdict: **{verdict}**.")
+        text=text.replace("Recommendation: `[Pending attention diagnostics]`.",f"Recommendation: **{recommendation}**.")
+        final_report.write_text(text,encoding="utf-8")
 
 
 if __name__=="__main__": main()
