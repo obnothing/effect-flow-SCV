@@ -26,10 +26,14 @@ function Run-Step($label, $arguments) {
 Log "Overnight process01 pipeline started"
 Log "Waiting for existing B0: $b0Metrics"
 
-while (-not (Test-Path -LiteralPath $b0Metrics)) {
-    $running = Get-Process -Name python -ErrorAction SilentlyContinue
-    if (-not $running) {
-        Log "WARNING: no python process detected while B0 metrics are absent"
+while ($true) {
+    $b0Processes = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object { $_.CommandLine -match "train_light_label_model\.py.*b0_mean" }
+    if ((Test-Path -LiteralPath $b0Metrics) -and -not $b0Processes) {
+        break
+    }
+    if (-not $b0Processes -and -not (Test-Path -LiteralPath $b0Metrics)) {
+        Log "WARNING: B0 process is absent and metrics are not present"
     }
     Start-Sleep -Seconds 60
 }
