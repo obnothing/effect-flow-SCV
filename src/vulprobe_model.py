@@ -144,7 +144,7 @@ class VulProbeModel(nn.Module):
                 valid_representation = valid_representation.index_select(1, permutation)
                 token_attention = token_attention.index_select(1, permutation)
             valid_logits = self._score(valid_representation)
-        chunk_logits = hidden.new_full((batch * chunks, self.num_labels), -1e4)
+        chunk_logits = valid_logits.new_full((batch * chunks, self.num_labels), -1e4)
         chunk_logits[valid] = valid_logits
         chunk_logits = chunk_logits.view(batch, chunks, self.num_labels)
         contract_logits = masked_logmeanexp(chunk_logits, chunk_mask, self.tau, dim=1)

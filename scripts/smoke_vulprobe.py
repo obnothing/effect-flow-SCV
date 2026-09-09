@@ -56,6 +56,13 @@ def main():
         model = VulProbeModel(root / "bert", "b2_label_probe", num_labels=6, num_heads=4, encoder_chunk_batch=2)
         model.set_training_stage("frozen")
         output = model(batch["input_ids"], batch["attention_mask"], batch["content_mask"], batch["chunk_mask"])
+        with torch.autocast(device_type="cpu", dtype=torch.bfloat16):
+            mixed_output = model(
+                batch["input_ids"], batch["attention_mask"],
+                batch["content_mask"], batch["chunk_mask"],
+            )
+        assert mixed_output["logits"].shape == (2, 6)
+        assert torch.isfinite(mixed_output["logits"]).all()
         valid_content = batch["content_mask"].reshape(-1, 8)[output["valid_chunk_flat_mask"]]
         nonempty = valid_content.any(dim=1)
         assert torch.all(
@@ -104,6 +111,7 @@ def main():
             "frozen_backbone_has_gradient": False,
             "joint_trainable_encoder_layers": trainable_layers,
             "checkpoint_roundtrip_exact": True,
+            "mixed_precision_forward": True,
             "test_checked": False,
         }
         output_path = ROOT / args.output

@@ -8,11 +8,11 @@
 #SBATCH --output=logs/vulprobe_v1_smoke_%j.out
 #SBATCH --error=logs/vulprobe_v1_smoke_%j.err
 
-set -euo pipefail
+set -eo pipefail
 cd "${SLURM_SUBMIT_DIR:?Submit from the project root}"
 source "${HOME}/.bashrc"
 conda activate correlascan_a40
+set -u
 mkdir -p logs
 bash scripts/run_vulprobe_v1.sh audit
 bash scripts/run_vulprobe_v1.sh smoke
-
