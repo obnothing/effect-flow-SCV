@@ -61,7 +61,7 @@ def main():
     if config.get("allow_test"): raise ValueError("test is locked")
     tokenizer=EVMOpcodeTokenizer.from_vocab_file(resolve(config["vocab_path"])); valid=LightLabelDataset(resolve(config["cache_dir"])/"valid_max8192.pt",runtime_max_len=config["max_len"])
     loader=DataLoader(valid,batch_size=args.batch_size,shuffle=False,num_workers=0,collate_fn=partial(collate_light_label,pad_id=tokenizer.pad_token_id))
-    checkpoint=torch.load(resolve("results/light_label/b2_label_attention/full/best.pt"),map_location="cpu")
+    checkpoint=torch.load(resolve("checkpoints/light_label/b2_label_attention/full/best.pt"),map_location="cpu")
     device=torch.device("cuda" if torch.cuda.is_available() else "cpu"); model=LabelGuidedOpcodeNet("b2_label_attention",len(tokenizer),tokenizer.pad_token_id,config["embedding_dim"],config["gru_hidden_size"],config["num_labels"],True).to(device); model.load_state_dict(checkpoint["model_state_dict"],strict=True); model.eval()
     names=config["label_names"]; rng=random.Random(int(config["seed"])); rows=[]; labels=[]
     with torch.no_grad():
@@ -95,7 +95,7 @@ def main():
     if nn_mean<0.75 and cluster_gain>1.15: decision="LOCAL"
     elif top10_mean>0.25 and ess_ratio<0.25 and abs(nn_mean-1.0)<0.25 and abs(cluster_gain-1.0)<0.25: decision="SPARSE"
     else: decision="AMBIGUOUS"
-    report={"dataset":"DIVE_main6_opcode_process01","validation_only":True,"test_checked":False,"b2_checkpoint":str(resolve("results/light_label/b2_label_attention/full/best.pt")),"overall_positive_summary":{"top10_mass":top10_mean,"nn_ratio":nn_mean,"cluster_gain_16":cluster_gain,"ess_ratio":ess_ratio},"label_rows":primary,"bootstrap_positive_rows":per_label,"topology_decision":decision,"decision_rule":"LOCAL requires mean Top-10 NN ratio < 0.75 and ClusterGain16 > 1.15; SPARSE requires concentrated Top-10/ESS with random-like spatial ratios; otherwise AMBIGUOUS.","warning":"Attention topology is a model-mechanism diagnostic, not ground-truth evidence localization."}
+    report={"dataset":"DIVE_main6_opcode_process01","validation_only":True,"test_checked":False,"b2_checkpoint":str(resolve("checkpoints/light_label/b2_label_attention/full/best.pt")),"overall_positive_summary":{"top10_mass":top10_mean,"nn_ratio":nn_mean,"cluster_gain_16":cluster_gain,"ess_ratio":ess_ratio},"label_rows":primary,"bootstrap_positive_rows":per_label,"topology_decision":decision,"decision_rule":"LOCAL requires mean Top-10 NN ratio < 0.75 and ClusterGain16 > 1.15; SPARSE requires concentrated Top-10/ESS with random-like spatial ratios; otherwise AMBIGUOUS.","warning":"Attention topology is a model-mechanism diagnostic, not ground-truth evidence localization."}
     root=resolve("results/light_label/topology"); root.mkdir(parents=True,exist_ok=True); (root/"topology_metrics.json").write_text(json.dumps(report,indent=2)+"\n",encoding="utf-8")
     report_dir=resolve("reports/light_label_model/topology"); report_dir.mkdir(parents=True,exist_ok=True); lines=["# B2 Attention Topology Audit","",f"Dataset: `DIVE_main6_opcode_process01`.","Validation only; test remains locked.","",f"Overall positive Top-10 mass: {top10_mean:.6f}",f"Overall positive ESS ratio: {ess_ratio:.6f}",f"Overall positive NN ratio: {nn_mean:.6f}",f"Overall positive ClusterGain16: {cluster_gain:.6f}","",f"ATTENTION TOPOLOGY VERDICT: **{decision}**", "", "All spatial ratios use same-length random positions as the baseline."]
     (report_dir/"b2_attention_topology_audit.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
