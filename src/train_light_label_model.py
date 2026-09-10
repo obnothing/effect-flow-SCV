@@ -116,6 +116,16 @@ def train(config, smoke=False):
     train_data=build_dataset(config,"train",smoke); valid_data=build_dataset(config,"valid",smoke)
     train_loader=make_loader(train_data,config,tokenizer.pad_token_id,True); valid_loader=make_loader(valid_data,config,tokenizer.pad_token_id,False)
     model=LabelGuidedOpcodeNet(config["variant"],len(tokenizer),tokenizer.pad_token_id,config["embedding_dim"],config["gru_hidden_size"],config["num_labels"],config["bidirectional"],config.get("local_radius",8)).to(device)
+    init_checkpoint = config.get("init_checkpoint")
+    init_info = {"enabled": False, "path": None, "missing_keys": [], "unexpected_keys": []}
+    if init_checkpoint:
+        init_path = resolve(init_checkpoint)
+        if not init_path.exists():
+            raise FileNotFoundError(f"init checkpoint not found: {init_path}")
+        init_payload = torch.load(init_path, map_location="cpu")
+        loaded = model.load_state_dict(init_payload["model_state_dict"], strict=False)
+        init_info = {"enabled": True, "path": str(init_path), "missing_keys": list(loaded.missing_keys), "unexpected_keys": list(loaded.unexpected_keys)}
+        print(json.dumps({"init_checkpoint": str(init_path), "missing_keys": list(loaded.missing_keys), "unexpected_keys": list(loaded.unexpected_keys)}, indent=2), flush=True)
     optimizer=torch.optim.AdamW(model.parameters(),lr=float(config["learning_rate"]),weight_decay=float(config["weight_decay"]))
     scaler=torch.amp.GradScaler("cuda",enabled=device.type=="cuda" and bool(config["amp"]))
     weight=pos_weight(train_data,config).to(device) if config.get("weighted_bce") else None
@@ -158,15 +168,18 @@ def train(config, smoke=False):
              "actual_config":{key:config[key] for key in ("embedding_dim","gru_hidden_size","max_len","batch_size","gradient_accumulation_steps")},
              "metrics":final_metrics,"best_epoch":best_payload["epoch"],"total_params":sum(p.numel() for p in model.parameters()),"trainable_params":sum(p.numel() for p in model.parameters() if p.requires_grad),
              "peak_memory_mb":max(x["peak_memory_mb"] for x in history),"mean_epoch_seconds":float(np.mean([x["epoch_seconds"] for x in history])),
-             "inference_seconds_per_batch":final["inference_seconds_per_batch"],"history":history,"test_checked":False}
+             "inference_seconds_per_batch":final["inference_seconds_per_batch"],"history":history,"init_checkpoint":init_info,"test_checked":False}
     (result_dir/"metrics.json").write_text(json.dumps(summary,indent=2)+"\n",encoding="utf-8")
     torch.save({"ids":final["ids"],"labels":final["labels"],"logits":final["logits"],"original_lengths":final["original_lengths"],"thresholds":final_metrics["thresholds"],"test_checked":False},result_dir/"valid_predictions.pt")
     return summary
 
 
 def main():
-    parser=argparse.ArgumentParser(); parser.add_argument("--config",required=True); parser.add_argument("--smoke",action="store_true"); args=parser.parse_args()
-    print(json.dumps(train(load_config(args.config),args.smoke),indent=2),flush=True)
+    parser=argparse.ArgumentParser(); parser.add_argument("--config",required=True); parser.add_argument("--smoke",action="store_true"); parser.add_argument("--init-checkpoint",default=None); args=parser.parse_args()
+    config=load_config(args.config)
+    if args.init_checkpoint:
+        config["init_checkpoint"]=args.init_checkpoint
+    print(json.dumps(train(config,args.smoke),indent=2),flush=True)
 
 
 if __name__=="__main__": main()
