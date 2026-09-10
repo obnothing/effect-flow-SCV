@@ -32,7 +32,11 @@ def resolve(value):
 def load_config(path):
     config=yaml.safe_load(resolve(path).read_text(encoding="utf-8"))
     base=yaml.safe_load(resolve(config["base_config"]).read_text(encoding="utf-8"))
-    base.update(config); return base
+    base.update(config)
+    resolved = resolve("results/light_label/resolved_runtime.json")
+    if resolved.exists():
+        base.update(json.loads(resolved.read_text(encoding="utf-8")))
+    return base
 
 
 def seed_all(seed):
