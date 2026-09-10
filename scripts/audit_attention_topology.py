@@ -73,7 +73,7 @@ def main():
                     observed={}; random_values={}
                     for k in (5,10,20):
                         top=min(k,length); positions=np.argsort(-distribution)[:top]; observed[k]=summarize_positions(positions,length); random_values[k]=random_summary(length,top,rng,args.random_repeats)
-                        for key,value in observed[k].items():
+                        for key,value in list(observed[k].items()):
                             observed[k][f"random_{key}"]=random_values[k].get(key)
                             if value is not None and random_values[k].get(key) not in (None,0): observed[k][f"ratio_{key}"]=float(value/random_values[k][key])
                         observed[k]["top_mass"]=float(distribution[positions].sum())
