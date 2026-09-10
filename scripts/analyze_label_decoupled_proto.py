@@ -59,7 +59,7 @@ def main():
             records.append({"variant":label,"status":"missing","source":str(path)})
     by_name={x["variant"]:x for x in records}; c0_macro=records[0]["metrics"]["tuned"]["macro_f1"]
     geometry=None; examples=[]
-    c2_checkpoint=root/"c2_b2_prototype"/"full"/"best.pt"
+    c2_checkpoint=resolve(cfg["prototype_checkpoint_dir"])/"full"/"best.pt"
     if c2_checkpoint.exists():
         tokenizer=EVMOpcodeTokenizer.from_vocab_file(resolve(cfg["vocab_path"])); valid=LightLabelDataset(resolve(cfg["cache_dir"])/"valid_max8192.pt",runtime_max_len=cfg["max_len"])
         loader=DataLoader(valid,batch_size=int(cfg["batch_size"]),shuffle=False,num_workers=0,collate_fn=partial(collate_light_label,pad_id=tokenizer.pad_token_id)); payload=torch.load(c2_checkpoint,map_location="cpu")
