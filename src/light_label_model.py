@@ -15,10 +15,11 @@ class LabelGuidedOpcodeNet(nn.Module):
     """
 
     def __init__(self, variant, vocab_size, pad_id, embedding_dim=128,
-                 gru_hidden_size=128, num_labels=6, bidirectional=True):
+                 gru_hidden_size=128, num_labels=6, bidirectional=True, local_radius=8):
         super().__init__()
         self.variant = str(variant)
         self.num_labels = int(num_labels)
+        self.local_radius = int(local_radius)
         self.embedding = nn.Embedding(int(vocab_size), int(embedding_dim), padding_idx=int(pad_id))
         self.encoder = nn.GRU(int(embedding_dim), int(gru_hidden_size), num_layers=1,
                               batch_first=True, bidirectional=bool(bidirectional), dropout=0.0)
@@ -30,13 +31,20 @@ class LabelGuidedOpcodeNet(nn.Module):
             self.shared_query = nn.Parameter(torch.empty(self.output_dim))
             self.classifier = nn.Linear(self.output_dim, self.num_labels)
             nn.init.normal_(self.shared_query, std=0.02)
-        elif self.variant == "b2_label_attention":
+        elif self.variant in {"b2_label_attention", "l1_symmetric_local", "l2_directional_local"}:
             self.attention_projection = nn.Linear(self.output_dim, self.output_dim, bias=False)
             self.label_queries = nn.Parameter(torch.empty(self.num_labels, self.output_dim))
             self.label_scorer = nn.Parameter(torch.empty(self.num_labels, self.output_dim))
             self.label_bias = nn.Parameter(torch.zeros(self.num_labels))
             nn.init.normal_(self.label_queries, std=0.02)
             nn.init.xavier_uniform_(self.label_scorer)
+            if self.variant == "l1_symmetric_local":
+                self.local_neighbor_gate = nn.Parameter(torch.zeros(self.output_dim))
+                self.local_norm = nn.LayerNorm(self.output_dim)
+            elif self.variant == "l2_directional_local":
+                self.local_left_gate = nn.Parameter(torch.zeros(self.output_dim))
+                self.local_right_gate = nn.Parameter(torch.zeros(self.output_dim))
+                self.local_norm = nn.LayerNorm(self.output_dim)
         else:
             raise ValueError(f"unknown variant: {variant}")
 
@@ -60,6 +68,8 @@ class LabelGuidedOpcodeNet(nn.Module):
             logits = self.classifier(representation)
             attention = mask.to(hidden.dtype) / mask.sum(1, keepdim=True).clamp_min(1)
             return {"logits": logits, "attention": attention.unsqueeze(1), "representations": representation.unsqueeze(1).expand(-1, self.num_labels, -1)}
+        if self.variant in {"l1_symmetric_local", "l2_directional_local"}:
+            hidden = self._add_local_context(hidden, mask)
         projected = self.attention_projection(hidden)
         if self.variant == "b1_shared_attention":
             scores = torch.einsum("bth,h->bt", projected, self.shared_query) / math.sqrt(self.output_dim)
@@ -75,3 +85,23 @@ class LabelGuidedOpcodeNet(nn.Module):
         representation = torch.einsum("blt,bth->blh", attention, hidden)
         logits = torch.einsum("blh,lh->bl", representation, self.label_scorer) + self.label_bias
         return {"logits": logits, "attention": attention, "representations": representation}
+
+    def _add_local_context(self, hidden, mask):
+        """Add masked left/right context with a fixed radius and zero-init gates."""
+        values = hidden * mask.unsqueeze(-1).to(hidden.dtype)
+        counts = mask.to(hidden.dtype)
+        prefix_values = torch.cat([torch.zeros_like(values[:, :1]), values.cumsum(dim=1)], dim=1)
+        prefix_counts = torch.cat([torch.zeros_like(counts[:, :1]), counts.cumsum(dim=1)], dim=1)
+        positions = torch.arange(hidden.shape[1], device=hidden.device)
+        left_index = (positions - self.local_radius).clamp_min(0)
+        right_index = (positions + self.local_radius + 1).clamp_max(hidden.shape[1])
+        left_sum = prefix_values.index_select(1, positions) - prefix_values.index_select(1, left_index)
+        left_count = prefix_counts.index_select(1, positions) - prefix_counts.index_select(1, left_index)
+        right_sum = prefix_values.index_select(1, right_index) - prefix_values.index_select(1, positions + 1)
+        right_count = prefix_counts.index_select(1, right_index) - prefix_counts.index_select(1, positions + 1)
+        left = left_sum / left_count.clamp_min(1).unsqueeze(-1)
+        right = right_sum / right_count.clamp_min(1).unsqueeze(-1)
+        if self.variant == "l1_symmetric_local":
+            context = 0.5 * (left + right)
+            return hidden + self.local_neighbor_gate.view(1, 1, -1) * self.local_norm(context)
+        return hidden + self.local_left_gate.view(1, 1, -1) * self.local_norm(left) + self.local_right_gate.view(1, 1, -1) * self.local_norm(right)

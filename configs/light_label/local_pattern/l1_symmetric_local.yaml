@@ -1,0 +1,8 @@
+base_config: configs/light_label/b2_label_attention.yaml
+variant: l1_symmetric_local
+local_radius: 8
+result_dir: results/light_label/local_pattern/l1_symmetric_local
+checkpoint_dir: checkpoints/light_label/local_pattern/l1_symmetric_local
+report_dir: reports/light_label_model/local_pattern
+allow_test: false
+

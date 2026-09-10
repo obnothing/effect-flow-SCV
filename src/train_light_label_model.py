@@ -30,6 +30,10 @@ def resolve(value):
 
 def load_config(path):
     config = yaml.safe_load(resolve(path).read_text(encoding="utf-8"))
+    if config.get("base_config"):
+        base = yaml.safe_load(resolve(config["base_config"]).read_text(encoding="utf-8"))
+        base.update(config)
+        config = base
     resolved = resolve("results/light_label/resolved_runtime.json")
     if resolved.exists():
         config.update(json.loads(resolved.read_text(encoding="utf-8")))
@@ -111,7 +115,7 @@ def train(config, smoke=False):
     tokenizer=EVMOpcodeTokenizer.from_vocab_file(resolve(config["vocab_path"]))
     train_data=build_dataset(config,"train",smoke); valid_data=build_dataset(config,"valid",smoke)
     train_loader=make_loader(train_data,config,tokenizer.pad_token_id,True); valid_loader=make_loader(valid_data,config,tokenizer.pad_token_id,False)
-    model=LabelGuidedOpcodeNet(config["variant"],len(tokenizer),tokenizer.pad_token_id,config["embedding_dim"],config["gru_hidden_size"],config["num_labels"],config["bidirectional"]).to(device)
+    model=LabelGuidedOpcodeNet(config["variant"],len(tokenizer),tokenizer.pad_token_id,config["embedding_dim"],config["gru_hidden_size"],config["num_labels"],config["bidirectional"],config.get("local_radius",8)).to(device)
     optimizer=torch.optim.AdamW(model.parameters(),lr=float(config["learning_rate"]),weight_decay=float(config["weight_decay"]))
     scaler=torch.amp.GradScaler("cuda",enabled=device.type=="cuda" and bool(config["amp"]))
     weight=pos_weight(train_data,config).to(device) if config.get("weighted_bce") else None
