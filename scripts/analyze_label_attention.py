@@ -48,6 +48,7 @@ def main():
         (root / "attention_diagnostics.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         print(json.dumps(report, indent=2)); return
     tokenizer = EVMOpcodeTokenizer.from_vocab_file(resolve(config["vocab_path"]))
+    mask_token_id = tokenizer.vocab[tokenizer.mask_token]
     valid = LightLabelDataset(resolve(config["cache_dir"]) / "valid_max8192.pt", runtime_max_len=config["max_len"])
     loader = DataLoader(valid, batch_size=int(config["batch_size"]), shuffle=False, num_workers=0, collate_fn=partial(collate_light_label, pad_id=tokenizer.pad_token_id))
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -70,7 +71,7 @@ def main():
                 top_ids=ids.clone(); random_ids=ids.clone()
                 for row in range(ids.shape[0]):
                     positions=torch.nonzero(mask[row],as_tuple=False).flatten().tolist(); selected=attention[row,label].masked_fill(~mask[row].cpu(),-1).topk(min(args.top_k,len(positions))).indices.tolist(); random_positions=rng.sample(positions,len(selected))
-                    top_ids[row,selected]=tokenizer.mask_token_id; random_ids[row,random_positions]=tokenizer.mask_token_id
+                    top_ids[row,selected]=mask_token_id; random_ids[row,random_positions]=mask_token_id
                 changed_top.append(model(top_ids,seq_lengths,mask)["logits"][:,label]); changed_random.append(model(random_ids,seq_lengths,mask)["logits"][:,label])
             labels.append(raw["labels"].cpu()); normal.append(out["logits"].float().cpu()); shuffled.append(shuffled_out["logits"].float().cpu()); top_removed.append(torch.stack(changed_top,1).float().cpu()); random_removed.append(torch.stack(changed_random,1).float().cpu()); lengths.extend(raw["original_lengths"].tolist()); contracts += ids.shape[0]
     labels=torch.cat(labels); normal=torch.cat(normal); shuffled=torch.cat(shuffled); top_removed=torch.cat(top_removed); random_removed=torch.cat(random_removed); length_values=np.asarray(lengths)
