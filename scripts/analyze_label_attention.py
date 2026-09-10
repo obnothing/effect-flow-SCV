@@ -65,7 +65,9 @@ def main():
             for left in range(l):
                 for right in range(l):
                     middle=0.5*(attention[:,left]+attention[:,right]); left_part=attention[:,left]; right_part=attention[:,right]
-                    js_sum[left,right] += 0.5*((left_part*(left_part.clamp_min(1e-12).log()-middle.clamp_min(1e-12).log())).sum(1)+(right_part*(right_part.clamp_min(1e-12).log()-middle.clamp_min(1e-12).log())).sum()).sum()
+                    left_kl=(left_part*(left_part.clamp_min(1e-12).log()-middle.clamp_min(1e-12).log())).sum(1)
+                    right_kl=(right_part*(right_part.clamp_min(1e-12).log()-middle.clamp_min(1e-12).log())).sum(1)
+                    js_sum[left,right] += 0.5*(left_kl+right_kl).sum()
             changed_top=[]; changed_random=[]
             for label in range(l):
                 top_ids=ids.clone(); random_ids=ids.clone()
