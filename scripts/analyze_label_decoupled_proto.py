@@ -38,13 +38,25 @@ def main():
     if cfg.get("allow_test"): raise ValueError("test is locked")
     root=resolve("results/light_label/prototype"); report_root=resolve(cfg["prototype_report_dir"]); report_root.mkdir(parents=True,exist_ok=True)
     c0_path=resolve("results/light_label/b2_label_attention/full/metrics.json")
-    c0=json.loads(c0_path.read_text(encoding="utf-8"))
-    records=[{"variant":"C0 B2","source":"existing B2","metrics":c0["metrics"],"trainable_params":c0["trainable_params"],"total_params":c0["total_params"],"peak_memory_mb":c0["peak_memory_mb"],"mean_epoch_seconds":c0["mean_epoch_seconds"],"checkpoint_sha256":None}]
+    if c0_path.exists():
+        c0=json.loads(c0_path.read_text(encoding="utf-8"))
+        c0_record={"variant":"C0 B2","source":"existing B2","metrics":c0["metrics"],"trainable_params":c0["trainable_params"],"total_params":c0["total_params"],"peak_memory_mb":c0["peak_memory_mb"],"mean_epoch_seconds":c0["mean_epoch_seconds"],"checkpoint_sha256":None}
+    else:
+        comparison_path=resolve("results/light_label/full_comparison.json")
+        if not comparison_path.exists():
+            raise FileNotFoundError("C0 B2 metrics are missing. Copy results/light_label/full_comparison.json or train B2 first.")
+        comparison=json.loads(comparison_path.read_text(encoding="utf-8"))
+        c0_value=next((x for x in comparison.get("records",[]) if x.get("variant")=="b2_label_attention"),None)
+        if c0_value is None: raise FileNotFoundError("Could not find b2_label_attention in full_comparison.json")
+        c0_record={"variant":"C0 B2","source":str(comparison_path),"metrics":{"fixed":c0_value["fixed"],"tuned":c0_value["tuned"],"detection_f1":c0_value["detection_f1"]},"trainable_params":c0_value["params"],"total_params":c0_value["params"],"peak_memory_mb":c0_value.get("memory"),"mean_epoch_seconds":c0_value.get("epoch_seconds"),"checkpoint_sha256":None}
+    records=[c0_record]
     for name,label in (("c1_b2_pairwise","C1 + Pairwise SupCon"),("c2_b2_prototype","C2 + Label-Decoupled Prototype")):
         path=root/name/"full"/"metrics.json"
         if path.exists():
             value=json.loads(path.read_text(encoding="utf-8")); checkpoint=root/name/"full"/"best.pt"
             records.append({"variant":label,"source":str(path),"metrics":value["metrics"],"trainable_params":value["trainable_params"],"total_params":value["total_params"],"peak_memory_mb":value["peak_memory_mb"],"mean_epoch_seconds":value["mean_epoch_seconds"],"checkpoint_sha256":sha256(checkpoint) if checkpoint.exists() else None})
+        else:
+            records.append({"variant":label,"status":"missing","source":str(path)})
     by_name={x["variant"]:x for x in records}; c0_macro=records[0]["metrics"]["tuned"]["macro_f1"]
     geometry=None; examples=[]
     c2_checkpoint=root/"c2_b2_prototype"/"full"/"best.pt"
@@ -67,8 +79,8 @@ def main():
                 for label in range(cfg["num_labels"]): row["prototype_similarity"][cfg["label_names"][label]]={"positive":float(normalized[index,label]@proto.positive_prototypes[label]),"negative":float(normalized[index,label]@proto.negative_prototypes[label])}
                 examples.append(row)
                 if len(examples)>=3: break
-    verdict="PENDING"; recommendation="Run C1 and C2 full experiments."
-    if "C2 + Label-Decoupled Prototype" in by_name:
+    verdict="INCOMPLETE"; recommendation="Run the missing C1 and C2 full experiments."
+    if by_name.get("C2 + Label-Decoupled Prototype",{}).get("status") != "missing" and by_name.get("C1 + Pairwise SupCon",{}).get("status") != "missing":
         c2_macro=by_name["C2 + Label-Decoupled Prototype"]["metrics"]["tuned"]["macro_f1"]; c1_macro=by_name.get("C1 + Pairwise SupCon",{"metrics":{"tuned":{"macro_f1":-1}}})["metrics"]["tuned"]["macro_f1"]
         if c2_macro>c0_macro and c2_macro>c1_macro: verdict="SUPPORTED"; recommendation="A. Keep prototype mechanism as a second contribution"
         elif c2_macro>c0_macro: verdict="PARTIALLY SUPPORTED"; recommendation="B. Keep as an auxiliary experiment, not a core contribution"
@@ -76,7 +88,7 @@ def main():
     report={"dataset":"DIVE_main6_opcode_process01","validation_only":True,"test_checked":False,"records":records,"geometry":geometry,"multi_label_examples":examples,"hypothesis":"Label-decoupled prototype contrast provides useful representation-level supervision beyond BCE.","hypothesis_verdict":verdict,"recommendation":recommendation,"prototype_inference_overhead":"zero; prototype branch is training-only"}
     (root/"prototype_diagnosis.json").write_text(json.dumps(report,indent=2)+"\n",encoding="utf-8")
     lines=["# Label-Decoupled Prototype Contrast","","Dataset: `DIVE_main6_opcode_process01`.","Validation only; seed 42; test remains locked.","","## Main Results","","| Variant | Tuned Macro-F1 | Micro-F1 | Detection-F1 | Trainable params |", "|---|---:|---:|---:|---:|"]
-    lines += [f"| {x['variant']} | {x['metrics']['tuned']['macro_f1']:.6f} | {x['metrics']['tuned']['micro_f1']:.6f} | {x['metrics']['detection_f1']:.6f} | {x['trainable_params']} |" for x in records]
+    lines += [f"| {x['variant']} | {x['metrics']['tuned']['macro_f1']:.6f} | {x['metrics']['tuned']['micro_f1']:.6f} | {x['metrics']['detection_f1']:.6f} | {x['trainable_params']} |" if x.get("status") != "missing" else f"| {x['variant']} | missing | missing | missing | missing |" for x in records]
     lines += ["", "## Interpretation", "",f"Hypothesis verdict: **{verdict}**.",f"Recommendation: **{recommendation}**.","", "Prototype vectors are EMA buffers and are used only during training. They are not vulnerability ground truth and add no inference parameters."]
     (report_root/"final_report.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
     print(json.dumps({"output":str(root/"prototype_diagnosis.json"),"verdict":verdict,"test_checked":False},indent=2))
