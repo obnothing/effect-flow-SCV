@@ -1,0 +1,11 @@
+base_config: configs/light_label/b2_label_attention.yaml
+contrast_mode: prototype
+prototype_lambda: 0.05
+pairwise_lambda: 0.0
+prototype_temperature: 0.1
+prototype_momentum: 0.95
+prototype_result_dir: results/light_label/prototype/c2_b2_prototype
+prototype_checkpoint_dir: checkpoints/light_label/prototype/c2_b2_prototype
+prototype_report_dir: reports/light_label_model/prototype
+allow_test: false
+
