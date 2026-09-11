@@ -197,8 +197,28 @@ def main():
         try:
             if not (resolve(config["cache_dir"]) / f"train_max{config['max_len']}.pt").exists():
                 record_failure({"trial_id":trial_id,"failure_type":"CACHE_MISSING","max_len":config["max_len"]}); raise optuna.TrialPruned()
-            smoke_check(config, device)
-            result, checkpoint, history=train_trial(config,trial,study_name,trial.number,device,args.epochs)
+            target_effective_batch = int(config["batch_size"]) * int(config["gradient_accumulation_steps"])
+            candidate_batches = []
+            candidate = int(config["batch_size"])
+            while candidate >= 1:
+                candidate_batches.append(candidate)
+                if candidate == 1:
+                    break
+                candidate = max(1, candidate // 2)
+            for physical_batch in candidate_batches:
+                trial_config = dict(config)
+                trial_config["batch_size"] = physical_batch
+                trial_config["gradient_accumulation_steps"] = max(1, math.ceil(target_effective_batch / physical_batch))
+                try:
+                    smoke_check(trial_config, device)
+                    result, checkpoint, history = train_trial(trial_config, trial, study_name, trial.number, device, args.epochs)
+                    config = trial_config
+                    break
+                except torch.cuda.OutOfMemoryError as error:
+                    record_failure({"trial_id": trial_id, "failure_type": "OOM_RESOURCE_LIMIT", "physical_batch_size": physical_batch, "error": str(error)})
+                    torch.cuda.empty_cache()
+            else:
+                raise RuntimeError("all profiled batch sizes exhausted")
             transition("EVALUATE", current_trial_id=trial_id); transition("RECORD", current_trial_id=trial_id); update_best({"trial_id":trial_id,"variant":args.architecture,"metrics":result,"config":config,"checkpoint":str(checkpoint)})
             transition("COMPARE", current_trial_id=None, last_completed_trial_id=trial_id, pid=None); return result["tuned_macro_f1"]
         except optuna.TrialPruned:
