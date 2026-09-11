@@ -160,7 +160,11 @@ def train(config, smoke=False):
         dictionary_info={"clusters":cluster_count,"samples":len(matrix),"cluster_sizes":np.bincount(clustering.labels_,minlength=cluster_count).tolist()}
         print(json.dumps({"tdvp_dictionary":dictionary_info},indent=2),flush=True)
     optimizer=torch.optim.AdamW(model.parameters(),lr=float(config["learning_rate"]),weight_decay=float(config["weight_decay"]))
-    scaler=torch.amp.GradScaler("cuda",enabled=device.type=="cuda" and bool(config["amp"]))
+    scaler_enabled = device.type == "cuda" and bool(config["amp"])
+    if hasattr(torch, "amp") and hasattr(torch.amp, "GradScaler"):
+        scaler = torch.amp.GradScaler("cuda", enabled=scaler_enabled)
+    else:
+        scaler = torch.cuda.amp.GradScaler(enabled=scaler_enabled)
     weight=pos_weight(train_data,config).to(device) if config.get("weighted_bce") else None
     epochs=2 if smoke else int(config["epochs"]); accumulation=int(config["gradient_accumulation_steps"])
     run_name="smoke" if smoke else "full"; result_dir=resolve(config["result_dir"])/run_name; checkpoint_dir=resolve(config["checkpoint_dir"])/run_name
