@@ -4,6 +4,8 @@ import argparse
 import json
 from pathlib import Path
 
+import torch
+
 ROOT=Path(__file__).resolve().parents[1]
 
 
@@ -17,8 +19,13 @@ def main():
     records=[]
     for name,path in paths.items():
         target=resolve(path)
-        if not target.exists(): continue
-        value=json.loads(target.read_text(encoding="utf-8")); records.append({"name":name,"metrics":value["metrics"],"params":value["total_params"],"memory":value["peak_memory_mb"],"epoch_seconds":value["mean_epoch_seconds"]})
+        if target.exists():
+            value=json.loads(target.read_text(encoding="utf-8")); records.append({"name":name,"metrics":value["metrics"],"params":value["total_params"],"memory":value["peak_memory_mb"],"epoch_seconds":value["mean_epoch_seconds"]})
+            continue
+        checkpoint_path=resolve(path.replace("results/light_label/", "checkpoints/light_label/")).with_name("best.pt")
+        if checkpoint_path.exists():
+            payload=torch.load(checkpoint_path,map_location="cpu")
+            records.append({"name":name,"metrics":payload["metrics"],"params":sum(value.numel() for value in payload["model_state_dict"].values()),"memory":None,"epoch_seconds":None,"source_checkpoint":str(checkpoint_path)})
     if not records: raise FileNotFoundError("No local-pattern metrics found")
     base=records[0]["metrics"]["tuned"]["macro_f1"]
     for row in records: row["delta_vs_l0"]=row["metrics"]["tuned"]["macro_f1"]-base
