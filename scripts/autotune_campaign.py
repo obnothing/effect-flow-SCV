@@ -191,6 +191,7 @@ def main():
     def objective(trial):
         if read_state().get("state") == "COMPARE": transition("PROPOSE", current_trial_id=f"{study_name}:{trial.number}")
         elif read_state().get("state") == "INIT": transition("PROPOSE", current_trial_id=f"{study_name}:{trial.number}")
+        elif read_state().get("state") == "PROPOSE": pass
         else: raise RuntimeError(f"unexpected AutoTune state: {read_state().get('state')}")
         trial_id=f"{study_name}:{trial.number}"; config=sample_config(trial,args.architecture,base); config.update({"data_dir":base["data_dir"],"vocab_path":base["vocab_path"],"cache_dir":base["cache_dir"]})
         transition("SMOKE", current_trial_id=trial_id, current_architecture=args.architecture, pid=os.getpid()); transition("SUBMIT", current_trial_id=trial_id, pid=os.getpid()); transition("RUNNING", current_trial_id=trial_id, pid=os.getpid())
