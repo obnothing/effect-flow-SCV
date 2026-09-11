@@ -1,0 +1,9 @@
+base_config: configs/light_label/b2_label_attention.yaml
+variant: b2_label_attention
+max_len: 12288
+runtime_path: results/light_label/length_test/runtime_12288.json
+result_dir: results/light_label/length_test/len12288
+checkpoint_dir: checkpoints/light_label/length_test/len12288
+report_dir: reports/light_label_model/length_test
+allow_test: false
+

@@ -23,12 +23,21 @@ def resolve(value):
     path=Path(value); return path if path.is_absolute() else ROOT/path
 
 
+def load_config(path):
+    config=yaml.safe_load(resolve(path).read_text(encoding="utf-8"))
+    if config.get("base_config"):
+        base=yaml.safe_load(resolve(config["base_config"]).read_text(encoding="utf-8"))
+        base.update(config)
+        config=base
+    return config
+
+
 def main():
-    parser=argparse.ArgumentParser(); parser.add_argument("--config",default="configs/light_label/b2_label_attention.yaml"); args=parser.parse_args()
-    config=yaml.safe_load(resolve(args.config).read_text(encoding="utf-8")); tokenizer=EVMOpcodeTokenizer.from_vocab_file(resolve(config["vocab_path"]))
-    cache=resolve(config["cache_dir"])/"train_max8192.pt"; payload=torch.load(cache,map_location="cpu")
+    parser=argparse.ArgumentParser(); parser.add_argument("--config",default="configs/light_label/b2_label_attention.yaml"); parser.add_argument("--output",default=None); args=parser.parse_args()
+    config=load_config(args.config); tokenizer=EVMOpcodeTokenizer.from_vocab_file(resolve(config["vocab_path"]))
+    max_len=int(config["max_len"]); cache=resolve(config["cache_dir"])/f"train_max{max_len}.pt"; payload=torch.load(cache,map_location="cpu")
     order=torch.argsort(payload["original_lengths"],descending=True).tolist()
-    candidates=[(64,8192,128),(32,8192,128),(16,8192,128),(8,8192,128),(4,8192,128),(2,8192,128),(2,4096,128),(2,4096,96)]
+    candidates=[(64,max_len,128),(32,max_len,128),(16,max_len,128),(8,max_len,128),(4,max_len,128),(2,max_len,128),(2,max_len,96)]
     device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if device.type!="cuda": raise RuntimeError("CUDA PyTorch environment required; use the learnDL310 environment")
     attempts=[]; selected=None
@@ -52,7 +61,7 @@ def main():
             torch.cuda.empty_cache()
     if selected is None: raise RuntimeError(f"all runtime candidates failed: {attempts}")
     selected["gradient_accumulation_steps"]=int(config["gradient_accumulation_steps"])
-    output=resolve("results/light_label/resolved_runtime.json"); output.parent.mkdir(parents=True,exist_ok=True)
+    output=resolve(args.output or config.get("runtime_path", "results/light_label/resolved_runtime.json")); output.parent.mkdir(parents=True,exist_ok=True)
     output.write_text(json.dumps({**selected,"attempts":attempts,"gpu":torch.cuda.get_device_name(0),"vram_gib":torch.cuda.get_device_properties(0).total_memory/2**30,"test_checked":False},indent=2)+"\n",encoding="utf-8")
     print(output.read_text(encoding="utf-8"))
 

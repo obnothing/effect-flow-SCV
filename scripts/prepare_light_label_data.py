@@ -18,12 +18,21 @@ def resolve(value):
     return path if path.is_absolute() else ROOT / path
 
 
+def load_config(path):
+    config = yaml.safe_load(resolve(path).read_text(encoding="utf-8"))
+    if config.get("base_config"):
+        base = yaml.safe_load(resolve(config["base_config"]).read_text(encoding="utf-8"))
+        base.update(config)
+        config = base
+    return config
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="configs/light_label/b0_mean.yaml")
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
-    config = yaml.safe_load(resolve(args.config).read_text(encoding="utf-8"))
+    config = load_config(args.config)
     if config.get("allow_test"):
         raise ValueError("test cache is forbidden")
     output_dir = resolve(config["cache_dir"])
@@ -43,9 +52,8 @@ def main():
             "truncated": int((payload["original_lengths"] > config["max_len"]).sum()), "path": str(output),
         }
         print(f"[{split}] samples={len(payload['ids'])} tokens={payload['token_ids'].numel()} truncated={summary['splits'][split]['truncated']}", flush=True)
-    (output_dir / "manifest.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    (output_dir / f"manifest_max{config['max_len']}.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
     main()
-

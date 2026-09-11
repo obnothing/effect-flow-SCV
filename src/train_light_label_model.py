@@ -35,7 +35,7 @@ def load_config(path):
         base = yaml.safe_load(resolve(config["base_config"]).read_text(encoding="utf-8"))
         base.update(config)
         config = base
-    resolved = resolve("results/light_label/resolved_runtime.json")
+    resolved = resolve(config.get("runtime_path", "results/light_label/resolved_runtime.json"))
     if resolved.exists():
         config.update(json.loads(resolved.read_text(encoding="utf-8")))
     return config
@@ -47,7 +47,7 @@ def set_seed(seed):
 
 
 def build_dataset(config, split, smoke=False):
-    path = resolve(config["cache_dir"]) / f"{split}_max8192.pt"
+    path = resolve(config["cache_dir"]) / f"{split}_max{config['max_len']}.pt"
     base = LightLabelDataset(path, runtime_max_len=config["max_len"])
     if not smoke:
         return base
