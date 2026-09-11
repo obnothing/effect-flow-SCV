@@ -1,0 +1,10 @@
+study_name: scvd_main6_autotune
+storage: sqlite:///autotune/optuna.db
+sampler: TPESampler
+pruner: HyperbandPruner
+direction: maximize
+dataset: DIVE_main6_opcode_process01
+protocol: validation_only
+seed: 42
+test_checked: false
+

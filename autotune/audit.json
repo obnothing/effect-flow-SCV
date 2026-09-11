@@ -1,0 +1,115 @@
+{
+  "route": "SCVD AutoTune pre-search audit",
+  "dataset": "DIVE_main6_opcode_process01",
+  "protocol": "validation_only",
+  "test_checked": false,
+  "baseline_config": {
+    "route_name": "DIVE Main6 process01 LabelGuidedOpcodeNet",
+    "variant": "b2_label_attention",
+    "data_dir": "data/processed/DIVE_main6_opcode_process01",
+    "vocab_path": "data/processed/ethereum_public_pretrain_19143_unique_runtime/evm_vocab.json",
+    "cache_dir": "data/features/light_label_process01",
+    "checkpoint_dir": "checkpoints/light_label/b2_label_attention",
+    "result_dir": "results/light_label/b2_label_attention",
+    "report_dir": "reports/light_label_model",
+    "label_names": [
+      "Reentrancy",
+      "Access Control",
+      "Arithmetic",
+      "Unchecked Return Values",
+      "DoS",
+      "Time manipulation"
+    ],
+    "num_labels": 6,
+    "embedding_dim": 128,
+    "gru_hidden_size": 128,
+    "gru_layers": 1,
+    "bidirectional": true,
+    "max_len": 8192,
+    "batch_size": 4,
+    "gradient_accumulation_steps": 4,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "epochs": 30,
+    "early_stopping_patience": 5,
+    "seed": 42,
+    "amp": true,
+    "weighted_bce": true,
+    "pos_weight_mode": "sqrt_ratio",
+    "max_pos_weight": 5.0,
+    "thresholds": [
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3,
+      0.35,
+      0.4,
+      0.45,
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9,
+      0.95
+    ],
+    "num_workers": 0,
+    "allow_test": false
+  },
+  "train": {
+    "samples": 16474,
+    "stored_tokens": 78512538,
+    "coverage_at_configured_max_len": 0.7957994415442515,
+    "truncated_at_configured_max_len": 3364,
+    "p95_original_length": 11870.0,
+    "p99_original_length": 15085.700000000004,
+    "label_prevalence": {
+      "Reentrancy": 0.3947432339191437,
+      "Access Control": 0.5678038001060486,
+      "Arithmetic": 0.3529197573661804,
+      "Unchecked Return Values": 0.2078426629304886,
+      "DoS": 0.1351827085018158,
+      "Time manipulation": 0.24693456292152405
+    }
+  },
+  "valid": {
+    "samples": 2032,
+    "stored_tokens": 9829366,
+    "coverage_at_configured_max_len": 0.7829724409448819,
+    "truncated_at_configured_max_len": 441,
+    "p95_original_length": 11761.299999999994,
+    "p99_original_length": 16057.970000000023,
+    "label_prevalence": {
+      "Reentrancy": 0.40846458077430725,
+      "Access Control": 0.5610235929489136,
+      "Arithmetic": 0.3508858382701874,
+      "Unchecked Return Values": 0.21358267962932587,
+      "DoS": 0.12992125749588013,
+      "Time manipulation": 0.27116140723228455
+    }
+  },
+  "baseline_result": {
+    "tuned_macro_f1": 0.7995912389486662,
+    "tuned_micro_f1": 0.8182134975026135,
+    "best_epoch": 30,
+    "params": 415366
+  },
+  "source_hashes": {
+    "train_cache": "a1a0fdbf53971725daf8b4db7a86271b2c692c7d851b7e6c80a76d336a1f500a",
+    "valid_cache": "a42f5b8f1aca344df98f3cd8c6acb0ab5ec24042dfcb6e80f3746315d5474cd6"
+  },
+  "dependencies": {
+    "optuna_available": false,
+    "yaml_available": true
+  },
+  "implementation_findings": [
+    "The current light baseline uses a 1-layer bidirectional GRU in src/light_label_model.py.",
+    "The existing gru_layers config field is not wired into LabelGuidedOpcodeNet and must not be tuned until fixed.",
+    "The search route must keep DIVE Main-6 opcode-only scope and test locked."
+  ]
+}

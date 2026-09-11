@@ -1,0 +1,11 @@
+max_architectures: 15
+max_trials_per_architecture: 30
+max_full_training_runs: 80
+architecture_patience: 5
+minimum_meaningful_gain: 0.002
+trial_fidelity_epochs: 3
+survivor_fidelity_epochs: 10
+full_epochs: 30
+early_stopping_patience: 5
+test_checked: false
+

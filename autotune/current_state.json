@@ -1,0 +1,15 @@
+{
+  "state": "INIT",
+  "dataset": "DIVE_main6_opcode_process01",
+  "protocol": "validation_only",
+  "seed": 42,
+  "current_architecture": null,
+  "current_trial_id": null,
+  "last_completed_trial_id": null,
+  "best_macro_f1": null,
+  "architectures_completed": 0,
+  "full_training_runs": 0,
+  "consecutive_architecture_rounds_without_gain": 0,
+  "test_checked": false
+}
+

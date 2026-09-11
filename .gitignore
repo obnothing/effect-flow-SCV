@@ -16,6 +16,8 @@ logs/
 results/
 models/
 tmp/
+autotune/optuna.db*
+autotune/*.lock
 server_upload/
 third_party_wheels/
 third_party_grammars/
