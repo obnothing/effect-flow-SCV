@@ -1,0 +1,10 @@
+base_config: configs/e5_tdvp/base.yaml
+protocol: grouped_dev
+data_dir: data/splits/e5_grouped_dev/seed42
+cache_dir: data/features/e5_grouped_dev
+runtime_path: results/e5_tdvp/grouped/runtime.json
+result_root: results/e5_tdvp/grouped
+checkpoint_root: checkpoints/e5_tdvp/grouped
+dictionary_root: results/e5_tdvp/dictionaries/grouped
+allow_test: false
+

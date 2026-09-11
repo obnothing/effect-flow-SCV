@@ -1,0 +1,6 @@
+base_config: configs/e5_tdvp/base.yaml
+variant: d0_b2
+result_root: results/e5_tdvp/random
+checkpoint_root: checkpoints/e5_tdvp/random
+allow_test: false
+

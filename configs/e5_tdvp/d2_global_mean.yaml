@@ -1,0 +1,5 @@
+base_config: configs/e5_tdvp/base.yaml
+variant: d2_global_mean
+init_checkpoint: checkpoints/e5_tdvp/random/d0_b2/seed_42/best.pt
+allow_test: false
+

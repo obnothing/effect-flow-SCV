@@ -1,0 +1,4 @@
+base_config: configs/e5_tdvp/grouped_base.yaml
+variant: d4_tdvp
+allow_test: false
+
