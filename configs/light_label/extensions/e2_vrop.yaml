@@ -1,0 +1,9 @@
+base_config: configs/light_label/b2_label_attention.yaml
+variant: e2_vrop
+init_checkpoint: checkpoints/light_label/b2_label_attention/full/best.pt
+propagation_k: 4
+propagation_chunk_size: 512
+result_dir: results/light_label/extensions/e2_vrop
+checkpoint_dir: checkpoints/light_label/extensions/e2_vrop
+report_dir: reports/light_label_model/extensions
+allow_test: false

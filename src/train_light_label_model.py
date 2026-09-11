@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from evm_tokenizer import EVMOpcodeTokenizer  # noqa: E402
 from light_label_data import LengthBucketBatchSampler, LightLabelDataset, collate_light_label  # noqa: E402
 from light_label_model import LabelGuidedOpcodeNet  # noqa: E402
+from light_extensions import LightExtensionNet  # noqa: E402
 from metrics import compute_multilabel_metrics_from_probs, derived_detection_metrics_from_multilabel_probs, select_per_label_thresholds  # noqa: E402
 
 
@@ -95,6 +96,8 @@ def forward_loss(model, batch, device, weight, amp):
     with torch.autocast(device_type=device.type, dtype=torch.float16, enabled=amp):
         output = model(inputs, lengths, mask)
         loss = F.binary_cross_entropy_with_logits(output["logits"], labels, pos_weight=weight)
+        if "consistency_loss" in output:
+            loss = loss + float(getattr(model, "consistency_lambda", 0.01)) * output["consistency_loss"]
     return output, loss, labels
 
 
@@ -115,7 +118,20 @@ def train(config, smoke=False):
     tokenizer=EVMOpcodeTokenizer.from_vocab_file(resolve(config["vocab_path"]))
     train_data=build_dataset(config,"train",smoke); valid_data=build_dataset(config,"valid",smoke)
     train_loader=make_loader(train_data,config,tokenizer.pad_token_id,True); valid_loader=make_loader(valid_data,config,tokenizer.pad_token_id,False)
-    model=LabelGuidedOpcodeNet(config["variant"],len(tokenizer),tokenizer.pad_token_id,config["embedding_dim"],config["gru_hidden_size"],config["num_labels"],config["bidirectional"],config.get("local_radius",8)).to(device)
+    if str(config["variant"]).startswith("e"):
+        model=LightExtensionNet(
+            config["variant"], len(tokenizer), tokenizer.pad_token_id,
+            config["embedding_dim"], config["gru_hidden_size"], config["num_labels"],
+            config["bidirectional"], local_radius=config.get("local_radius", 8),
+            erase_mass=config.get("erase_mass", 0.30), propagation_k=config.get("propagation_k", 4),
+            segment_kappa=config.get("segment_kappa", 1.0), segment_gap=config.get("segment_gap", 2),
+            segment_min_len=config.get("segment_min_len", 2), segment_max=config.get("segment_max", 8),
+            lambda_consistency=config.get("lambda_consistency", 0.01),
+            confounder_clusters=config.get("confounder_clusters", 16),
+            propagation_chunk_size=config.get("propagation_chunk_size", 512),
+        ).to(device)
+    else:
+        model=LabelGuidedOpcodeNet(config["variant"],len(tokenizer),tokenizer.pad_token_id,config["embedding_dim"],config["gru_hidden_size"],config["num_labels"],config["bidirectional"],config.get("local_radius",8)).to(device)
     init_checkpoint = config.get("init_checkpoint")
     init_info = {"enabled": False, "path": None, "missing_keys": [], "unexpected_keys": []}
     if init_checkpoint:
@@ -126,10 +142,27 @@ def train(config, smoke=False):
         loaded = model.load_state_dict(init_payload["model_state_dict"], strict=False)
         init_info = {"enabled": True, "path": str(init_path), "missing_keys": list(loaded.missing_keys), "unexpected_keys": list(loaded.unexpected_keys)}
         print(json.dumps({"init_checkpoint": str(init_path), "missing_keys": list(loaded.missing_keys), "unexpected_keys": list(loaded.unexpected_keys)}, indent=2), flush=True)
+    amp=device.type=="cuda" and bool(config["amp"])
+    dictionary_info=None
+    if str(config["variant"]) == "e5_tdvp":
+        model.eval(); contexts=[]
+        with torch.no_grad():
+            for batch in train_loader:
+                input_ids=batch["input_ids"].to(device, non_blocking=True); mask=batch["mask"].to(device, non_blocking=True)
+                with torch.autocast(device_type="cuda", dtype=torch.float16, enabled=amp):
+                    hidden=model.encode(input_ids,batch["lengths"])
+                values=(hidden.float()*mask.unsqueeze(-1).to(hidden.dtype)).sum(1)/batch["lengths"].to(device).float().clamp_min(1).unsqueeze(-1)
+                contexts.append(values.cpu())
+        from sklearn.cluster import KMeans
+        matrix=torch.cat(contexts).numpy(); cluster_count=min(int(config.get("confounder_clusters",16)),len(matrix))
+        clustering=KMeans(n_clusters=cluster_count,random_state=int(config["seed"]),n_init=10).fit(matrix)
+        model.set_confounder_dictionary(torch.tensor(clustering.cluster_centers_,dtype=torch.float32))
+        dictionary_info={"clusters":cluster_count,"samples":len(matrix),"cluster_sizes":np.bincount(clustering.labels_,minlength=cluster_count).tolist()}
+        print(json.dumps({"tdvp_dictionary":dictionary_info},indent=2),flush=True)
     optimizer=torch.optim.AdamW(model.parameters(),lr=float(config["learning_rate"]),weight_decay=float(config["weight_decay"]))
     scaler=torch.amp.GradScaler("cuda",enabled=device.type=="cuda" and bool(config["amp"]))
     weight=pos_weight(train_data,config).to(device) if config.get("weighted_bce") else None
-    amp=device.type=="cuda" and bool(config["amp"]); epochs=2 if smoke else int(config["epochs"]); accumulation=int(config["gradient_accumulation_steps"])
+    epochs=2 if smoke else int(config["epochs"]); accumulation=int(config["gradient_accumulation_steps"])
     run_name="smoke" if smoke else "full"; result_dir=resolve(config["result_dir"])/run_name; checkpoint_dir=resolve(config["checkpoint_dir"])/run_name
     result_dir.mkdir(parents=True,exist_ok=True); checkpoint_dir.mkdir(parents=True,exist_ok=True)
     print(json.dumps({"device":str(device),"gpu":torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,"vram_gib":torch.cuda.get_device_properties(0).total_memory/2**30 if torch.cuda.is_available() else 0,
@@ -158,7 +191,7 @@ def train(config, smoke=False):
                 "peak_memory_mb":float(torch.cuda.max_memory_allocated(device)/2**20) if device.type=="cuda" else 0,"query_gradient_norms":query_grad}
         history.append(record); score=metrics["tuned"]["macro_f1"]
         print(f"[{config['variant']}] epoch={epoch} train={record['train_loss']:.6f} valid={valid['loss']:.6f} fixed_macro={metrics['fixed']['macro_f1']:.6f} tuned_macro={score:.6f}",flush=True)
-        payload={"model_state_dict":{k:v.detach().cpu() for k,v in model.state_dict().items()},"config":config,"epoch":epoch,"metrics":metrics,"test_checked":False}
+        payload={"model_state_dict":{k:v.detach().cpu() for k,v in model.state_dict().items()},"config":config,"epoch":epoch,"metrics":metrics,"test_checked":False,"dictionary_info":dictionary_info}
         torch.save(payload,checkpoint_dir/"last.pt")
         if score>best: best=score; stale=0; best_payload=payload; torch.save(payload,checkpoint_dir/"best.pt")
         else: stale+=1

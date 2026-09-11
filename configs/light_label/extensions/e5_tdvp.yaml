@@ -1,0 +1,9 @@
+base_config: configs/light_label/b2_label_attention.yaml
+variant: e5_tdvp
+init_checkpoint: checkpoints/light_label/b2_label_attention/full/best.pt
+confounder_clusters: 16
+result_dir: results/light_label/extensions/e5_tdvp
+checkpoint_dir: checkpoints/light_label/extensions/e5_tdvp
+report_dir: reports/light_label_model/extensions
+allow_test: false
+

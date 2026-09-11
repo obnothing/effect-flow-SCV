@@ -1,0 +1,12 @@
+base_config: configs/light_label/b2_label_attention.yaml
+variant: e3_vasm
+init_checkpoint: checkpoints/light_label/b2_label_attention/full/best.pt
+segment_kappa: 1.0
+segment_gap: 2
+segment_min_len: 2
+segment_max: 8
+result_dir: results/light_label/extensions/e3_vasm
+checkpoint_dir: checkpoints/light_label/extensions/e3_vasm
+report_dir: reports/light_label_model/extensions
+allow_test: false
+

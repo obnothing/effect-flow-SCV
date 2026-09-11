@@ -1,0 +1,9 @@
+base_config: configs/light_label/b2_label_attention.yaml
+variant: e1_vcfm
+init_checkpoint: checkpoints/light_label/b2_label_attention/full/best.pt
+erase_mass: 0.30
+result_dir: results/light_label/extensions/e1_vcfm
+checkpoint_dir: checkpoints/light_label/extensions/e1_vcfm
+report_dir: reports/light_label_model/extensions
+allow_test: false
+
