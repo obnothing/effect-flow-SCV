@@ -26,7 +26,9 @@ def main():
     state = read_state()
     if state.get("state") == "STOP":
         raise RuntimeError("AutoTune is already stopped; reset requires an explicit user decision.")
-    state.update({"state": "INIT", "study_name": spec["study_name"], "storage": storage,
+    if state.get("state") == "RUNNING":
+        raise RuntimeError(f"AutoTune trial is marked RUNNING: {state.get('current_trial_id')}; inspect before restarting.")
+    state.update({"study_name": spec["study_name"], "storage": storage,
                   "optuna_trials": len(study.trials), "test_checked": False})
     write_state(state)
     append_ledger({"event": "study_bootstrapped", "study_name": spec["study_name"], "optuna_trials": len(study.trials)})
@@ -34,4 +36,3 @@ def main():
 
 
 if __name__ == "__main__": main()
-

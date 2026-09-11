@@ -4,6 +4,7 @@ import argparse
 import importlib.util
 import json
 import math
+import os
 import random
 import sys
 import time
@@ -116,6 +117,7 @@ def metrics(config, labels, logits):
 
 
 def train_trial(config, trial, study_name, trial_number, device, epochs):
+    set_seed(42 + int(trial_number))
     tokenizer = EVMOpcodeTokenizer.from_vocab_file(resolve(config["vocab_path"]))
     train_data = make_data(config, "train"); valid_data = make_data(config, "valid")
     train_loader = loader(train_data, config, tokenizer, True); valid_loader = loader(valid_data, config, tokenizer, False)
@@ -166,6 +168,17 @@ def train_trial(config, trial, study_name, trial_number, device, epochs):
     return best_metrics, checkpoint, history
 
 
+@torch.no_grad()
+def smoke_check(config, device):
+    tokenizer = EVMOpcodeTokenizer.from_vocab_file(resolve(config["vocab_path"]))
+    data = make_data(config, "train")
+    batch = next(iter(loader(data, config, tokenizer, False)))
+    model = AutoTuneSequenceNet(config, len(tokenizer), tokenizer.pad_token_id).to(device)
+    output = model(batch["input_ids"].to(device), batch["lengths"], batch["mask"].to(device))
+    if output["logits"].shape != (len(batch["ids"]), 6) or not torch.isfinite(output["logits"]).all():
+        raise RuntimeError("smoke forward produced invalid logits")
+
+
 def main():
     parser=argparse.ArgumentParser(); parser.add_argument("--architecture",choices=["a0_mean","a1_shared","a3_vsfs"],required=True); parser.add_argument("--n-trials",type=int,default=3); parser.add_argument("--epochs",type=int,default=3); args=parser.parse_args()
     if importlib.util.find_spec("optuna") is None: raise RuntimeError("Optuna is not installed; install requirements-autotune.txt first")
@@ -180,19 +193,20 @@ def main():
         elif read_state().get("state") == "INIT": transition("PROPOSE", current_trial_id=f"{study_name}:{trial.number}")
         else: raise RuntimeError(f"unexpected AutoTune state: {read_state().get('state')}")
         trial_id=f"{study_name}:{trial.number}"; config=sample_config(trial,args.architecture,base); config.update({"data_dir":base["data_dir"],"vocab_path":base["vocab_path"],"cache_dir":base["cache_dir"]})
-        transition("SMOKE", current_trial_id=trial_id, current_architecture=args.architecture); transition("SUBMIT", current_trial_id=trial_id); transition("RUNNING", current_trial_id=trial_id)
+        transition("SMOKE", current_trial_id=trial_id, current_architecture=args.architecture, pid=os.getpid()); transition("SUBMIT", current_trial_id=trial_id, pid=os.getpid()); transition("RUNNING", current_trial_id=trial_id, pid=os.getpid())
         try:
             if not (resolve(config["cache_dir"]) / f"train_max{config['max_len']}.pt").exists():
                 record_failure({"trial_id":trial_id,"failure_type":"CACHE_MISSING","max_len":config["max_len"]}); raise optuna.TrialPruned()
+            smoke_check(config, device)
             result, checkpoint, history=train_trial(config,trial,study_name,trial.number,device,args.epochs)
             transition("EVALUATE", current_trial_id=trial_id); transition("RECORD", current_trial_id=trial_id); update_best({"trial_id":trial_id,"variant":args.architecture,"metrics":result,"config":config,"checkpoint":str(checkpoint)})
-            transition("COMPARE", current_trial_id=trial_id, last_completed_trial_id=trial_id); return result["tuned_macro_f1"]
+            transition("COMPARE", current_trial_id=None, last_completed_trial_id=trial_id, pid=None); return result["tuned_macro_f1"]
         except optuna.TrialPruned:
-            append_ledger({"event":"trial_pruned","trial_id":trial_id}); transition("COMPARE", current_trial_id=trial_id, last_completed_trial_id=trial_id); raise
+            append_ledger({"event":"trial_pruned","trial_id":trial_id}); transition("COMPARE", current_trial_id=None, last_completed_trial_id=trial_id, pid=None); raise
         except torch.cuda.OutOfMemoryError as error:
-            record_failure({"trial_id":trial_id,"failure_type":"OOM_RESOURCE_LIMIT","error":str(error)}); torch.cuda.empty_cache(); transition("COMPARE", current_trial_id=trial_id); raise optuna.TrialPruned()
+            record_failure({"trial_id":trial_id,"failure_type":"OOM_RESOURCE_LIMIT","error":str(error)}); torch.cuda.empty_cache(); transition("COMPARE", current_trial_id=None, last_completed_trial_id=trial_id, pid=None); raise optuna.TrialPruned()
         except Exception as error:
-            record_failure({"trial_id":trial_id,"failure_type":"TRIAL_ERROR","error":repr(error)}); transition("COMPARE", current_trial_id=trial_id); raise
+            record_failure({"trial_id":trial_id,"failure_type":"TRIAL_ERROR","error":repr(error)}); transition("COMPARE", current_trial_id=None, last_completed_trial_id=trial_id, pid=None); raise
     study.optimize(objective,n_trials=args.n_trials)
     complete = [trial.value for trial in study.trials if trial.state == optuna.trial.TrialState.COMPLETE and trial.value is not None]
     print(json.dumps({"study":study_name,"trials":len(study.trials),"best":max(complete) if complete else None,"test_checked":False},indent=2))
