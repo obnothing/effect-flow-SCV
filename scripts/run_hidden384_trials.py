@@ -177,18 +177,14 @@ def run_trial(name, c, tokenizer, train, valid, provenance, smoke=False):
             with torch.autocast("cuda", dtype=torch.float16, enabled=c["amp"]):
                 out = model(batch["input_ids"].to(device), batch["lengths"], batch["mask"].to(device))
                 loss = F.binary_cross_entropy_with_logits(out["logits"], batch["labels"].to(device), pos_weight=weights)
-            # The bucket sampler shuffles physical batches, including its
-            # partial batch, so accumulate sample sums and normalize at step.
             count = len(batch["labels"])
             if not torch.isfinite(loss): raise RuntimeError("Nonfinite training loss")
-            scaler.scale(loss * count / 256).backward()
+            # Match the historical train_light_label_model protocol exactly:
+            # every physical loss is divided by the fixed accumulation count.
+            scaler.scale(loss / c["gradient_accumulation_steps"]).backward()
             seen += count; total_loss += float(loss.detach()) * count
-            if step % c["gradient_accumulation_steps"] == 0: accumulated = 0
-            accumulated += count
             if (step + 1) % c["gradient_accumulation_steps"] == 0 or step + 1 == len(loader):
                 scaler.unscale_(optimizer)
-                for p in model.parameters():
-                    if p.grad is not None: p.grad.mul_(256 / accumulated)
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
                 scaler.step(optimizer); scaler.update(); optimizer.zero_grad(set_to_none=True)
             if (step + 1) % 50 == 0:
