@@ -37,7 +37,12 @@ def load_config(path):
         config = base
     resolved = resolve(config.get("runtime_path", "results/light_label/resolved_runtime.json"))
     if resolved.exists():
-        config.update(json.loads(resolved.read_text(encoding="utf-8")))
+        # The runtime file contains only hardware-dependent overrides. Keep
+        # experiment hyperparameters from YAML authoritative.
+        runtime = json.loads(resolved.read_text(encoding="utf-8"))
+        for key in ("batch_size", "gradient_accumulation_steps"):
+            if key in runtime:
+                config[key] = runtime[key]
     return config
 
 
@@ -123,6 +128,7 @@ def train(config, smoke=False):
             config["variant"], len(tokenizer), tokenizer.pad_token_id,
             config["embedding_dim"], config["gru_hidden_size"], config["num_labels"],
             config["bidirectional"], local_radius=config.get("local_radius", 8),
+            gru_layers=config.get("gru_layers", 1),
             erase_mass=config.get("erase_mass", 0.30), propagation_k=config.get("propagation_k", 4),
             segment_kappa=config.get("segment_kappa", 1.0), segment_gap=config.get("segment_gap", 2),
             segment_min_len=config.get("segment_min_len", 2), segment_max=config.get("segment_max", 8),
@@ -131,7 +137,7 @@ def train(config, smoke=False):
             propagation_chunk_size=config.get("propagation_chunk_size", 512),
         ).to(device)
     else:
-        model=LabelGuidedOpcodeNet(config["variant"],len(tokenizer),tokenizer.pad_token_id,config["embedding_dim"],config["gru_hidden_size"],config["num_labels"],config["bidirectional"],config.get("local_radius",8)).to(device)
+        model=LabelGuidedOpcodeNet(config["variant"],len(tokenizer),tokenizer.pad_token_id,config["embedding_dim"],config["gru_hidden_size"],config["num_labels"],config["bidirectional"],config.get("local_radius",8),config.get("gru_layers",1)).to(device)
     init_checkpoint = config.get("init_checkpoint")
     init_info = {"enabled": False, "path": None, "missing_keys": [], "unexpected_keys": []}
     if init_checkpoint:
@@ -202,7 +208,7 @@ def train(config, smoke=False):
         if stale>=int(config["early_stopping_patience"]): break
     model.load_state_dict(best_payload["model_state_dict"]); final=evaluate(model,valid_loader,device,weight,amp); final_metrics=metric_pack(config,final["labels"],final["logits"])
     summary={"route":config["route_name"],"dataset":"DIVE_main6_opcode_process01","variant":config["variant"],"seed":config["seed"],"run":run_name,
-             "actual_config":{key:config[key] for key in ("embedding_dim","gru_hidden_size","max_len","batch_size","gradient_accumulation_steps")},
+             "actual_config":{key:config[key] for key in ("embedding_dim","gru_hidden_size","gru_layers","max_len","batch_size","gradient_accumulation_steps","learning_rate","weight_decay","weighted_bce","pos_weight_mode","max_pos_weight") if key in config},
              "metrics":final_metrics,"best_epoch":best_payload["epoch"],"total_params":sum(p.numel() for p in model.parameters()),"trainable_params":sum(p.numel() for p in model.parameters() if p.requires_grad),
              "peak_memory_mb":max(x["peak_memory_mb"] for x in history),"mean_epoch_seconds":float(np.mean([x["epoch_seconds"] for x in history])),
              "inference_seconds_per_batch":final["inference_seconds_per_batch"],"history":history,"init_checkpoint":init_info,"test_checked":False}

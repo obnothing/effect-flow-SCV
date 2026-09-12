@@ -37,24 +37,27 @@ def main():
     config=load_config(args.config); tokenizer=EVMOpcodeTokenizer.from_vocab_file(resolve(config["vocab_path"]))
     max_len=int(config["max_len"]); cache=resolve(config["cache_dir"])/f"train_max{max_len}.pt"; payload=torch.load(cache,map_location="cpu")
     order=torch.argsort(payload["original_lengths"],descending=True).tolist()
-    candidates=[(64,max_len,128),(32,max_len,128),(16,max_len,128),(8,max_len,128),(4,max_len,128),(2,max_len,128),(2,max_len,96)]
+    requested_hidden = int(config["gru_hidden_size"])
+    requested_layers = int(config.get("gru_layers", 1))
+    requested_bidirectional = bool(config.get("bidirectional", True))
+    candidates=[(64,max_len),(32,max_len),(16,max_len),(8,max_len),(4,max_len),(2,max_len),(1,max_len)]
     device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if device.type!="cuda": raise RuntimeError("CUDA PyTorch environment required; use the learnDL310 environment")
     attempts=[]; selected=None
-    for batch_size,max_len,hidden in candidates:
+    for batch_size,max_len in candidates:
         try:
             data=LightLabelDataset(cache,runtime_max_len=max_len,indices=order[:batch_size])
             loader=DataLoader(data,batch_size=batch_size,collate_fn=partial(collate_light_label,pad_id=tokenizer.pad_token_id))
-            batch=next(iter(loader)); model=LabelGuidedOpcodeNet("b2_label_attention",len(tokenizer),tokenizer.pad_token_id,config["embedding_dim"],hidden,config["num_labels"],True).to(device)
+            batch=next(iter(loader)); model=LabelGuidedOpcodeNet("b2_label_attention",len(tokenizer),tokenizer.pad_token_id,config["embedding_dim"],requested_hidden,config["num_labels"],requested_bidirectional,gru_layers=requested_layers).to(device)
             torch.cuda.reset_peak_memory_stats(device)
             with torch.autocast(device_type="cuda",dtype=torch.float16,enabled=True):
                 output=model(batch["input_ids"].to(device),batch["lengths"],batch["mask"].to(device)); loss=F.binary_cross_entropy_with_logits(output["logits"],batch["labels"].to(device))
             loss.backward(); peak=torch.cuda.max_memory_allocated(device)/2**20
             if not torch.isfinite(loss): raise RuntimeError("non-finite loss")
-            selected={"batch_size":batch_size,"max_len":max_len,"gru_hidden_size":hidden,"memory_preflight_peak_mb":peak}
+            selected={"batch_size":batch_size,"max_len":max_len,"gru_hidden_size":requested_hidden,"gru_layers":requested_layers,"memory_preflight_peak_mb":peak}
             attempts.append({**selected,"status":"ok"}); break
         except torch.cuda.OutOfMemoryError:
-            attempts.append({"batch_size":batch_size,"max_len":max_len,"gru_hidden_size":hidden,"status":"oom"}); torch.cuda.empty_cache()
+            attempts.append({"batch_size":batch_size,"max_len":max_len,"gru_hidden_size":requested_hidden,"gru_layers":requested_layers,"status":"oom"}); torch.cuda.empty_cache()
         finally:
             for name in ("model","output","loss","batch"):
                 if name in locals(): del locals()[name]

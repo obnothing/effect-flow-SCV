@@ -15,13 +15,17 @@ class LabelGuidedOpcodeNet(nn.Module):
     """
 
     def __init__(self, variant, vocab_size, pad_id, embedding_dim=128,
-                 gru_hidden_size=128, num_labels=6, bidirectional=True, local_radius=8):
+                 gru_hidden_size=128, num_labels=6, bidirectional=True, local_radius=8,
+                 gru_layers=1):
         super().__init__()
         self.variant = str(variant)
         self.num_labels = int(num_labels)
         self.local_radius = int(local_radius)
+        self.gru_layers = int(gru_layers)
+        if self.gru_layers < 1:
+            raise ValueError("gru_layers must be at least 1")
         self.embedding = nn.Embedding(int(vocab_size), int(embedding_dim), padding_idx=int(pad_id))
-        self.encoder = nn.GRU(int(embedding_dim), int(gru_hidden_size), num_layers=1,
+        self.encoder = nn.GRU(int(embedding_dim), int(gru_hidden_size), num_layers=self.gru_layers,
                               batch_first=True, bidirectional=bool(bidirectional), dropout=0.0)
         self.output_dim = int(gru_hidden_size) * (2 if bidirectional else 1)
         if self.variant == "b0_mean":
