@@ -17,8 +17,8 @@ import yaml
 from sklearn.metrics import average_precision_score
 
 ROOT = Path(__file__).resolve().parents[1]
-ARTIFACT_ROOT = ROOT / "results/light_label/hidden384_trials_v2"
-CHECKPOINT_ROOT = ROOT / "checkpoints/light_label/hidden384_trials_v2"
+ARTIFACT_ROOT = ROOT / "results/light_label/hidden384_trials_v3"
+CHECKPOINT_ROOT = ROOT / "checkpoints/light_label/hidden384_trials_v3"
 sys.path.insert(0, str(ROOT / "src"))
 from light_label_model import LabelGuidedOpcodeNet, validate_model_config
 from train_light_label_model import build_dataset, make_loader, evaluate, metric_pack, set_seed, pos_weight
@@ -119,8 +119,12 @@ def preflight(c, tokenizer, device, weight):
                 raise ValueError("Nonfinite preflight")
             optimizer.step()
             peak = torch.cuda.max_memory_allocated()
-            if peak > 0.9 * torch.cuda.get_device_properties(0).total_memory:
-                raise torch.cuda.OutOfMemoryError("less than 10% headroom")
+            # RNN workspaces and allocator fragmentation are not represented
+            # reliably by the preflight peak alone. Keep an 8 GiB reserve so
+            # the first real long sequence batch cannot exhaust the device.
+            reserve = 8 * 2**30
+            if peak + reserve > torch.cuda.get_device_properties(0).total_memory:
+                raise torch.cuda.OutOfMemoryError("less than 8 GiB headroom")
             attempts.append({"batch_size": size, "peak_mb": peak / 2**20, "status": "pass"})
             return size, attempts
         except torch.cuda.OutOfMemoryError:
