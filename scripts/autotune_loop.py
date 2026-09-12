@@ -66,6 +66,8 @@ def main():
     if state.get("state") == "STOP":
         print(json.dumps({"state": "STOP", "reason": "state already stopped", "test_checked": False}, indent=2)); return
     no_gain = int(state.get("consecutive_architecture_rounds_without_gain", 0))
+    last_round = int(state.get("last_architecture_round", 0))
+    round_best = state.get("round_best_macro_f1")
     max_trials = int(policy["max_trials_per_architecture"])
     min_gain = float(policy["minimum_meaningful_gain"])
     while True:
@@ -94,9 +96,22 @@ def main():
             continue
         after = json.loads(before_path.read_text(encoding="utf-8")) if before_path.exists() else {"best_macro_f1": None}
         old = before.get("best_macro_f1"); new = after.get("best_macro_f1")
-        gain = (float(new) - float(old)) if old is not None and new is not None else (float(new) if new is not None else 0.0)
-        no_gain = 0 if gain >= min_gain else no_gain + 1
-        state = recover_or_guard(); state["consecutive_architecture_rounds_without_gain"] = no_gain; state["trial_counts"] = counts; write_state(state)
+        new_counts = {}
+        for name in ARCHITECTURES:
+            try:
+                new_counts[name] = len(optuna_study(name).trials)
+            except Exception:
+                new_counts[name] = 0
+        completed_round = min(new_counts.values()) // 3
+        if completed_round > last_round:
+            previous_round_best = round_best
+            current_best = after.get("best_macro_f1")
+            gain = (float(current_best) - float(previous_round_best)) if previous_round_best is not None and current_best is not None else (float(current_best) if current_best is not None else 0.0)
+            no_gain = 0 if gain >= min_gain else no_gain + 1
+            round_best = current_best
+            last_round = completed_round
+            append_ledger({"event": "architecture_round_completed", "round": completed_round, "gain": gain, "no_gain_rounds": no_gain})
+        state = recover_or_guard(); state["consecutive_architecture_rounds_without_gain"] = no_gain; state["last_architecture_round"] = last_round; state["round_best_macro_f1"] = round_best; state["trial_counts"] = new_counts; write_state(state)
         if no_gain >= int(policy["architecture_patience"]):
             transition("STOP", reason="architecture_patience_reached", no_gain_rounds=no_gain, minimum_meaningful_gain=min_gain)
             break
@@ -106,4 +121,3 @@ def main():
 
 
 if __name__ == "__main__": main()
-
