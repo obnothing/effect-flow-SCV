@@ -11,5 +11,5 @@ mkdir -p logs
 exec 9>logs/hidden384_trials.lock
 flock -n 9 || { echo 'Another trial queue is running'; exit 1; }
 python -u scripts/test_hidden384_trials.py
-python -u scripts/run_hidden384_trials.py --smoke
+python -u scripts/run_hidden384_trials.py --smoke --start-index "${START_INDEX:-0}"
 python -u scripts/run_hidden384_trials.py --start-index "${START_INDEX:-0}"
