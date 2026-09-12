@@ -30,11 +30,12 @@ class LabelGuidedOpcodeNet(nn.Module):
 
     def __init__(self, variant, vocab_size, pad_id, embedding_dim=128,
                  gru_hidden_size=128, num_labels=6, bidirectional=True, local_radius=8,
-                 gru_layers=1):
+                 gru_layers=1, representation_dropout=0.0):
         super().__init__()
         self.variant = str(variant)
         self.num_labels = int(num_labels)
         self.local_radius = int(local_radius)
+        self.representation_dropout = nn.Dropout(float(representation_dropout))
         self.gru_layers = int(gru_layers)
         if self.gru_layers < 1:
             raise ValueError("gru_layers must be at least 1")
@@ -101,7 +102,7 @@ class LabelGuidedOpcodeNet(nn.Module):
         scores = torch.einsum("bth,lh->blt", projected, queries) / math.sqrt(self.output_dim)
         attention = self.masked_softmax(scores, mask.unsqueeze(1))
         representation = torch.einsum("blt,bth->blh", attention, hidden)
-        logits = torch.einsum("blh,lh->bl", representation, self.label_scorer) + self.label_bias
+        logits = torch.einsum("blh,lh->bl", self.representation_dropout(representation), self.label_scorer) + self.label_bias
         return {"logits": logits, "attention": attention, "representations": representation}
 
     def _add_local_context(self, hidden, mask):
