@@ -24,6 +24,17 @@ from light_extensions import LightExtensionNet  # noqa: E402
 from metrics import compute_multilabel_metrics_from_probs, derived_detection_metrics_from_multilabel_probs, select_per_label_thresholds  # noqa: E402
 
 
+RUNTIME_ONLY_KEYS = {"batch_size", "gradient_accumulation_steps"}
+RUNTIME_METADATA_KEYS = {
+    "attempts", "gpu", "vram_gib", "memory_preflight_peak_mb", "test_checked"
+}
+RUNTIME_CHECKED_CONFIG_KEYS = {
+    "embedding_dim", "gru_hidden_size", "gru_layers", "max_len", "bidirectional",
+    "num_labels", "variant", "learning_rate", "weight_decay", "weighted_bce",
+    "pos_weight_mode", "max_pos_weight", "amp", "epochs", "early_stopping_patience", "seed"
+}
+
+
 def resolve(value):
     path = Path(value)
     return path if path.is_absolute() else ROOT / path
@@ -37,13 +48,33 @@ def load_config(path):
         config = base
     resolved = resolve(config.get("runtime_path", "results/light_label/resolved_runtime.json"))
     if resolved.exists():
-        # The runtime file contains only hardware-dependent overrides. Keep
-        # experiment hyperparameters from YAML authoritative.
         runtime = json.loads(resolved.read_text(encoding="utf-8"))
+        # Runtime files may contain a copy of checked hyperparameters for
+        # auditability, but only hardware-dependent values may override YAML.
+        for key in RUNTIME_CHECKED_CONFIG_KEYS:
+            if key in runtime and key in config and runtime[key] != config[key]:
+                raise ValueError(
+                    f"runtime/config mismatch for {key}: YAML={config[key]!r}, "
+                    f"runtime={runtime[key]!r}; rerun resolve_light_label_runtime.py"
+                )
         for key in ("batch_size", "gradient_accumulation_steps"):
             if key in runtime:
                 config[key] = runtime[key]
     return config
+
+
+def validate_model_config(model, config):
+    """Fail before training if a requested architecture was not constructed."""
+    checks = {
+        "embedding_dim": (int(model.embedding.embedding_dim), int(config["embedding_dim"])),
+        "gru_hidden_size": (int(model.encoder.hidden_size), int(config["gru_hidden_size"])),
+        "gru_layers": (int(model.encoder.num_layers), int(config.get("gru_layers", 1))),
+        "num_labels": (int(model.num_labels), int(config["num_labels"])),
+        "bidirectional": (bool(model.encoder.bidirectional), bool(config["bidirectional"])),
+    }
+    mismatches = {key: values for key, values in checks.items() if values[0] != values[1]}
+    if mismatches:
+        raise RuntimeError(f"effective model/config mismatch: {mismatches}")
 
 
 def set_seed(seed):
@@ -138,6 +169,7 @@ def train(config, smoke=False):
         ).to(device)
     else:
         model=LabelGuidedOpcodeNet(config["variant"],len(tokenizer),tokenizer.pad_token_id,config["embedding_dim"],config["gru_hidden_size"],config["num_labels"],config["bidirectional"],config.get("local_radius",8),config.get("gru_layers",1)).to(device)
+    validate_model_config(model, config)
     init_checkpoint = config.get("init_checkpoint")
     init_info = {"enabled": False, "path": None, "missing_keys": [], "unexpected_keys": []}
     if init_checkpoint:
@@ -166,6 +198,10 @@ def train(config, smoke=False):
         dictionary_info={"clusters":cluster_count,"samples":len(matrix),"cluster_sizes":np.bincount(clustering.labels_,minlength=cluster_count).tolist()}
         print(json.dumps({"tdvp_dictionary":dictionary_info},indent=2),flush=True)
     optimizer=torch.optim.AdamW(model.parameters(),lr=float(config["learning_rate"]),weight_decay=float(config["weight_decay"]))
+    if float(optimizer.param_groups[0]["lr"]) != float(config["learning_rate"]):
+        raise RuntimeError("optimizer learning_rate does not match config")
+    if float(optimizer.param_groups[0]["weight_decay"]) != float(config["weight_decay"]):
+        raise RuntimeError("optimizer weight_decay does not match config")
     scaler_enabled = device.type == "cuda" and bool(config["amp"])
     if hasattr(torch, "amp") and hasattr(torch.amp, "GradScaler"):
         scaler = torch.amp.GradScaler("cuda", enabled=scaler_enabled)
@@ -175,8 +211,13 @@ def train(config, smoke=False):
     epochs=2 if smoke else int(config["epochs"]); accumulation=int(config["gradient_accumulation_steps"])
     run_name="smoke" if smoke else "full"; result_dir=resolve(config["result_dir"])/run_name; checkpoint_dir=resolve(config["checkpoint_dir"])/run_name
     result_dir.mkdir(parents=True,exist_ok=True); checkpoint_dir.mkdir(parents=True,exist_ok=True)
+    effective_config = {key: config[key] for key in (
+        "variant", "embedding_dim", "gru_hidden_size", "gru_layers", "bidirectional", "max_len",
+        "batch_size", "gradient_accumulation_steps", "learning_rate", "weight_decay",
+        "weighted_bce", "pos_weight_mode", "max_pos_weight", "epochs", "early_stopping_patience", "seed"
+    ) if key in config}
     print(json.dumps({"device":str(device),"gpu":torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,"vram_gib":torch.cuda.get_device_properties(0).total_memory/2**30 if torch.cuda.is_available() else 0,
-                      "torch":torch.__version__,"cuda":torch.version.cuda,"batch_size":config["batch_size"],"max_len":config["max_len"],"params":sum(p.numel() for p in model.parameters())},indent=2),flush=True)
+                      "torch":torch.__version__,"cuda":torch.version.cuda,"effective_config":effective_config,"params":sum(p.numel() for p in model.parameters())},indent=2),flush=True)
     best=-1.0; best_payload=None; stale=0; history=[]
     for epoch in range(1,epochs+1):
         model.train(); optimizer.zero_grad(set_to_none=True); losses=[]; query_gradient_rows=[]; start=time.perf_counter()
@@ -208,7 +249,8 @@ def train(config, smoke=False):
         if stale>=int(config["early_stopping_patience"]): break
     model.load_state_dict(best_payload["model_state_dict"]); final=evaluate(model,valid_loader,device,weight,amp); final_metrics=metric_pack(config,final["labels"],final["logits"])
     summary={"route":config["route_name"],"dataset":"DIVE_main6_opcode_process01","variant":config["variant"],"seed":config["seed"],"run":run_name,
-             "actual_config":{key:config[key] for key in ("embedding_dim","gru_hidden_size","gru_layers","max_len","batch_size","gradient_accumulation_steps","learning_rate","weight_decay","weighted_bce","pos_weight_mode","max_pos_weight") if key in config},
+             "actual_config":effective_config,
+             "pos_weight":None if weight is None else [float(x) for x in weight.detach().cpu()],
              "metrics":final_metrics,"best_epoch":best_payload["epoch"],"total_params":sum(p.numel() for p in model.parameters()),"trainable_params":sum(p.numel() for p in model.parameters() if p.requires_grad),
              "peak_memory_mb":max(x["peak_memory_mb"] for x in history),"mean_epoch_seconds":float(np.mean([x["epoch_seconds"] for x in history])),
              "inference_seconds_per_batch":final["inference_seconds_per_batch"],"history":history,"init_checkpoint":init_info,"test_checked":False}

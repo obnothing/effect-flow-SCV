@@ -17,6 +17,7 @@ for config in configs/light_label/baseline_sweep/pw_*.yaml
 do
     echo "[class_imbalance] ${config}"
     python scripts/resolve_light_label_runtime.py --config "${config}"
+    python scripts/audit_light_label_config.py --config "${config}"
     python src/train_light_label_model.py --config "${config}" 2>&1 | tee -a logs/baseline_sweep.log
 done
 
@@ -25,6 +26,7 @@ do
     config="configs/light_label/baseline_sweep/${name}.yaml"
     echo "[capacity] ${config}"
     python scripts/resolve_light_label_runtime.py --config "${config}"
+    python scripts/audit_light_label_config.py --config "${config}"
     python src/train_light_label_model.py --config "${config}" 2>&1 | tee -a logs/baseline_sweep.log
 done
 
@@ -33,6 +35,7 @@ do
     config="configs/light_label/baseline_sweep/${name}.yaml"
     echo "[optimizer] ${config}"
     python scripts/resolve_light_label_runtime.py --config "${config}"
+    python scripts/audit_light_label_config.py --config "${config}"
     python src/train_light_label_model.py --config "${config}" 2>&1 | tee -a logs/baseline_sweep.log
 done
 
@@ -58,4 +61,3 @@ with open("results/light_label/baseline_sweep/summary.csv", "w", newline="", enc
     writer.writerows(rows)
 print(json.dumps({"completed": len(rows), "test_checked": False}, indent=2))
 PY
-
