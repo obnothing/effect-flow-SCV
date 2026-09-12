@@ -17,6 +17,8 @@ import yaml
 from sklearn.metrics import average_precision_score
 
 ROOT = Path(__file__).resolve().parents[1]
+ARTIFACT_ROOT = ROOT / "results/light_label/hidden384_trials_v2"
+CHECKPOINT_ROOT = ROOT / "checkpoints/light_label/hidden384_trials_v2"
 sys.path.insert(0, str(ROOT / "src"))
 from light_label_model import LabelGuidedOpcodeNet, validate_model_config
 from train_light_label_model import build_dataset, make_loader, evaluate, metric_pack, set_seed, pos_weight
@@ -130,8 +132,8 @@ def preflight(c, tokenizer, device, weight):
 
 
 def run_trial(name, c, tokenizer, train, valid, provenance, smoke=False):
-    folder = ROOT / "results/light_label/hidden384_trials" / name / ("smoke" if smoke else "full")
-    checkpoint = ROOT / "checkpoints/light_label/hidden384_trials" / name / ("smoke" if smoke else "full")
+    folder = ARTIFACT_ROOT / name / ("smoke" if smoke else "full")
+    checkpoint = CHECKPOINT_ROOT / name / ("smoke" if smoke else "full")
     signature = hashlib.sha256(json.dumps({"config": c, "provenance": provenance, "smoke": smoke}, sort_keys=True).encode()).hexdigest()
     if (folder / "metrics.json").exists():
         result = json.loads((folder / "metrics.json").read_text())
@@ -241,9 +243,9 @@ def main():
                "micro_f1": result["metrics"]["tuned"]["micro_f1"], "dos_ap": result["dos_ap"], "params":result["params"]}
         row["delta_vs_T0"] = row["macro_f1"] - (rows[0]["macro_f1"] if rows else row["macro_f1"])
         rows.append(row)
-        atomic_json(ROOT/"results/light_label/hidden384_trials"/("smoke_summary.json" if args.smoke else "summary.json"), rows)
+        atomic_json(ARTIFACT_ROOT/("smoke_summary.json" if args.smoke else "summary.json"), rows)
         if not args.smoke:
-            root = ROOT/"results/light_label/hidden384_trials"
+            root = ARTIFACT_ROOT
             with (root/"summary.csv").open("w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(f, fieldnames=list(rows[0])); writer.writeheader(); writer.writerows(rows)
             (root/"summary.md").write_text("# Hidden384 trials (validation only)\n\n"
