@@ -120,11 +120,11 @@ def preflight(c, tokenizer, device, weight):
             optimizer.step()
             peak = torch.cuda.max_memory_allocated()
             # RNN workspaces and allocator fragmentation are not represented
-            # reliably by the preflight peak alone. Keep an 8 GiB reserve so
+            # reliably by the preflight peak alone. Keep a 10 GiB reserve so
             # the first real long sequence batch cannot exhaust the device.
-            reserve = 8 * 2**30
+            reserve = 10 * 2**30
             if peak + reserve > torch.cuda.get_device_properties(0).total_memory:
-                raise torch.cuda.OutOfMemoryError("less than 8 GiB headroom")
+                raise torch.cuda.OutOfMemoryError("less than 10 GiB headroom")
             attempts.append({"batch_size": size, "peak_mb": peak / 2**20, "status": "pass"})
             return size, attempts
         except torch.cuda.OutOfMemoryError:
@@ -226,6 +226,7 @@ def run_trial(name, c, tokenizer, train, valid, provenance, smoke=False):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument("--start-index", type=int, default=0)
     args = parser.parse_args()
     os.chdir(ROOT); torch.set_num_threads(2)
     if not torch.cuda.is_available(): raise RuntimeError("CUDA required")
@@ -238,8 +239,21 @@ def main():
     provenance = {str(p.relative_to(ROOT)): digest(p) for p in paths}
     train, valid = build_dataset(c, "train", args.smoke), build_dataset(c, "valid", args.smoke)
     print(f"[setup] train={len(train)} valid={len(valid)} test_checked=false", flush=True)
+    start_index = max(0, int(args.start_index))
+    if start_index >= len(TRIALS):
+        raise ValueError(f"start-index must be smaller than {len(TRIALS)}")
     rows = []
-    for name, delta in TRIALS.items():
+    if start_index:
+        previous = ARTIFACT_ROOT / "summary.json"
+        if not previous.exists():
+            raise FileNotFoundError(f"Cannot continue without previous summary: {previous}")
+        rows = json.loads(previous.read_text(encoding="utf-8"))
+        expected = list(TRIALS)[:start_index]
+        if [row["trial"] for row in rows] != expected:
+            raise ValueError("Previous summary does not match requested start-index")
+    for index, (name, delta) in enumerate(TRIALS.items()):
+        if index < start_index:
+            continue
         requested = dict(c, **delta)
         assert {k for k in requested if requested[k] != c[k]} == set(delta)
         result = run_trial(name, requested, tokenizer, train, valid, provenance, args.smoke)
@@ -259,7 +273,7 @@ def main():
                     f"{'candidate' if r['delta_vs_T0'] >= 0.01 else 'below adoption threshold'} |\n" for r in rows), encoding="utf-8")
         if not args.smoke and name.startswith("T0") and abs(row["macro_f1"] - 0.8222974476700604) > 0.002:
             raise RuntimeError("T0 differs from historical reference by >0.002; queue paused for audit")
-    print("[complete] 10 trials; test_checked=false", flush=True)
+    print(f"[complete] {len(rows)}/{len(TRIALS)} trials; test_checked=false", flush=True)
 
 
 if __name__ == "__main__":
