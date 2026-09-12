@@ -46,6 +46,7 @@ def best_trial_config(architecture):
         "pos_weight_mode": base.get("pos_weight_mode", "sqrt_ratio"),
         "max_pos_weight": float(base.get("max_pos_weight", 5.0)),
     }
+    config.update({"data_dir": base["data_dir"], "vocab_path": base["vocab_path"], "cache_dir": base["cache_dir"]})
     if config["self_attention"]:
         config["heads"] = int(trial.params["heads"])
     return config, trial.number
@@ -95,4 +96,3 @@ def main():
 
 
 if __name__ == "__main__": main()
-
