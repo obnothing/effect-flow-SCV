@@ -18,6 +18,7 @@ from evm_tokenizer import EVMOpcodeTokenizer  # noqa: E402
 from light_extensions import LightExtensionNet  # noqa: E402
 from light_label_data import LightLabelDataset, collate_light_label  # noqa: E402
 from light_label_model import LabelGuidedOpcodeNet  # noqa: E402
+from light_label_runtime import merge_runtime_config  # noqa: E402
 
 
 LABELS = ["Reentrancy", "Access Control", "Arithmetic", "Unchecked Return Values", "DoS", "Time manipulation"]
@@ -42,20 +43,20 @@ def load_config(path):
         base = yaml.safe_load(resolve(config["base_config"]).read_text(encoding="utf-8"))
         base.update(config)
         config = base
-    runtime = resolve("results/light_label/resolved_runtime.json")
-    if runtime.exists():
-        config.update(json.loads(runtime.read_text(encoding="utf-8")))
-    return config
+    runtime = resolve(config.get("runtime_path", "results/light_label/resolved_runtime.json"))
+    return merge_runtime_config(config, runtime)
 
 
 def make_model(config, variant, tokenizer):
     args = (variant, len(tokenizer), tokenizer.pad_token_id, config["embedding_dim"],
             config["gru_hidden_size"], config["num_labels"], config["bidirectional"])
     if variant == "b2_label_attention":
-        return LabelGuidedOpcodeNet(*args, local_radius=config.get("local_radius", 8))
+        return LabelGuidedOpcodeNet(*args, local_radius=config.get("local_radius", 8),
+                                    gru_layers=config.get("gru_layers", 1))
     return LightExtensionNet(
         *args,
         local_radius=config.get("local_radius", 8),
+        gru_layers=config.get("gru_layers", 1),
         erase_mass=config.get("erase_mass", 0.30),
         propagation_k=config.get("propagation_k", 4),
         segment_kappa=config.get("segment_kappa", 1.0),

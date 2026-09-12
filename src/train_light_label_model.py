@@ -19,20 +19,10 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from evm_tokenizer import EVMOpcodeTokenizer  # noqa: E402
 from light_label_data import LengthBucketBatchSampler, LightLabelDataset, collate_light_label  # noqa: E402
-from light_label_model import LabelGuidedOpcodeNet  # noqa: E402
+from light_label_model import LabelGuidedOpcodeNet, validate_model_config  # noqa: E402
 from light_extensions import LightExtensionNet  # noqa: E402
+from light_label_runtime import merge_runtime_config  # noqa: E402
 from metrics import compute_multilabel_metrics_from_probs, derived_detection_metrics_from_multilabel_probs, select_per_label_thresholds  # noqa: E402
-
-
-RUNTIME_ONLY_KEYS = {"batch_size", "gradient_accumulation_steps"}
-RUNTIME_METADATA_KEYS = {
-    "attempts", "gpu", "vram_gib", "memory_preflight_peak_mb", "test_checked"
-}
-RUNTIME_CHECKED_CONFIG_KEYS = {
-    "embedding_dim", "gru_hidden_size", "gru_layers", "max_len", "bidirectional",
-    "num_labels", "variant", "learning_rate", "weight_decay", "weighted_bce",
-    "pos_weight_mode", "max_pos_weight", "amp", "epochs", "early_stopping_patience", "seed"
-}
 
 
 def resolve(value):
@@ -47,34 +37,7 @@ def load_config(path):
         base.update(config)
         config = base
     resolved = resolve(config.get("runtime_path", "results/light_label/resolved_runtime.json"))
-    if resolved.exists():
-        runtime = json.loads(resolved.read_text(encoding="utf-8"))
-        # Runtime files may contain a copy of checked hyperparameters for
-        # auditability, but only hardware-dependent values may override YAML.
-        for key in RUNTIME_CHECKED_CONFIG_KEYS:
-            if key in runtime and key in config and runtime[key] != config[key]:
-                raise ValueError(
-                    f"runtime/config mismatch for {key}: YAML={config[key]!r}, "
-                    f"runtime={runtime[key]!r}; rerun resolve_light_label_runtime.py"
-                )
-        for key in ("batch_size", "gradient_accumulation_steps"):
-            if key in runtime:
-                config[key] = runtime[key]
-    return config
-
-
-def validate_model_config(model, config):
-    """Fail before training if a requested architecture was not constructed."""
-    checks = {
-        "embedding_dim": (int(model.embedding.embedding_dim), int(config["embedding_dim"])),
-        "gru_hidden_size": (int(model.encoder.hidden_size), int(config["gru_hidden_size"])),
-        "gru_layers": (int(model.encoder.num_layers), int(config.get("gru_layers", 1))),
-        "num_labels": (int(model.num_labels), int(config["num_labels"])),
-        "bidirectional": (bool(model.encoder.bidirectional), bool(config["bidirectional"])),
-    }
-    mismatches = {key: values for key, values in checks.items() if values[0] != values[1]}
-    if mismatches:
-        raise RuntimeError(f"effective model/config mismatch: {mismatches}")
+    return merge_runtime_config(config, resolved)
 
 
 def set_seed(seed):

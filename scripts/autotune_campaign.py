@@ -23,6 +23,7 @@ from autotune_state import append_ledger, read_state, record_failure, transition
 from autotune_model import AutoTuneSequenceNet  # noqa: E402
 from evm_tokenizer import EVMOpcodeTokenizer  # noqa: E402
 from light_label_data import LengthBucketBatchSampler, LightLabelDataset, collate_light_label  # noqa: E402
+from light_label_runtime import merge_runtime_config  # noqa: E402
 from metrics import compute_multilabel_metrics_from_probs, derived_detection_metrics_from_multilabel_probs, select_per_label_thresholds  # noqa: E402
 from torch.utils.data import DataLoader  # noqa: E402
 
@@ -38,9 +39,7 @@ def resolve(value):
 def load_base():
     config = yaml.safe_load((ROOT / "configs/light_label/b2_label_attention.yaml").read_text(encoding="utf-8"))
     runtime = resolve("results/light_label/resolved_runtime.json")
-    if runtime.exists():
-        config.update(json.loads(runtime.read_text(encoding="utf-8")))
-    return config
+    return merge_runtime_config(config, runtime)
 
 
 def set_seed(seed):

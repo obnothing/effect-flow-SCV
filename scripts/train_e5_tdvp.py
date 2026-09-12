@@ -21,7 +21,8 @@ from e5_tdvp.dictionary import collect_train_contexts, save_dictionary, build_di
 from e5_tdvp.model import E5TDVPModel  # noqa: E402
 from evm_tokenizer import EVMOpcodeTokenizer  # noqa: E402
 from light_label_data import LengthBucketBatchSampler, LightLabelDataset, collate_light_label  # noqa: E402
-from light_label_model import LabelGuidedOpcodeNet  # noqa: E402
+from light_label_model import LabelGuidedOpcodeNet, validate_model_config  # noqa: E402
+from light_label_runtime import merge_runtime_config  # noqa: E402
 from metrics import (compute_multilabel_metrics_from_probs, derived_detection_metrics_from_multilabel_probs,
                      select_per_label_thresholds)  # noqa: E402
 
@@ -38,9 +39,7 @@ def load_config(path):
         base.update(config)
         config = base
     runtime = resolve(config.get("runtime_path", "results/light_label/resolved_runtime.json"))
-    if runtime.exists():
-        config.update(json.loads(runtime.read_text(encoding="utf-8")))
-    return config
+    return merge_runtime_config(config, runtime)
 
 
 def set_seed(seed):
@@ -97,10 +96,10 @@ def metric_pack(config, labels, logits):
 
 def make_model(config, tokenizer):
     args = (len(tokenizer), tokenizer.pad_token_id, config["embedding_dim"], config["gru_hidden_size"],
-            config["num_labels"], config["bidirectional"])
+            config["num_labels"], config["bidirectional"], config.get("local_radius", 8), config.get("gru_layers", 1))
     if config["variant"] == "d0_b2":
-        return LabelGuidedOpcodeNet("b2_label_attention", *args, local_radius=config.get("local_radius", 8))
-    return E5TDVPModel(config["variant"], *args, local_radius=config.get("local_radius", 8),
+        return LabelGuidedOpcodeNet("b2_label_attention", *args)
+    return E5TDVPModel(config["variant"], *args,
                        dictionary_size=config.get("dictionary_size", 16), joint_dim=config.get("joint_dim", 128))
 
 
@@ -150,6 +149,7 @@ def train_one(config, seed, init_checkpoint=None):
     train_loader = make_loader(train_data, config, tokenizer.pad_token_id, True)
     valid_loader = make_loader(valid_data, config, tokenizer.pad_token_id, False)
     model = make_model(config, tokenizer).to(device)
+    validate_model_config(model, config)
     initial = load_initial(model, init_checkpoint or config.get("init_checkpoint"))
     amp = device.type == "cuda" and bool(config.get("amp", True))
     dictionary_meta = None
@@ -270,4 +270,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

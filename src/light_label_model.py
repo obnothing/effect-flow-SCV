@@ -7,6 +7,20 @@ import torch.nn as nn
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 
+def validate_model_config(model, config):
+    """Fail before training if a requested architecture was not constructed."""
+    checks = {
+        "embedding_dim": (int(model.embedding.embedding_dim), int(config["embedding_dim"])),
+        "gru_hidden_size": (int(model.encoder.hidden_size), int(config["gru_hidden_size"])),
+        "gru_layers": (int(model.encoder.num_layers), int(config.get("gru_layers", 1))),
+        "num_labels": (int(model.num_labels), int(config["num_labels"])),
+        "bidirectional": (bool(model.encoder.bidirectional), bool(config["bidirectional"])),
+    }
+    mismatches = {key: values for key, values in checks.items() if values[0] != values[1]}
+    if mismatches:
+        raise RuntimeError(f"effective model/config mismatch: {mismatches}")
+
+
 class LabelGuidedOpcodeNet(nn.Module):
     """Shared opcode encoder with mean, shared-attention, or label-attention pooling.
 

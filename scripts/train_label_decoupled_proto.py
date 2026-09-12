@@ -21,7 +21,8 @@ sys.path.insert(0,str(ROOT/"src"))
 from evm_tokenizer import EVMOpcodeTokenizer  # noqa: E402
 from label_decoupled_prototype import LabelDecoupledPrototype, pairwise_supervised_contrast  # noqa: E402
 from light_label_data import LengthBucketBatchSampler, LightLabelDataset, collate_light_label  # noqa: E402
-from light_label_model import LabelGuidedOpcodeNet  # noqa: E402
+from light_label_model import LabelGuidedOpcodeNet, validate_model_config  # noqa: E402
+from light_label_runtime import merge_runtime_config  # noqa: E402
 from metrics import compute_multilabel_metrics_from_probs, derived_detection_metrics_from_multilabel_probs, select_per_label_thresholds  # noqa: E402
 
 
@@ -34,9 +35,7 @@ def load_config(path):
     base=yaml.safe_load(resolve(config["base_config"]).read_text(encoding="utf-8"))
     base.update(config)
     resolved = resolve("results/light_label/resolved_runtime.json")
-    if resolved.exists():
-        base.update(json.loads(resolved.read_text(encoding="utf-8")))
-    return base
+    return merge_runtime_config(base, resolved)
 
 
 def seed_all(seed):
@@ -85,17 +84,22 @@ def checksum(path):
 
 def run(config, smoke=False):
     seed_all(int(config["seed"])); device=torch.device("cuda" if torch.cuda.is_available() else "cpu"); tokenizer=EVMOpcodeTokenizer.from_vocab_file(resolve(config["vocab_path"]))
-    cache_dir=resolve(config["cache_dir"]); train_cache=cache_dir/"train_max8192.pt"; valid_cache=cache_dir/"valid_max8192.pt"
+    cache_dir=resolve(config["cache_dir"]); train_cache=cache_dir/f"train_max{config['max_len']}.pt"; valid_cache=cache_dir/f"valid_max{config['max_len']}.pt"
     if not train_cache.exists() or not valid_cache.exists(): raise FileNotFoundError("prepare light label cache first")
     train=LightLabelDataset(train_cache,runtime_max_len=config["max_len"]); valid=LightLabelDataset(valid_cache,runtime_max_len=config["max_len"])
     if smoke:
         rng=random.Random(int(config["seed"])); train=LightLabelDataset(train_cache,runtime_max_len=config["max_len"],indices=sorted(rng.sample(range(len(train)),256))); valid=LightLabelDataset(valid_cache,runtime_max_len=config["max_len"],indices=sorted(rng.sample(range(len(valid)),128)))
     train_loader=make_loader(train,config,tokenizer.pad_token_id,True); valid_loader=make_loader(valid,config,tokenizer.pad_token_id,False)
-    model=LabelGuidedOpcodeNet("b2_label_attention",len(tokenizer),tokenizer.pad_token_id,config["embedding_dim"],config["gru_hidden_size"],config["num_labels"],True).to(device)
+    model=LabelGuidedOpcodeNet("b2_label_attention",len(tokenizer),tokenizer.pad_token_id,config["embedding_dim"],config["gru_hidden_size"],config["num_labels"],config["bidirectional"],config.get("local_radius",8),config.get("gru_layers",1)).to(device)
+    validate_model_config(model, config)
     proto=LabelDecoupledPrototype(config["num_labels"],model.output_dim,config["prototype_momentum"],config["prototype_temperature"]).to(device) if config["contrast_mode"]=="prototype" else None
     optimizer=torch.optim.AdamW(list(model.parameters())+(list(proto.parameters()) if proto else []),lr=float(config["learning_rate"]),weight_decay=float(config["weight_decay"]))
-    amp=device.type=="cuda" and bool(config["amp"]); scaler=torch.amp.GradScaler("cuda",enabled=amp); weight=pos_weight(train,config).to(device); epochs=2 if smoke else int(config["epochs"]); accumulation=int(config["gradient_accumulation_steps"])
+    if float(optimizer.param_groups[0]["lr"]) != float(config["learning_rate"]): raise RuntimeError("optimizer learning_rate does not match config")
+    if float(optimizer.param_groups[0]["weight_decay"]) != float(config["weight_decay"]): raise RuntimeError("optimizer weight_decay does not match config")
+    amp=device.type=="cuda" and bool(config["amp"]); scaler=torch.amp.GradScaler("cuda",enabled=amp); weight=pos_weight(train,config).to(device) if config.get("weighted_bce", True) else None; epochs=2 if smoke else int(config["epochs"]); accumulation=int(config["gradient_accumulation_steps"])
     run_name="smoke" if smoke else "full"; result_dir=resolve(config["prototype_result_dir"])/run_name; checkpoint_dir=resolve(config["prototype_checkpoint_dir"])/run_name; result_dir.mkdir(parents=True,exist_ok=True); checkpoint_dir.mkdir(parents=True,exist_ok=True)
+    effective_config={key:config[key] for key in ("embedding_dim","gru_hidden_size","gru_layers","max_len","batch_size","gradient_accumulation_steps","learning_rate","weight_decay","weighted_bce","pos_weight_mode","max_pos_weight") if key in config}
+    print(json.dumps({"effective_config":effective_config,"params":sum(p.numel() for p in model.parameters()),"pos_weight":[float(x) for x in weight.detach().cpu()],"test_checked":False},indent=2),flush=True)
     best=-1.; best_payload=None; stale=0; history=[]; start_total=time.perf_counter()
     for epoch in range(1,epochs+1):
         model.train(); optimizer.zero_grad(set_to_none=True); losses=[]; proto_losses=[]; pair_losses=[]; epoch_start=time.perf_counter()
@@ -131,7 +135,7 @@ def run(config, smoke=False):
         else: stale+=1
         if stale>=int(config["early_stopping_patience"]): break
     model.load_state_dict(best_payload["model_state_dict"]); final=evaluate(model,valid_loader,device,weight,amp,proto); final_metrics=metric_pack(config,final["labels"],final["logits"])
-    summary={"route":config["route_name"],"dataset":"DIVE_main6_opcode_process01","variant":config["contrast_mode"],"seed":config["seed"],"run":run_name,"metrics":final_metrics,"best_epoch":best_payload["epoch"],"total_params":sum(p.numel() for p in model.parameters())+(sum(p.numel() for p in proto.parameters()) if proto else 0),"trainable_params":sum(p.numel() for p in model.parameters()),"prototype_trainable_params":0,"peak_memory_mb":max(x["peak_memory_mb"] for x in history),"mean_epoch_seconds":float(np.mean([x["epoch_seconds"] for x in history])),"history":history,"test_checked":False,"b2_reference_checkpoint":str(resolve("results/light_label/b2_label_attention/full/metrics.json"))}
+    summary={"route":config["route_name"],"dataset":"DIVE_main6_opcode_process01","variant":config["contrast_mode"],"seed":config["seed"],"run":run_name,"effective_config":effective_config,"pos_weight":[float(x) for x in weight.detach().cpu()],"metrics":final_metrics,"best_epoch":best_payload["epoch"],"total_params":sum(p.numel() for p in model.parameters())+(sum(p.numel() for p in proto.parameters()) if proto else 0),"trainable_params":sum(p.numel() for p in model.parameters()),"prototype_trainable_params":0,"peak_memory_mb":max(x["peak_memory_mb"] for x in history),"mean_epoch_seconds":float(np.mean([x["epoch_seconds"] for x in history])),"history":history,"test_checked":False,"b2_reference_checkpoint":str(resolve("results/light_label/b2_label_attention/full/metrics.json"))}
     (result_dir/"metrics.json").write_text(json.dumps(summary,indent=2)+"\n",encoding="utf-8"); torch.save({"ids":final["ids"],"labels":final["labels"],"logits":final["logits"],"original_lengths":final["original_lengths"],"thresholds":final_metrics["thresholds"],"test_checked":False},result_dir/"valid_predictions.pt")
     if proto: torch.save({"positive_prototypes":proto.positive_prototypes.cpu(),"negative_prototypes":proto.negative_prototypes.cpu(),"initialized":proto.initialized.cpu(),"test_checked":False},result_dir/"prototypes.pt")
     return summary

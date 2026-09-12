@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from evm_tokenizer import EVMOpcodeTokenizer  # noqa: E402
 from light_label_data import LightLabelDataset, collate_light_label  # noqa: E402
 from light_label_model import LabelGuidedOpcodeNet  # noqa: E402
+from light_label_runtime import merge_runtime_config  # noqa: E402
 from metrics import compute_multilabel_metrics_from_probs  # noqa: E402
 
 
@@ -37,8 +38,8 @@ def main():
     parser.add_argument("--top-k", type=int, default=5)
     args = parser.parse_args()
     config = yaml.safe_load(resolve(args.config).read_text(encoding="utf-8"))
-    runtime = resolve("results/light_label/resolved_runtime.json")
-    if runtime.exists(): config.update(json.loads(runtime.read_text(encoding="utf-8")))
+    runtime = resolve(config.get("runtime_path", "results/light_label/resolved_runtime.json"))
+    config = merge_runtime_config(config, runtime)
     if config.get("allow_test"): raise ValueError("test is locked")
     root = resolve("results/light_label")
     comparison = json.loads((root / "full_comparison.json").read_text(encoding="utf-8"))
@@ -49,11 +50,11 @@ def main():
         print(json.dumps(report, indent=2)); return
     tokenizer = EVMOpcodeTokenizer.from_vocab_file(resolve(config["vocab_path"]))
     mask_token_id = tokenizer.vocab[tokenizer.mask_token]
-    valid = LightLabelDataset(resolve(config["cache_dir"]) / "valid_max8192.pt", runtime_max_len=config["max_len"])
+    valid = LightLabelDataset(resolve(config["cache_dir"]) / f"valid_max{config['max_len']}.pt", runtime_max_len=config["max_len"])
     loader = DataLoader(valid, batch_size=int(config["batch_size"]), shuffle=False, num_workers=0, collate_fn=partial(collate_light_label, pad_id=tokenizer.pad_token_id))
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     checkpoint = torch.load(resolve(config["checkpoint_dir"]) / "full" / "best.pt", map_location="cpu")
-    model = LabelGuidedOpcodeNet("b2_label_attention", len(tokenizer), tokenizer.pad_token_id, config["embedding_dim"], config["gru_hidden_size"], config["num_labels"], True).to(device)
+    model = LabelGuidedOpcodeNet("b2_label_attention", len(tokenizer), tokenizer.pad_token_id, config["embedding_dim"], config["gru_hidden_size"], config["num_labels"], config["bidirectional"], config.get("local_radius", 8), config.get("gru_layers", 1)).to(device)
     model.load_state_dict(checkpoint["model_state_dict"], strict=True); model.eval(); thresholds = checkpoint["metrics"]["thresholds"]
     labels=[]; normal=[]; shuffled=[]; top_removed=[]; random_removed=[]; lengths=[]
     l=int(config["num_labels"]); cos_sum=torch.zeros(l,l); js_sum=torch.zeros(l,l); query_norm=torch.nn.functional.normalize(model.label_queries.detach().cpu(),dim=-1); rng=random.Random(config["seed"]); contracts=0

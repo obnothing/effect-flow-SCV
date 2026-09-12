@@ -20,6 +20,7 @@ from e5_tdvp.model import E5TDVPModel  # noqa: E402
 from evm_tokenizer import EVMOpcodeTokenizer  # noqa: E402
 from light_label_data import LightLabelDataset, collate_light_label  # noqa: E402
 from light_label_model import LabelGuidedOpcodeNet  # noqa: E402
+from light_label_runtime import merge_runtime_config  # noqa: E402
 from metrics import compute_multilabel_metrics_from_probs, derived_detection_metrics_from_multilabel_probs  # noqa: E402
 
 
@@ -39,14 +40,13 @@ def load_config(path):
         base.update(config)
         config = base
     runtime = resolve(config.get("runtime_path", "results/light_label/resolved_runtime.json"))
-    if runtime.exists():
-        config.update(json.loads(runtime.read_text(encoding="utf-8")))
-    return config
+    return merge_runtime_config(config, runtime)
 
 
 def make_model(config, tokenizer):
     return E5TDVPModel(config["variant"], len(tokenizer), tokenizer.pad_token_id, config["embedding_dim"],
                        config["gru_hidden_size"], config["num_labels"], config["bidirectional"],
+                       config.get("local_radius", 8), config.get("gru_layers", 1),
                        dictionary_size=config.get("dictionary_size", 16), joint_dim=config.get("joint_dim", 128)).to(
                            torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 

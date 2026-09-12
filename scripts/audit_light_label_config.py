@@ -17,8 +17,8 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from evm_tokenizer import EVMOpcodeTokenizer  # noqa: E402
-from light_label_model import LabelGuidedOpcodeNet  # noqa: E402
-from train_light_label_model import load_config, resolve, validate_model_config  # noqa: E402
+from light_label_model import LabelGuidedOpcodeNet, validate_model_config  # noqa: E402
+from train_light_label_model import load_config, resolve  # noqa: E402
 
 
 def main():
@@ -43,6 +43,9 @@ def main():
     cache = resolve(config["cache_dir"]) / f"train_max{config['max_len']}.pt"
     if not cache.exists():
         raise FileNotFoundError(f"train cache missing for max_len={config['max_len']}: {cache}")
+    valid_cache = resolve(config["cache_dir"]) / f"valid_max{config['max_len']}.pt"
+    if not valid_cache.exists():
+        raise FileNotFoundError(f"valid cache missing for max_len={config['max_len']}: {valid_cache}")
     params = sum(parameter.numel() for parameter in model.parameters())
     payload = {
         "config": str(resolve(args.config)),
@@ -54,6 +57,7 @@ def main():
         "num_labels": int(model.num_labels),
         "params": int(params),
         "cache": str(cache),
+        "valid_cache": str(valid_cache),
         "test_checked": False,
     }
     print(json.dumps(payload, indent=2), flush=True)

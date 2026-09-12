@@ -61,9 +61,9 @@ def main():
     geometry=None; examples=[]
     c2_checkpoint=resolve(cfg["prototype_checkpoint_dir"])/"full"/"best.pt"
     if c2_checkpoint.exists():
-        tokenizer=EVMOpcodeTokenizer.from_vocab_file(resolve(cfg["vocab_path"])); valid=LightLabelDataset(resolve(cfg["cache_dir"])/"valid_max8192.pt",runtime_max_len=cfg["max_len"])
+        tokenizer=EVMOpcodeTokenizer.from_vocab_file(resolve(cfg["vocab_path"])); valid=LightLabelDataset(resolve(cfg["cache_dir"])/f"valid_max{cfg['max_len']}.pt",runtime_max_len=cfg["max_len"])
         loader=DataLoader(valid,batch_size=int(cfg["batch_size"]),shuffle=False,num_workers=0,collate_fn=partial(collate_light_label,pad_id=tokenizer.pad_token_id)); payload=torch.load(c2_checkpoint,map_location="cpu")
-        device=torch.device("cuda" if torch.cuda.is_available() else "cpu"); model=LabelGuidedOpcodeNet("b2_label_attention",len(tokenizer),tokenizer.pad_token_id,cfg["embedding_dim"],cfg["gru_hidden_size"],cfg["num_labels"],True).to(device); model.load_state_dict(payload["model_state_dict"],strict=True); model.eval()
+        device=torch.device("cuda" if torch.cuda.is_available() else "cpu"); model=LabelGuidedOpcodeNet("b2_label_attention",len(tokenizer),tokenizer.pad_token_id,cfg["embedding_dim"],cfg["gru_hidden_size"],cfg["num_labels"],cfg.get("bidirectional", True),cfg.get("local_radius", 8),cfg.get("gru_layers", 1)).to(device); model.load_state_dict(payload["model_state_dict"],strict=True); model.eval()
         proto=LabelDecoupledPrototype(cfg["num_labels"],model.output_dim,cfg["prototype_momentum"],cfg["prototype_temperature"]); proto.load_state_dict(payload["prototype_state_dict"],strict=True); proto.eval()
         labels=[]; reps=[]; ids=[]
         with torch.no_grad():
