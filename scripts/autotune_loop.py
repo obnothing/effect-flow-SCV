@@ -88,15 +88,15 @@ def main():
                 record_failure({"failure_type": "PROMOTION_PROCESS_ERROR", "fidelity": 10, "returncode": completed.returncode})
                 raise RuntimeError("10-epoch promotion failed")
             PROMOTION10_MARKER.write_text(json.dumps({"fidelity": 10, "test_checked": False}, indent=2) + "\n", encoding="utf-8")
+        if PROMOTION10_MARKER.exists() and not PROMOTION30_MARKER.exists():
+            append_ledger({"event": "promotion_dispatch", "fidelity": 30, "trial_counts": counts})
+            completed = subprocess.run([sys.executable, str(ROOT / "scripts/autotune_promote.py"), "--fidelity", "30", "--all"], cwd=str(ROOT), check=False)
+            if completed.returncode != 0:
+                record_failure({"failure_type": "PROMOTION_PROCESS_ERROR", "fidelity": 30, "returncode": completed.returncode})
+                raise RuntimeError("30-epoch promotion failed")
+            PROMOTION30_MARKER.write_text(json.dumps({"fidelity": 30, "test_checked": False}, indent=2) + "\n", encoding="utf-8")
         candidates = [architecture for architecture in ARCHITECTURES if counts[architecture] < max_trials]
         if not candidates:
-            if not PROMOTION30_MARKER.exists():
-                append_ledger({"event": "promotion_dispatch", "fidelity": 30, "trial_counts": counts})
-                completed = subprocess.run([sys.executable, str(ROOT / "scripts/autotune_promote.py"), "--fidelity", "30", "--all"], cwd=str(ROOT), check=False)
-                if completed.returncode != 0:
-                    record_failure({"failure_type": "PROMOTION_PROCESS_ERROR", "fidelity": 30, "returncode": completed.returncode})
-                    raise RuntimeError("30-epoch promotion failed")
-                PROMOTION30_MARKER.write_text(json.dumps({"fidelity": 30, "test_checked": False}, indent=2) + "\n", encoding="utf-8")
             transition("STOP", reason="max_trials_per_architecture_reached", optuna_trials=counts)
             break
         architecture = min(candidates, key=lambda item: (counts[item], ARCHITECTURES.index(item)))

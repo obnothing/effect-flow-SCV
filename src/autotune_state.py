@@ -16,7 +16,7 @@ BEST_PATH = STATE_DIR / "best.json"
 
 ALLOWED = {
     "INIT": {"PROPOSE"}, "PROPOSE": {"SMOKE", "INIT"}, "SMOKE": {"SUBMIT", "PROPOSE"},
-    "SUBMIT": {"RUNNING", "PROPOSE"}, "RUNNING": {"EVALUATE", "PROPOSE"},
+    "SUBMIT": {"RUNNING", "PROPOSE"}, "RUNNING": {"EVALUATE", "COMPARE", "PROPOSE"},
     "EVALUATE": {"RECORD", "PROPOSE"}, "RECORD": {"COMPARE", "PROPOSE"}, "COMPARE": {"PROPOSE", "STOP"},
     "STOP": set(),
 }
@@ -85,4 +85,3 @@ def update_best(record):
         return True
     append_ledger({"event": "trial_recorded", "trial_id": record.get("trial_id"), "macro_f1": score, "best_macro_f1": previous})
     return False
-
