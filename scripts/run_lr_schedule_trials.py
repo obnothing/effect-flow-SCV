@@ -75,6 +75,14 @@ def atomic_save(path, value):
     temporary.replace(path)
 
 
+def set_seed(seed):
+    random.seed(int(seed))
+    np.random.seed(int(seed))
+    torch.manual_seed(int(seed))
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(int(seed))
+
+
 def base_config():
     config = yaml.safe_load((ROOT / "configs/light_label/b2_label_attention.yaml").read_text(encoding="utf-8"))
     config.update({
