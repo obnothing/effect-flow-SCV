@@ -424,6 +424,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--start-index", type=int, default=0)
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument("--preflight-only", action="store_true")
     args = parser.parse_args()
     os.chdir(ROOT)
     torch.set_num_threads(2)
@@ -441,6 +442,13 @@ def main():
     train = LightLabelDataset(ROOT / config["cache_dir"] / "train_max8192.pt", runtime_max_len=8192)
     valid = LightLabelDataset(ROOT / config["cache_dir"] / "valid_max8192.pt", runtime_max_len=8192)
     print(f"[setup] train={len(train)} valid={len(valid)} train_cache_rows={len(train_payload['ids'])} valid_cache_rows={len(valid_payload['ids'])} test_checked=false", flush=True)
+    if args.preflight_only:
+        device = torch.device("cuda")
+        weights = compute_weights(config, train).to(device)
+        print(json.dumps({"preflight": preflight(config, tokenizer, train, weights, device),
+                          "params": sum(p.numel() for p in model_for(config, tokenizer, device).parameters()),
+                          "test_checked": False}, indent=2), flush=True)
+        return
     names = list(TRIALS)
     start_index = max(0, int(args.start_index))
     if start_index >= len(names):
