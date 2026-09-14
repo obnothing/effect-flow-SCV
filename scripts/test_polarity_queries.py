@@ -11,7 +11,7 @@ import torch.nn.functional as F
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"src")); sys.path.insert(0,str(ROOT/"scripts"))
 from polarity_query_model import PolarityQueryNet, SharedMultiHeadCrossAttention, build_model, loss_terms, encoder_state, tensor_hash
-from run_polarity_queries import initialize, load_config, optimizer_for
+from run_polarity_queries import compute_weights, initialize, load_config, optimizer_for
 
 
 class Tokenizer:
@@ -56,6 +56,10 @@ class Tests(unittest.TestCase):
         expected=.5*(F.binary_cross_entropy_with_logits(out["energies"][...,0],self.y)
                        +F.binary_cross_entropy_with_logits(out["energies"][...,1],1-self.y))
         torch.testing.assert_close(aux,expected)
+        _,_,weighted_aux=loss_terms(out,self.y,torch.ones(6),.1,1.5,.5)
+        weighted_expected=.5*(1.5*F.binary_cross_entropy_with_logits(out["energies"][...,0],self.y)
+                              +.5*F.binary_cross_entropy_with_logits(out["energies"][...,1],1-self.y))
+        torch.testing.assert_close(weighted_aux,weighted_expected)
         total,cls,_=loss_terms(out,self.y,torch.ones(6),0); torch.testing.assert_close(total,cls)
         F.binary_cross_entropy_with_logits(out["logits"][:,2],self.y[:,2]).backward()
         self.assertTrue((m.queries.grad[2].norm(dim=-1)>0).all())
@@ -76,6 +80,14 @@ class Tests(unittest.TestCase):
     def test_p2_is_strict_energy_mean(self):
         m,_=initialize("P2",self.c,Tokenizer()); out=m(self.x,self.lengths,self.mask)
         torch.testing.assert_close(out["logits"],out["energies"].mean(2))
+
+    def test_dos_weight_override_is_label_local(self):
+        class Data:
+            labels=torch.tensor([[1., 1., 1., 1., 1., 1.]] + [[0., 0., 0., 0., 0., 0.]] * 9)
+            indices=list(range(10))
+        c=load_config(); base=compute_weights(c,Data()); changed=compute_weights(dict(c,dos_weight_multiplier=1.5),Data())
+        torch.testing.assert_close(base[[0,1,2,3,5]],changed[[0,1,2,3,5]])
+        self.assertGreater(changed[4],base[4])
 
     def test_restore_optimizer_rng_next_step(self):
         model,_=initialize("P4",self.c,Tokenizer()); opt=optimizer_for(model,self.c)

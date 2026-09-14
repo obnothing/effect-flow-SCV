@@ -8,7 +8,7 @@ from torch.nn import functional as F
 
 from light_label_model import LabelGuidedOpcodeNet, validate_model_config
 
-VARIANTS = ("P0", "P1", "P2", "P3", "P4", "P5")
+VARIANTS = ("P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9")
 
 
 class SharedMultiHeadCrossAttention(nn.Module):
@@ -92,13 +92,15 @@ class PolarityQueryNet(LabelGuidedOpcodeNet):
         return result
 
 
-def loss_terms(output, targets, pos_weight, auxiliary_weight):
+def loss_terms(output, targets, pos_weight, auxiliary_weight,
+               positive_multiplier=1.0, negative_multiplier=1.0):
     classification = F.binary_cross_entropy_with_logits(output["logits"], targets, pos_weight=pos_weight)
     polarity = classification.new_zeros(())
     if auxiliary_weight:
         energies = output["energies"]
-        polarity = 0.5 * (F.binary_cross_entropy_with_logits(energies[..., 0], targets)
-                          + F.binary_cross_entropy_with_logits(energies[..., 1], 1 - targets))
+        positive = F.binary_cross_entropy_with_logits(energies[..., 0], targets)
+        negative = F.binary_cross_entropy_with_logits(energies[..., 1], 1 - targets)
+        polarity = 0.5 * (positive_multiplier * positive + negative_multiplier * negative)
     return classification + auxiliary_weight * polarity, classification, polarity
 
 
@@ -120,7 +122,8 @@ def encoder_state(model):
 def build_model(mode, config, vocab_size, pad_id):
     if mode == "P0":
         model = LabelGuidedOpcodeNet("b2_label_attention", vocab_size, pad_id,
-            config["embedding_dim"], config["gru_hidden_size"], config["num_labels"], True)
+            config["embedding_dim"], config["gru_hidden_size"], config["num_labels"],
+            config["bidirectional"], gru_layers=config["gru_layers"])
     else:
         model = PolarityQueryNet(mode, vocab_size, pad_id, config["embedding_dim"],
             config["gru_hidden_size"], config["num_labels"], config["attention_heads"],
