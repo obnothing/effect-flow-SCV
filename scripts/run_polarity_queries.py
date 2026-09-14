@@ -30,13 +30,28 @@ CONFIG = ROOT / "configs/light_label/polarity_queries.yaml"
 
 def load_config(path=CONFIG):
     c = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    allowed = set("route_name data_dir vocab_path cache_dir result_root checkpoint_root label_names num_labels embedding_dim gru_hidden_size gru_layers bidirectional attention_heads auxiliary_weight dos_weight_multiplier positive_auxiliary_multiplier negative_auxiliary_multiplier max_len batch_size gradient_accumulation_steps learning_rate weight_decay epochs early_stopping_patience seed amp weighted_bce pos_weight_mode max_pos_weight thresholds num_workers allow_test".split())
-    required = allowed - {"dos_weight_multiplier", "positive_auxiliary_multiplier", "negative_auxiliary_multiplier"}
+    allowed = set("route_name data_dir vocab_path cache_dir result_root checkpoint_root label_names num_labels embedding_dim gru_hidden_size gru_layers bidirectional attention_heads auxiliary_weight dos_weight_multiplier positive_auxiliary_multiplier negative_auxiliary_multiplier positive_auxiliary_label_multiplier negative_auxiliary_label_multiplier adaptive_auxiliary adaptive_auxiliary_mode dos_soft_targets dos_soft_positive dos_soft_negative max_len batch_size gradient_accumulation_steps learning_rate weight_decay epochs early_stopping_patience seed amp weighted_bce pos_weight_mode max_pos_weight thresholds num_workers allow_test".split())
+    optional = {"dos_weight_multiplier", "positive_auxiliary_multiplier", "negative_auxiliary_multiplier",
+                "positive_auxiliary_label_multiplier", "negative_auxiliary_label_multiplier",
+                "adaptive_auxiliary", "adaptive_auxiliary_mode", "dos_soft_targets",
+                "dos_soft_positive", "dos_soft_negative"}
+    required = allowed - optional
     if not required.issubset(c) or set(c) - allowed:
         raise ValueError(f"Configuration keys mismatch: {set(c) ^ allowed}")
     c.setdefault("dos_weight_multiplier", 1.0)
     c.setdefault("positive_auxiliary_multiplier", 1.0)
     c.setdefault("negative_auxiliary_multiplier", 1.0)
+    c.setdefault("positive_auxiliary_label_multiplier", [1.0] * 6)
+    c.setdefault("negative_auxiliary_label_multiplier", [1.0] * 6)
+    c.setdefault("adaptive_auxiliary", False)
+    c.setdefault("adaptive_auxiliary_mode", "none")
+    c.setdefault("dos_soft_targets", False)
+    c.setdefault("dos_soft_positive", 0.8)
+    c.setdefault("dos_soft_negative", 0.1)
+    if len(c["positive_auxiliary_label_multiplier"]) != 6 or len(c["negative_auxiliary_label_multiplier"]) != 6:
+        raise ValueError("Auxiliary label multipliers must contain six values")
+    if not 0.0 < float(c["dos_soft_negative"]) < float(c["dos_soft_positive"]) < 1.0:
+        raise ValueError("DoS soft targets must satisfy 0 < negative < positive < 1")
     for k,v in {"data_dir":"data/processed/DIVE_main6_opcode_process01", "num_labels":6,
                 "gru_layers":1,"bidirectional":True,"allow_test":False}.items():
         if c[k] != v: raise ValueError(f"Protocol mismatch: {k}")
@@ -81,6 +96,24 @@ def compute_weights(c, data):
     dos_id = c["label_names"].index("DoS")
     value[dos_id] = value[dos_id] * float(c.get("dos_weight_multiplier", 1.0))
     return value.clamp(max=float(c["max_pos_weight"]))
+
+
+def auxiliary_settings(c, data):
+    positive = torch.tensor(c["positive_auxiliary_label_multiplier"], dtype=torch.float32)
+    negative = torch.tensor(c["negative_auxiliary_label_multiplier"], dtype=torch.float32)
+    if c.get("adaptive_auxiliary"):
+        labels = data.labels[data.indices]
+        counts = labels.sum(0).clamp_min(1)
+        ratio = torch.sqrt((len(labels) - counts) / counts)
+        positive = ratio / ratio.mean().clamp_min(1e-8)
+        negative = torch.ones_like(positive)
+    soft = None
+    if c.get("dos_soft_targets"):
+        soft = {"positive_high": float(c["dos_soft_positive"]),
+                "positive_low": float(c["dos_soft_negative"]),
+                "negative_low": float(c["dos_soft_negative"]),
+                "negative_high": float(c["dos_soft_positive"])}
+    return positive, negative, soft
 
 
 def initialize(mode,c,tok,device="cpu"):
@@ -129,8 +162,9 @@ def probe(mode,c,tok,train,batch_size,threads):
             # Training and resource sizing do not retain attention maps. They
             # are collected later with a one-contract diagnostic loader.
             out = forward(model,mode,batch,"cuda",diagnostics=False)
-            loss,_,_ = loss_terms(out,batch["labels"].cuda(),weight,c["auxiliary_weight"] if mode in ("P4", "P5", "P6", "P7", "P8", "P9") else 0,
-                                  c["positive_auxiliary_multiplier"],c["negative_auxiliary_multiplier"])
+            pos_label,neg_label,soft=auxiliary_settings(c,train)
+            loss,_,_ = loss_terms(out,batch["labels"].cuda(),weight,c["auxiliary_weight"] if mode in ("P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13") else 0,
+                                  c["positive_auxiliary_multiplier"],c["negative_auxiliary_multiplier"],pos_label,neg_label,soft)
         if not torch.isfinite(loss): raise ValueError("Nonfinite probe")
         scaler.scale(loss).backward(); scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(model.parameters(),1.0); scaler.step(optimizer); scaler.update()
@@ -189,7 +223,7 @@ def evaluate(model,mode,loader,c,weight,diagnostics=False):
             out=forward(model,mode,batch,"cuda",diagnostics)
             _,cls,_=loss_terms(out,batch["labels"].cuda(),weight,0)
         logits.append(out["logits"].float().cpu()); targets.append(batch["labels"]); ids.extend(batch["ids"]); losses.append(float(cls))
-        if diagnostics and mode in ("P2","P3","P4","P5","P6","P7","P8","P9"):
+        if diagnostics and mode in ("P2","P3","P4","P5","P6","P7","P8","P9","P10","P11","P12","P13"):
             z=out["representations"].float(); a=out["attention"].float()
             energies.append(out["energies"].float().cpu())
             mid=(a[:,:,0]+a[:,:,1])/2
@@ -232,7 +266,8 @@ def diagnostic_report(output,metrics,c):
         m=compute_multilabel_metrics_from_probs(y.numpy().astype(int),logits.sigmoid().numpy(),metrics["thresholds"])
         interventions[key]={"macro_f1":float(m["recognition_macro_f1"]),"micro_f1":float(m["recognition_micro_f1"]),
                             "per_label_f1":[float(x) for x in m["per_label_f1"]]}
-    return {"per_label":rows,"frozen_threshold_interventions":interventions,"test_checked":False,
+    return {"score_definition":"s_l=e_plus_l-e_minus_l","per_label":rows,
+            "frozen_threshold_interventions":interventions,"test_checked":False,
             "interpretation":"Contract-label weak supervision and model sensitivity; not local evidence ground truth."}
 
 
@@ -248,13 +283,16 @@ def train_one(mode,c,tok,train,valid,prov,resources):
     previous_audit = json.loads((root/"audit.json").read_text()) if (root/"audit.json").exists() else None
     model,encoder_hash=initialize(mode,effective,tok,"cuda")
     optimizer=optimizer_for(model,effective); scaler=torch.cuda.amp.GradScaler(enabled=c["amp"])
-    weight=compute_weights(c, train).cuda(); aux=c["auxiliary_weight"] if mode in ("P4", "P5", "P6", "P7", "P8", "P9") else 0.0
+    weight=compute_weights(c, train).cuda(); aux=c["auxiliary_weight"] if mode in ("P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13") else 0.0
+    pos_label,neg_label,soft=auxiliary_settings(c,train)
     audit={"signature":sig,"requested_config":c,"effective_config":effective,"variant":mode,
            "encoder_init_hash":encoder_hash,"model_init_hash":tensor_hash(model.state_dict()),
            "parameter_shapes":{k:list(v.shape) for k,v in model.named_parameters()},
            "params":sum(p.numel() for p in model.parameters()),"auxiliary_weight":aux,
            "positive_auxiliary_multiplier":c["positive_auxiliary_multiplier"],
-           "negative_auxiliary_multiplier":c["negative_auxiliary_multiplier"],"threads":torch.get_num_threads(),
+           "negative_auxiliary_multiplier":c["negative_auxiliary_multiplier"],
+           "positive_auxiliary_label_multiplier":pos_label.tolist(),"negative_auxiliary_label_multiplier":neg_label.tolist(),
+           "dos_soft_targets":soft,"threads":torch.get_num_threads(),
            "pos_weight":weight.tolist(),"optimizer":{"lr":optimizer.param_groups[0]["lr"],"weight_decay":optimizer.param_groups[0]["weight_decay"]},
            "query_shape":list(model.queries.shape) if mode!="P0" else list(model.label_queries.shape),
            "attention_heads":model.cross_attention.num_heads if mode!="P0" else 1,"provenance":prov,"test_checked":False}
@@ -291,7 +329,8 @@ def train_one(mode,c,tok,train,valid,prov,resources):
                 out=forward(model,mode,batch,"cuda")
                 total,cls,pol=loss_terms(out,batch["labels"].cuda(),weight,aux,
                                          effective["positive_auxiliary_multiplier"],
-                                         effective["negative_auxiliary_multiplier"])
+                                         effective["negative_auxiliary_multiplier"],
+                                         pos_label,neg_label,soft)
             if not torch.isfinite(total): raise RuntimeError("Nonfinite training loss")
             scaler.scale(total/effective["gradient_accumulation_steps"]).backward()
             if step%effective["gradient_accumulation_steps"]==0 or step==len(loader):
@@ -322,8 +361,19 @@ def train_one(mode,c,tok,train,valid,prov,resources):
         collate_fn=lambda items: collate_light_label(items,tok.pad_token_id),pin_memory=True)
     diagnostic_output=evaluate(model,mode,diagnostic_loader,effective,weight,True)
     atomic_json(root/"diagnostics.json",diagnostic_report(diagnostic_output,m,c))
+    score_artifact = None
+    if "energies" in diagnostic_output:
+        score_artifact = root / "polarity_scores.pt"
+        atomic_save(score_artifact, {"ids": diagnostic_output["ids"],
+            "labels": diagnostic_output["labels"],
+            "e_plus": diagnostic_output["energies"][..., 0],
+            "e_minus": diagnostic_output["energies"][..., 1],
+            "s": diagnostic_output["energies"][..., 0] - diagnostic_output["energies"][..., 1],
+            "score_definition": "s_l=e_plus_l-e_minus_l",
+            "test_checked": False})
     atomic_save(root/"valid_predictions.pt",{k:output[k] for k in ("ids","labels","logits")})
-    r=dict(audit,metrics=m,best_epoch=saved["epoch"],history=history,inference_seconds=output["inference_seconds"])
+    r=dict(audit,metrics=m,best_epoch=saved["epoch"],history=history,inference_seconds=output["inference_seconds"],
+           score_artifact=str(score_artifact.relative_to(ROOT)) if score_artifact else None)
     atomic_json(root/"metrics.json",r); atomic_json(root/"status.json",{"status":"completed","test_checked":False})
     return r
 

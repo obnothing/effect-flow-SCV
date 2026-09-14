@@ -11,7 +11,7 @@ import torch.nn.functional as F
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"src")); sys.path.insert(0,str(ROOT/"scripts"))
 from polarity_query_model import PolarityQueryNet, SharedMultiHeadCrossAttention, build_model, loss_terms, encoder_state, tensor_hash
-from run_polarity_queries import compute_weights, initialize, load_config, optimizer_for
+from run_polarity_queries import auxiliary_settings, compute_weights, initialize, load_config, optimizer_for
 
 
 class Tokenizer:
@@ -80,6 +80,40 @@ class Tests(unittest.TestCase):
     def test_p2_is_strict_energy_mean(self):
         m,_=initialize("P2",self.c,Tokenizer()); out=m(self.x,self.lengths,self.mask)
         torch.testing.assert_close(out["logits"],out["energies"].mean(2))
+
+    def test_p13_uses_two_attention_heads(self):
+        p13 = self.c.copy(); p13["attention_heads"] = 2
+        m,_=initialize("P13",p13,Tokenizer())
+        self.assertEqual(m.cross_attention.num_heads, 2)
+        self.assertEqual(m(self.x,self.lengths,self.mask)["logits"].shape, (2, 6))
+
+    def test_dos_soft_targets_and_adaptive_label_weights(self):
+        soft = {"positive_high": .8, "positive_low": .1,
+                "negative_low": .1, "negative_high": .8}
+        out = initialize("P4", self.c, Tokenizer())[0](self.x,self.lengths,self.mask)
+        _,_,actual = loss_terms(out,self.y,torch.ones(6),.1,
+                                dos_soft_targets=soft)
+        pos_target = self.y.clone(); neg_target = (1-self.y).clone()
+        dos = self.y[:,4] > .5
+        pos_target[:,4] = torch.where(dos, torch.tensor(.8), torch.tensor(.1))
+        neg_target[:,4] = torch.where(dos, torch.tensor(.1), torch.tensor(.8))
+        expected = .5 * (F.binary_cross_entropy_with_logits(out["energies"][...,0],pos_target)
+                         + F.binary_cross_entropy_with_logits(out["energies"][...,1],neg_target))
+        torch.testing.assert_close(actual, expected)
+
+        class Data:
+            labels = torch.zeros(10, 6)
+            indices = list(range(10))
+        Data.labels[:5, 0] = 1
+        Data.labels[:5, 1] = 1
+        Data.labels[:5, 2] = 1
+        Data.labels[:5, 3] = 1
+        Data.labels[:1, 4] = 1
+        Data.labels[:5, 5] = 1
+        adaptive,_negative,_soft = auxiliary_settings(dict(self.c, adaptive_auxiliary=True), Data())
+        self.assertEqual(tuple(adaptive.shape), (6,))
+        self.assertGreater(float(adaptive[4]), float(adaptive[0]))
+        self.assertIsNone(_soft)
 
     def test_dos_weight_override_is_label_local(self):
         class Data:

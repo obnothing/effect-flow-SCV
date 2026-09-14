@@ -8,7 +8,7 @@ from torch.nn import functional as F
 
 from light_label_model import LabelGuidedOpcodeNet, validate_model_config
 
-VARIANTS = ("P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9")
+VARIANTS = ("P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13")
 
 
 class SharedMultiHeadCrossAttention(nn.Module):
@@ -93,13 +93,33 @@ class PolarityQueryNet(LabelGuidedOpcodeNet):
 
 
 def loss_terms(output, targets, pos_weight, auxiliary_weight,
-               positive_multiplier=1.0, negative_multiplier=1.0):
+               positive_multiplier=1.0, negative_multiplier=1.0,
+               positive_label_multiplier=1.0, negative_label_multiplier=1.0,
+               dos_soft_targets=None):
     classification = F.binary_cross_entropy_with_logits(output["logits"], targets, pos_weight=pos_weight)
     polarity = classification.new_zeros(())
     if auxiliary_weight:
         energies = output["energies"]
-        positive = F.binary_cross_entropy_with_logits(energies[..., 0], targets)
-        negative = F.binary_cross_entropy_with_logits(energies[..., 1], 1 - targets)
+        positive_targets = targets
+        negative_targets = 1 - targets
+        if dos_soft_targets is not None:
+            positive_targets = targets.clone()
+            negative_targets = (1 - targets).clone()
+            dos = targets[..., 4] > 0.5
+            positive_high = torch.as_tensor(dos_soft_targets["positive_high"], device=targets.device, dtype=targets.dtype)
+            positive_low = torch.as_tensor(dos_soft_targets["positive_low"], device=targets.device, dtype=targets.dtype)
+            negative_low = torch.as_tensor(dos_soft_targets["negative_low"], device=targets.device, dtype=targets.dtype)
+            negative_high = torch.as_tensor(dos_soft_targets["negative_high"], device=targets.device, dtype=targets.dtype)
+            positive_targets[..., 4] = torch.where(dos, positive_high, positive_low)
+            negative_targets[..., 4] = torch.where(dos, negative_low, negative_high)
+        positive = F.binary_cross_entropy_with_logits(energies[..., 0], positive_targets, reduction="none")
+        negative = F.binary_cross_entropy_with_logits(energies[..., 1], negative_targets, reduction="none")
+        positive = positive * torch.as_tensor(positive_label_multiplier, device=positive.device,
+                                               dtype=positive.dtype).view(1, -1)
+        negative = negative * torch.as_tensor(negative_label_multiplier, device=negative.device,
+                                               dtype=negative.dtype).view(1, -1)
+        positive = positive.mean()
+        negative = negative.mean()
         polarity = 0.5 * (positive_multiplier * positive + negative_multiplier * negative)
     return classification + auxiliary_weight * polarity, classification, polarity
 
