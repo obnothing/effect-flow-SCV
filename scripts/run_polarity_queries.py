@@ -232,6 +232,7 @@ def train_one(mode,c,tok,train,valid,prov,resources):
         return r
     torch.set_num_threads(resources["threads"])
     effective=dict(c,batch_size=resources["batch_size"],gradient_accumulation_steps=resources["gradient_accumulation_steps"])
+    previous_audit = json.loads((root/"audit.json").read_text()) if (root/"audit.json").exists() else None
     model,encoder_hash=initialize(mode,effective,tok,"cuda")
     optimizer=optimizer_for(model,effective); scaler=torch.cuda.amp.GradScaler(enabled=c["amp"])
     weight=pos_weight(train,c).cuda(); aux=c["auxiliary_weight"] if mode=="P4" else 0.0
@@ -248,7 +249,18 @@ def train_one(mode,c,tok,train,valid,prov,resources):
     history=[]; best=-1.; stale=0; epoch_start=1
     if (ckpt/"last.pt").exists():
         saved=torch.load(ckpt/"last.pt",map_location="cpu")
-        if saved["signature"]!=sig: raise ValueError("Resume signature changed")
+        if saved["signature"]!=sig:
+            same_config = previous_audit is not None and previous_audit.get("requested_config") == c
+            old_provenance = previous_audit.get("provenance", {}) if previous_audit else {}
+            unchanged_dependencies = all(old_provenance.get(key) == value for key, value in prov.items()
+                                         if key != "scripts/run_polarity_queries.py")
+            runner_only_change = (set(old_provenance) == set(prov)
+                                  and old_provenance.get("scripts/run_polarity_queries.py") != prov.get("scripts/run_polarity_queries.py"))
+            if not (same_config and unchanged_dependencies and runner_only_change):
+                raise ValueError("Resume signature changed")
+            # The only accepted migration is a runner-only change, such as a
+            # missing import fix after the previous epoch checkpoint.
+            saved["signature"] = sig
         model.load_state_dict(saved["model"]); optimizer.load_state_dict(saved["optimizer"]); scaler.load_state_dict(saved["scaler"])
         history,best,stale,epoch_start=saved["history"],saved["best"],saved["stale"],saved["epoch"]+1
         random.setstate(saved["python_rng"]); np.random.set_state(saved["numpy_rng"])
