@@ -121,11 +121,14 @@ def probe(mode,c,tok,train,batch_size,threads):
         torch.cuda.synchronize()
         if i >= 2: times.append(time.perf_counter()-start); cpu_times.append(time.process_time()-cpu_start)
         del out,loss
-    return {"variant":mode,"threads":threads,"batch_size":batch_size,
+    result = {"variant":mode,"threads":threads,"batch_size":batch_size,
             "peak_allocated_mb":torch.cuda.max_memory_allocated()/2**20,
             "peak_reserved_mb":torch.cuda.max_memory_reserved()/2**20,
             "contracts_per_second":batch_size/statistics.median(times),
             "cpu_core_equivalents":sum(cpu_times)/sum(times)}
+    del model, optimizer
+    torch.cuda.empty_cache()
+    return result
 
 
 def select_resources(c,tok,train,prov):
@@ -136,7 +139,7 @@ def select_resources(c,tok,train,prov):
         if saved["signature"] != sig: raise ValueError("Resource audit signature changed")
         return saved
     rows=[]
-    for batch in (64,32,16):
+    for batch in (64,32,16,8,4,2,1):
         success=True
         for mode in VARIANTS:
             try:
