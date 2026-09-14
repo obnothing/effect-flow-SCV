@@ -113,7 +113,9 @@ def probe(mode,c,tok,train,batch_size,threads):
         optimizer.zero_grad(set_to_none=True)
         torch.cuda.synchronize(); start=time.perf_counter(); cpu_start=time.process_time()
         with torch.autocast("cuda",dtype=torch.float16,enabled=c["amp"]):
-            out = forward(model,mode,batch,"cuda",diagnostics=(i == 0))
+            # Training and resource sizing do not retain attention maps. They
+            # are collected later with a one-contract diagnostic loader.
+            out = forward(model,mode,batch,"cuda",diagnostics=False)
             loss,_,_ = loss_terms(out,batch["labels"].cuda(),weight,c["auxiliary_weight"] if mode=="P4" else 0)
         if not torch.isfinite(loss): raise ValueError("Nonfinite probe")
         scaler.scale(loss).backward(); scaler.unscale_(optimizer)
@@ -285,8 +287,11 @@ def train_one(mode,c,tok,train,valid,prov,resources):
         atomic_json(root/"history.json",history)
         print(f"[{mode}] epoch={epoch} train={row['train_loss']:.6f} valid={row['valid_loss']:.6f} fixed_macro={m['fixed']['macro_f1']:.6f} tuned_macro={score:.6f}",flush=True)
     saved=torch.load(ckpt/"best.pt",map_location="cpu"); model.load_state_dict(saved["model_state_dict"])
-    output=evaluate(model,mode,vl,effective,weight,True); m=metric_pack(c,output["labels"],output["logits"])
-    atomic_json(root/"diagnostics.json",diagnostic_report(output,m,c))
+    output=evaluate(model,mode,vl,effective,weight,False); m=metric_pack(c,output["labels"],output["logits"])
+    diagnostic_loader=DataLoader(valid,batch_size=1,shuffle=False,num_workers=0,
+        collate_fn=lambda items: collate_light_label(items,tok.pad_token_id),pin_memory=True)
+    diagnostic_output=evaluate(model,mode,diagnostic_loader,effective,weight,True)
+    atomic_json(root/"diagnostics.json",diagnostic_report(diagnostic_output,m,c))
     atomic_save(root/"valid_predictions.pt",{k:output[k] for k in ("ids","labels","logits")})
     r=dict(audit,metrics=m,best_epoch=saved["epoch"],history=history,inference_seconds=output["inference_seconds"])
     atomic_json(root/"metrics.json",r); atomic_json(root/"status.json",{"status":"completed","test_checked":False})
