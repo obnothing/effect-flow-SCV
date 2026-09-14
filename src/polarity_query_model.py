@@ -11,6 +11,43 @@ from light_label_model import LabelGuidedOpcodeNet, validate_model_config
 VARIANTS = ("P0", "P1", "P2", "P3", "P4")
 
 
+class SharedMultiHeadCrossAttention(nn.Module):
+    """Memory-bounded multi-head query-to-token cross-attention.
+
+    The explicit score tensor is [B, heads, query_tokens, key_tokens]; it
+    never constructs a key-token by key-token attention matrix.
+    """
+
+    def __init__(self, embed_dim, num_heads):
+        super().__init__()
+        if int(embed_dim) % int(num_heads):
+            raise ValueError("embed_dim must be divisible by num_heads")
+        self.embed_dim = int(embed_dim)
+        self.num_heads = int(num_heads)
+        self.head_dim = self.embed_dim // self.num_heads
+        self.q_proj = nn.Linear(self.embed_dim, self.embed_dim, bias=False)
+        self.k_proj = nn.Linear(self.embed_dim, self.embed_dim, bias=False)
+        self.v_proj = nn.Linear(self.embed_dim, self.embed_dim, bias=False)
+        self.out_proj = nn.Linear(self.embed_dim, self.embed_dim, bias=False)
+
+    def forward(self, query, key, value, key_padding_mask=None, need_weights=False,
+                average_attn_weights=False):
+        batch, query_tokens, _ = query.shape
+        key_tokens = key.shape[1]
+        q = self.q_proj(query).view(batch, query_tokens, self.num_heads, self.head_dim).transpose(1, 2)
+        k = self.k_proj(key).view(batch, key_tokens, self.num_heads, self.head_dim).transpose(1, 2)
+        v = self.v_proj(value).view(batch, key_tokens, self.num_heads, self.head_dim).transpose(1, 2)
+        scores = torch.matmul(q, k.transpose(-2, -1)) / (self.head_dim ** 0.5)
+        if key_padding_mask is not None:
+            scores = scores.masked_fill(key_padding_mask[:, None, None, :], torch.finfo(scores.dtype).min)
+        weights = torch.softmax(scores, dim=-1)
+        attended = torch.matmul(weights, v).transpose(1, 2).contiguous().view(batch, query_tokens, self.embed_dim)
+        output = self.out_proj(attended)
+        if not need_weights:
+            return output, None
+        return output, weights if not average_attn_weights else weights.mean(1)
+
+
 class PolarityQueryNet(LabelGuidedOpcodeNet):
     def __init__(self, mode, vocab_size, pad_id, embedding_dim=128, hidden=384, labels=6, heads=4):
         if mode not in VARIANTS[1:]:
@@ -22,8 +59,7 @@ class PolarityQueryNet(LabelGuidedOpcodeNet):
         self.polarities = 1 if mode == "P1" else 2
         self.queries = nn.Parameter(torch.empty(labels, self.polarities, self.output_dim))
         nn.init.normal_(self.queries, std=0.02)
-        self.cross_attention = nn.MultiheadAttention(self.output_dim, heads, dropout=0.0,
-                                                      bias=False, batch_first=True)
+        self.cross_attention = SharedMultiHeadCrossAttention(self.output_dim, heads)
         self.label_scorer = nn.Parameter(torch.empty(labels, self.output_dim))
         nn.init.xavier_uniform_(self.label_scorer)
         self.branch_bias = nn.Parameter(torch.zeros(labels, self.polarities))

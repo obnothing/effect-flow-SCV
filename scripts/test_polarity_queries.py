@@ -10,7 +10,7 @@ import torch.nn.functional as F
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"src")); sys.path.insert(0,str(ROOT/"scripts"))
-from polarity_query_model import PolarityQueryNet, build_model, loss_terms, encoder_state, tensor_hash
+from polarity_query_model import PolarityQueryNet, SharedMultiHeadCrossAttention, build_model, loss_terms, encoder_state, tensor_hash
 from run_polarity_queries import initialize, load_config, optimizer_for
 
 
@@ -36,7 +36,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(len({sum(p.numel() for p in m.parameters()) for m in models[2:]}),1)
         self.assertEqual(len({tensor_hash(m.state_dict()) for m in models[2:]}),1)
         for m in models[1:]:
-            self.assertEqual(sum(isinstance(x,torch.nn.MultiheadAttention) for x in m.modules()),1)
+            self.assertEqual(sum(isinstance(x,SharedMultiHeadCrossAttention) for x in m.modules()),1)
+            self.assertEqual(m.cross_attention.num_heads,4)
             self.assertNotIn("targets",inspect.signature(m.forward).parameters)
 
     def test_padding_and_attention_normalization(self):
@@ -59,7 +60,7 @@ class Tests(unittest.TestCase):
         F.binary_cross_entropy_with_logits(out["logits"][:,2],self.y[:,2]).backward()
         self.assertTrue((m.queries.grad[2].norm(dim=-1)>0).all())
         self.assertEqual(m.queries.grad[[0,1,3,4,5]].abs().sum().item(),0)
-        self.assertGreater(m.cross_attention.in_proj_weight.grad.abs().sum().item(),0)
+        self.assertGreater(m.cross_attention.q_proj.weight.grad.abs().sum().item(),0)
 
     def test_competition_and_branch_removal(self):
         m,_=initialize("P4",self.c,Tokenizer()); out=m(self.x,self.lengths,self.mask)
