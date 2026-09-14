@@ -73,6 +73,10 @@ class Tests(unittest.TestCase):
         erased=z.clone(); erased[:,:,1]=0
         self.assertFalse(torch.equal(m.score(erased)[0],m.score(z)[0]))
 
+    def test_p2_is_strict_energy_mean(self):
+        m,_=initialize("P2",self.c,Tokenizer()); out=m(self.x,self.lengths,self.mask)
+        torch.testing.assert_close(out["logits"],out["energies"].mean(2))
+
     def test_restore_optimizer_rng_next_step(self):
         model,_=initialize("P4",self.c,Tokenizer()); opt=optimizer_for(model,self.c)
         def step(m,o):

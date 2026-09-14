@@ -117,7 +117,7 @@ def probe(mode,c,tok,train,batch_size,threads):
             # Training and resource sizing do not retain attention maps. They
             # are collected later with a one-contract diagnostic loader.
             out = forward(model,mode,batch,"cuda",diagnostics=False)
-            loss,_,_ = loss_terms(out,batch["labels"].cuda(),weight,c["auxiliary_weight"] if mode=="P4" else 0)
+            loss,_,_ = loss_terms(out,batch["labels"].cuda(),weight,c["auxiliary_weight"] if mode in ("P4", "P5") else 0)
         if not torch.isfinite(loss): raise ValueError("Nonfinite probe")
         scaler.scale(loss).backward(); scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(model.parameters(),1.0); scaler.step(optimizer); scaler.update()
@@ -176,7 +176,7 @@ def evaluate(model,mode,loader,c,weight,diagnostics=False):
             out=forward(model,mode,batch,"cuda",diagnostics)
             _,cls,_=loss_terms(out,batch["labels"].cuda(),weight,0)
         logits.append(out["logits"].float().cpu()); targets.append(batch["labels"]); ids.extend(batch["ids"]); losses.append(float(cls))
-        if diagnostics and mode in ("P2","P3","P4"):
+        if diagnostics and mode in ("P2","P3","P4","P5"):
             z=out["representations"].float(); a=out["attention"].float()
             energies.append(out["energies"].float().cpu())
             mid=(a[:,:,0]+a[:,:,1])/2
@@ -235,7 +235,7 @@ def train_one(mode,c,tok,train,valid,prov,resources):
     previous_audit = json.loads((root/"audit.json").read_text()) if (root/"audit.json").exists() else None
     model,encoder_hash=initialize(mode,effective,tok,"cuda")
     optimizer=optimizer_for(model,effective); scaler=torch.cuda.amp.GradScaler(enabled=c["amp"])
-    weight=pos_weight(train,c).cuda(); aux=c["auxiliary_weight"] if mode=="P4" else 0.0
+    weight=pos_weight(train,c).cuda(); aux=c["auxiliary_weight"] if mode in ("P4", "P5") else 0.0
     audit={"signature":sig,"requested_config":c,"effective_config":effective,"variant":mode,
            "encoder_init_hash":encoder_hash,"model_init_hash":tensor_hash(model.state_dict()),
            "parameter_shapes":{k:list(v.shape) for k,v in model.named_parameters()},

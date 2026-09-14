@@ -8,7 +8,7 @@ from torch.nn import functional as F
 
 from light_label_model import LabelGuidedOpcodeNet, validate_model_config
 
-VARIANTS = ("P0", "P1", "P2", "P3", "P4")
+VARIANTS = ("P0", "P1", "P2", "P3", "P4", "P5")
 
 
 class SharedMultiHeadCrossAttention(nn.Module):
@@ -49,11 +49,13 @@ class SharedMultiHeadCrossAttention(nn.Module):
 
 
 class PolarityQueryNet(LabelGuidedOpcodeNet):
-    def __init__(self, mode, vocab_size, pad_id, embedding_dim=128, hidden=384, labels=6, heads=4):
+    def __init__(self, mode, vocab_size, pad_id, embedding_dim=128, hidden=384, labels=6, heads=4,
+                 bidirectional=True, gru_layers=1):
         if mode not in VARIANTS[1:]:
             raise ValueError(mode)
         # Reuse precisely the original opcode embedding and packed BiGRU.
-        super().__init__("b0_mean", vocab_size, pad_id, embedding_dim, hidden, labels, True)
+        super().__init__("b0_mean", vocab_size, pad_id, embedding_dim, hidden, labels,
+                         bidirectional, gru_layers=gru_layers)
         del self.classifier
         self.mode = mode
         self.polarities = 1 if mode == "P1" else 2
@@ -69,8 +71,8 @@ class PolarityQueryNet(LabelGuidedOpcodeNet):
         if self.mode == "P1":
             logits = energies[..., 0]
         elif self.mode == "P2":
-            logits = torch.einsum("bld,ld->bl", representations.mean(2), self.label_scorer)
-            logits = logits + self.branch_bias[:, 0] - self.branch_bias[:, 1]
+            # Strict capacity control: average the two branch energies.
+            logits = energies.mean(2)
         else:
             logits = energies[..., 0] - energies[..., 1]
         return logits, energies
@@ -121,7 +123,8 @@ def build_model(mode, config, vocab_size, pad_id):
             config["embedding_dim"], config["gru_hidden_size"], config["num_labels"], True)
     else:
         model = PolarityQueryNet(mode, vocab_size, pad_id, config["embedding_dim"],
-            config["gru_hidden_size"], config["num_labels"], config["attention_heads"])
+            config["gru_hidden_size"], config["num_labels"], config["attention_heads"],
+            config["bidirectional"], config["gru_layers"])
     validate_model_config(model, config)
     if mode != "P0":
         if model.cross_attention.num_heads != config["attention_heads"]:
