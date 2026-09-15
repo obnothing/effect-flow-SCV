@@ -11,7 +11,7 @@ import torch.nn.functional as F
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"src")); sys.path.insert(0,str(ROOT/"scripts"))
 from polarity_query_model import PolarityQueryNet, SharedMultiHeadCrossAttention, build_model, loss_terms, encoder_state, tensor_hash
-from run_polarity_queries import auxiliary_settings, compute_weights, initialize, load_config, optimizer_for
+from run_polarity_queries import auxiliary_settings, compute_weights, initialize, load_config, optimizer_for, scheduler_for
 
 
 class Tokenizer:
@@ -122,6 +122,18 @@ class Tests(unittest.TestCase):
         c=load_config(); base=compute_weights(c,Data()); changed=compute_weights(dict(c,dos_weight_multiplier=1.5),Data())
         torch.testing.assert_close(base[[0,1,2,3,5]],changed[[0,1,2,3,5]])
         self.assertGreater(changed[4],base[4])
+
+    def test_scheduler_is_warmup_then_cosine(self):
+        m,_=initialize("P4",self.c,Tokenizer()); opt=optimizer_for(m,self.c)
+        schedule, audit = scheduler_for(opt, dict(self.c, scheduler="warmup_cosine",
+                                                  warmup_ratio=.1, min_lr_ratio=.2), 10)
+        self.assertEqual(audit["warmup_updates"], 1)
+        lrs=[]
+        for _ in range(10):
+            opt.step(); schedule.step(); lrs.append(opt.param_groups[0]["lr"])
+        self.assertAlmostEqual(lrs[0], self.c["learning_rate"])
+        self.assertLess(lrs[-1], lrs[0])
+        self.assertGreaterEqual(lrs[-1], self.c["learning_rate"]*.2 - 1e-8)
 
     def test_restore_optimizer_rng_next_step(self):
         model,_=initialize("P4",self.c,Tokenizer()); opt=optimizer_for(model,self.c)

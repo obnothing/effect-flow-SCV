@@ -2,6 +2,7 @@
 import argparse
 import csv
 import json
+import math
 import os
 from pathlib import Path
 import random
@@ -30,11 +31,12 @@ CONFIG = ROOT / "configs/light_label/polarity_queries.yaml"
 
 def load_config(path=CONFIG):
     c = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    allowed = set("route_name data_dir vocab_path cache_dir result_root checkpoint_root label_names num_labels embedding_dim gru_hidden_size gru_layers bidirectional attention_heads auxiliary_weight dos_weight_multiplier positive_auxiliary_multiplier negative_auxiliary_multiplier positive_auxiliary_label_multiplier negative_auxiliary_label_multiplier adaptive_auxiliary adaptive_auxiliary_mode dos_soft_targets dos_soft_positive dos_soft_negative max_len batch_size gradient_accumulation_steps learning_rate weight_decay epochs early_stopping_patience seed amp weighted_bce pos_weight_mode max_pos_weight thresholds num_workers allow_test".split())
+    allowed = set("route_name data_dir vocab_path cache_dir result_root checkpoint_root label_names num_labels embedding_dim gru_hidden_size gru_layers bidirectional attention_heads auxiliary_weight dos_weight_multiplier positive_auxiliary_multiplier negative_auxiliary_multiplier positive_auxiliary_label_multiplier negative_auxiliary_label_multiplier adaptive_auxiliary adaptive_auxiliary_mode dos_soft_targets dos_soft_positive dos_soft_negative scheduler warmup_ratio min_lr_ratio max_len batch_size gradient_accumulation_steps learning_rate weight_decay epochs early_stopping_patience seed amp weighted_bce pos_weight_mode max_pos_weight thresholds num_workers allow_test".split())
     optional = {"dos_weight_multiplier", "positive_auxiliary_multiplier", "negative_auxiliary_multiplier",
                 "positive_auxiliary_label_multiplier", "negative_auxiliary_label_multiplier",
                 "adaptive_auxiliary", "adaptive_auxiliary_mode", "dos_soft_targets",
-                "dos_soft_positive", "dos_soft_negative"}
+                "dos_soft_positive", "dos_soft_negative", "scheduler", "warmup_ratio",
+                "min_lr_ratio"}
     required = allowed - optional
     if not required.issubset(c) or set(c) - allowed:
         raise ValueError(f"Configuration keys mismatch: {set(c) ^ allowed}")
@@ -58,10 +60,12 @@ def load_config(path=CONFIG):
     return c
 
 
-def provenance(c):
+def provenance(c, config_path=None):
     names = ["scripts/run_polarity_queries.py", "src/polarity_query_model.py", "src/light_label_model.py",
              "src/light_label_data.py", "src/train_light_label_model.py", "src/metrics.py", "src/evm_tokenizer.py",
-             "scripts/run_hidden384_trials.py", "configs/light_label/polarity_queries.yaml", c["vocab_path"]]
+             "scripts/run_hidden384_trials.py", c["vocab_path"]]
+    actual_config = Path(config_path or CONFIG).resolve().relative_to(ROOT)
+    names.append(str(actual_config))
     names += [f"{c['cache_dir']}/{s}_max{c['max_len']}.pt" for s in ("train","valid")]
     names += [f"{c['data_dir']}/{s}.jsonl" for s in ("train","valid")]
     return {n:digest(ROOT/n) for n in names}
@@ -133,6 +137,30 @@ def optimizer_for(model,c):
     for g in optimizer.param_groups:
         if g["lr"] != c["learning_rate"] or g["weight_decay"] != c["weight_decay"]: raise ValueError("Optimizer mismatch")
     return optimizer
+
+
+def scheduler_for(optimizer, c, total_updates):
+    name = c.get("scheduler", "none")
+    if name == "none":
+        return None, {"name": "none", "total_updates": int(total_updates), "warmup_updates": 0}
+    if name not in ("warmup_constant", "warmup_cosine"):
+        raise ValueError(f"Unsupported scheduler: {name}")
+    warmup_updates = max(1, int(round(total_updates * float(c.get("warmup_ratio", 0.05)))))
+    min_lr_ratio = float(c.get("min_lr_ratio", 0.1))
+    if not 0.0 <= min_lr_ratio <= 1.0:
+        raise ValueError("min_lr_ratio must be between 0 and 1")
+
+    def schedule(update):
+        if update <= warmup_updates:
+            return update / float(warmup_updates)
+        if name == "warmup_constant":
+            return 1.0
+        progress = (update - warmup_updates) / float(max(1, total_updates - warmup_updates))
+        return min_lr_ratio + (1.0 - min_lr_ratio) * 0.5 * (1.0 + math.cos(math.pi * progress))
+
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=schedule)
+    return scheduler, {"name": name, "total_updates": int(total_updates),
+                       "warmup_updates": int(warmup_updates), "min_lr_ratio": min_lr_ratio}
 
 
 def forward(model,mode,batch,device,diagnostics=False):
@@ -299,6 +327,10 @@ def train_one(mode,c,tok,train,valid,prov,resources):
     atomic_json(root/"audit.json",audit)
     print(json.dumps({"start":mode,"encoder_init_hash":encoder_hash,"params":audit["params"],"query_shape":audit["query_shape"],"heads":audit["attention_heads"],"auxiliary_weight":aux,"batch":effective["batch_size"],"threads":resources["threads"]}),flush=True)
     loader=make_loader(train,effective,tok.pad_token_id,True); vl=make_loader(valid,effective,tok.pad_token_id,False)
+    total_updates = int(math.ceil(len(loader) / float(effective["gradient_accumulation_steps"]))) * int(effective["epochs"])
+    scheduler, scheduler_audit = scheduler_for(optimizer, effective, total_updates)
+    audit["scheduler"] = scheduler_audit
+    atomic_json(root/"audit.json",audit)
     history=[]; best=-1.; stale=0; epoch_start=1
     if (ckpt/"last.pt").exists():
         saved=torch.load(ckpt/"last.pt",map_location="cpu")
@@ -315,6 +347,8 @@ def train_one(mode,c,tok,train,valid,prov,resources):
             # missing import fix after the previous epoch checkpoint.
             saved["signature"] = sig
         model.load_state_dict(saved["model"]); optimizer.load_state_dict(saved["optimizer"]); scaler.load_state_dict(saved["scaler"])
+        if scheduler is not None and saved.get("scheduler") is not None:
+            scheduler.load_state_dict(saved["scheduler"])
         history,best,stale,epoch_start=saved["history"],saved["best"],saved["stale"],saved["epoch"]+1
         random.setstate(saved["python_rng"]); np.random.set_state(saved["numpy_rng"])
         torch.set_rng_state(saved["torch_rng"]); torch.cuda.set_rng_state_all(saved["cuda_rng"])
@@ -335,7 +369,10 @@ def train_one(mode,c,tok,train,valid,prov,resources):
             scaler.scale(total/effective["gradient_accumulation_steps"]).backward()
             if step%effective["gradient_accumulation_steps"]==0 or step==len(loader):
                 scaler.unscale_(optimizer); torch.nn.utils.clip_grad_norm_(model.parameters(),1.0)
-                scaler.step(optimizer); scaler.update(); optimizer.zero_grad(set_to_none=True)
+                scaler.step(optimizer); scaler.update()
+                if scheduler is not None:
+                    scheduler.step()
+                optimizer.zero_grad(set_to_none=True)
             losses.append([float(total.detach()),float(cls.detach()),float(pol.detach())])
             if step%50==0: print(f"[{mode}] epoch={epoch} step={step}/{len(loader)} cls={float(cls):.6f} polarity={float(pol):.6f}",flush=True)
             del out,total,cls,pol
@@ -344,13 +381,15 @@ def train_one(mode,c,tok,train,valid,prov,resources):
         avg=np.mean(losses,axis=0)
         row={"epoch":epoch,"train_loss":float(avg[0]),"train_cls":float(avg[1]),"train_polarity":float(avg[2]),
              "valid_loss":output["loss"],"metrics":m,"train_seconds":duration,"contracts_per_second":len(train)/duration,
-             "peak_memory_mb":torch.cuda.max_memory_allocated()/2**20}
+             "peak_memory_mb":torch.cuda.max_memory_allocated()/2**20,
+             "learning_rate":optimizer.param_groups[0]["lr"]}
         history.append(row); score=m["tuned"]["macro_f1"]
         if score>best:
             best,stale=score,0
             atomic_save(ckpt/"best.pt",{"model_state_dict":model.state_dict(),"config":effective,"mode":mode,"metrics":m,"epoch":epoch,"signature":sig})
         else: stale+=1
         atomic_save(ckpt/"last.pt",{"model":model.state_dict(),"optimizer":optimizer.state_dict(),"scaler":scaler.state_dict(),
+            "scheduler":scheduler.state_dict() if scheduler is not None else None,
             "history":history,"best":best,"stale":stale,"epoch":epoch,"signature":sig,
             "python_rng":random.getstate(),"numpy_rng":np.random.get_state(),"torch_rng":torch.get_rng_state(),"cuda_rng":torch.cuda.get_rng_state_all()})
         atomic_json(root/"history.json",history)
@@ -384,7 +423,7 @@ def main():
     c=load_config(args.config)
     torch.set_num_threads(2)
     if not torch.cuda.is_available(): raise RuntimeError("CUDA required")
-    prov=provenance(c); train,valid=datasets(c); tok=EVMOpcodeTokenizer.from_vocab_file(ROOT/c["vocab_path"])
+    prov=provenance(c,args.config); train,valid=datasets(c); tok=EVMOpcodeTokenizer.from_vocab_file(ROOT/c["vocab_path"])
     print(f"[setup] train={len(train)} valid={len(valid)} dataset={c['data_dir']} test_checked=false",flush=True)
     resources=select_resources(c,tok,train,prov)
     if args.resources_only:return
