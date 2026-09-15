@@ -151,6 +151,10 @@ def scheduler_for(optimizer, c, total_updates):
         raise ValueError("min_lr_ratio must be between 0 and 1")
 
     def schedule(update):
+        # LambdaLR initializes at update 0 before the first optimizer step.
+        # Start that step at the first nonzero warmup value instead of zero.
+        if update <= 0:
+            return 1.0 / float(warmup_updates)
         if update <= warmup_updates:
             return update / float(warmup_updates)
         if name == "warmup_constant":

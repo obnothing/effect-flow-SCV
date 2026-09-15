@@ -128,6 +128,7 @@ class Tests(unittest.TestCase):
         schedule, audit = scheduler_for(opt, dict(self.c, scheduler="warmup_cosine",
                                                   warmup_ratio=.1, min_lr_ratio=.2), 10)
         self.assertEqual(audit["warmup_updates"], 1)
+        self.assertGreater(opt.param_groups[0]["lr"], 0.0)
         lrs=[]
         for _ in range(10):
             opt.step(); schedule.step(); lrs.append(opt.param_groups[0]["lr"])
