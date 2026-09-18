@@ -47,7 +47,7 @@ def main():
         train_loader = loader(subset(train, 256, 42), tokenizer, 2)
         valid_loader = loader(subset(valid, 128, 43), tokenizer, 2)
         torch.cuda.reset_peak_memory_stats(); start = time.perf_counter(); model.train()
-        first_shape = None
+        first_shape = None; amp_overflow_recoveries = 0; successful_updates = 0
         for batch in train_loader:
             optimizer.zero_grad(set_to_none=True)
             if first_shape is None:
@@ -60,10 +60,20 @@ def main():
             if not torch.isfinite(loss):
                 raise RuntimeError(f"Nonfinite smoke loss for {config['encoder_type']}")
             scaler.scale(loss).backward(); scaler.unscale_(optimizer)
+            bad = [name for name, parameter in model.named_parameters()
+                   if parameter.grad is not None and not torch.isfinite(parameter.grad).all()]
+            if bad:
+                # Dynamic loss scaling is expected to skip occasional initial
+                # FP16 overflows. Require it to recover instead of mistaking a
+                # skipped optimizer step for a model NaN.
+                scaler.step(optimizer); scaler.update(); amp_overflow_recoveries += 1
+                if amp_overflow_recoveries > 16 and successful_updates == 0:
+                    raise RuntimeError(f"AMP did not recover for {config['encoder_type']}: {bad[:20]}")
+                continue
             norm = torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             if not torch.isfinite(norm):
-                raise RuntimeError(f"Nonfinite smoke gradient for {config['encoder_type']}")
-            scaler.step(optimizer); scaler.update()
+                raise RuntimeError(f"Nonfinite unscaled gradient norm for {config['encoder_type']}")
+            scaler.step(optimizer); scaler.update(); successful_updates += 1
         model.eval(); valid_losses = []
         with torch.no_grad():
             for batch in valid_loader:
@@ -78,6 +88,7 @@ def main():
             "first_hidden_shape": first_shape, "valid_loss": sum(valid_losses) / len(valid_losses),
             "peak_memory_mb": torch.cuda.max_memory_allocated() / 2**20,
             "seconds": time.perf_counter() - start, "amp": config["amp"], "finite": True,
+            "amp_overflow_recoveries": amp_overflow_recoveries, "successful_updates": successful_updates,
             "test_checked": False,
         }
         reports.append(report); print(json.dumps(report), flush=True)
