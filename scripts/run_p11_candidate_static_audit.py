@@ -15,9 +15,7 @@ from audit_p11_error_candidates import audit_label
 
 
 SOLC_ROOT=Path.home()/".solc-select"/"artifacts"
-SOLC={"0.4":SOLC_ROOT/"solc-0.4.25"/"solc-0.4.25","0.5":SOLC_ROOT/"solc-0.5.17"/"solc-0.5.17",
-      "0.6":SOLC_ROOT/"solc-0.6.12"/"solc-0.6.12","0.7":SOLC_ROOT/"solc-0.7.6"/"solc-0.7.6",
-      "0.8":SOLC_ROOT/"solc-0.8.35"/"solc-0.8.35"}
+FALLBACK_SOLC={"0.4":"0.4.25","0.5":"0.5.17","0.6":"0.6.12","0.7":"0.7.6","0.8":"0.8.35"}
 LABEL_CHECKS={
     "Reentrancy":("reentrancy",),
     "Access Control":("arbitrary-send","suicidal","tx-origin","unprotected-upgrade","protected-vars"),
@@ -32,11 +30,18 @@ def compiler_for(text):
     match=re.search(r"pragma\s+solidity\s+([^;]+);",text)
     if not match: return None,"missing"
     constraint=match.group(1)
-    versions=re.findall(r"0\.[4-8]",constraint)
+    versions=re.findall(r"0\.[4-8]\.\d+",constraint)
     if not versions: return None,constraint
-    minor=max(int(value.split(".")[1]) for value in versions)
-    key=f"0.{minor}"
-    return SOLC.get(key),constraint
+    # Exact pragmas require their exact compiler. Caret/range pragmas may use
+    # the latest installed compiler inside their allowed major/minor range.
+    exact=versions[0]
+    if not any(token in constraint for token in ("^",">","<","~")):
+        selected=exact
+    elif "<0.8" in constraint:
+        selected="0.7.6"
+    else:
+        selected=FALLBACK_SOLC[".".join(exact.split(".")[:2])]
+    return SOLC_ROOT/f"solc-{selected}"/f"solc-{selected}",constraint
 
 
 def relevant_checks(label,checks):
