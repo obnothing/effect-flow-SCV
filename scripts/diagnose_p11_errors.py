@@ -13,6 +13,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"src")); sys.path.insert(0,str(ROOT/"scripts"))
 
 from evm_tokenizer import EVMOpcodeTokenizer
+from light_label_data import LightLabelDataset
 from polarity_query_model import build_model
 from run_polarity_queries import datasets, load_config
 from train_light_label_model import make_loader
@@ -139,6 +140,34 @@ def attention_statistics(ids):
     return {name:np.concatenate(value) for name,value in measures.items()}
 
 
+@torch.no_grad()
+def candidate_evidence(candidates):
+    config=load_config(CONFIG); tokenizer=EVMOpcodeTokenizer.from_vocab_file(ROOT/config["vocab_path"])
+    model=build_model("P11",config,len(tokenizer),tokenizer.pad_token_id).cuda().eval()
+    model.load_state_dict(torch.load(CHECKPOINT,map_location="cpu")["model_state_dict"])
+    data=LightLabelDataset(ROOT/config["cache_dir"] / "valid_max8192.pt",runtime_max_len=8192)
+    id_to_row={str(item_id):index for index,item_id in enumerate(data.ids)}
+    for item in candidates:
+        row=id_to_row[item["id"]]; sample=data[row]; sequence=sample["input_ids"].unsqueeze(0).cuda()
+        length=torch.tensor([sample["length"]]); mask=torch.ones_like(sequence,dtype=torch.bool)
+        with torch.autocast("cuda",dtype=torch.float16,enabled=config["amp"]):
+            output=model(sequence,length,mask,diagnostics=True)
+        label=LABELS.index(item["label"]); attention=output["attention"][0,label].float().cpu()
+        positive=attention[0]; negative=attention[1]
+        pos_top=positive.topk(5); neg_top=negative.topk(5)
+        item.update({
+            "positive_top_positions":json.dumps(pos_top.indices.tolist()),
+            "negative_top_positions":json.dumps(neg_top.indices.tolist()),
+            "positive_top_tokens":json.dumps([tokenizer.id_to_token[int(sequence[0,index])] for index in pos_top.indices.cpu()]),
+            "negative_top_tokens":json.dumps([tokenizer.id_to_token[int(sequence[0,index])] for index in neg_top.indices.cpu()]),
+            "positive_top_weights":json.dumps([round(float(value),8) for value in pos_top.values]),
+            "negative_top_weights":json.dumps([round(float(value),8) for value in neg_top.values]),
+            "attention_cosine":float(torch.nn.functional.cosine_similarity(positive,negative,dim=0)),
+            "attention_top5_overlap":float((pos_top.indices[:,None]==neg_top.indices[None,:]).any(-1).float().sum()/5.0),
+            "evidence_note":"decision-associated attention tokens; not ground-truth vulnerability evidence",
+        })
+
+
 def grouped_error(labels,predictions,lengths):
     rows=[]
     cardinality=labels.sum(1); contract_error=(labels!=predictions).mean(1)
@@ -201,6 +230,7 @@ def main():
                            "label_quality":float(quality[row,label]),"e_plus":float(e_plus[row,label]),"e_minus":float(e_minus[row,label]),
                            "margin":float(margin[row,label]),"true_labels":"|".join(LABELS[i] for i in np.where(labels[row]==1)[0]),
                            "effective_length":int(effective_lengths[row]),"original_length":int(original_lengths[row])})
+    candidate_evidence(candidates)
     report={"route":"P11 validation error diagnosis","dataset":"DIVE_main6_opcode_process01","seed":42,
             "thresholds":thresholds.tolist(),"confusion_matrices":matrices,"cross_label":cross,
             "per_label_diagnostics":detailed,"selective_risk":selective_risk(labels,predicted,confidence),
