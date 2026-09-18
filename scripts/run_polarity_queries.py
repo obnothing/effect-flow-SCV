@@ -31,12 +31,13 @@ CONFIG = ROOT / "configs/light_label/polarity_queries.yaml"
 
 def load_config(path=CONFIG):
     c = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    allowed = set("route_name data_dir vocab_path cache_dir result_root checkpoint_root label_names num_labels embedding_dim gru_hidden_size gru_layers bidirectional attention_heads auxiliary_weight dos_weight_multiplier positive_auxiliary_multiplier negative_auxiliary_multiplier positive_auxiliary_label_multiplier negative_auxiliary_label_multiplier adaptive_auxiliary adaptive_auxiliary_mode dos_soft_targets dos_soft_positive dos_soft_negative scheduler warmup_ratio min_lr_ratio max_len batch_size gradient_accumulation_steps learning_rate weight_decay epochs early_stopping_patience seed amp weighted_bce pos_weight_mode max_pos_weight thresholds num_workers allow_test".split())
+    allowed = set("route_name data_dir vocab_path cache_dir result_root checkpoint_root label_names num_labels embedding_dim gru_hidden_size gru_layers bidirectional attention_heads auxiliary_weight dos_weight_multiplier positive_auxiliary_multiplier negative_auxiliary_multiplier positive_auxiliary_label_multiplier negative_auxiliary_label_multiplier adaptive_auxiliary adaptive_auxiliary_mode dos_soft_targets dos_soft_positive dos_soft_negative scheduler warmup_ratio min_lr_ratio encoder_type transformer_d_model transformer_layers transformer_heads transformer_ffn_dim window_size block_size gamma_init max_len batch_size gradient_accumulation_steps learning_rate weight_decay epochs early_stopping_patience seed amp weighted_bce pos_weight_mode max_pos_weight thresholds num_workers allow_test".split())
     optional = {"dos_weight_multiplier", "positive_auxiliary_multiplier", "negative_auxiliary_multiplier",
                 "positive_auxiliary_label_multiplier", "negative_auxiliary_label_multiplier",
                 "adaptive_auxiliary", "adaptive_auxiliary_mode", "dos_soft_targets",
                 "dos_soft_positive", "dos_soft_negative", "scheduler", "warmup_ratio",
-                "min_lr_ratio"}
+                "min_lr_ratio", "encoder_type", "transformer_d_model", "transformer_layers",
+                "transformer_heads", "transformer_ffn_dim", "window_size", "block_size", "gamma_init"}
     required = allowed - optional
     if not required.issubset(c) or set(c) - allowed:
         raise ValueError(f"Configuration keys mismatch: {set(c) ^ allowed}")
@@ -50,6 +51,15 @@ def load_config(path=CONFIG):
     c.setdefault("dos_soft_targets", False)
     c.setdefault("dos_soft_positive", 0.8)
     c.setdefault("dos_soft_negative", 0.1)
+    c.setdefault("encoder_type", "bigru")
+    if c["encoder_type"] != "bigru":
+        required_encoder = {"transformer_d_model", "transformer_layers", "transformer_heads",
+                            "transformer_ffn_dim", "window_size", "block_size", "gamma_init"}
+        missing = required_encoder - set(c)
+        if missing:
+            raise ValueError(f"Missing encoder study keys: {sorted(missing)}")
+        if int(c["transformer_d_model"]) % int(c["transformer_heads"]):
+            raise ValueError("transformer_d_model must be divisible by transformer_heads")
     if len(c["positive_auxiliary_label_multiplier"]) != 6 or len(c["negative_auxiliary_label_multiplier"]) != 6:
         raise ValueError("Auxiliary label multipliers must contain six values")
     if not 0.0 < float(c["dos_soft_negative"]) < float(c["dos_soft_positive"]) < 1.0:
@@ -61,7 +71,7 @@ def load_config(path=CONFIG):
 
 
 def provenance(c, config_path=None):
-    names = ["scripts/run_polarity_queries.py", "src/polarity_query_model.py", "src/light_label_model.py",
+    names = ["scripts/run_polarity_queries.py", "src/polarity_query_model.py", "src/encoders/pdvq_encoders.py", "src/light_label_model.py",
              "src/light_label_data.py", "src/train_light_label_model.py", "src/metrics.py", "src/evm_tokenizer.py",
              "scripts/run_hidden384_trials.py", c["vocab_path"]]
     actual_config = Path(config_path or CONFIG).resolve().relative_to(ROOT)
@@ -327,7 +337,11 @@ def train_one(mode,c,tok,train,valid,prov,resources):
            "dos_soft_targets":soft,"threads":torch.get_num_threads(),
            "pos_weight":weight.tolist(),"optimizer":{"lr":optimizer.param_groups[0]["lr"],"weight_decay":optimizer.param_groups[0]["weight_decay"]},
            "query_shape":list(model.queries.shape) if mode!="P0" else list(model.label_queries.shape),
-           "attention_heads":model.cross_attention.num_heads if mode!="P0" else 1,"provenance":prov,"test_checked":False}
+           "attention_heads":model.cross_attention.num_heads if mode!="P0" else 1,
+           "encoder_audit":model.encoder_audit() if hasattr(model,"encoder_audit") else {"encoder_type":"bigru","output_dim":model.output_dim},
+           "encoder_params":sum(p.numel() for n,p in model.named_parameters() if n.startswith(("embedding.","encoder.","sequence_encoder."))),
+           "pdvq_params":sum(p.numel() for n,p in model.named_parameters() if not n.startswith(("embedding.","encoder.","sequence_encoder."))),
+           "provenance":prov,"test_checked":False}
     atomic_json(root/"audit.json",audit)
     print(json.dumps({"start":mode,"encoder_init_hash":encoder_hash,"params":audit["params"],"query_shape":audit["query_shape"],"heads":audit["attention_heads"],"auxiliary_weight":aux,"batch":effective["batch_size"],"threads":resources["threads"]}),flush=True)
     loader=make_loader(train,effective,tok.pad_token_id,True); vl=make_loader(valid,effective,tok.pad_token_id,False)

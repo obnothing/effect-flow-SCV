@@ -77,10 +77,14 @@ class PolarityQueryNet(LabelGuidedOpcodeNet):
             logits = energies[..., 0] - energies[..., 1]
         return logits, energies
 
+    def encode_tokens(self, input_ids, lengths, mask):
+        """Encoder hook used by architecture studies; P11 remains unchanged."""
+        return self.encode(input_ids, lengths)
+
     def forward(self, input_ids, lengths, mask, diagnostics=False):
         if mask.dtype != torch.bool or not bool(mask.any(1).all()):
             raise ValueError("Each sample needs a nonempty boolean token mask")
-        hidden = self.encode(input_ids, lengths)
+        hidden = self.encode_tokens(input_ids, lengths, mask)
         queries = self.queries.flatten(0, 1).unsqueeze(0).expand(input_ids.shape[0], -1, -1)
         evidence, attention = self.cross_attention(queries, hidden, hidden,
             key_padding_mask=~mask, need_weights=diagnostics, average_attn_weights=False)
@@ -136,10 +140,18 @@ def tensor_hash(state):
 
 def encoder_state(model):
     return {k: v.detach().cpu().clone() for k, v in model.state_dict().items()
-            if k.startswith(("embedding.", "encoder."))}
+            if k.startswith(("embedding.", "encoder.", "sequence_encoder."))}
 
 
 def build_model(mode, config, vocab_size, pad_id):
+    encoder_type = config.get("encoder_type", "bigru")
+    if encoder_type != "bigru":
+        from encoders.pdvq_encoders import EncoderStudyPDVQNet
+        # initialize() builds a P0 template only to obtain an identical encoder
+        # state. The template therefore uses the same study encoder and its
+        # head is discarded by encoder_state().
+        study_mode = "P11" if mode == "P0" else mode
+        return EncoderStudyPDVQNet(study_mode, config, vocab_size, pad_id)
     if mode == "P0":
         model = LabelGuidedOpcodeNet("b2_label_attention", vocab_size, pad_id,
             config["embedding_dim"], config["gru_hidden_size"], config["num_labels"],
