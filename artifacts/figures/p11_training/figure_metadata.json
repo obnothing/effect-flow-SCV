@@ -1,0 +1,10 @@
+{
+  "dataset": "DIVE_main6_opcode_process01",
+  "split": "validation",
+  "seed": 42,
+  "best_epoch": 30,
+  "tuned_macro_f1": 0.833507102823917,
+  "test_checked": false,
+  "variability": "Single seed; no error bars or confidence intervals are implied.",
+  "loss_note": "Training loss includes the polarity auxiliary term; validation loss is classification-only."
+}
