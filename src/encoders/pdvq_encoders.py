@@ -165,6 +165,7 @@ class EncoderStudyPDVQNet(PolarityQueryNet):
             config["attention_heads"],
             config["bidirectional"],
             config["gru_layers"],
+            config.get("representation_dropout", 0.0),
         )
         self.encoder_type = config["encoder_type"]
         self.encoder_config = {

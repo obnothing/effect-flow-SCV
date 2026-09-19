@@ -31,12 +31,13 @@ CONFIG = ROOT / "configs/light_label/polarity_queries.yaml"
 
 def load_config(path=CONFIG):
     c = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    allowed = set("route_name data_dir vocab_path cache_dir result_root checkpoint_root label_names num_labels embedding_dim gru_hidden_size gru_layers bidirectional attention_heads auxiliary_weight dos_weight_multiplier positive_auxiliary_multiplier negative_auxiliary_multiplier positive_auxiliary_label_multiplier negative_auxiliary_label_multiplier adaptive_auxiliary adaptive_auxiliary_mode dos_soft_targets dos_soft_positive dos_soft_negative scheduler warmup_ratio min_lr_ratio encoder_type transformer_d_model transformer_layers transformer_heads transformer_ffn_dim window_size block_size gamma_init max_len batch_size gradient_accumulation_steps learning_rate weight_decay epochs early_stopping_patience seed amp weighted_bce pos_weight_mode max_pos_weight thresholds num_workers allow_test".split())
+    allowed = set("route_name data_dir vocab_path cache_dir result_root checkpoint_root label_names num_labels embedding_dim gru_hidden_size gru_layers bidirectional attention_heads representation_dropout auxiliary_weight dos_weight_multiplier positive_auxiliary_multiplier negative_auxiliary_multiplier positive_auxiliary_label_multiplier negative_auxiliary_label_multiplier adaptive_auxiliary adaptive_auxiliary_mode dos_soft_targets dos_soft_positive dos_soft_negative pos_weight_power effective_batch_size scheduler warmup_ratio min_lr_ratio encoder_type transformer_d_model transformer_layers transformer_heads transformer_ffn_dim window_size block_size gamma_init max_len batch_size gradient_accumulation_steps learning_rate weight_decay epochs early_stopping_patience seed amp weighted_bce pos_weight_mode max_pos_weight thresholds num_workers allow_test".split())
     optional = {"dos_weight_multiplier", "positive_auxiliary_multiplier", "negative_auxiliary_multiplier",
                 "positive_auxiliary_label_multiplier", "negative_auxiliary_label_multiplier",
                 "adaptive_auxiliary", "adaptive_auxiliary_mode", "dos_soft_targets",
                 "dos_soft_positive", "dos_soft_negative", "scheduler", "warmup_ratio",
-                "min_lr_ratio", "encoder_type", "transformer_d_model", "transformer_layers",
+                "min_lr_ratio", "representation_dropout", "pos_weight_power", "effective_batch_size",
+                "encoder_type", "transformer_d_model", "transformer_layers",
                 "transformer_heads", "transformer_ffn_dim", "window_size", "block_size", "gamma_init"}
     required = allowed - optional
     if not required.issubset(c) or set(c) - allowed:
@@ -51,6 +52,15 @@ def load_config(path=CONFIG):
     c.setdefault("dos_soft_targets", False)
     c.setdefault("dos_soft_positive", 0.8)
     c.setdefault("dos_soft_negative", 0.1)
+    c.setdefault("representation_dropout", 0.0)
+    c.setdefault("pos_weight_power", 0.5)
+    c.setdefault("effective_batch_size", int(c["batch_size"]) * int(c["gradient_accumulation_steps"]))
+    if not 0.0 <= float(c["representation_dropout"]) < 1.0:
+        raise ValueError("representation_dropout must be in [0, 1)")
+    if not 0.0 < float(c["pos_weight_power"]) <= 1.0:
+        raise ValueError("pos_weight_power must be in (0, 1]")
+    if int(c["effective_batch_size"]) < int(c["batch_size"]):
+        raise ValueError("effective_batch_size cannot be smaller than physical batch_size")
     c.setdefault("encoder_type", "bigru")
     if c["encoder_type"] != "bigru":
         required_encoder = {"transformer_d_model", "transformer_layers", "transformer_heads",
@@ -106,7 +116,10 @@ def datasets(c):
 
 
 def compute_weights(c, data):
-    value = pos_weight(data, c).clone()
+    labels = data.labels[data.indices]
+    positive = labels.sum(0).clamp_min(1)
+    negative = len(labels) - positive
+    value = (negative / positive).pow(float(c.get("pos_weight_power", 0.5))).clamp_min(1.0)
     dos_id = c["label_names"].index("DoS")
     value[dos_id] = value[dos_id] * float(c.get("dos_weight_multiplier", 1.0))
     return value.clamp(max=float(c["max_pos_weight"]))
@@ -190,7 +203,7 @@ def probe(mode,c,tok,train,batch_size,threads):
     order = sorted(range(len(train)),key=train.sequence_length,reverse=True)
     longest = collate_light_label([train[i] for i in order[:batch_size]],tok.pad_token_id)
     typical = collate_light_label([train[i] for i in order[len(order)//2:len(order)//2+batch_size]],tok.pad_token_id)
-    weight = pos_weight(train,c).cuda()
+    weight = compute_weights(c,train).cuda()
     torch.cuda.reset_peak_memory_stats()
     times = []
     cpu_times = []
@@ -249,7 +262,11 @@ def select_resources(c,tok,train,prov):
         bench += [probe("P4",c,tok,train,batch,n) for n in (16,20) if n <= len(os.sched_getaffinity(0))]
     top=max(x["contracts_per_second"] for x in bench)
     selected=min(x["threads"] for x in bench if x["contracts_per_second"] >= top/1.05)
-    saved={"signature":sig,"batch_size":batch,"gradient_accumulation_steps":256//batch,
+    effective_batch = int(c.get("effective_batch_size", 256))
+    if effective_batch % batch:
+        raise ValueError(f"effective_batch_size={effective_batch} is not divisible by physical batch={batch}")
+    saved={"signature":sig,"batch_size":batch,"gradient_accumulation_steps":effective_batch//batch,
+           "effective_batch_size":effective_batch,
            "threads":selected,"preflight":rows,"cpu_benchmark":bench,"test_checked":False}
     atomic_json(path,saved); print(json.dumps({"resources":saved}),flush=True)
     return saved
@@ -335,6 +352,9 @@ def train_one(mode,c,tok,train,valid,prov,resources):
            "negative_auxiliary_multiplier":c["negative_auxiliary_multiplier"],
            "positive_auxiliary_label_multiplier":pos_label.tolist(),"negative_auxiliary_label_multiplier":neg_label.tolist(),
            "dos_soft_targets":soft,"threads":torch.get_num_threads(),
+           "representation_dropout":model.representation_dropout.p,
+           "pos_weight_power":float(c.get("pos_weight_power",0.5)),
+           "effective_batch_size":effective["batch_size"]*effective["gradient_accumulation_steps"],
            "pos_weight":weight.tolist(),"optimizer":{"lr":optimizer.param_groups[0]["lr"],"weight_decay":optimizer.param_groups[0]["weight_decay"]},
            "query_shape":list(model.queries.shape) if mode!="P0" else list(model.label_queries.shape),
            "attention_heads":model.cross_attention.num_heads if mode!="P0" else 1,
@@ -375,7 +395,7 @@ def train_one(mode,c,tok,train,valid,prov,resources):
         if stale>=c["early_stopping_patience"]: break
         atomic_json(root/"status.json",{"status":"running","epoch":epoch,"test_checked":False})
         model.train(); loader.batch_sampler.set_epoch(epoch); optimizer.zero_grad(set_to_none=True)
-        start=time.perf_counter(); losses=[]; torch.cuda.reset_peak_memory_stats()
+        start=time.perf_counter(); losses=[]; gradient_norms=[]; torch.cuda.reset_peak_memory_stats()
         for step,batch in enumerate(loader,1):
             with torch.autocast("cuda",dtype=torch.float16,enabled=c["amp"]):
                 out=forward(model,mode,batch,"cuda")
@@ -386,7 +406,10 @@ def train_one(mode,c,tok,train,valid,prov,resources):
             if not torch.isfinite(total): raise RuntimeError("Nonfinite training loss")
             scaler.scale(total/effective["gradient_accumulation_steps"]).backward()
             if step%effective["gradient_accumulation_steps"]==0 or step==len(loader):
-                scaler.unscale_(optimizer); torch.nn.utils.clip_grad_norm_(model.parameters(),1.0)
+                scaler.unscale_(optimizer)
+                gradient_norm = torch.nn.utils.clip_grad_norm_(model.parameters(),1.0)
+                if torch.isfinite(gradient_norm):
+                    gradient_norms.append(float(gradient_norm.detach().cpu()))
                 scaler.step(optimizer); scaler.update()
                 if scheduler is not None:
                     scheduler.step()
@@ -400,6 +423,7 @@ def train_one(mode,c,tok,train,valid,prov,resources):
         row={"epoch":epoch,"train_loss":float(avg[0]),"train_cls":float(avg[1]),"train_polarity":float(avg[2]),
              "valid_loss":output["loss"],"metrics":m,"train_seconds":duration,"contracts_per_second":len(train)/duration,
              "peak_memory_mb":torch.cuda.max_memory_allocated()/2**20,
+             "gradient_norm":float(np.mean(gradient_norms)) if gradient_norms else None,
              "learning_rate":optimizer.param_groups[0]["lr"]}
         history.append(row); score=m["tuned"]["macro_f1"]
         if score>best:

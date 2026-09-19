@@ -50,12 +50,13 @@ class SharedMultiHeadCrossAttention(nn.Module):
 
 class PolarityQueryNet(LabelGuidedOpcodeNet):
     def __init__(self, mode, vocab_size, pad_id, embedding_dim=128, hidden=384, labels=6, heads=4,
-                 bidirectional=True, gru_layers=1):
+                 bidirectional=True, gru_layers=1, representation_dropout=0.0):
         if mode not in VARIANTS[1:]:
             raise ValueError(mode)
         # Reuse precisely the original opcode embedding and packed BiGRU.
         super().__init__("b0_mean", vocab_size, pad_id, embedding_dim, hidden, labels,
-                         bidirectional, gru_layers=gru_layers)
+                         bidirectional, gru_layers=gru_layers,
+                         representation_dropout=representation_dropout)
         del self.classifier
         self.mode = mode
         self.polarities = 1 if mode == "P1" else 2
@@ -67,7 +68,8 @@ class PolarityQueryNet(LabelGuidedOpcodeNet):
         self.branch_bias = nn.Parameter(torch.zeros(labels, self.polarities))
 
     def score(self, representations):
-        energies = torch.einsum("blpd,ld->blp", representations, self.label_scorer) + self.branch_bias
+        scored = self.representation_dropout(representations)
+        energies = torch.einsum("blpd,ld->blp", scored, self.label_scorer) + self.branch_bias
         if self.mode == "P1":
             logits = energies[..., 0]
         elif self.mode == "P2":
@@ -159,7 +161,7 @@ def build_model(mode, config, vocab_size, pad_id):
     else:
         model = PolarityQueryNet(mode, vocab_size, pad_id, config["embedding_dim"],
             config["gru_hidden_size"], config["num_labels"], config["attention_heads"],
-            config["bidirectional"], config["gru_layers"])
+            config["bidirectional"], config["gru_layers"], config.get("representation_dropout", 0.0))
     validate_model_config(model, config)
     if mode != "P0":
         if model.cross_attention.num_heads != config["attention_heads"]:
