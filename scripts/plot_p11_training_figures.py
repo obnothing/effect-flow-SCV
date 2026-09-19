@@ -48,6 +48,9 @@ def save_figure(fig, stem):
         ("tiff", {"dpi": 600}),
     ):
         fig.savefig(OUTPUT / f"{stem}.{suffix}", bbox_inches="tight", facecolor="white", **options)
+    svg_path = OUTPUT / f"{stem}.svg"
+    svg_path.write_text("\n".join(line.rstrip() for line in svg_path.read_text(encoding="utf-8").splitlines()) + "\n",
+                        encoding="utf-8")
 
 
 def write_source_data(history, tuned):
@@ -62,12 +65,12 @@ def write_source_data(history, tuned):
                 "tuned_macro_f1": row["metrics"]["tuned"]["macro_f1"],
             })
     with (OUTPUT / "p11_per_label_f1_source.csv").open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.writer(handle)
-        writer.writerow(["label", "tuned_precision", "tuned_recall", "tuned_f1", "threshold"])
         clean_labels = [label.replace("\n", " ") for label in LABELS]
-        for values in zip(clean_labels, tuned["per_label_precision"], tuned["per_label_recall"],
-                          tuned["per_label_f1"], tuned["thresholds"]):
-            writer.writerow(values)
+        writer = csv.DictWriter(handle, fieldnames=["epoch", *clean_labels])
+        writer.writeheader()
+        for row in history:
+            values = row["metrics"]["tuned"]["per_label_f1"]
+            writer.writerow({"epoch": row["epoch"], **dict(zip(clean_labels, values))})
 
 
 def learning_curve(history, best_epoch):
@@ -113,24 +116,30 @@ def learning_curve(history, best_epoch):
     plt.close(fig)
 
 
-def per_label_bar(tuned):
-    values = np.asarray(tuned["per_label_f1"])
-    macro = float(tuned["macro_f1"])
-    colors = ["#5D86A7"] * len(values)
-    colors[4] = "#D17A45"
-    fig, axis = plt.subplots(figsize=(160 / 25.4, 83 / 25.4), constrained_layout=True)
-    bars = axis.bar(np.arange(len(values)), values, width=0.66, color=colors, edgecolor="white", linewidth=0.6)
-    axis.axhline(macro, color="#258B88", linestyle=(0, (4, 3)), linewidth=1.3,
-                 label=f"Macro average = {macro:.3f}")
-    for bar, value in zip(bars, values):
-        axis.text(bar.get_x() + bar.get_width() / 2, value + 0.008, f"{value:.3f}",
-                  ha="center", va="bottom", fontsize=7)
-    axis.set_xticks(np.arange(len(values)), LABELS)
+def per_label_curves(history):
+    epoch = np.asarray([row["epoch"] for row in history])
+    values = np.asarray([row["metrics"]["tuned"]["per_label_f1"] for row in history])
+    styles = [
+        ("#335C81", "-", "o"),
+        ("#D17A45", "-", "s"),
+        ("#258B88", "-", "^"),
+        ("#7A6F9B", "--", "D"),
+        ("#B55263", "--", "v"),
+        ("#6D7478", "-.", "P"),
+    ]
+    fig, axis = plt.subplots(figsize=(168 / 25.4, 94 / 25.4), constrained_layout=True)
+    for index, (label, (color, linestyle, marker)) in enumerate(zip(LABELS, styles)):
+        axis.plot(epoch, values[:, index], color=color, linestyle=linestyle, marker=marker,
+                  markersize=2.8, markevery=3, linewidth=1.65,
+                  label=f"{label.replace(chr(10), ' ')} ({values[-1, index]:.3f})")
+    axis.set_xlabel("Epoch")
     axis.set_ylabel("Tuned F1")
-    axis.set_ylim(0, 0.94)
-    axis.set_yticks(np.arange(0, 1.0, 0.2))
+    axis.set_xlim(1, 30)
+    axis.set_ylim(0.2, 0.91)
+    axis.set_xticks([1, 5, 10, 15, 20, 25, 30])
+    axis.set_yticks(np.arange(0.2, 1.0, 0.1))
     axis.grid(axis="y", color="#D9D9D9", linewidth=0.55, alpha=0.75)
-    axis.legend(loc="lower left")
+    axis.legend(loc="lower right", ncol=2, columnspacing=1.2, handlelength=2.5)
     save_figure(fig, "p11_per_label_tuned_f1")
     plt.close(fig)
 
@@ -146,7 +155,7 @@ def main():
     tuned = dict(payload["metrics"]["tuned"], thresholds=payload["metrics"]["thresholds"])
     write_source_data(history, tuned)
     learning_curve(history, int(payload["best_epoch"]))
-    per_label_bar(tuned)
+    per_label_curves(history)
     metadata = {
         "dataset": "DIVE_main6_opcode_process01",
         "split": "validation",
