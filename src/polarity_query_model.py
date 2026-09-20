@@ -18,16 +18,17 @@ class SharedMultiHeadCrossAttention(nn.Module):
     never constructs a key-token by key-token attention matrix.
     """
 
-    def __init__(self, embed_dim, num_heads):
+    def __init__(self, embed_dim, num_heads, key_dim=None):
         super().__init__()
         if int(embed_dim) % int(num_heads):
             raise ValueError("embed_dim must be divisible by num_heads")
         self.embed_dim = int(embed_dim)
+        self.key_dim = int(key_dim if key_dim is not None else embed_dim)
         self.num_heads = int(num_heads)
         self.head_dim = self.embed_dim // self.num_heads
         self.q_proj = nn.Linear(self.embed_dim, self.embed_dim, bias=False)
-        self.k_proj = nn.Linear(self.embed_dim, self.embed_dim, bias=False)
-        self.v_proj = nn.Linear(self.embed_dim, self.embed_dim, bias=False)
+        self.k_proj = nn.Linear(self.key_dim, self.embed_dim, bias=False)
+        self.v_proj = nn.Linear(self.key_dim, self.embed_dim, bias=False)
         self.out_proj = nn.Linear(self.embed_dim, self.embed_dim, bias=False)
 
     def forward(self, query, key, value, key_padding_mask=None, need_weights=False,
@@ -50,7 +51,7 @@ class SharedMultiHeadCrossAttention(nn.Module):
 
 class PolarityQueryNet(LabelGuidedOpcodeNet):
     def __init__(self, mode, vocab_size, pad_id, embedding_dim=128, hidden=384, labels=6, heads=4,
-                 bidirectional=True, gru_layers=1, representation_dropout=0.0):
+                 bidirectional=True, gru_layers=1, representation_dropout=0.0, query_dim=None):
         if mode not in VARIANTS[1:]:
             raise ValueError(mode)
         # Reuse precisely the original opcode embedding and packed BiGRU.
@@ -60,10 +61,11 @@ class PolarityQueryNet(LabelGuidedOpcodeNet):
         del self.classifier
         self.mode = mode
         self.polarities = 1 if mode == "P1" else 2
-        self.queries = nn.Parameter(torch.empty(labels, self.polarities, self.output_dim))
+        self.query_dim = int(query_dim if query_dim is not None else self.output_dim)
+        self.queries = nn.Parameter(torch.empty(labels, self.polarities, self.query_dim))
         nn.init.normal_(self.queries, std=0.02)
-        self.cross_attention = SharedMultiHeadCrossAttention(self.output_dim, heads)
-        self.label_scorer = nn.Parameter(torch.empty(labels, self.output_dim))
+        self.cross_attention = SharedMultiHeadCrossAttention(self.query_dim, heads, key_dim=self.output_dim)
+        self.label_scorer = nn.Parameter(torch.empty(labels, self.query_dim))
         nn.init.xavier_uniform_(self.label_scorer)
         self.branch_bias = nn.Parameter(torch.zeros(labels, self.polarities))
 
@@ -90,7 +92,7 @@ class PolarityQueryNet(LabelGuidedOpcodeNet):
         queries = self.queries.flatten(0, 1).unsqueeze(0).expand(input_ids.shape[0], -1, -1)
         evidence, attention = self.cross_attention(queries, hidden, hidden,
             key_padding_mask=~mask, need_weights=diagnostics, average_attn_weights=False)
-        representations = evidence.reshape(input_ids.shape[0], self.num_labels, self.polarities, self.output_dim)
+        representations = evidence.reshape(input_ids.shape[0], self.num_labels, self.polarities, self.query_dim)
         logits, energies = self.score(representations)
         result = {"logits": logits, "energies": energies, "representations": representations}
         if diagnostics:
@@ -161,11 +163,13 @@ def build_model(mode, config, vocab_size, pad_id):
     else:
         model = PolarityQueryNet(mode, vocab_size, pad_id, config["embedding_dim"],
             config["gru_hidden_size"], config["num_labels"], config["attention_heads"],
-            config["bidirectional"], config["gru_layers"], config.get("representation_dropout", 0.0))
+            config["bidirectional"], config["gru_layers"], config.get("representation_dropout", 0.0),
+            config.get("query_dim", 2 * config["gru_hidden_size"]))
     validate_model_config(model, config)
     if mode != "P0":
         if model.cross_attention.num_heads != config["attention_heads"]:
             raise ValueError("Attention heads mismatch")
-        if model.queries.shape != (config["num_labels"], 1 if mode == "P1" else 2, 2*config["gru_hidden_size"]):
+        if model.queries.shape != (config["num_labels"], 1 if mode == "P1" else 2,
+                                   config.get("query_dim", 2 * config["gru_hidden_size"])):
             raise ValueError("Query shape mismatch")
     return model

@@ -51,6 +51,21 @@ class P11Stage1Test(unittest.TestCase):
         self.assertEqual(128 // 64, 2)
         self.assertEqual(256 // 64, 4)
 
+    def test_query_dimension_is_decoupled_from_encoder(self):
+        for query_dim in (512, 768, 1024):
+            with self.subTest(query_dim=query_dim):
+                config = dict(self.config, query_dim=query_dim)
+                model = build_model("P11", config, 32, 0)
+                self.assertEqual(tuple(model.queries.shape), (6, 2, query_dim))
+                self.assertEqual(tuple(model.label_scorer.shape), (6, query_dim))
+                self.assertEqual(model.cross_attention.k_proj.in_features, 768)
+                self.assertEqual(model.cross_attention.k_proj.out_features, query_dim)
+                ids = torch.randint(1, 32, (2, 11)); lengths = torch.tensor([11, 7])
+                mask = torch.arange(11).unsqueeze(0) < lengths.unsqueeze(1)
+                output = model(ids, lengths, mask)
+                self.assertEqual(tuple(output["logits"].shape), (2, 6))
+                self.assertEqual(tuple(output["representations"].shape), (2, 6, 2, query_dim))
+
 
 if __name__ == "__main__":
     unittest.main()

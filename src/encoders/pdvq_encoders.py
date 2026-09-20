@@ -166,6 +166,7 @@ class EncoderStudyPDVQNet(PolarityQueryNet):
             config["bidirectional"],
             config["gru_layers"],
             config.get("representation_dropout", 0.0),
+            config.get("query_dim", 2 * config["gru_hidden_size"]),
         )
         self.encoder_type = config["encoder_type"]
         self.encoder_config = {

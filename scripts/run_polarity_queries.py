@@ -31,12 +31,12 @@ CONFIG = ROOT / "configs/light_label/polarity_queries.yaml"
 
 def load_config(path=CONFIG):
     c = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    allowed = set("route_name data_dir vocab_path cache_dir result_root checkpoint_root label_names num_labels embedding_dim gru_hidden_size gru_layers bidirectional attention_heads representation_dropout auxiliary_weight dos_weight_multiplier positive_auxiliary_multiplier negative_auxiliary_multiplier positive_auxiliary_label_multiplier negative_auxiliary_label_multiplier adaptive_auxiliary adaptive_auxiliary_mode dos_soft_targets dos_soft_positive dos_soft_negative pos_weight_power effective_batch_size scheduler warmup_ratio min_lr_ratio encoder_type transformer_d_model transformer_layers transformer_heads transformer_ffn_dim window_size block_size gamma_init max_len batch_size gradient_accumulation_steps learning_rate weight_decay epochs early_stopping_patience seed amp weighted_bce pos_weight_mode max_pos_weight thresholds num_workers allow_test".split())
+    allowed = set("route_name data_dir vocab_path cache_dir result_root checkpoint_root label_names num_labels embedding_dim gru_hidden_size gru_layers bidirectional attention_heads query_dim representation_dropout auxiliary_weight dos_weight_multiplier positive_auxiliary_multiplier negative_auxiliary_multiplier positive_auxiliary_label_multiplier negative_auxiliary_label_multiplier adaptive_auxiliary adaptive_auxiliary_mode dos_soft_targets dos_soft_positive dos_soft_negative pos_weight_power effective_batch_size scheduler warmup_ratio min_lr_ratio encoder_type transformer_d_model transformer_layers transformer_heads transformer_ffn_dim window_size block_size gamma_init max_len batch_size gradient_accumulation_steps learning_rate weight_decay epochs early_stopping_patience seed amp weighted_bce pos_weight_mode max_pos_weight thresholds num_workers allow_test".split())
     optional = {"dos_weight_multiplier", "positive_auxiliary_multiplier", "negative_auxiliary_multiplier",
                 "positive_auxiliary_label_multiplier", "negative_auxiliary_label_multiplier",
                 "adaptive_auxiliary", "adaptive_auxiliary_mode", "dos_soft_targets",
                 "dos_soft_positive", "dos_soft_negative", "scheduler", "warmup_ratio",
-                "min_lr_ratio", "representation_dropout", "pos_weight_power", "effective_batch_size",
+                "min_lr_ratio", "query_dim", "representation_dropout", "pos_weight_power", "effective_batch_size",
                 "encoder_type", "transformer_d_model", "transformer_layers",
                 "transformer_heads", "transformer_ffn_dim", "window_size", "block_size", "gamma_init"}
     required = allowed - optional
@@ -53,10 +53,13 @@ def load_config(path=CONFIG):
     c.setdefault("dos_soft_positive", 0.8)
     c.setdefault("dos_soft_negative", 0.1)
     c.setdefault("representation_dropout", 0.0)
+    c.setdefault("query_dim", 2 * int(c["gru_hidden_size"]))
     c.setdefault("pos_weight_power", 0.5)
     c.setdefault("effective_batch_size", int(c["batch_size"]) * int(c["gradient_accumulation_steps"]))
     if not 0.0 <= float(c["representation_dropout"]) < 1.0:
         raise ValueError("representation_dropout must be in [0, 1)")
+    if int(c["query_dim"]) <= 0 or int(c["query_dim"]) % int(c["attention_heads"]):
+        raise ValueError("query_dim must be positive and divisible by attention_heads")
     if not 0.0 < float(c["pos_weight_power"]) <= 1.0:
         raise ValueError("pos_weight_power must be in (0, 1]")
     if int(c["effective_batch_size"]) < int(c["batch_size"]):
@@ -353,6 +356,7 @@ def train_one(mode,c,tok,train,valid,prov,resources):
            "positive_auxiliary_label_multiplier":pos_label.tolist(),"negative_auxiliary_label_multiplier":neg_label.tolist(),
            "dos_soft_targets":soft,"threads":torch.get_num_threads(),
            "representation_dropout":model.representation_dropout.p,
+           "query_dim":model.query_dim if mode!="P0" else model.output_dim,
            "pos_weight_power":float(c.get("pos_weight_power",0.5)),
            "effective_batch_size":effective["batch_size"]*effective["gradient_accumulation_steps"],
            "pos_weight":weight.tolist(),"optimizer":{"lr":optimizer.param_groups[0]["lr"],"weight_decay":optimizer.param_groups[0]["weight_decay"]},
