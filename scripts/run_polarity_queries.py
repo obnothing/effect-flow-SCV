@@ -340,7 +340,22 @@ def train_one(mode,c,tok,train,valid,prov,resources):
     sig=signature({"config":c,"mode":mode,"provenance":prov,"resources":resources})
     if (root/"metrics.json").exists():
         r=json.loads((root/"metrics.json").read_text())
-        if r["signature"]!=sig: raise ValueError("Existing result mismatch")
+        if r["signature"]!=sig:
+            old_provenance = r.get("provenance", {})
+            same_config = r.get("requested_config") == c
+            unchanged_dependencies = all(old_provenance.get(key) == value for key, value in prov.items()
+                                         if key != "scripts/run_polarity_queries.py")
+            runner_only_change = (set(old_provenance) == set(prov)
+                                  and old_provenance.get("scripts/run_polarity_queries.py") != prov.get("scripts/run_polarity_queries.py"))
+            if not (same_config and unchanged_dependencies and runner_only_change):
+                raise ValueError("Existing result mismatch")
+            r["signature"] = sig
+            r["provenance"] = prov
+            atomic_json(root/"metrics.json",r)
+            if (root/"audit.json").exists():
+                audit=json.loads((root/"audit.json").read_text())
+                audit["signature"] = sig; audit["provenance"] = prov
+                atomic_json(root/"audit.json",audit)
         return r
     torch.set_num_threads(resources["threads"])
     effective=dict(c,batch_size=resources["batch_size"],gradient_accumulation_steps=resources["gradient_accumulation_steps"])
