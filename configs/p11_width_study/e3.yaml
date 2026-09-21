@@ -30,8 +30,8 @@ scheduler: none
 warmup_ratio: 0.0
 min_lr_ratio: 1.0
 max_len: 8192
-batch_size: 64
-gradient_accumulation_steps: 2
+batch_size: 32
+gradient_accumulation_steps: 4
 learning_rate: 0.001
 weight_decay: 0.0001
 epochs: 40
