@@ -1,0 +1,46 @@
+route_name: P11 width study E3
+data_dir: data/processed/DIVE_main6_opcode_process01
+vocab_path: data/processed/ethereum_public_pretrain_19143_unique_runtime/evm_vocab.json
+cache_dir: data/features/light_label_process01
+result_root: results/p11_width_study/E3
+checkpoint_root: checkpoints/p11_width_study/E3
+label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Time manipulation]
+num_labels: 6
+embedding_dim: 512
+gru_hidden_size: 512
+gru_layers: 1
+bidirectional: true
+attention_heads: 8
+query_dim: 512
+representation_dropout: 0.0
+auxiliary_weight: 0.08
+dos_weight_multiplier: 1.0
+positive_auxiliary_multiplier: 1.0
+negative_auxiliary_multiplier: 1.0
+positive_auxiliary_label_multiplier: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+negative_auxiliary_label_multiplier: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+adaptive_auxiliary: false
+adaptive_auxiliary_mode: none
+dos_soft_targets: true
+dos_soft_positive: 0.8
+dos_soft_negative: 0.1
+pos_weight_power: 0.6
+effective_batch_size: 128
+scheduler: none
+warmup_ratio: 0.0
+min_lr_ratio: 1.0
+max_len: 8192
+batch_size: 64
+gradient_accumulation_steps: 2
+learning_rate: 0.001
+weight_decay: 0.0001
+epochs: 40
+early_stopping_patience: 40
+seed: 42
+amp: true
+weighted_bce: true
+pos_weight_mode: sqrt_ratio
+max_pos_weight: 5.0
+thresholds: [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
+num_workers: 0
+allow_test: false
