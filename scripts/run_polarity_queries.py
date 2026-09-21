@@ -247,7 +247,9 @@ def select_resources(c,tok,train,prov):
         if saved["signature"] != sig: raise ValueError("Resource audit signature changed")
         return saved
     rows=[]
-    for batch in (64,32,16,8,4,2,1):
+    requested_batch = int(c["batch_size"])
+    candidates = [requested_batch] + [batch for batch in (64,32,16,8,4,2,1) if batch < requested_batch]
+    for batch in candidates:
         success=True
         for mode in VARIANTS:
             try:
