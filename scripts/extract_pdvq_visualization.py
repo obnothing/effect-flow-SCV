@@ -2,6 +2,7 @@
 
 import json
 import sys
+import argparse
 from pathlib import Path
 
 import numpy as np
@@ -72,6 +73,9 @@ def choose_attention_contracts(valid, raw):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--attention-only", action="store_true")
+    args = parser.parse_args()
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA is required for feature extraction")
     if not CHECKPOINT_PATH.exists():
@@ -97,7 +101,7 @@ def main():
     polarity_cosine_sum = torch.zeros(6, dtype=torch.float64)
     attention_count = 0
     with torch.no_grad():
-        for batch in loader:
+        for row_index, batch in enumerate(loader, 1):
             contract_id = str(batch["ids"][0])
             inputs = batch["input_ids"].cuda(non_blocking=True)
             mask = batch["mask"].cuda(non_blocking=True)
@@ -108,11 +112,12 @@ def main():
                 out = forward_with_hidden(model, inputs, batch["lengths"], mask, attention=need_attention)
             representations = out["representations"].float().cpu()[0]
             positive, negative = representations[:, 0], representations[:, 1]
-            z_pos.append(positive.numpy()); z_neg.append(negative.numpy()); z_diff.append((positive - negative).numpy())
-            hidden = out["hidden"].float()
-            mean = (hidden * mask.unsqueeze(-1).to(hidden.dtype)).sum(1) / mask.sum(1, keepdim=True).clamp_min(1)
-            means.append(mean.cpu()[0].numpy())
-            labels.append(batch["labels"][0].numpy()); ids.append(contract_id); lengths.append(int(batch["original_lengths"][0]))
+            if not args.attention_only:
+                z_pos.append(positive.numpy()); z_neg.append(negative.numpy()); z_diff.append((positive - negative).numpy())
+                hidden = out["hidden"].float()
+                mean = (hidden * mask.unsqueeze(-1).to(hidden.dtype)).sum(1) / mask.sum(1, keepdim=True).clamp_min(1)
+                means.append(mean.cpu()[0].numpy())
+                labels.append(batch["labels"][0].numpy()); ids.append(contract_id); lengths.append(int(batch["original_lengths"][0]))
             length = int(mask[0].sum())
             attention = out["attention"].float().cpu()[0, :, :, :length]
             averaged = attention.mean(1)
@@ -133,15 +138,24 @@ def main():
                             for position in top_indices
                         ]
                 selected_top[contract_id] = top
+            if row_index % 100 == 0:
+                print(f"[attention] processed={row_index}/{len(valid)}", flush=True)
     OUTPUT.mkdir(parents=True, exist_ok=True)
-    pos = np.asarray(z_pos, dtype=np.float32); neg = np.asarray(z_neg, dtype=np.float32); diff = np.asarray(z_diff, dtype=np.float32)
-    np.save(OUTPUT / "pdvq_tsne_features.npy", diff.reshape(len(diff), -1))
-    np.savez_compressed(OUTPUT / "pdvq_evidence_features.npz", z_pos=pos, z_neg=neg, z_label=diff,
-                        mean_pool=np.asarray(means, dtype=np.float32), labels=np.asarray(labels, dtype=np.int8),
-                        ids=np.asarray(ids), original_lengths=np.asarray(lengths, dtype=np.int32))
+    if not args.attention_only:
+        pos = np.asarray(z_pos, dtype=np.float32); neg = np.asarray(z_neg, dtype=np.float32); diff = np.asarray(z_diff, dtype=np.float32)
+        np.save(OUTPUT / "pdvq_tsne_features.npy", diff.reshape(len(diff), -1))
+        np.savez_compressed(OUTPUT / "pdvq_evidence_features.npz", z_pos=pos, z_neg=neg, z_label=diff,
+                            mean_pool=np.asarray(means, dtype=np.float32), labels=np.asarray(labels, dtype=np.int8),
+                            ids=np.asarray(ids), original_lengths=np.asarray(lengths, dtype=np.int32))
+    else:
+        archive = np.load(OUTPUT / "pdvq_evidence_features.npz", allow_pickle=False)
+        ids = archive["ids"].tolist()
+        diff = archive["z_label"]
     attention_ids = list(selected_attention)
-    np.savez_compressed(OUTPUT / "attention_selected_contracts.npz", ids=np.asarray(attention_ids),
-                        attentions=np.asarray([selected_attention[item] for item in attention_ids], dtype=object))
+    attention_values = np.empty(len(attention_ids), dtype=object)
+    for index, contract_id in enumerate(attention_ids):
+        attention_values[index] = selected_attention[contract_id]
+    np.savez_compressed(OUTPUT / "attention_selected_contracts.npz", ids=np.asarray(attention_ids), attentions=attention_values)
     (OUTPUT / "attention_top_opcodes.json").write_text(json.dumps({"contracts": selected, "top_opcodes": selected_top}, indent=2), encoding="utf-8")
     statistics = {
         "attention_contract_count": attention_count,
