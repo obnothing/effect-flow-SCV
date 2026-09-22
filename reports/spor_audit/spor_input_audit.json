@@ -1,0 +1,355 @@
+{
+  "dataset": "data\\processed\\DIVE_main6_opcode_process01",
+  "raw_runtime": "DIVE_Raw_Data\\Raw\\POST\\Runtime_Opcode.jsonl",
+  "raw_source_dir": "DIVE_Raw_Data\\Raw\\PRE\\Source codes",
+  "raw_runtime_rows": 22330,
+  "source_solidity_files": 22330,
+  "code_based_rows_with_compiler_metadata": 22330,
+  "compiler_versions": [
+    [
+      "v0.4.24+commit.e67f0147",
+      2510
+    ],
+    [
+      "v0.8.17+commit.8df45f5f",
+      1866
+    ],
+    [
+      "v0.8.19+commit.7dd6d404",
+      1680
+    ],
+    [
+      "v0.4.25+commit.59dbf8f1",
+      1467
+    ],
+    [
+      "v0.8.9+commit.e5eed63a",
+      1154
+    ],
+    [
+      "v0.8.18+commit.87f61d96",
+      1146
+    ],
+    [
+      "v0.8.10+commit.fc410830",
+      918
+    ],
+    [
+      "v0.4.19+commit.c4cbbb05",
+      886
+    ],
+    [
+      "v0.4.18+commit.9cf6e910",
+      876
+    ],
+    [
+      "v0.8.24+commit.e11b9ed9",
+      864
+    ],
+    [
+      "v0.8.20+commit.a1b79de6",
+      857
+    ],
+    [
+      "v0.8.7+commit.e28d00a7",
+      806
+    ],
+    [
+      "v0.4.21+commit.dfe3193c",
+      797
+    ],
+    [
+      "v0.8.23+commit.f704f362",
+      738
+    ],
+    [
+      "v0.4.23+commit.124ca40d",
+      476
+    ],
+    [
+      "v0.8.16+commit.07a7930e",
+      444
+    ],
+    [
+      "v0.6.12+commit.27d51765",
+      411
+    ],
+    [
+      "v0.8.4+commit.c7e474f2",
+      349
+    ],
+    [
+      "v0.4.20+commit.3155dd80",
+      297
+    ],
+    [
+      "v0.4.16+commit.d7661dd9",
+      283
+    ]
+  ],
+  "split_rows": {
+    "train": 16474,
+    "valid": 2032,
+    "test": 2025
+  },
+  "label_width_counts": {
+    "6": 20531
+  },
+  "expected_project_labels": [
+    "Reentrancy",
+    "Access Control",
+    "Arithmetic",
+    "Unchecked Return Values",
+    "DoS",
+    "Time manipulation"
+  ],
+  "runtime_id_alignment": {
+    "runtime_match": 16570,
+    "missing_runtime": 3961
+  },
+  "opcode_exact_normalized_mismatch_count": 409,
+  "opcode_mismatch_examples": [
+    {
+      "split": "train",
+      "line": 15975,
+      "id": "perturbed_train:dive:19873"
+    },
+    {
+      "split": "train",
+      "line": 15976,
+      "id": "perturbed_train:dive:13265"
+    },
+    {
+      "split": "train",
+      "line": 15977,
+      "id": "perturbed_train:dive:11790"
+    },
+    {
+      "split": "train",
+      "line": 15978,
+      "id": "perturbed_train:dive:5419"
+    },
+    {
+      "split": "train",
+      "line": 15980,
+      "id": "perturbed_train:dive:19110"
+    },
+    {
+      "split": "train",
+      "line": 15981,
+      "id": "perturbed_train:dive:1158"
+    },
+    {
+      "split": "train",
+      "line": 15982,
+      "id": "perturbed_train:dive:12063"
+    },
+    {
+      "split": "train",
+      "line": 15984,
+      "id": "perturbed_train:dive:20575"
+    },
+    {
+      "split": "train",
+      "line": 15986,
+      "id": "perturbed_train:dive:18972"
+    },
+    {
+      "split": "train",
+      "line": 15987,
+      "id": "perturbed_train:dive:11110"
+    },
+    {
+      "split": "train",
+      "line": 15988,
+      "id": "perturbed_train:dive:10559"
+    },
+    {
+      "split": "train",
+      "line": 15990,
+      "id": "perturbed_train:dive:19406"
+    },
+    {
+      "split": "train",
+      "line": 15991,
+      "id": "perturbed_train:dive:19010"
+    },
+    {
+      "split": "train",
+      "line": 15992,
+      "id": "perturbed_train:dive:8742"
+    },
+    {
+      "split": "train",
+      "line": 15993,
+      "id": "perturbed_train:dive:22281"
+    },
+    {
+      "split": "train",
+      "line": 15995,
+      "id": "perturbed_train:dive:10176"
+    },
+    {
+      "split": "train",
+      "line": 15997,
+      "id": "perturbed_train:dive:16171"
+    },
+    {
+      "split": "train",
+      "line": 15998,
+      "id": "perturbed_train:dive:18801"
+    },
+    {
+      "split": "train",
+      "line": 15999,
+      "id": "perturbed_train:dive:21412"
+    },
+    {
+      "split": "train",
+      "line": 16000,
+      "id": "perturbed_train:dive:5833"
+    }
+  ],
+  "parser_error_counts": {
+    "unknown_opcode_token": 326121,
+    "orphan_immediate_or_hex_token": 412919,
+    "push_immediate_width_mismatch": 321
+  },
+  "parser_error_examples": [
+    {
+      "id": "dive:12098",
+      "kind": "unknown_opcode_token",
+      "token_index": 1973,
+      "opcode": "'FE'(UNKNOWN"
+    },
+    {
+      "id": "dive:12098",
+      "kind": "unknown_opcode_token",
+      "token_index": 1974,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:12098",
+      "kind": "unknown_opcode_token",
+      "token_index": 2206,
+      "opcode": "'FE'(UNKNOWN"
+    },
+    {
+      "id": "dive:12098",
+      "kind": "unknown_opcode_token",
+      "token_index": 2207,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:12098",
+      "kind": "unknown_opcode_token",
+      "token_index": 2299,
+      "opcode": "'FE'(UNKNOWN"
+    },
+    {
+      "id": "dive:12098",
+      "kind": "unknown_opcode_token",
+      "token_index": 2300,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:12098",
+      "kind": "unknown_opcode_token",
+      "token_index": 3144,
+      "opcode": "'FE'(UNKNOWN"
+    },
+    {
+      "id": "dive:12098",
+      "kind": "unknown_opcode_token",
+      "token_index": 3145,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:12098",
+      "kind": "unknown_opcode_token",
+      "token_index": 3217,
+      "opcode": "'FE'(UNKNOWN"
+    },
+    {
+      "id": "dive:12098",
+      "kind": "unknown_opcode_token",
+      "token_index": 3218,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:12098",
+      "kind": "unknown_opcode_token",
+      "token_index": 3283,
+      "opcode": "'FE'(UNKNOWN"
+    },
+    {
+      "id": "dive:12098",
+      "kind": "unknown_opcode_token",
+      "token_index": 3284,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:12098",
+      "kind": "unknown_opcode_token",
+      "token_index": 3991,
+      "opcode": "'FE'(UNKNOWN"
+    },
+    {
+      "id": "dive:12098",
+      "kind": "unknown_opcode_token",
+      "token_index": 3992,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:22051",
+      "kind": "unknown_opcode_token",
+      "token_index": 7295,
+      "opcode": "'FE'(UNKNOWN"
+    },
+    {
+      "id": "dive:22051",
+      "kind": "unknown_opcode_token",
+      "token_index": 7296,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:22051",
+      "kind": "unknown_opcode_token",
+      "token_index": 7297,
+      "opcode": "'DD'(UNKNOWN"
+    },
+    {
+      "id": "dive:22051",
+      "kind": "unknown_opcode_token",
+      "token_index": 7298,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:22051",
+      "kind": "unknown_opcode_token",
+      "token_index": 7301,
+      "opcode": "'AD'(UNKNOWN"
+    },
+    {
+      "id": "dive:22051",
+      "kind": "unknown_opcode_token",
+      "token_index": 7302,
+      "opcode": "OPCODE)"
+    }
+  ],
+  "tokenizer_alignment_failure_examples": [],
+  "instruction_count_summary": {
+    "min": 10,
+    "max": 29672,
+    "mean": 4578.322993361497
+  },
+  "runtime_bytecode_available": false,
+  "runtime_opcode_mnemonic_sequence_available": true,
+  "program_counter_independently_verifiable": false,
+  "push_immediate_recoverable_from_raw_opcode_text": false,
+  "tokenizer_push_operand_behavior": "PUSH mnemonic and a normalized operand token are emitted; operand is not treated as an independent EVM instruction.",
+  "source_and_opcode_same_contract_id": false,
+  "complete_eight_label_training_data": false,
+  "test_checked": false,
+  "conclusion": "The process01 data is six-label and the Raw directory contains disassembled runtime opcode text rather than original runtime bytecode. Local instruction boundaries and PUSH widths are recoverable from the trusted mnemonic sequence, but program counters cannot be independently verified against bytes. A full SPOR experiment requires an explicit decision to use this bounded text-level reconstruction and a separate eight-label dataset if eight labels are required."
+}
