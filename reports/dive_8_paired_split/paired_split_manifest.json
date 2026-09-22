@@ -1,0 +1,23 @@
+{
+  "label_source": "data/external/dive_labels/unpacked/Labels/DIVE_Labels.csv",
+  "opcode_source": "DIVE_Raw_Data/Raw/POST/Runtime_Opcode.jsonl",
+  "source_code_dir": "DIVE_Raw_Data/Raw/PRE/Source codes",
+  "shared_split": true,
+  "seed": 42,
+  "split_sizes": {
+    "train": 17864,
+    "valid": 2233,
+    "test": 2233
+  },
+  "label_names": [
+    "Reentrancy",
+    "Access Control",
+    "Arithmetic",
+    "Unchecked Return Values",
+    "DoS",
+    "Bad Randomness",
+    "Front Running",
+    "Time manipulation"
+  ],
+  "test_checked": false
+}
