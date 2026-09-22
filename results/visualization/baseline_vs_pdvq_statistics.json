@@ -1,0 +1,17 @@
+{
+  "mean_pooling": {
+    "samples": 1494,
+    "groups": 10,
+    "pca50_silhouette": -0.10389400273561478,
+    "mean_within_group_squared_distance": 35.42776393890381,
+    "interpretation": "PCA-50 features are standardized before descriptive statistics for the ten frequent label combinations; not a classification metric."
+  },
+  "pdvq_evidence_difference": {
+    "samples": 1494,
+    "groups": 10,
+    "pca50_silhouette": -0.07794288545846939,
+    "mean_within_group_squared_distance": 34.878245162963864,
+    "interpretation": "PCA-50 features are standardized before descriptive statistics for the ten frequent label combinations; not a classification metric."
+  },
+  "test_checked": false
+}

@@ -1,0 +1,42 @@
+{
+  "labels": {
+    "Reentrancy": {
+      "positive_negative_cosine_mean": -0.26938244700431824,
+      "positive_negative_cosine_std": 0.4877612888813019,
+      "positive_intra_class_variance": {
+        "0": 993.9412231445312,
+        "1": 57.9686279296875
+      },
+      "negative_intra_class_variance": {
+        "0": 848.1424560546875,
+        "1": 135.1178741455078
+      }
+    },
+    "DoS": {
+      "positive_negative_cosine_mean": -0.38909706473350525,
+      "positive_negative_cosine_std": 0.40274709463119507,
+      "positive_intra_class_variance": {
+        "0": 590.5628662109375,
+        "1": 219.0038604736328
+      },
+      "negative_intra_class_variance": {
+        "0": 388.61566162109375,
+        "1": 96.92765808105469
+      }
+    },
+    "Access Control": {
+      "positive_negative_cosine_mean": -0.13171374797821045,
+      "positive_negative_cosine_std": 0.5291045904159546,
+      "positive_intra_class_variance": {
+        "0": 677.608154296875,
+        "1": 59.0662841796875
+      },
+      "negative_intra_class_variance": {
+        "0": 845.0695190429688,
+        "1": 155.3957977294922
+      }
+    }
+  },
+  "test_checked": false,
+  "interpretation": "Positive and negative queries capture different evidence distributions; these diagnostics do not identify ground-truth vulnerable or safe regions."
+}

@@ -5,9 +5,11 @@ from pathlib import Path
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+from sklearn.metrics import silhouette_score
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -41,9 +43,13 @@ def save(fig, path):
     svg.write_text("\n".join(line.rstrip() for line in svg.read_text(encoding="utf-8").splitlines()) + "\n", encoding="utf-8")
 
 
-def tsne(features):
+def pca_reduce(features):
     components = min(50, features.shape[0] - 1, features.shape[1])
-    reduced = PCA(n_components=components, random_state=42).fit_transform(features)
+    return PCA(n_components=components, random_state=42).fit_transform(features)
+
+
+def tsne(features):
+    reduced = pca_reduce(features)
     return TSNE(n_components=2, perplexity=30, random_state=42, init="pca", learning_rate="auto", max_iter=1000).fit_transform(reduced)
 
 
@@ -76,6 +82,25 @@ def intra_class_variance(values, target):
     return result
 
 
+def combination_statistics(features, groups):
+    selected = groups != "Other"
+    values, names = features[selected], groups[selected]
+    values = (values - values.mean(0, keepdims=True)) / values.std(0, keepdims=True).clip(min=1e-12)
+    encoded = {name: index for index, name in enumerate(sorted(set(names)))}
+    targets = np.asarray([encoded[name] for name in names])
+    compactness = []
+    for name in sorted(encoded):
+        group = values[names == name]
+        compactness.append(float(np.mean(np.sum((group - group.mean(0, keepdims=True)) ** 2, axis=1))))
+    return {
+        "samples": int(len(values),),
+        "groups": int(len(encoded)),
+        "pca50_silhouette": float(silhouette_score(values, targets)),
+        "mean_within_group_squared_distance": float(np.mean(compactness)),
+        "interpretation": "PCA-50 features are standardized before descriptive statistics for the ten frequent label combinations; not a classification metric.",
+    }
+
+
 def bin_attention(values, bins=192):
     pieces = np.array_split(values, min(bins, len(values)))
     binned = np.asarray([piece.mean() for piece in pieces])
@@ -91,6 +116,21 @@ def top_text(top, limit=10):
     return "  ".join(f"{query}:{opcode}@{position}" for _, query, opcode, position in pairs[:limit])
 
 
+def top_lines(top, limit=10):
+    pairs = []
+    names = {"Reentrancy_positive": "Re+", "Reentrancy_negative": "Re-", "DoS_positive": "DoS+",
+             "DoS_negative": "DoS-", "Access Control_positive": "AC+", "Access Control_negative": "AC-"}
+    for query, rows in top.items():
+        for row in rows:
+            pairs.append((row["attention"], names.get(query, query), row["opcode"], row["position"]))
+    pairs.sort(reverse=True)
+    def display_opcode(opcode):
+        if opcode.startswith("0x") or len(opcode) > 16:
+            return "IMM_DATA"
+        return opcode[:12]
+    return "\n".join(f"{rank + 1:>2}. {query:<4} {display_opcode(opcode):<10} @ {position}" for rank, (_, query, opcode, position) in enumerate(pairs[:limit]))
+
+
 def main():
     manifest = json.loads((DATA / "extraction_manifest.json").read_text(encoding="utf-8"))
     if manifest.get("test_checked") is not False:
@@ -101,15 +141,21 @@ def main():
     groups, top, counts = combination_groups(labels)
     FIGURES.mkdir(parents=True, exist_ok=True); REPORTS.mkdir(parents=True, exist_ok=True)
 
-    pdvq_coords = tsne(label.reshape(len(label), -1))
+    pdvq_pca = pca_reduce(label.reshape(len(label), -1))
+    mean_pca = pca_reduce(mean)
+    pdvq_coords = TSNE(n_components=2, perplexity=30, random_state=42, init="pca", learning_rate="auto", max_iter=1000).fit_transform(pdvq_pca)
     np.save(DATA / "pdvq_tsne_coordinates.npy", pdvq_coords)
     fig, axis = plt.subplots(figsize=(7.0, 4.5), constrained_layout=True)
     scatter_combinations(axis, pdvq_coords, groups, top, "PDVQ evidence-difference representation")
     axis.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), fontsize=6.5, title="Label combination", title_fontsize=7)
     save(fig, FIGURES / "pdvq_tsne_label_combination"); plt.close(fig)
 
-    mean_coords = tsne(mean)
+    mean_coords = TSNE(n_components=2, perplexity=30, random_state=42, init="pca", learning_rate="auto", max_iter=1000).fit_transform(mean_pca)
     np.savez(DATA / "baseline_vs_pdvq_tsne_coordinates.npz", mean_pool=mean_coords, pdvq=pdvq_coords)
+    comparison_statistics = {"mean_pooling": combination_statistics(mean_pca, groups),
+                             "pdvq_evidence_difference": combination_statistics(pdvq_pca, groups),
+                             "test_checked": False}
+    (DATA / "baseline_vs_pdvq_statistics.json").write_text(json.dumps(comparison_statistics, indent=2), encoding="utf-8")
     fig, axes = plt.subplots(1, 2, figsize=(7.0, 3.45), constrained_layout=True)
     scatter_combinations(axes[0], mean_coords, groups, top, "(a) Mean pooling")
     scatter_combinations(axes[1], pdvq_coords, groups, top, "(b) PDVQ-Net")
@@ -143,7 +189,7 @@ def main():
     attention_ids, attentions = attention_archive["ids"].tolist(), attention_archive["attentions"].tolist()
     top_data = json.loads((DATA / "attention_top_opcodes.json").read_text(encoding="utf-8"))
     query_rows = [(0, 0, "Re+"), (0, 1, "Re-"), (4, 0, "DoS+"), (4, 1, "DoS-"), (1, 0, "AC+"), (1, 1, "AC-")]
-    fig, axes = plt.subplots(3, 2, figsize=(7.0, 8.4), constrained_layout=True)
+    fig, axes = plt.subplots(3, 2, figsize=(7.0, 7.2), constrained_layout=True)
     for axis, contract_id, attention in zip(axes.flat, attention_ids, attentions):
         heat = np.vstack([bin_attention(attention[label, polarity]) for label, polarity, _ in query_rows])
         image = axis.imshow(heat, aspect="auto", interpolation="nearest", cmap="viridis", vmin=0, vmax=1)
@@ -152,10 +198,24 @@ def main():
         axis.set_yticks(range(6), [name for _, _, name in query_rows], fontsize=6.5)
         axis.set_xlabel("Opcode position bins", fontsize=6.5)
         axis.set_xticks([0, heat.shape[1] - 1], ["0", str(meta["original_length"] - 1)], fontsize=6)
-        axis.text(0, -0.42, top_text(top_data["top_opcodes"][contract_id]), transform=axis.transAxes,
-                  fontsize=4.4, va="top", clip_on=False)
-    fig.colorbar(image, ax=axes.ravel().tolist(), shrink=0.55, label="Relative attention within query")
-    save(fig, FIGURES / "query_attention_heatmap"); plt.close(fig)
+    fig.colorbar(image, ax=axes.ravel().tolist(), shrink=0.62, label="Relative attention within query")
+    heatmap_path = FIGURES / "query_attention_heatmap"
+    fig.savefig(heatmap_path.with_suffix(".svg"), bbox_inches="tight", facecolor="white")
+    fig.savefig(heatmap_path.with_suffix(".png"), dpi=300, bbox_inches="tight", facecolor="white")
+    svg = heatmap_path.with_suffix(".svg")
+    svg.write_text("\n".join(line.rstrip() for line in svg.read_text(encoding="utf-8").splitlines()) + "\n", encoding="utf-8")
+    table_fig, table_axes = plt.subplots(3, 2, figsize=(7.0, 7.2), constrained_layout=True)
+    for axis, contract_id in zip(table_axes.flat, attention_ids):
+        meta = top_data["contracts"][contract_id]
+        axis.axis("off")
+        axis.set_title(f"{meta['focus_label']} example: {contract_id}", fontsize=8)
+        axis.text(0.02, 0.93, top_lines(top_data["top_opcodes"][contract_id]), transform=axis.transAxes,
+                  family="monospace", fontsize=6.2, va="top")
+    save(table_fig, FIGURES / "query_attention_top_opcodes")
+    with PdfPages(heatmap_path.with_suffix(".pdf")) as pdf:
+        pdf.savefig(fig, bbox_inches="tight", facecolor="white")
+        pdf.savefig(table_fig, bbox_inches="tight", facecolor="white")
+    plt.close(fig); plt.close(table_fig)
 
     attention_stats = json.loads((DATA / "attention_statistics.json").read_text(encoding="utf-8"))
     (REPORTS / "pdvq_tsne_report.md").write_text(
@@ -164,7 +224,11 @@ def main():
         f"Validation contracts: {manifest['contracts']}. Top-combination counts: {json.dumps(counts)}. Test was not read.\n", encoding="utf-8")
     (REPORTS / "baseline_vs_pdvq_tsne.md").write_text(
         "# Mean Pooling vs PDVQ t-SNE\n\n"
-        "Both panels use token states from the same frozen P11 BiGRU checkpoint. Panel (a) uses masked mean pooling of `H`; panel (b) uses the six-label evidence-difference representation `Z+ - Z-`. This is an aggregation comparison, not a separately trained baseline-classifier comparison. Visual compactness or overlap suggests differences in representation organization but does not prove a decision boundary. Test was not read.\n", encoding="utf-8")
+        "Both panels use token states from the same frozen P11 BiGRU checkpoint. Panel (a) uses masked mean pooling of `H`; panel (b) uses the six-label evidence-difference representation `Z+ - Z-`. This is an aggregation comparison, not a separately trained baseline-classifier comparison. Visual compactness or overlap suggests differences in representation organization but does not prove a decision boundary. Test was not read.\n\n"
+        "PCA-50 descriptive combination statistics:\n\n"
+        f"- Mean pooling: silhouette={comparison_statistics['mean_pooling']['pca50_silhouette']:.6f}; mean within-group squared distance={comparison_statistics['mean_pooling']['mean_within_group_squared_distance']:.6f}.\n"
+        f"- PDVQ evidence difference: silhouette={comparison_statistics['pdvq_evidence_difference']['pca50_silhouette']:.6f}; mean within-group squared distance={comparison_statistics['pdvq_evidence_difference']['mean_within_group_squared_distance']:.6f}.\n",
+        encoding="utf-8")
     polarity_lines = ["# Positive and Negative Evidence Spaces", "", polarity_stats["interpretation"], ""]
     for name, values in polarity_stats["labels"].items():
         polarity_lines.append(f"- {name}: mean positive-negative cosine = {values['positive_negative_cosine_mean']:.6f}; std = {values['positive_negative_cosine_std']:.6f}.")

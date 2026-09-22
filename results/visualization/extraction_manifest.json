@@ -1,0 +1,13 @@
+{
+  "checkpoint": "checkpoints/light_label/polarity_queries_followup_p11/P11/best.pt",
+  "dataset": "data/processed/DIVE_main6_opcode_process01",
+  "split": "validation",
+  "seed": 42,
+  "contracts": 2032,
+  "feature_shape": [
+    2032,
+    6,
+    768
+  ],
+  "test_checked": false
+}
