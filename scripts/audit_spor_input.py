@@ -4,6 +4,7 @@ import csv
 import json
 import re
 import sys
+import argparse
 from collections import Counter
 from pathlib import Path
 
@@ -89,6 +90,23 @@ def tokenizer_alignment(opcode_text, tokenizer):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data-dir", default="data/processed/DIVE_main6_opcode_process01")
+    parser.add_argument("--report-dir", default="reports/spor_audit")
+    parser.add_argument("--expected-label-count", type=int, default=6)
+    args = parser.parse_args()
+    data_dir = Path(args.data_dir)
+    report_dir = Path(args.report_dir)
+    if not data_dir.is_absolute():
+        data_dir = ROOT / data_dir
+    if not report_dir.is_absolute():
+        report_dir = ROOT / report_dir
+    global DATA, REPORT, LABELS
+    DATA = data_dir
+    REPORT = report_dir
+    manifest_path = DATA / "manifest.json"
+    if manifest_path.exists():
+        LABELS = list(json.loads(manifest_path.read_text(encoding="utf-8")).get("label_names", LABELS))
     sys.path.insert(0, str(ROOT / "src"))
     from evm_opcode import OPCODES
     from evm_tokenizer import EVMOpcodeTokenizer
@@ -146,9 +164,10 @@ def main():
         "push_immediate_recoverable_from_raw_opcode_text": not any(key.startswith("missing_push") or key.startswith("push_immediate_width") for key in parser_error_counts),
         "tokenizer_push_operand_behavior": "PUSH mnemonic and a normalized operand token are emitted; operand is not treated as an independent EVM instruction.",
         "source_and_opcode_same_contract_id": id_alignment["runtime_match"] == sum(split_rows.values()),
-        "complete_eight_label_training_data": set(label_widths) == {8},
+        "expected_label_count": int(args.expected_label_count),
+        "complete_expected_label_training_data": set(label_widths) == {int(args.expected_label_count)},
         "test_checked": False,
-        "conclusion": "The process01 data is six-label and the Raw directory contains disassembled runtime opcode text rather than original runtime bytecode. Local instruction boundaries and PUSH widths are recoverable from the trusted mnemonic sequence, but program counters cannot be independently verified against bytes. A full SPOR experiment requires an explicit decision to use this bounded text-level reconstruction and a separate eight-label dataset if eight labels are required.",
+        "conclusion": "The selected data has the expected label width, and the Raw directory contains disassembled runtime opcode text rather than original runtime bytecode. Local instruction boundaries and PUSH widths may be reconstructed after explicit handling of Unknown Opcode annotations and malformed PUSH cases, but program counters cannot be independently verified against bytes. SPOR must be described as bounded text-level reconstruction rather than byte-verified or complete EVM execution semantics.",
     }
     REPORT.mkdir(parents=True, exist_ok=True)
     (REPORT / "spor_input_audit.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
@@ -156,9 +175,9 @@ def main():
         "# SPOR Phase 1 Input Audit", "",
         f"- Dataset: `{report['dataset']}`; splits: `{report['split_rows']}`.",
         f"- Runtime opcode rows: `{report['raw_runtime_rows']}`; source files: `{report['source_solidity_files']}`; compiler metadata rows: `{report['code_based_rows_with_compiler_metadata']}`.",
-        f"- Runtime/source ID alignment across process01: `{report['source_and_opcode_same_contract_id']}`.",
+        f"- Runtime/source ID alignment across selected dataset: `{report['source_and_opcode_same_contract_id']}`.",
         f"- Normalized opcode mismatches: `{report['opcode_exact_normalized_mismatch_count']}`.",
-        f"- Label widths in process01: `{report['label_width_counts']}`; complete eight-label data: `{report['complete_eight_label_training_data']}`.",
+        f"- Label widths: `{report['label_width_counts']}`; complete expected-label data: `{report['complete_expected_label_training_data']}`.",
         f"- Original runtime bytecode available: `{report['runtime_bytecode_available']}`.",
         f"- Trusted disassembled opcode sequence available: `{report['runtime_opcode_mnemonic_sequence_available']}`.",
         f"- Program counter independently verifiable against bytecode: `{report['program_counter_independently_verifiable']}`.",
@@ -171,7 +190,7 @@ def main():
         "Basic-block-local instruction order, PUSH width, instruction index and derived local program counters can be reconstructed from the trusted mnemonic/operand text. The original runtime bytes and independently verifiable program counters are absent, so the result would be a bounded text-level reconstruction rather than byte-verified or complete EVM execution semantics.",
         "",
         "## Label boundary",
-        "process01 contains six labels, not the eight-label DIVE target. The eight-label DIVE labels exist separately in DIVE_Labels.csv, but they are not the labels currently attached to process01. The SPOR model experiment must keep the chosen dataset label definition explicit.",
+        f"The selected dataset contains `{report['expected_label_count']}` labels and uses the official DIVE_Labels.csv-derived assignments. The label order is recorded in the dataset manifest and remains fixed for SPOR.",
         "",
         "Test data was audited only for schema/alignment and remains locked for model selection: `test_checked=false`.",
     ]

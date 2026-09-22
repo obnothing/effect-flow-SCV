@@ -1,0 +1,256 @@
+{
+  "dataset": "data\\processed\\DIVE_8_opcode_random_split",
+  "raw_runtime": "DIVE_Raw_Data\\Raw\\POST\\Runtime_Opcode.jsonl",
+  "raw_source_dir": "DIVE_Raw_Data\\Raw\\PRE\\Source codes",
+  "raw_runtime_rows": 22330,
+  "source_solidity_files": 22330,
+  "code_based_rows_with_compiler_metadata": 22330,
+  "compiler_versions": [
+    [
+      "v0.4.24+commit.e67f0147",
+      2510
+    ],
+    [
+      "v0.8.17+commit.8df45f5f",
+      1866
+    ],
+    [
+      "v0.8.19+commit.7dd6d404",
+      1680
+    ],
+    [
+      "v0.4.25+commit.59dbf8f1",
+      1467
+    ],
+    [
+      "v0.8.9+commit.e5eed63a",
+      1154
+    ],
+    [
+      "v0.8.18+commit.87f61d96",
+      1146
+    ],
+    [
+      "v0.8.10+commit.fc410830",
+      918
+    ],
+    [
+      "v0.4.19+commit.c4cbbb05",
+      886
+    ],
+    [
+      "v0.4.18+commit.9cf6e910",
+      876
+    ],
+    [
+      "v0.8.24+commit.e11b9ed9",
+      864
+    ],
+    [
+      "v0.8.20+commit.a1b79de6",
+      857
+    ],
+    [
+      "v0.8.7+commit.e28d00a7",
+      806
+    ],
+    [
+      "v0.4.21+commit.dfe3193c",
+      797
+    ],
+    [
+      "v0.8.23+commit.f704f362",
+      738
+    ],
+    [
+      "v0.4.23+commit.124ca40d",
+      476
+    ],
+    [
+      "v0.8.16+commit.07a7930e",
+      444
+    ],
+    [
+      "v0.6.12+commit.27d51765",
+      411
+    ],
+    [
+      "v0.8.4+commit.c7e474f2",
+      349
+    ],
+    [
+      "v0.4.20+commit.3155dd80",
+      297
+    ],
+    [
+      "v0.4.16+commit.d7661dd9",
+      283
+    ]
+  ],
+  "split_rows": {
+    "train": 17864,
+    "valid": 2233,
+    "test": 2233
+  },
+  "label_width_counts": {
+    "8": 22330
+  },
+  "expected_project_labels": [
+    "Reentrancy",
+    "Access Control",
+    "Arithmetic",
+    "Unchecked Return Values",
+    "DoS",
+    "Bad Randomness",
+    "Front Running",
+    "Time manipulation"
+  ],
+  "runtime_id_alignment": {
+    "runtime_match": 22330
+  },
+  "opcode_exact_normalized_mismatch_count": 0,
+  "opcode_mismatch_examples": [],
+  "parser_error_counts": {
+    "unknown_opcode_token": 397877,
+    "orphan_immediate_or_hex_token": 498975,
+    "push_immediate_width_mismatch": 383
+  },
+  "parser_error_examples": [
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2113,
+      "opcode": "'FE'(UNKNOWN"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2114,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2489,
+      "opcode": "'FE'(UNKNOWN"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2490,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2501,
+      "opcode": "'FE'(UNKNOWN"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2502,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2503,
+      "opcode": "'4F'(UNKNOWN"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2504,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2516,
+      "opcode": "'24'(UNKNOWN"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2517,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2518,
+      "opcode": "'AE'(UNKNOWN"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2519,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2522,
+      "opcode": "'CB'(UNKNOWN"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2523,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2524,
+      "opcode": "'A8'(UNKNOWN"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2525,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2526,
+      "opcode": "'D3'(UNKNOWN"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2527,
+      "opcode": "OPCODE)"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2533,
+      "opcode": "'DF'(UNKNOWN"
+    },
+    {
+      "id": "dive:13386",
+      "kind": "unknown_opcode_token",
+      "token_index": 2534,
+      "opcode": "OPCODE)"
+    }
+  ],
+  "tokenizer_alignment_failure_examples": [],
+  "instruction_count_summary": {
+    "min": 10,
+    "max": 29672,
+    "mean": 4344.7040752351095
+  },
+  "runtime_bytecode_available": false,
+  "runtime_opcode_mnemonic_sequence_available": true,
+  "program_counter_independently_verifiable": false,
+  "push_immediate_recoverable_from_raw_opcode_text": false,
+  "tokenizer_push_operand_behavior": "PUSH mnemonic and a normalized operand token are emitted; operand is not treated as an independent EVM instruction.",
+  "source_and_opcode_same_contract_id": true,
+  "expected_label_count": 8,
+  "complete_expected_label_training_data": true,
+  "test_checked": false,
+  "conclusion": "The selected data contains labels but the Raw directory contains disassembled runtime opcode text rather than original runtime bytecode. Local instruction boundaries and PUSH widths are recoverable from the trusted mnemonic sequence, but program counters cannot be independently verified against bytes. SPOR must be described as bounded text-level reconstruction rather than byte-verified or complete EVM execution semantics."
+}
