@@ -1,0 +1,20 @@
+{
+  "runtime_path": "DIVE_Raw_Data\\Raw\\POST\\Runtime_Opcode.jsonl",
+  "source_dir": "DIVE_Raw_Data\\Raw\\PRE\\Source codes",
+  "runtime_rows": 22330,
+  "runtime_unique_contract_ids": 22330,
+  "runtime_empty_opcode_rows": 0,
+  "source_solidity_files": 22330,
+  "source_non_solidity_files": 1,
+  "runtime_source_id_overlap": 22330,
+  "runtime_without_source": 0,
+  "runtime_fields_containing_label_or_vulnerability": [],
+  "sample_rows": 23282,
+  "sample_fields": [
+    "Address"
+  ],
+  "sample_fields_containing_label_or_vulnerability": [],
+  "supervised_eight_label_dataset_ready": false,
+  "test_checked": false,
+  "conclusion": "Raw opcode/source files expose no vulnerability labels; an external 8-label mapping is required before writing supervised train/valid/test JSONL."
+}
