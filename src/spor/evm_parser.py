@@ -11,7 +11,7 @@ import re
 PUSH_RE = re.compile(r"^PUSH([0-9]+)$", re.IGNORECASE)
 HEX_RE = re.compile(r"^0x[0-9a-fA-F]+$")
 UNKNOWN_RE = re.compile(r"^'([0-9a-fA-F]{2})'(?:\(Unknown)?$", re.IGNORECASE)
-TERMINATORS = {"STOP", "RETURN", "REVERT", "SELFDESTRUCT", "INVALID", "RETURNCONTRACT"}
+TERMINATORS = {"STOP", "RETURN", "REVERT", "SELFDESTRUCT", "INVALID", "UNKNOWN_0xFE", "RETURNCONTRACT"}
 CONTROL_FLOW = {"JUMP", "JUMPI", "JUMPDEST", *TERMINATORS}
 
 
@@ -89,6 +89,11 @@ def _model_token_alignment(raw_tokens, tokenizer):
             model_indices.append(model_index)
             model_index += 1
             raw_index += 1
+        elif opcode == "PUSH0" and raw_index < len(raw_tokens) and raw_tokens[raw_index].lower() == "0x":
+            source_indices.append(raw_index)
+            model_indices.append(model_index)
+            model_index += 1
+            raw_index += 1
         elif _unknown_annotation(raw_tokens, raw_index - 1):
             # The annotation consumed two source tokens but one normalized
             # unknown instruction may still occupy two model tokens because
@@ -136,7 +141,9 @@ def parse_disassembled_opcode(opcode_text, tokenizer=None):
         immediate = None; width = 0; status = "ok"
         if _is_push(opcode):
             width = _push_width(opcode)
-            if width and token_index + 1 < len(tokens) and HEX_RE.match(tokens[token_index + 1]):
+            if width == 0 and token_index + 1 < len(tokens) and tokens[token_index + 1].lower() == "0x":
+                source_indices.append(token_index + 1)
+            elif width and token_index + 1 < len(tokens) and HEX_RE.match(tokens[token_index + 1]):
                 immediate = tokens[token_index + 1]
                 source_indices.append(token_index + 1)
                 actual_width = max(0, (len(immediate) - 2) // 2)
