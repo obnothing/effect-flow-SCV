@@ -1,0 +1,24 @@
+{
+  "route": "E3_P11_8_A0",
+  "dataset": "data/processed/DIVE_8_opcode_random_split",
+  "train_valid_loader_checked": true,
+  "train_rows": 17864,
+  "valid_rows": 2233,
+  "test_checked": false,
+  "parameter_count": 5331472,
+  "embedding_dim": 512,
+  "bigru_output_dim": 1024,
+  "query_shape": [
+    8,
+    2,
+    512
+  ],
+  "kv_projection": [
+    1024,
+    512
+  ],
+  "attention_heads": 8,
+  "head_dim": 64,
+  "forward_backward_smoke": "passed",
+  "loss": 0.7486751675605774
+}

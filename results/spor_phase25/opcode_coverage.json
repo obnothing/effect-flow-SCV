@@ -1,0 +1,2050 @@
+[
+  {
+    "opcode": "ADD",
+    "train_count": 3026456,
+    "valid_count": 375669,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "ADDMOD",
+    "train_count": 4913,
+    "valid_count": 618,
+    "pop_count": 3,
+    "push_count": 1,
+    "min_stack": 3
+  },
+  {
+    "opcode": "ADDRESS",
+    "train_count": 84246,
+    "valid_count": 11496,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "AND",
+    "train_count": 2040973,
+    "valid_count": 254912,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "BALANCE",
+    "train_count": 5863,
+    "valid_count": 2048,
+    "pop_count": 1,
+    "push_count": 1,
+    "min_stack": 1
+  },
+  {
+    "opcode": "BASEFEE",
+    "train_count": 718,
+    "valid_count": 100,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "BLOCKHASH",
+    "train_count": 927,
+    "valid_count": 112,
+    "pop_count": 1,
+    "push_count": 1,
+    "min_stack": 1
+  },
+  {
+    "opcode": "BYTE",
+    "train_count": 2661,
+    "valid_count": 361,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "CALL",
+    "train_count": 57236,
+    "valid_count": 7007,
+    "pop_count": 7,
+    "push_count": 1,
+    "min_stack": 7
+  },
+  {
+    "opcode": "CALLCODE",
+    "train_count": 1111,
+    "valid_count": 117,
+    "pop_count": 7,
+    "push_count": 1,
+    "min_stack": 7
+  },
+  {
+    "opcode": "CALLDATACOPY",
+    "train_count": 21346,
+    "valid_count": 3482,
+    "pop_count": 3,
+    "push_count": 0,
+    "min_stack": 3
+  },
+  {
+    "opcode": "CALLDATALOAD",
+    "train_count": 276492,
+    "valid_count": 35373,
+    "pop_count": 1,
+    "push_count": 1,
+    "min_stack": 1
+  },
+  {
+    "opcode": "CALLDATASIZE",
+    "train_count": 211721,
+    "valid_count": 26889,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "CALLER",
+    "train_count": 240503,
+    "valid_count": 30851,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "CALLVALUE",
+    "train_count": 405846,
+    "valid_count": 52056,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "CHAINID",
+    "train_count": 1341,
+    "valid_count": 189,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "CODECOPY",
+    "train_count": 22452,
+    "valid_count": 3374,
+    "pop_count": 3,
+    "push_count": 0,
+    "min_stack": 3
+  },
+  {
+    "opcode": "CODESIZE",
+    "train_count": 2283,
+    "valid_count": 829,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "COINBASE",
+    "train_count": 1685,
+    "valid_count": 1064,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "CREATE",
+    "train_count": 766,
+    "valid_count": 93,
+    "pop_count": 3,
+    "push_count": 1,
+    "min_stack": 3
+  },
+  {
+    "opcode": "CREATE2",
+    "train_count": 1662,
+    "valid_count": 206,
+    "pop_count": 4,
+    "push_count": 1,
+    "min_stack": 4
+  },
+  {
+    "opcode": "DELEGATECALL",
+    "train_count": 1281,
+    "valid_count": 187,
+    "pop_count": 6,
+    "push_count": 1,
+    "min_stack": 6
+  },
+  {
+    "opcode": "DIFFICULTY",
+    "train_count": 1084,
+    "valid_count": 172,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "DIV",
+    "train_count": 289773,
+    "valid_count": 36071,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "DUP1",
+    "train_count": 3724522,
+    "valid_count": 466050,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 1
+  },
+  {
+    "opcode": "DUP10",
+    "train_count": 46553,
+    "valid_count": 5653,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 10
+  },
+  {
+    "opcode": "DUP11",
+    "train_count": 28059,
+    "valid_count": 3330,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 11
+  },
+  {
+    "opcode": "DUP12",
+    "train_count": 18301,
+    "valid_count": 2105,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 12
+  },
+  {
+    "opcode": "DUP13",
+    "train_count": 10455,
+    "valid_count": 1174,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 13
+  },
+  {
+    "opcode": "DUP14",
+    "train_count": 6961,
+    "valid_count": 876,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 14
+  },
+  {
+    "opcode": "DUP15",
+    "train_count": 5396,
+    "valid_count": 726,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 15
+  },
+  {
+    "opcode": "DUP16",
+    "train_count": 3528,
+    "valid_count": 422,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 16
+  },
+  {
+    "opcode": "DUP2",
+    "train_count": 3311802,
+    "valid_count": 412820,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "DUP3",
+    "train_count": 1951056,
+    "valid_count": 241764,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 3
+  },
+  {
+    "opcode": "DUP4",
+    "train_count": 1139882,
+    "valid_count": 141622,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 4
+  },
+  {
+    "opcode": "DUP5",
+    "train_count": 661806,
+    "valid_count": 81554,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 5
+  },
+  {
+    "opcode": "DUP6",
+    "train_count": 442230,
+    "valid_count": 54261,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 6
+  },
+  {
+    "opcode": "DUP7",
+    "train_count": 256412,
+    "valid_count": 31530,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 7
+  },
+  {
+    "opcode": "DUP8",
+    "train_count": 181006,
+    "valid_count": 22114,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 8
+  },
+  {
+    "opcode": "DUP9",
+    "train_count": 104074,
+    "valid_count": 12591,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 9
+  },
+  {
+    "opcode": "EQ",
+    "train_count": 724953,
+    "valid_count": 90649,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "EXP",
+    "train_count": 356371,
+    "valid_count": 44923,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "EXTCODECOPY",
+    "train_count": 638,
+    "valid_count": 84,
+    "pop_count": 4,
+    "push_count": 0,
+    "min_stack": 4
+  },
+  {
+    "opcode": "EXTCODEHASH",
+    "train_count": 720,
+    "valid_count": 81,
+    "pop_count": 1,
+    "push_count": 1,
+    "min_stack": 1
+  },
+  {
+    "opcode": "EXTCODESIZE",
+    "train_count": 37200,
+    "valid_count": 4489,
+    "pop_count": 1,
+    "push_count": 1,
+    "min_stack": 1
+  },
+  {
+    "opcode": "GAS",
+    "train_count": 66397,
+    "valid_count": 8115,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "GASLIMIT",
+    "train_count": 6469,
+    "valid_count": 862,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "GASPRICE",
+    "train_count": 6813,
+    "valid_count": 895,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "GT",
+    "train_count": 287984,
+    "valid_count": 36424,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "ISZERO",
+    "train_count": 1782230,
+    "valid_count": 221528,
+    "pop_count": 1,
+    "push_count": 1,
+    "min_stack": 1
+  },
+  {
+    "opcode": "JUMP",
+    "train_count": 3305331,
+    "valid_count": 410111,
+    "pop_count": 1,
+    "push_count": 0,
+    "min_stack": 1
+  },
+  {
+    "opcode": "JUMPDEST",
+    "train_count": 4972259,
+    "valid_count": 617894,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 0
+  },
+  {
+    "opcode": "JUMPI",
+    "train_count": 2185113,
+    "valid_count": 273478,
+    "pop_count": 2,
+    "push_count": 0,
+    "min_stack": 2
+  },
+  {
+    "opcode": "LOG0",
+    "train_count": 699,
+    "valid_count": 69,
+    "pop_count": 2,
+    "push_count": 0,
+    "min_stack": 2
+  },
+  {
+    "opcode": "LOG1",
+    "train_count": 16571,
+    "valid_count": 2134,
+    "pop_count": 3,
+    "push_count": 0,
+    "min_stack": 3
+  },
+  {
+    "opcode": "LOG2",
+    "train_count": 16402,
+    "valid_count": 2006,
+    "pop_count": 4,
+    "push_count": 0,
+    "min_stack": 4
+  },
+  {
+    "opcode": "LOG3",
+    "train_count": 61968,
+    "valid_count": 7920,
+    "pop_count": 5,
+    "push_count": 0,
+    "min_stack": 5
+  },
+  {
+    "opcode": "LOG4",
+    "train_count": 6796,
+    "valid_count": 772,
+    "pop_count": 6,
+    "push_count": 0,
+    "min_stack": 6
+  },
+  {
+    "opcode": "LT",
+    "train_count": 266120,
+    "valid_count": 33360,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "MLOAD",
+    "train_count": 1413520,
+    "valid_count": 175063,
+    "pop_count": 1,
+    "push_count": 1,
+    "min_stack": 1
+  },
+  {
+    "opcode": "MOD",
+    "train_count": 3765,
+    "valid_count": 431,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "MSIZE",
+    "train_count": 1881,
+    "valid_count": 256,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "MSTORE",
+    "train_count": 2669706,
+    "valid_count": 332363,
+    "pop_count": 2,
+    "push_count": 0,
+    "min_stack": 2
+  },
+  {
+    "opcode": "MSTORE8",
+    "train_count": 3007,
+    "valid_count": 419,
+    "pop_count": 2,
+    "push_count": 0,
+    "min_stack": 2
+  },
+  {
+    "opcode": "MUL",
+    "train_count": 278064,
+    "valid_count": 34245,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "MULMOD",
+    "train_count": 1045,
+    "valid_count": 148,
+    "pop_count": 3,
+    "push_count": 1,
+    "min_stack": 3
+  },
+  {
+    "opcode": "NOT",
+    "train_count": 235639,
+    "valid_count": 28672,
+    "pop_count": 1,
+    "push_count": 1,
+    "min_stack": 1
+  },
+  {
+    "opcode": "NUMBER",
+    "train_count": 16865,
+    "valid_count": 2225,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "OR",
+    "train_count": 120611,
+    "valid_count": 14754,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "ORIGIN",
+    "train_count": 18523,
+    "valid_count": 2368,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PC",
+    "train_count": 1419,
+    "valid_count": 174,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "POP",
+    "train_count": 4419909,
+    "valid_count": 547169,
+    "pop_count": 1,
+    "push_count": 0,
+    "min_stack": 1
+  },
+  {
+    "opcode": "PUSH0",
+    "train_count": 402010,
+    "valid_count": 51781,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH1",
+    "train_count": 11569676,
+    "valid_count": 1441803,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH10",
+    "train_count": 6378,
+    "valid_count": 812,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH11",
+    "train_count": 2929,
+    "valid_count": 372,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH12",
+    "train_count": 4338,
+    "valid_count": 650,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH13",
+    "train_count": 3596,
+    "valid_count": 509,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH14",
+    "train_count": 4981,
+    "valid_count": 620,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH15",
+    "train_count": 4169,
+    "valid_count": 592,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH16",
+    "train_count": 6003,
+    "valid_count": 778,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH17",
+    "train_count": 3664,
+    "valid_count": 364,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH18",
+    "train_count": 1659,
+    "valid_count": 228,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH19",
+    "train_count": 6315,
+    "valid_count": 892,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH2",
+    "train_count": 6997279,
+    "valid_count": 871301,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH20",
+    "train_count": 774761,
+    "valid_count": 96848,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH21",
+    "train_count": 11157,
+    "valid_count": 1521,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH22",
+    "train_count": 4663,
+    "valid_count": 657,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH23",
+    "train_count": 1059,
+    "valid_count": 169,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH24",
+    "train_count": 1495,
+    "valid_count": 276,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH25",
+    "train_count": 1238,
+    "valid_count": 199,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH26",
+    "train_count": 636,
+    "valid_count": 144,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH27",
+    "train_count": 1360,
+    "valid_count": 249,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH28",
+    "train_count": 5334,
+    "valid_count": 585,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH29",
+    "train_count": 14510,
+    "valid_count": 1736,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH3",
+    "train_count": 208516,
+    "valid_count": 25492,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH30",
+    "train_count": 371,
+    "valid_count": 59,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH31",
+    "train_count": 1251,
+    "valid_count": 181,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH32",
+    "train_count": 411069,
+    "valid_count": 51501,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH4",
+    "train_count": 765372,
+    "valid_count": 96130,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH5",
+    "train_count": 25854,
+    "valid_count": 3320,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH6",
+    "train_count": 11577,
+    "valid_count": 1513,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH7",
+    "train_count": 9016,
+    "valid_count": 1277,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH8",
+    "train_count": 50302,
+    "valid_count": 5972,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "PUSH9",
+    "train_count": 12201,
+    "valid_count": 1383,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "RETURN",
+    "train_count": 142854,
+    "valid_count": 17798,
+    "pop_count": 2,
+    "push_count": 0,
+    "min_stack": 2
+  },
+  {
+    "opcode": "RETURNDATACOPY",
+    "train_count": 68767,
+    "valid_count": 8285,
+    "pop_count": 3,
+    "push_count": 0,
+    "min_stack": 3
+  },
+  {
+    "opcode": "RETURNDATASIZE",
+    "train_count": 188924,
+    "valid_count": 22751,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "REVERT",
+    "train_count": 930680,
+    "valid_count": 116515,
+    "pop_count": 2,
+    "push_count": 0,
+    "min_stack": 2
+  },
+  {
+    "opcode": "SAR",
+    "train_count": 588,
+    "valid_count": 85,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "SDIV",
+    "train_count": 1205,
+    "valid_count": 135,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "SELFBALANCE",
+    "train_count": 22874,
+    "valid_count": 2948,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "SELFDESTRUCT",
+    "train_count": 1551,
+    "valid_count": 182,
+    "pop_count": 1,
+    "push_count": 0,
+    "min_stack": 1
+  },
+  {
+    "opcode": "SGT",
+    "train_count": 3033,
+    "valid_count": 340,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "SHA3",
+    "train_count": 526595,
+    "valid_count": 68210,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "SHL",
+    "train_count": 825491,
+    "valid_count": 101540,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "SHR",
+    "train_count": 25035,
+    "valid_count": 3014,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "SIGNEXTEND",
+    "train_count": 1840,
+    "valid_count": 160,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "SLOAD",
+    "train_count": 1148155,
+    "valid_count": 145103,
+    "pop_count": 1,
+    "push_count": 1,
+    "min_stack": 1
+  },
+  {
+    "opcode": "SLT",
+    "train_count": 106472,
+    "valid_count": 13152,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "SMOD",
+    "train_count": 994,
+    "valid_count": 123,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "SSTORE",
+    "train_count": 360150,
+    "valid_count": 45749,
+    "pop_count": 2,
+    "push_count": 0,
+    "min_stack": 2
+  },
+  {
+    "opcode": "STATICCALL",
+    "train_count": 21946,
+    "valid_count": 2591,
+    "pop_count": 6,
+    "push_count": 1,
+    "min_stack": 6
+  },
+  {
+    "opcode": "STOP",
+    "train_count": 86236,
+    "valid_count": 10711,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 0
+  },
+  {
+    "opcode": "SUB",
+    "train_count": 1370225,
+    "valid_count": 170741,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  },
+  {
+    "opcode": "SWAP1",
+    "train_count": 4635534,
+    "valid_count": 577803,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 2
+  },
+  {
+    "opcode": "SWAP10",
+    "train_count": 7223,
+    "valid_count": 848,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 11
+  },
+  {
+    "opcode": "SWAP11",
+    "train_count": 5542,
+    "valid_count": 615,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 12
+  },
+  {
+    "opcode": "SWAP12",
+    "train_count": 5319,
+    "valid_count": 628,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 13
+  },
+  {
+    "opcode": "SWAP13",
+    "train_count": 6223,
+    "valid_count": 777,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 14
+  },
+  {
+    "opcode": "SWAP14",
+    "train_count": 1324,
+    "valid_count": 110,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 15
+  },
+  {
+    "opcode": "SWAP15",
+    "train_count": 2318,
+    "valid_count": 275,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 16
+  },
+  {
+    "opcode": "SWAP16",
+    "train_count": 672,
+    "valid_count": 74,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 17
+  },
+  {
+    "opcode": "SWAP2",
+    "train_count": 2056206,
+    "valid_count": 256586,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 3
+  },
+  {
+    "opcode": "SWAP3",
+    "train_count": 715572,
+    "valid_count": 88449,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 4
+  },
+  {
+    "opcode": "SWAP4",
+    "train_count": 268732,
+    "valid_count": 32860,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 5
+  },
+  {
+    "opcode": "SWAP5",
+    "train_count": 124231,
+    "valid_count": 15091,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 6
+  },
+  {
+    "opcode": "SWAP6",
+    "train_count": 65676,
+    "valid_count": 8053,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 7
+  },
+  {
+    "opcode": "SWAP7",
+    "train_count": 38049,
+    "valid_count": 4524,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 8
+  },
+  {
+    "opcode": "SWAP8",
+    "train_count": 18537,
+    "valid_count": 2080,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 9
+  },
+  {
+    "opcode": "SWAP9",
+    "train_count": 13518,
+    "valid_count": 1607,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 10
+  },
+  {
+    "opcode": "TIMESTAMP",
+    "train_count": 30865,
+    "valid_count": 3946,
+    "pop_count": 0,
+    "push_count": 1,
+    "min_stack": 0
+  },
+  {
+    "opcode": "UNKNOWN_0x0C",
+    "train_count": 767,
+    "valid_count": 81,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x0D",
+    "train_count": 612,
+    "valid_count": 71,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x0E",
+    "train_count": 600,
+    "valid_count": 68,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x0F",
+    "train_count": 668,
+    "valid_count": 85,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x1E",
+    "train_count": 532,
+    "valid_count": 65,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x1F",
+    "train_count": 617,
+    "valid_count": 73,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x21",
+    "train_count": 551,
+    "valid_count": 69,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x22",
+    "train_count": 6388,
+    "valid_count": 792,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x23",
+    "train_count": 2219,
+    "valid_count": 126,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x24",
+    "train_count": 566,
+    "valid_count": 65,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x25",
+    "train_count": 3176,
+    "valid_count": 66,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x26",
+    "train_count": 516,
+    "valid_count": 59,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x27",
+    "train_count": 515,
+    "valid_count": 68,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x28",
+    "train_count": 619,
+    "valid_count": 77,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x29",
+    "train_count": 534,
+    "valid_count": 77,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x2A",
+    "train_count": 554,
+    "valid_count": 60,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x2B",
+    "train_count": 887,
+    "valid_count": 103,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x2C",
+    "train_count": 582,
+    "valid_count": 80,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x2D",
+    "train_count": 2169,
+    "valid_count": 1052,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x2E",
+    "train_count": 12529,
+    "valid_count": 2822,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x2F",
+    "train_count": 1039,
+    "valid_count": 129,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x49",
+    "train_count": 1051,
+    "valid_count": 174,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x4A",
+    "train_count": 624,
+    "valid_count": 145,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x4B",
+    "train_count": 666,
+    "valid_count": 153,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x4C",
+    "train_count": 787,
+    "valid_count": 139,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x4D",
+    "train_count": 1416,
+    "valid_count": 246,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x4E",
+    "train_count": 932,
+    "valid_count": 134,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x4F",
+    "train_count": 938,
+    "valid_count": 143,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x5C",
+    "train_count": 543,
+    "valid_count": 69,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x5D",
+    "train_count": 576,
+    "valid_count": 75,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0x5E",
+    "train_count": 554,
+    "valid_count": 81,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xA5",
+    "train_count": 621,
+    "valid_count": 72,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xA6",
+    "train_count": 605,
+    "valid_count": 70,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xA7",
+    "train_count": 602,
+    "valid_count": 69,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xA8",
+    "train_count": 618,
+    "valid_count": 89,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xA9",
+    "train_count": 562,
+    "valid_count": 63,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xAA",
+    "train_count": 527,
+    "valid_count": 68,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xAB",
+    "train_count": 583,
+    "valid_count": 69,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xAC",
+    "train_count": 631,
+    "valid_count": 70,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xAD",
+    "train_count": 1031,
+    "valid_count": 130,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xAE",
+    "train_count": 507,
+    "valid_count": 68,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xAF",
+    "train_count": 564,
+    "valid_count": 58,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xB0",
+    "train_count": 735,
+    "valid_count": 69,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xB1",
+    "train_count": 596,
+    "valid_count": 60,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xB2",
+    "train_count": 633,
+    "valid_count": 80,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xB3",
+    "train_count": 1171,
+    "valid_count": 135,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xB4",
+    "train_count": 644,
+    "valid_count": 73,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xB5",
+    "train_count": 619,
+    "valid_count": 59,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xB6",
+    "train_count": 596,
+    "valid_count": 82,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xB7",
+    "train_count": 571,
+    "valid_count": 76,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xB8",
+    "train_count": 665,
+    "valid_count": 75,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xB9",
+    "train_count": 607,
+    "valid_count": 83,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xBA",
+    "train_count": 486,
+    "valid_count": 70,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xBB",
+    "train_count": 567,
+    "valid_count": 75,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xBC",
+    "train_count": 643,
+    "valid_count": 87,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xBD",
+    "train_count": 579,
+    "valid_count": 65,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xBE",
+    "train_count": 553,
+    "valid_count": 66,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xBF",
+    "train_count": 552,
+    "valid_count": 85,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xC0",
+    "train_count": 504,
+    "valid_count": 64,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xC1",
+    "train_count": 547,
+    "valid_count": 74,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xC2",
+    "train_count": 605,
+    "valid_count": 88,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xC3",
+    "train_count": 574,
+    "valid_count": 52,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xC4",
+    "train_count": 597,
+    "valid_count": 80,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xC5",
+    "train_count": 492,
+    "valid_count": 58,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xC6",
+    "train_count": 535,
+    "valid_count": 60,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xC7",
+    "train_count": 548,
+    "valid_count": 65,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xC8",
+    "train_count": 1032,
+    "valid_count": 132,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xC9",
+    "train_count": 574,
+    "valid_count": 57,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xCA",
+    "train_count": 527,
+    "valid_count": 65,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xCB",
+    "train_count": 565,
+    "valid_count": 80,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xCC",
+    "train_count": 518,
+    "valid_count": 74,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xCD",
+    "train_count": 593,
+    "valid_count": 58,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xCE",
+    "train_count": 525,
+    "valid_count": 75,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xCF",
+    "train_count": 552,
+    "valid_count": 59,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xD0",
+    "train_count": 604,
+    "valid_count": 78,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xD1",
+    "train_count": 539,
+    "valid_count": 63,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xD2",
+    "train_count": 572,
+    "valid_count": 72,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xD3",
+    "train_count": 549,
+    "valid_count": 86,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xD4",
+    "train_count": 556,
+    "valid_count": 57,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xD5",
+    "train_count": 589,
+    "valid_count": 67,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xD6",
+    "train_count": 564,
+    "valid_count": 57,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xD7",
+    "train_count": 563,
+    "valid_count": 65,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xD8",
+    "train_count": 554,
+    "valid_count": 59,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xD9",
+    "train_count": 558,
+    "valid_count": 83,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xDA",
+    "train_count": 509,
+    "valid_count": 69,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xDB",
+    "train_count": 559,
+    "valid_count": 82,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xDC",
+    "train_count": 585,
+    "valid_count": 53,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xDD",
+    "train_count": 1050,
+    "valid_count": 129,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xDE",
+    "train_count": 583,
+    "valid_count": 84,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xDF",
+    "train_count": 557,
+    "valid_count": 58,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xE0",
+    "train_count": 586,
+    "valid_count": 75,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xE1",
+    "train_count": 579,
+    "valid_count": 70,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xE2",
+    "train_count": 1019,
+    "valid_count": 132,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xE3",
+    "train_count": 589,
+    "valid_count": 89,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xE4",
+    "train_count": 561,
+    "valid_count": 64,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xE5",
+    "train_count": 576,
+    "valid_count": 79,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xE6",
+    "train_count": 530,
+    "valid_count": 64,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xE7",
+    "train_count": 531,
+    "valid_count": 71,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xE8",
+    "train_count": 555,
+    "valid_count": 70,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xE9",
+    "train_count": 569,
+    "valid_count": 57,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xEA",
+    "train_count": 831,
+    "valid_count": 77,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xEB",
+    "train_count": 1107,
+    "valid_count": 76,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xEC",
+    "train_count": 1377,
+    "valid_count": 56,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xED",
+    "train_count": 862,
+    "valid_count": 68,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xEE",
+    "train_count": 612,
+    "valid_count": 91,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xEF",
+    "train_count": 1102,
+    "valid_count": 145,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xF6",
+    "train_count": 568,
+    "valid_count": 59,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xF7",
+    "train_count": 517,
+    "valid_count": 65,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xF8",
+    "train_count": 529,
+    "valid_count": 62,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xF9",
+    "train_count": 550,
+    "valid_count": 72,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xFB",
+    "train_count": 540,
+    "valid_count": 60,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xFC",
+    "train_count": 539,
+    "valid_count": 68,
+    "pop_count": null,
+    "push_count": null,
+    "min_stack": null
+  },
+  {
+    "opcode": "UNKNOWN_0xFE",
+    "train_count": 63556,
+    "valid_count": 7809,
+    "pop_count": 0,
+    "push_count": 0,
+    "min_stack": 0
+  },
+  {
+    "opcode": "XOR",
+    "train_count": 1475,
+    "valid_count": 194,
+    "pop_count": 2,
+    "push_count": 1,
+    "min_stack": 2
+  }
+]

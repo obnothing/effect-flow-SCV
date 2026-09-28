@@ -1,0 +1,113 @@
+{
+  "test_checked": false,
+  "splits": {
+    "train": {
+      "phase2_strict_valid_tokens": 37848938,
+      "phase2_total_tokens": 98679197,
+      "phase25_strict_valid_tokens": 50861410,
+      "phase25_total_tokens": 98679197,
+      "targets": {
+        "JUMPI": {
+          "phase2": {
+            "known": 613612,
+            "total": 2185113
+          },
+          "phase25": {
+            "known": 1281129,
+            "total": 2185113
+          }
+        },
+        "CALL": {
+          "phase2": {
+            "known": 803,
+            "total": 57236
+          },
+          "phase25": {
+            "known": 15817,
+            "total": 57236
+          }
+        },
+        "SSTORE": {
+          "phase2": {
+            "known": 67342,
+            "total": 360150
+          },
+          "phase25": {
+            "known": 102216,
+            "total": 360150
+          }
+        },
+        "SLOAD": {
+          "phase2": {
+            "known": 666705,
+            "total": 1148155
+          },
+          "phase25": {
+            "known": 752757,
+            "total": 1148155
+          }
+        }
+      },
+      "static_cfg_edges": 4735862,
+      "fallthrough_edges": 2667583,
+      "unresolved_jumps": 754726,
+      "stack_height_conflicts": 497995,
+      "mean_fixpoint_visits_per_block": 1.1833995448171453,
+      "nonconverged_blocks": 621
+    },
+    "valid": {
+      "phase2_strict_valid_tokens": 4706788,
+      "phase2_total_tokens": 12303020,
+      "phase25_strict_valid_tokens": 6348792,
+      "phase25_total_tokens": 12303020,
+      "targets": {
+        "JUMPI": {
+          "phase2": {
+            "known": 77081,
+            "total": 273478
+          },
+          "phase25": {
+            "known": 161618,
+            "total": 273478
+          }
+        },
+        "CALL": {
+          "phase2": {
+            "known": 98,
+            "total": 7007
+          },
+          "phase25": {
+            "known": 1921,
+            "total": 7007
+          }
+        },
+        "SSTORE": {
+          "phase2": {
+            "known": 8683,
+            "total": 45749
+          },
+          "phase25": {
+            "known": 13187,
+            "total": 45749
+          }
+        },
+        "SLOAD": {
+          "phase2": {
+            "known": 84707,
+            "total": 145103
+          },
+          "phase25": {
+            "known": 95805,
+            "total": 145103
+          }
+        }
+      },
+      "static_cfg_edges": 590178,
+      "fallthrough_edges": 333358,
+      "unresolved_jumps": 93428,
+      "stack_height_conflicts": 61394,
+      "mean_fixpoint_visits_per_block": 1.1767614724164162,
+      "nonconverged_blocks": 50
+    }
+  }
+}
