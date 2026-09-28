@@ -18,7 +18,7 @@ CONTROL_FLOW = {"JUMP", "JUMPI", "JUMPDEST", *TERMINATORS}
 @dataclass
 class Instruction:
     instruction_index: int
-    derived_pc: int
+    derived_pc: int | None
     opcode: str
     immediate_operand: str | None
     immediate_width: int
@@ -127,7 +127,10 @@ def parse_disassembled_opcode(opcode_text, tokenizer=None):
             instruction = Instruction(instruction_index, pc, annotation, None, 0, source_start,
                                       source_indices, model_indices, "unknown_opcode_annotation")
             instructions.append(instruction); errors.append(instruction.parse_status)
-            instruction_index += 1; pc += 1; token_index += annotation_width; continue
+            instruction_index += 1
+            if pc is not None:
+                pc += 1
+            token_index += annotation_width; continue
         opcode = tokens[token_index].upper()
         source_indices = [token_index]
         immediate = None; width = 0; status = "ok"
@@ -137,7 +140,7 @@ def parse_disassembled_opcode(opcode_text, tokenizer=None):
                 immediate = tokens[token_index + 1]
                 source_indices.append(token_index + 1)
                 actual_width = max(0, (len(immediate) - 2) // 2)
-                if actual_width != width:
+                if actual_width != width or len(immediate[2:]) % 2:
                     status = "push_immediate_width_mismatch"
             elif width:
                 status = "missing_push_immediate"
@@ -153,7 +156,10 @@ def parse_disassembled_opcode(opcode_text, tokenizer=None):
             errors.append(status)
         token_index += len(source_indices)
         instruction_index += 1
-        pc += 1 + width
+        if status in {"missing_push_immediate", "push_immediate_width_mismatch", "orphan_immediate"}:
+            pc = None
+        elif pc is not None:
+            pc += 1 + width
     blocks = _partition_blocks(instructions)
     return instructions, blocks, {"errors": errors, "token_count": len(tokens), "instruction_count": len(instructions)}
 

@@ -1,5 +1,6 @@
 """Run readable SPOR traces on a representative DIVE_8 train subset."""
 
+import csv
 import json
 import sys
 from pathlib import Path
@@ -15,6 +16,8 @@ def main():
     tokenizer = EVMOpcodeTokenizer.from_vocab_file(ROOT / "data/processed/ethereum_public_pretrain_19143_unique_runtime/evm_vocab.json")
     raw = {str(row["contractID"]): row["Opcodes"] for line in (ROOT / "DIVE_Raw_Data/Raw/POST/Runtime_Opcode.jsonl").open(encoding="utf-8") if line.strip() for row in [json.loads(line)]}
     rows = [json.loads(line) for line in (ROOT / "data/processed/DIVE_8_opcode_random_split/train.jsonl").open(encoding="utf-8") if line.strip()]
+    with (ROOT / "DIVE_Raw_Data/Raw/PRE/Code-based.csv").open(encoding="utf-8-sig", errors="replace", newline="") as handle:
+        compilers = {str(item["contractID"]): item.get("CompilerVersion", "unknown") for item in csv.DictReader(handle)}
     predicates = {
         "PUSH0": lambda text: "PUSH0" in text,
         "CALL": lambda text: " CALL" in f" {text}",
@@ -32,15 +35,19 @@ def main():
             selected.append((name, candidates[len(candidates) // 2])); used.add(str(selected[-1][1]["contract_id"]))
     def serialize(value):
         return {"provenance": [SOURCE_CATEGORIES[i] for i in range(len(SOURCE_CATEGORIES)) if value.provenance_bits & (1 << i)],
+                "operation": value.generating_operation, "known_constant": value.known_constant,
                 "status": value.analysis_status}
     traces = []
     for reason, row in selected:
         contract_id = str(row["contract_id"]); instructions, blocks, meta = parse_disassembled_opcode(raw[contract_id], tokenizer)
         analyze_basic_blocks(instructions, blocks)
         targets = [item for item in instructions if item.opcode in {"CALL", "JUMPI", "SLOAD", "SSTORE"}]
-        trace = {"selection_reason": reason, "contract_id": contract_id, "instruction_count": len(instructions),
+        trace = {"selection_reason": reason, "contract_id": contract_id, "compiler_version": compilers.get(contract_id, "unknown"), "instruction_count": len(instructions),
                  "block_count": len(blocks), "parser_meta": meta, "targets": []}
-        for item in targets[:12]:
+        examples = []
+        for opcode in ("CALL", "JUMPI", "SLOAD", "SSTORE"):
+            examples.extend([item for item in targets if item.opcode == opcode][:3])
+        for item in examples:
             trace["targets"].append({"instruction_index": item.instruction_index, "derived_pc": item.derived_pc,
                 "opcode": item.opcode, "basic_block_id": item.basic_block_id, "analysis_status": item.analysis_status,
                 "operation_role": item.operation_role, "model_token_indices": item.model_token_indices,
@@ -52,9 +59,9 @@ def main():
     lines = ["# SPOR Real-Data Smoke Test", "", "DIVE_8 train subset only; labels were not used to construct provenance features.", ""]
     for trace in traces:
         lines.append(f"## {trace['contract_id']} ({trace['selection_reason']})")
-        lines.append(f"instructions={trace['instruction_count']}; blocks={trace['block_count']}; targets={len(trace['targets'])}")
-        for item in trace["targets"][:5]:
-            lines.append(f"- {item['opcode']} instruction={item['instruction_index']} pc={item['derived_pc']} block={item['basic_block_id']} status={item['analysis_status']} tokens={item['model_token_indices']}")
+        lines.append(f"compiler={trace['compiler_version']}; instructions={trace['instruction_count']}; blocks={trace['block_count']}; targets={len(trace['targets'])}")
+        for item in trace["targets"]:
+            lines.append(f"- {item['opcode']} instruction={item['instruction_index']} pc={item['derived_pc']} block={item['basic_block_id']} status={item['analysis_status']} tokens={item['model_token_indices']} operands={item['operand_sources']}")
         lines.append("")
     (output / "real_data_smoke_traces.md").write_text("\n".join(lines), encoding="utf-8")
     print(json.dumps({"selected": len(traces), "output": str(output), "test_checked": False}, indent=2))

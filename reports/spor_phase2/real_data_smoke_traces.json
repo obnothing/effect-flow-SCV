@@ -2,6 +2,7 @@
   {
     "selection_reason": "PUSH0",
     "contract_id": "20346",
+    "compiler_version": "v0.8.20+commit.a1b79de6",
     "instruction_count": 4580,
     "block_count": 403,
     "parser_meta": {
@@ -15,6 +16,213 @@
       "instruction_count": 4580
     },
     "targets": [
+      {
+        "instruction_index": 1547,
+        "derived_pc": 2392,
+        "opcode": "CALL",
+        "basic_block_id": 166,
+        "analysis_status": "analysis_failure",
+        "operation_role": "CALL",
+        "model_token_indices": [
+          1978
+        ],
+        "operand_sources": {
+          "gas": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          },
+          "target": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "value": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          }
+        }
+      },
+      {
+        "instruction_index": 1728,
+        "derived_pc": 2625,
+        "opcode": "CALL",
+        "basic_block_id": 171,
+        "analysis_status": "analysis_failure",
+        "operation_role": "CALL",
+        "model_token_indices": [
+          2203
+        ],
+        "operand_sources": {
+          "gas": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          },
+          "target": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "value": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          }
+        }
+      },
+      {
+        "instruction_index": 1824,
+        "derived_pc": 2751,
+        "opcode": "CALL",
+        "basic_block_id": 174,
+        "analysis_status": "analysis_failure",
+        "operation_role": "CALL",
+        "model_token_indices": [
+          2320
+        ],
+        "operand_sources": {
+          "gas": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          },
+          "target": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "value": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          }
+        }
+      },
       {
         "instruction_index": 7,
         "derived_pc": 12,
@@ -30,14 +238,19 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 308,
             "status": "known"
           },
           "condition": {
             "provenance": [
-              "COMPARISON",
-              "UNKNOWN"
+              "CONSTANT",
+              "CALLDATA",
+              "COMPARISON"
             ],
-            "status": "unknown_entry"
+            "operation": "LT",
+            "known_constant": null,
+            "status": "known"
           }
         }
       },
@@ -46,7 +259,7 @@
         "derived_pc": 29,
         "opcode": "JUMPI",
         "basic_block_id": 1,
-        "analysis_status": "known",
+        "analysis_status": "analysis_failure",
         "operation_role": "CONTROL_FLOW",
         "model_token_indices": [
           24
@@ -56,6 +269,8 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 168,
             "status": "known"
           },
           "condition": {
@@ -63,9 +278,12 @@
               "CONSTANT",
               "CALLDATA",
               "ARITHMETIC",
-              "COMPARISON"
+              "COMPARISON",
+              "UNKNOWN"
             ],
-            "status": "known"
+            "operation": "GT",
+            "known_constant": null,
+            "status": "analysis_failure"
           }
         }
       },
@@ -74,7 +292,7 @@
         "derived_pc": 40,
         "opcode": "JUMPI",
         "basic_block_id": 2,
-        "analysis_status": "known",
+        "analysis_status": "unknown_entry",
         "operation_role": "CONTROL_FLOW",
         "model_token_indices": [
           31
@@ -84,6 +302,8 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 109,
             "status": "known"
           },
           "condition": {
@@ -92,249 +312,165 @@
               "COMPARISON",
               "UNKNOWN"
             ],
+            "operation": "GT",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 27,
-        "derived_pc": 51,
-        "opcode": "JUMPI",
-        "basic_block_id": 3,
+        "instruction_index": 261,
+        "derived_pc": 461,
+        "opcode": "SLOAD",
+        "basic_block_id": 45,
         "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          38
+          339
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 18,
             "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 32,
-        "derived_pc": 62,
-        "opcode": "JUMPI",
-        "basic_block_id": 4,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 367,
+        "derived_pc": 610,
+        "opcode": "SLOAD",
+        "basic_block_id": 60,
+        "analysis_status": "analysis_failure",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          45
+          473
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
-            "status": "unknown_entry"
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
           }
         }
       },
       {
-        "instruction_index": 37,
-        "derived_pc": 73,
-        "opcode": "JUMPI",
-        "basic_block_id": 5,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 446,
+        "derived_pc": 722,
+        "opcode": "SLOAD",
+        "basic_block_id": 72,
+        "analysis_status": "analysis_failure",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          52
+          573
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
-            "status": "unknown_entry"
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
           }
         }
       },
       {
-        "instruction_index": 42,
-        "derived_pc": 84,
-        "opcode": "JUMPI",
-        "basic_block_id": 6,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 1008,
+        "derived_pc": 1486,
+        "opcode": "SSTORE",
+        "basic_block_id": 136,
+        "analysis_status": "analysis_failure",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          59
+          1265
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
-              "CONSTANT"
+              "UNKNOWN"
             ],
-            "status": "known"
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
           },
-          "condition": {
+          "value": {
             "provenance": [
               "CONSTANT",
+              "STORAGE",
+              "ARITHMETIC",
               "COMPARISON",
               "UNKNOWN"
             ],
-            "status": "unknown_entry"
+            "operation": "OR",
+            "known_constant": null,
+            "status": "analysis_failure"
           }
         }
       },
       {
-        "instruction_index": 47,
-        "derived_pc": 95,
-        "opcode": "JUMPI",
-        "basic_block_id": 7,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 1080,
+        "derived_pc": 1618,
+        "opcode": "SSTORE",
+        "basic_block_id": 140,
+        "analysis_status": "analysis_failure",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          66
+          1358
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
-            "status": "unknown_entry"
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          },
+          "value": {
+            "provenance": [
+              "CONSTANT",
+              "STORAGE",
+              "ARITHMETIC",
+              "UNKNOWN"
+            ],
+            "operation": "AND",
+            "known_constant": null,
+            "status": "analysis_failure"
           }
         }
       },
       {
-        "instruction_index": 52,
-        "derived_pc": 106,
-        "opcode": "JUMPI",
-        "basic_block_id": 8,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 1114,
+        "derived_pc": 1668,
+        "opcode": "SSTORE",
+        "basic_block_id": 143,
+        "analysis_status": "unknown_entry",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          73
+          1403
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 9,
             "status": "known"
           },
-          "condition": {
+          "value": {
             "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 62,
-        "derived_pc": 122,
-        "opcode": "JUMPI",
-        "basic_block_id": 10,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          85
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 67,
-        "derived_pc": 133,
-        "opcode": "JUMPI",
-        "basic_block_id": 11,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          92
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 72,
-        "derived_pc": 144,
-        "opcode": "JUMPI",
-        "basic_block_id": 12,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          99
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
@@ -344,6 +480,7 @@
   {
     "selection_reason": "CALL",
     "contract_id": "9457",
+    "compiler_version": "v0.8.19+commit.7dd6d404",
     "instruction_count": 3986,
     "block_count": 348,
     "parser_meta": {
@@ -365,6 +502,213 @@
     },
     "targets": [
       {
+        "instruction_index": 1171,
+        "derived_pc": 1901,
+        "opcode": "CALL",
+        "basic_block_id": 130,
+        "analysis_status": "analysis_failure",
+        "operation_role": "CALL",
+        "model_token_indices": [
+          1551
+        ],
+        "operand_sources": {
+          "gas": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          },
+          "target": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "value": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          }
+        }
+      },
+      {
+        "instruction_index": 1347,
+        "derived_pc": 2134,
+        "opcode": "CALL",
+        "basic_block_id": 135,
+        "analysis_status": "analysis_failure",
+        "operation_role": "CALL",
+        "model_token_indices": [
+          1776
+        ],
+        "operand_sources": {
+          "gas": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          },
+          "target": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "value": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          }
+        }
+      },
+      {
+        "instruction_index": 1439,
+        "derived_pc": 2260,
+        "opcode": "CALL",
+        "basic_block_id": 138,
+        "analysis_status": "analysis_failure",
+        "operation_role": "CALL",
+        "model_token_indices": [
+          1893
+        ],
+        "operand_sources": {
+          "gas": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          },
+          "target": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "value": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          }
+        }
+      },
+      {
         "instruction_index": 7,
         "derived_pc": 12,
         "opcode": "JUMPI",
@@ -379,14 +723,19 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 269,
             "status": "known"
           },
           "condition": {
             "provenance": [
-              "COMPARISON",
-              "UNKNOWN"
+              "CONSTANT",
+              "CALLDATA",
+              "COMPARISON"
             ],
-            "status": "unknown_entry"
+            "operation": "LT",
+            "known_constant": null,
+            "status": "known"
           }
         }
       },
@@ -405,6 +754,8 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 149,
             "status": "known"
           },
           "condition": {
@@ -414,6 +765,8 @@
               "ARITHMETIC",
               "COMPARISON"
             ],
+            "operation": "GT",
+            "known_constant": null,
             "status": "known"
           }
         }
@@ -423,7 +776,7 @@
         "derived_pc": 40,
         "opcode": "JUMPI",
         "basic_block_id": 2,
-        "analysis_status": "known",
+        "analysis_status": "unknown_entry",
         "operation_role": "CONTROL_FLOW",
         "model_token_indices": [
           31
@@ -433,6 +786,8 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 100,
             "status": "known"
           },
           "condition": {
@@ -441,249 +796,160 @@
               "COMPARISON",
               "UNKNOWN"
             ],
+            "operation": "GT",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 26,
-        "derived_pc": 51,
-        "opcode": "JUMPI",
-        "basic_block_id": 3,
+        "instruction_index": 232,
+        "derived_pc": 413,
+        "opcode": "SLOAD",
+        "basic_block_id": 41,
         "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          38
+          311
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 17,
             "status": "known"
-          },
-          "condition": {
+          }
+        }
+      },
+      {
+        "instruction_index": 333,
+        "derived_pc": 562,
+        "opcode": "SLOAD",
+        "basic_block_id": 56,
+        "analysis_status": "analysis_failure",
+        "operation_role": "STORAGE",
+        "model_token_indices": [
+          445
+        ],
+        "operand_sources": {
+          "key": {
             "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          }
+        }
+      },
+      {
+        "instruction_index": 379,
+        "derived_pc": 628,
+        "opcode": "SLOAD",
+        "basic_block_id": 66,
+        "analysis_status": "known",
+        "operation_role": "STORAGE",
+        "model_token_indices": [
+          503
+        ],
+        "operand_sources": {
+          "key": {
+            "provenance": [
+              "CONSTANT"
+            ],
+            "operation": "CONSTANT",
+            "known_constant": 14,
+            "status": "known"
+          }
+        }
+      },
+      {
+        "instruction_index": 758,
+        "derived_pc": 1198,
+        "opcode": "SSTORE",
+        "basic_block_id": 107,
+        "analysis_status": "analysis_failure_unsupported_stack_effect",
+        "operation_role": "STORAGE",
+        "model_token_indices": [
+          993
+        ],
+        "operand_sources": {
+          "key": {
+            "provenance": [
+              "CONSTANT"
+            ],
+            "operation": "CONSTANT",
+            "known_constant": 0,
+            "status": "known"
+          },
+          "value": {
+            "provenance": [
+              "CONSTANT",
+              "STORAGE",
+              "ARITHMETIC"
+            ],
+            "operation": "AND",
+            "known_constant": null,
+            "status": "known"
+          }
+        }
+      },
+      {
+        "instruction_index": 800,
+        "derived_pc": 1269,
+        "opcode": "SSTORE",
+        "basic_block_id": 112,
+        "analysis_status": "unknown_entry",
+        "operation_role": "STORAGE",
+        "model_token_indices": [
+          1053
+        ],
+        "operand_sources": {
+          "key": {
+            "provenance": [
+              "CONSTANT"
+            ],
+            "operation": "CONSTANT",
+            "known_constant": 14,
+            "status": "known"
+          },
+          "value": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 31,
-        "derived_pc": 62,
-        "opcode": "JUMPI",
-        "basic_block_id": 4,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 814,
+        "derived_pc": 1296,
+        "opcode": "SSTORE",
+        "basic_block_id": 114,
+        "analysis_status": "unknown_entry",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          45
+          1074
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 15,
             "status": "known"
           },
-          "condition": {
+          "value": {
             "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 36,
-        "derived_pc": 73,
-        "opcode": "JUMPI",
-        "basic_block_id": 5,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          52
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 41,
-        "derived_pc": 84,
-        "opcode": "JUMPI",
-        "basic_block_id": 6,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          59
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 46,
-        "derived_pc": 95,
-        "opcode": "JUMPI",
-        "basic_block_id": 7,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          66
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 55,
-        "derived_pc": 111,
-        "opcode": "JUMPI",
-        "basic_block_id": 9,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          78
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 60,
-        "derived_pc": 122,
-        "opcode": "JUMPI",
-        "basic_block_id": 10,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          85
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 65,
-        "derived_pc": 133,
-        "opcode": "JUMPI",
-        "basic_block_id": 11,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          92
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 70,
-        "derived_pc": 144,
-        "opcode": "JUMPI",
-        "basic_block_id": 12,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          99
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
@@ -693,6 +959,7 @@
   {
     "selection_reason": "JUMPI",
     "contract_id": "5501",
+    "compiler_version": "v0.4.23+commit.124ca40d",
     "instruction_count": 4214,
     "block_count": 328,
     "parser_meta": {
@@ -708,6 +975,150 @@
     },
     "targets": [
       {
+        "instruction_index": 760,
+        "derived_pc": 1588,
+        "opcode": "CALL",
+        "basic_block_id": 85,
+        "analysis_status": "known",
+        "operation_role": "CALL",
+        "model_token_indices": [
+          999
+        ],
+        "operand_sources": {
+          "gas": {
+            "provenance": [
+              "CONSTANT",
+              "CALLVALUE",
+              "ARITHMETIC",
+              "COMPARISON"
+            ],
+            "operation": "MUL",
+            "known_constant": null,
+            "status": "known"
+          },
+          "target": {
+            "provenance": [
+              "CONSTANT",
+              "STORAGE",
+              "ARITHMETIC"
+            ],
+            "operation": "AND",
+            "known_constant": null,
+            "status": "known"
+          },
+          "value": {
+            "provenance": [
+              "CALLVALUE"
+            ],
+            "operation": "CALLVALUE",
+            "known_constant": null,
+            "status": "known"
+          },
+          "input_offset": {
+            "provenance": [
+              "MEMORY"
+            ],
+            "operation": "MEMORY",
+            "known_constant": null,
+            "status": "known"
+          },
+          "input_size": {
+            "provenance": [
+              "MEMORY",
+              "ARITHMETIC"
+            ],
+            "operation": "SUB",
+            "known_constant": null,
+            "status": "known"
+          },
+          "output_offset": {
+            "provenance": [
+              "MEMORY"
+            ],
+            "operation": "MEMORY",
+            "known_constant": null,
+            "status": "known"
+          },
+          "output_size": {
+            "provenance": [
+              "CONSTANT"
+            ],
+            "operation": "CONSTANT",
+            "known_constant": 0,
+            "status": "known"
+          }
+        }
+      },
+      {
+        "instruction_index": 3889,
+        "derived_pc": 6857,
+        "opcode": "CALL",
+        "basic_block_id": 308,
+        "analysis_status": "analysis_failure",
+        "operation_role": "CALL",
+        "model_token_indices": [
+          4785
+        ],
+        "operand_sources": {
+          "gas": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          },
+          "target": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "value": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          }
+        }
+      },
+      {
         "instruction_index": 7,
         "derived_pc": 12,
         "opcode": "JUMPI",
@@ -722,14 +1133,19 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 417,
             "status": "known"
           },
           "condition": {
             "provenance": [
-              "COMPARISON",
-              "UNKNOWN"
+              "CONSTANT",
+              "CALLDATA",
+              "COMPARISON"
             ],
-            "status": "unknown_entry"
+            "operation": "LT",
+            "known_constant": null,
+            "status": "known"
           }
         }
       },
@@ -748,6 +1164,8 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 1615,
             "status": "known"
           },
           "condition": {
@@ -757,6 +1175,8 @@
               "ARITHMETIC",
               "COMPARISON"
             ],
+            "operation": "EQ",
+            "known_constant": null,
             "status": "known"
           }
         }
@@ -766,7 +1186,7 @@
         "derived_pc": 75,
         "opcode": "JUMPI",
         "basic_block_id": 2,
-        "analysis_status": "known",
+        "analysis_status": "unknown_entry",
         "operation_role": "CONTROL_FLOW",
         "model_token_indices": [
           35
@@ -776,6 +1196,8 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 1658,
             "status": "known"
           },
           "condition": {
@@ -784,249 +1206,158 @@
               "COMPARISON",
               "UNKNOWN"
             ],
+            "operation": "EQ",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 29,
-        "derived_pc": 86,
-        "opcode": "JUMPI",
-        "basic_block_id": 3,
+        "instruction_index": 184,
+        "derived_pc": 423,
+        "opcode": "SLOAD",
+        "basic_block_id": 34,
         "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          42
+          259
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 22,
             "status": "known"
-          },
-          "condition": {
+          }
+        }
+      },
+      {
+        "instruction_index": 193,
+        "derived_pc": 435,
+        "opcode": "SLOAD",
+        "basic_block_id": 35,
+        "analysis_status": "known",
+        "operation_role": "STORAGE",
+        "model_token_indices": [
+          270
+        ],
+        "operand_sources": {
+          "key": {
             "provenance": [
-              "CONSTANT",
-              "COMPARISON",
+              "CONSTANT"
+            ],
+            "operation": "CONSTANT",
+            "known_constant": 18,
+            "status": "known"
+          }
+        }
+      },
+      {
+        "instruction_index": 207,
+        "derived_pc": 453,
+        "opcode": "SLOAD",
+        "basic_block_id": 38,
+        "analysis_status": "known",
+        "operation_role": "STORAGE",
+        "model_token_indices": [
+          287
+        ],
+        "operand_sources": {
+          "key": {
+            "provenance": [
+              "CONSTANT"
+            ],
+            "operation": "CONSTANT",
+            "known_constant": 5,
+            "status": "known"
+          }
+        }
+      },
+      {
+        "instruction_index": 340,
+        "derived_pc": 715,
+        "opcode": "SSTORE",
+        "basic_block_id": 51,
+        "analysis_status": "analysis_failure",
+        "operation_role": "STORAGE",
+        "model_token_indices": [
+          457
+        ],
+        "operand_sources": {
+          "key": {
+            "provenance": [
               "UNKNOWN"
             ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          },
+          "value": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 34,
-        "derived_pc": 97,
-        "opcode": "JUMPI",
-        "basic_block_id": 4,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 357,
+        "derived_pc": 742,
+        "opcode": "SSTORE",
+        "basic_block_id": 52,
+        "analysis_status": "unknown_entry",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          49
+          479
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 9,
             "status": "known"
           },
-          "condition": {
+          "value": {
             "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 39,
-        "derived_pc": 108,
-        "opcode": "JUMPI",
-        "basic_block_id": 5,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 457,
+        "derived_pc": 962,
+        "opcode": "SSTORE",
+        "basic_block_id": 60,
+        "analysis_status": "analysis_failure",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          56
+          609
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 44,
-        "derived_pc": 119,
-        "opcode": "JUMPI",
-        "basic_block_id": 6,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          63
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
           },
-          "condition": {
+          "value": {
             "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 49,
-        "derived_pc": 130,
-        "opcode": "JUMPI",
-        "basic_block_id": 7,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          70
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 54,
-        "derived_pc": 141,
-        "opcode": "JUMPI",
-        "basic_block_id": 8,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          77
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 59,
-        "derived_pc": 152,
-        "opcode": "JUMPI",
-        "basic_block_id": 9,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          84
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 64,
-        "derived_pc": 163,
-        "opcode": "JUMPI",
-        "basic_block_id": 10,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          91
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 69,
-        "derived_pc": 174,
-        "opcode": "JUMPI",
-        "basic_block_id": 11,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          98
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
@@ -1036,6 +1367,7 @@
   {
     "selection_reason": "SLOAD",
     "contract_id": "19390",
+    "compiler_version": "v0.8.0+commit.c7dfd78e",
     "instruction_count": 4132,
     "block_count": 424,
     "parser_meta": {
@@ -1066,6 +1398,8 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 16,
             "status": "known"
           },
           "condition": {
@@ -1073,6 +1407,8 @@
               "CALLVALUE",
               "COMPARISON"
             ],
+            "operation": "ISZERO",
+            "known_constant": null,
             "status": "known"
           }
         }
@@ -1092,14 +1428,19 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 322,
             "status": "known"
           },
           "condition": {
             "provenance": [
-              "COMPARISON",
-              "UNKNOWN"
+              "CONSTANT",
+              "CALLDATA",
+              "COMPARISON"
             ],
-            "status": "unknown_entry"
+            "operation": "LT",
+            "known_constant": null,
+            "status": "known"
           }
         }
       },
@@ -1118,6 +1459,8 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 184,
             "status": "known"
           },
           "condition": {
@@ -1127,249 +1470,165 @@
               "ARITHMETIC",
               "COMPARISON"
             ],
+            "operation": "GT",
+            "known_constant": null,
             "status": "known"
           }
         }
       },
       {
-        "instruction_index": 31,
-        "derived_pc": 53,
-        "opcode": "JUMPI",
-        "basic_block_id": 4,
+        "instruction_index": 690,
+        "derived_pc": 1109,
+        "opcode": "SLOAD",
+        "basic_block_id": 105,
         "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          43
+          902
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 4,
             "status": "known"
-          },
-          "condition": {
+          }
+        }
+      },
+      {
+        "instruction_index": 724,
+        "derived_pc": 1153,
+        "opcode": "SLOAD",
+        "basic_block_id": 106,
+        "analysis_status": "unknown_entry",
+        "operation_role": "STORAGE",
+        "model_token_indices": [
+          944
+        ],
+        "operand_sources": {
+          "key": {
             "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 36,
-        "derived_pc": 64,
-        "opcode": "JUMPI",
-        "basic_block_id": 5,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 742,
+        "derived_pc": 1182,
+        "opcode": "SLOAD",
+        "basic_block_id": 109,
+        "analysis_status": "unknown_entry",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          50
+          968
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 41,
-        "derived_pc": 75,
-        "opcode": "JUMPI",
-        "basic_block_id": 6,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 1080,
+        "derived_pc": 1905,
+        "opcode": "SSTORE",
+        "basic_block_id": 139,
+        "analysis_status": "unknown_entry",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          57
+          1405
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 6,
             "status": "known"
           },
-          "condition": {
+          "value": {
             "provenance": [
               "CONSTANT",
+              "STORAGE",
+              "ARITHMETIC",
               "COMPARISON",
               "UNKNOWN"
             ],
+            "operation": "OR",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 46,
-        "derived_pc": 86,
-        "opcode": "JUMPI",
-        "basic_block_id": 7,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 1101,
+        "derived_pc": 1970,
+        "opcode": "SSTORE",
+        "basic_block_id": 139,
+        "analysis_status": "unknown_entry",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          64
+          1431
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 9,
             "status": "known"
           },
-          "condition": {
+          "value": {
             "provenance": [
               "CONSTANT",
-              "COMPARISON",
+              "STORAGE",
+              "ARITHMETIC",
               "UNKNOWN"
             ],
+            "operation": "OR",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 51,
-        "derived_pc": 97,
-        "opcode": "JUMPI",
-        "basic_block_id": 8,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 1107,
+        "derived_pc": 1977,
+        "opcode": "SSTORE",
+        "basic_block_id": 139,
+        "analysis_status": "unknown_entry",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          71
+          1438
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 7,
             "status": "known"
           },
-          "condition": {
+          "value": {
             "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 56,
-        "derived_pc": 108,
-        "opcode": "JUMPI",
-        "basic_block_id": 9,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          78
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 61,
-        "derived_pc": 119,
-        "opcode": "JUMPI",
-        "basic_block_id": 10,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          85
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 69,
-        "derived_pc": 135,
-        "opcode": "JUMPI",
-        "basic_block_id": 12,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          96
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 74,
-        "derived_pc": 146,
-        "opcode": "JUMPI",
-        "basic_block_id": 13,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          103
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
@@ -1379,6 +1638,7 @@
   {
     "selection_reason": "SSTORE",
     "contract_id": "7298",
+    "compiler_version": "v0.8.20+commit.a1b79de6",
     "instruction_count": 4216,
     "block_count": 372,
     "parser_meta": {
@@ -1390,6 +1650,213 @@
       "instruction_count": 4216
     },
     "targets": [
+      {
+        "instruction_index": 1539,
+        "derived_pc": 2488,
+        "opcode": "CALL",
+        "basic_block_id": 156,
+        "analysis_status": "analysis_failure",
+        "operation_role": "CALL",
+        "model_token_indices": [
+          1987
+        ],
+        "operand_sources": {
+          "gas": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          },
+          "target": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "value": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          }
+        }
+      },
+      {
+        "instruction_index": 1684,
+        "derived_pc": 2672,
+        "opcode": "CALL",
+        "basic_block_id": 159,
+        "analysis_status": "analysis_failure",
+        "operation_role": "CALL",
+        "model_token_indices": [
+          2165
+        ],
+        "operand_sources": {
+          "gas": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          },
+          "target": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "value": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          }
+        }
+      },
+      {
+        "instruction_index": 1780,
+        "derived_pc": 2798,
+        "opcode": "CALL",
+        "basic_block_id": 162,
+        "analysis_status": "analysis_failure",
+        "operation_role": "CALL",
+        "model_token_indices": [
+          2282
+        ],
+        "operand_sources": {
+          "gas": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          },
+          "target": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "value": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          }
+        }
+      },
       {
         "instruction_index": 7,
         "derived_pc": 12,
@@ -1405,14 +1872,19 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 275,
             "status": "known"
           },
           "condition": {
             "provenance": [
-              "COMPARISON",
-              "UNKNOWN"
+              "CONSTANT",
+              "CALLDATA",
+              "COMPARISON"
             ],
-            "status": "unknown_entry"
+            "operation": "LT",
+            "known_constant": null,
+            "status": "known"
           }
         }
       },
@@ -1421,7 +1893,7 @@
         "derived_pc": 29,
         "opcode": "JUMPI",
         "basic_block_id": 1,
-        "analysis_status": "known",
+        "analysis_status": "analysis_failure",
         "operation_role": "CONTROL_FLOW",
         "model_token_indices": [
           24
@@ -1431,6 +1903,8 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 157,
             "status": "known"
           },
           "condition": {
@@ -1438,9 +1912,12 @@
               "CONSTANT",
               "CALLDATA",
               "ARITHMETIC",
-              "COMPARISON"
+              "COMPARISON",
+              "UNKNOWN"
             ],
-            "status": "known"
+            "operation": "GT",
+            "known_constant": null,
+            "status": "analysis_failure"
           }
         }
       },
@@ -1449,7 +1926,7 @@
         "derived_pc": 40,
         "opcode": "JUMPI",
         "basic_block_id": 2,
-        "analysis_status": "known",
+        "analysis_status": "unknown_entry",
         "operation_role": "CONTROL_FLOW",
         "model_token_indices": [
           31
@@ -1459,6 +1936,8 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 98,
             "status": "known"
           },
           "condition": {
@@ -1467,249 +1946,162 @@
               "COMPARISON",
               "UNKNOWN"
             ],
+            "operation": "GT",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 27,
-        "derived_pc": 51,
-        "opcode": "JUMPI",
-        "basic_block_id": 3,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 403,
+        "derived_pc": 653,
+        "opcode": "SLOAD",
+        "basic_block_id": 68,
+        "analysis_status": "analysis_failure",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          38
+          515
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
-            "status": "unknown_entry"
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
           }
         }
       },
       {
-        "instruction_index": 32,
-        "derived_pc": 62,
-        "opcode": "JUMPI",
-        "basic_block_id": 4,
+        "instruction_index": 435,
+        "derived_pc": 696,
+        "opcode": "SLOAD",
+        "basic_block_id": 74,
         "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          45
+          553
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 8,
             "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 37,
-        "derived_pc": 73,
-        "opcode": "JUMPI",
-        "basic_block_id": 5,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 467,
+        "derived_pc": 736,
+        "opcode": "SLOAD",
+        "basic_block_id": 80,
+        "analysis_status": "analysis_failure",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          52
+          589
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
-            "status": "unknown_entry"
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
           }
         }
       },
       {
-        "instruction_index": 42,
-        "derived_pc": 84,
-        "opcode": "JUMPI",
-        "basic_block_id": 6,
+        "instruction_index": 717,
+        "derived_pc": 1111,
+        "opcode": "SSTORE",
+        "basic_block_id": 103,
         "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          59
+          908
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 11,
             "status": "known"
           },
-          "condition": {
+          "value": {
             "provenance": [
               "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
+              "STORAGE",
+              "ARITHMETIC"
             ],
-            "status": "unknown_entry"
+            "operation": "OR",
+            "known_constant": null,
+            "status": "known"
           }
         }
       },
       {
-        "instruction_index": 47,
-        "derived_pc": 95,
-        "opcode": "JUMPI",
-        "basic_block_id": 7,
+        "instruction_index": 830,
+        "derived_pc": 1299,
+        "opcode": "SSTORE",
+        "basic_block_id": 113,
         "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          66
+          1053
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 11,
             "status": "known"
           },
-          "condition": {
+          "value": {
             "provenance": [
               "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
+              "STORAGE",
+              "ARITHMETIC"
             ],
-            "status": "unknown_entry"
+            "operation": "AND",
+            "known_constant": null,
+            "status": "known"
           }
         }
       },
       {
-        "instruction_index": 57,
-        "derived_pc": 111,
-        "opcode": "JUMPI",
-        "basic_block_id": 9,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 844,
+        "derived_pc": 1327,
+        "opcode": "SSTORE",
+        "basic_block_id": 115,
+        "analysis_status": "unknown_entry",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          78
+          1075
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 8,
             "status": "known"
           },
-          "condition": {
+          "value": {
             "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 62,
-        "derived_pc": 122,
-        "opcode": "JUMPI",
-        "basic_block_id": 10,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          85
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 67,
-        "derived_pc": 133,
-        "opcode": "JUMPI",
-        "basic_block_id": 11,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          92
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 72,
-        "derived_pc": 144,
-        "opcode": "JUMPI",
-        "basic_block_id": 12,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          99
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
@@ -1719,6 +2111,7 @@
   {
     "selection_reason": "long",
     "contract_id": "8593",
+    "compiler_version": "v0.8.24+commit.e11b9ed9",
     "instruction_count": 5461,
     "block_count": 462,
     "parser_meta": {
@@ -1737,6 +2130,144 @@
     },
     "targets": [
       {
+        "instruction_index": 2694,
+        "derived_pc": 4017,
+        "opcode": "CALL",
+        "basic_block_id": 254,
+        "analysis_status": "analysis_failure",
+        "operation_role": "CALL",
+        "model_token_indices": [
+          3399
+        ],
+        "operand_sources": {
+          "gas": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          },
+          "target": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "value": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          }
+        }
+      },
+      {
+        "instruction_index": 4557,
+        "derived_pc": 6672,
+        "opcode": "CALL",
+        "basic_block_id": 363,
+        "analysis_status": "analysis_failure",
+        "operation_role": "CALL",
+        "model_token_indices": [
+          5679
+        ],
+        "operand_sources": {
+          "gas": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          },
+          "target": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "value": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "input_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_offset": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "output_size": {
+            "provenance": [
+              "UNKNOWN"
+            ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          }
+        }
+      },
+      {
         "instruction_index": 7,
         "derived_pc": 12,
         "opcode": "JUMPI",
@@ -1751,14 +2282,19 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 323,
             "status": "known"
           },
           "condition": {
             "provenance": [
-              "COMPARISON",
-              "UNKNOWN"
+              "CONSTANT",
+              "CALLDATA",
+              "COMPARISON"
             ],
-            "status": "unknown_entry"
+            "operation": "LT",
+            "known_constant": null,
+            "status": "known"
           }
         }
       },
@@ -1767,7 +2303,7 @@
         "derived_pc": 29,
         "opcode": "JUMPI",
         "basic_block_id": 1,
-        "analysis_status": "known",
+        "analysis_status": "analysis_failure",
         "operation_role": "CONTROL_FLOW",
         "model_token_indices": [
           24
@@ -1777,6 +2313,8 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 181,
             "status": "known"
           },
           "condition": {
@@ -1784,9 +2322,12 @@
               "CONSTANT",
               "CALLDATA",
               "ARITHMETIC",
-              "COMPARISON"
+              "COMPARISON",
+              "UNKNOWN"
             ],
-            "status": "known"
+            "operation": "GT",
+            "known_constant": null,
+            "status": "analysis_failure"
           }
         }
       },
@@ -1795,7 +2336,7 @@
         "derived_pc": 40,
         "opcode": "JUMPI",
         "basic_block_id": 2,
-        "analysis_status": "known",
+        "analysis_status": "unknown_entry",
         "operation_role": "CONTROL_FLOW",
         "model_token_indices": [
           31
@@ -1805,6 +2346,8 @@
             "provenance": [
               "CONSTANT"
             ],
+            "operation": "CONSTANT",
+            "known_constant": 110,
             "status": "known"
           },
           "condition": {
@@ -1813,250 +2356,172 @@
               "COMPARISON",
               "UNKNOWN"
             ],
+            "operation": "GT",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 27,
-        "derived_pc": 51,
-        "opcode": "JUMPI",
-        "basic_block_id": 3,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 182,
+        "derived_pc": 366,
+        "opcode": "SLOAD",
+        "basic_block_id": 35,
+        "analysis_status": "unknown_entry",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          38
+          250
         ],
         "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
+          "key": {
             "provenance": [
               "CONSTANT",
-              "COMPARISON",
+              "ARITHMETIC",
               "UNKNOWN"
             ],
+            "operation": "ADD",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 32,
-        "derived_pc": 62,
-        "opcode": "JUMPI",
-        "basic_block_id": 4,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 259,
+        "derived_pc": 467,
+        "opcode": "SLOAD",
+        "basic_block_id": 39,
+        "analysis_status": "analysis_failure",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          45
+          346
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
+          }
+        }
+      },
+      {
+        "instruction_index": 289,
+        "derived_pc": 515,
+        "opcode": "SLOAD",
+        "basic_block_id": 45,
+        "analysis_status": "unknown_entry",
+        "operation_role": "STORAGE",
+        "model_token_indices": [
+          386
+        ],
+        "operand_sources": {
+          "key": {
+            "provenance": [
+              "CONSTANT",
+              "ARITHMETIC",
+              "UNKNOWN"
+            ],
+            "operation": "ADD",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 37,
-        "derived_pc": 73,
-        "opcode": "JUMPI",
-        "basic_block_id": 5,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 1531,
+        "derived_pc": 2373,
+        "opcode": "SSTORE",
+        "basic_block_id": 197,
+        "analysis_status": "unknown_entry",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          52
+          1983
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "value": {
+            "provenance": [
+              "CONSTANT",
+              "STORAGE",
+              "ARITHMETIC",
+              "UNKNOWN"
+            ],
+            "operation": "OR",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 42,
-        "derived_pc": 84,
-        "opcode": "JUMPI",
-        "basic_block_id": 6,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 1557,
+        "derived_pc": 2422,
+        "opcode": "SSTORE",
+        "basic_block_id": 197,
+        "analysis_status": "unknown_entry",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          59
+          2014
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "unknown_entry"
+          },
+          "value": {
+            "provenance": [
+              "CONSTANT",
+              "STORAGE",
+              "ARITHMETIC",
+              "UNKNOWN"
+            ],
+            "operation": "OR",
+            "known_constant": null,
             "status": "unknown_entry"
           }
         }
       },
       {
-        "instruction_index": 47,
-        "derived_pc": 95,
-        "opcode": "JUMPI",
-        "basic_block_id": 7,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
+        "instruction_index": 1604,
+        "derived_pc": 2485,
+        "opcode": "SSTORE",
+        "basic_block_id": 199,
+        "analysis_status": "analysis_failure",
+        "operation_role": "STORAGE",
         "model_token_indices": [
-          66
+          2073
         ],
         "operand_sources": {
-          "destination": {
+          "key": {
             "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
               "UNKNOWN"
             ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 52,
-        "derived_pc": 106,
-        "opcode": "JUMPI",
-        "basic_block_id": 8,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          73
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
+            "operation": "UNKNOWN",
+            "known_constant": null,
+            "status": "analysis_failure"
           },
-          "condition": {
+          "value": {
             "provenance": [
               "CONSTANT",
-              "COMPARISON",
+              "STORAGE",
+              "ARITHMETIC",
               "UNKNOWN"
             ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 60,
-        "derived_pc": 122,
-        "opcode": "JUMPI",
-        "basic_block_id": 10,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          84
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 65,
-        "derived_pc": 133,
-        "opcode": "JUMPI",
-        "basic_block_id": 11,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          91
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
-          }
-        }
-      },
-      {
-        "instruction_index": 70,
-        "derived_pc": 144,
-        "opcode": "JUMPI",
-        "basic_block_id": 12,
-        "analysis_status": "known",
-        "operation_role": "CONTROL_FLOW",
-        "model_token_indices": [
-          98
-        ],
-        "operand_sources": {
-          "destination": {
-            "provenance": [
-              "CONSTANT"
-            ],
-            "status": "known"
-          },
-          "condition": {
-            "provenance": [
-              "CONSTANT",
-              "COMPARISON",
-              "UNKNOWN"
-            ],
-            "status": "unknown_entry"
+            "operation": "AND",
+            "known_constant": null,
+            "status": "analysis_failure"
           }
         }
       }

@@ -55,16 +55,75 @@ class SporTest(unittest.TestCase):
         instructions, _, _ = self.parse("PUSH1 0x01 PUSH1 0x02 SSTORE")
         self.assertEqual(set(instructions[-1].operand_sources), {"key", "value"})
         instructions, _, _ = self.parse("PUSH1 0x01 PUSH1 0x02 SSTORE")
-        self.assertEqual(instructions[-1].operand_sources["value"].known_constant, 2)
-        self.assertEqual(instructions[-1].operand_sources["key"].known_constant, 1)
+        self.assertEqual(instructions[-1].operand_sources["key"].known_constant, 2)
+        self.assertEqual(instructions[-1].operand_sources["value"].known_constant, 1)
 
     def test_call_operand_order(self):
         call_text = " ".join(f"PUSH1 0x{i:02x}" for i in range(1, 8)) + " CALL"
         instructions, _, _ = self.parse(call_text)
         call = instructions[-1]
-        self.assertEqual(call.operand_sources["gas"].known_constant, 1)
-        self.assertEqual(call.operand_sources["target"].known_constant, 2)
-        self.assertEqual(call.operand_sources["output_size"].known_constant, 7)
+        self.assertEqual(call.operand_sources["gas"].known_constant, 7)
+        self.assertEqual(call.operand_sources["target"].known_constant, 6)
+        self.assertEqual(call.operand_sources["output_size"].known_constant, 1)
+
+    def test_entry_is_unknown_not_runtime_underflow(self):
+        instructions, _, _ = self.parse("JUMPDEST POP CALLER EQ")
+        self.assertEqual(instructions[1].analysis_status, "unknown_entry")
+        self.assertEqual(instructions[3].analysis_status, "unknown_entry")
+        self.assertTrue(instructions[3].provenance_bits & SOURCE_BITS["UNKNOWN"])
+        self.assertTrue(instructions[3].provenance_bits & SOURCE_BITS["CALLER"])
+
+    def test_malformed_push_never_fabricates_zero(self):
+        instructions, _, _ = self.parse("PUSH2 0x01 POP PUSH1")
+        self.assertEqual(instructions[0].parse_status, "push_immediate_width_mismatch")
+        self.assertEqual(instructions[0].analysis_status, "analysis_failure_parse_status")
+        self.assertIsNone(instructions[1].derived_pc)
+        self.assertEqual(instructions[2].parse_status, "missing_push_immediate")
+
+    def test_dup16_swap16_and_multisource(self):
+        text = "CALLER " + " ".join("PUSH1 0x01" for _ in range(16)) + " DUP16 SWAP16 EQ"
+        instructions, _, _ = self.parse(text)
+        self.assertEqual(instructions[-3].operand_sources["source"].provenance_bits, SOURCE_BITS["CONSTANT"])
+        self.assertEqual(instructions[-2].operation_role, "STACK_SWAP")
+        self.assertEqual(instructions[-1].operation_role, "COMPARISON")
+
+    def test_dup1_dup2_swap1_swap2_values(self):
+        instructions, _, _ = self.parse("PUSH1 0x01 PUSH1 0x02 PUSH1 0x03 DUP1 DUP2 SWAP1 SWAP2 POP")
+        self.assertEqual(instructions[3].operand_sources["source"].known_constant, 3)
+        self.assertEqual(instructions[4].operand_sources["source"].known_constant, 3)
+        self.assertEqual(instructions[-1].operand_sources["value"].known_constant, 3)
+
+    def test_mstore_and_jumpi_operand_order(self):
+        instructions, _, _ = self.parse("PUSH1 0x01 PUSH1 0x02 MSTORE PUSH1 0x03 PUSH1 0x04 JUMPI")
+        self.assertEqual(instructions[2].operand_sources["offset"].known_constant, 2)
+        self.assertEqual(instructions[2].operand_sources["value"].known_constant, 1)
+        self.assertEqual(instructions[-1].operand_sources["destination"].known_constant, 4)
+        self.assertEqual(instructions[-1].operand_sources["condition"].known_constant, 3)
+
+    def test_store_failure_is_not_reported_as_known(self):
+        instructions, _, _ = self.parse("UNKNOWN_OPCODE PUSH1 0x01 SSTORE")
+        self.assertTrue(instructions[-1].analysis_status.startswith("analysis_failure"))
+        self.assertTrue(instructions[-1].provenance_bits & SOURCE_BITS["UNKNOWN"])
+
+    def test_unsupported_effect_poison_is_block_local(self):
+        instructions, _, _ = self.parse("UNKNOWN_OPCODE PUSH1 0x01 JUMPDEST PUSH1 0x02")
+        self.assertTrue(instructions[1].analysis_status.startswith("analysis_failure"))
+        self.assertEqual(instructions[-1].analysis_status, "known")
+
+    def test_analysis_status_and_token_features(self):
+        from evm_tokenizer import EVMOpcodeTokenizer
+        from build_spor_cache import token_features, STATUS_TO_ID
+        tokenizer = EVMOpcodeTokenizer.from_vocab_file(ROOT / "data/processed/ethereum_public_pretrain_19143_unique_runtime/evm_vocab.json")
+        text = "PUSH1 0x01 JUMPDEST CALLER EQ"
+        instructions, blocks, _ = parse_disassembled_opcode(text, tokenizer)
+        analyze_basic_blocks(instructions, blocks)
+        count = len(tokenizer.tokenize(text, add_special_tokens=False))
+        features = token_features(instructions, count)
+        self.assertEqual(features[0].shape, (count, 13))
+        self.assertEqual(features[2][0], True)
+        self.assertEqual(features[2][1], False)
+        self.assertEqual(features[3][1], STATUS_TO_ID["operand_alias"])
+        self.assertEqual(features[3][-1], STATUS_TO_ID["unknown_entry"])
 
     def test_unknown_annotation_alignment(self):
         from evm_tokenizer import EVMOpcodeTokenizer
