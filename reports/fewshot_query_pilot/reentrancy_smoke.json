@@ -1,0 +1,61 @@
+{
+  "label": "Reentrancy",
+  "support_seed": 0,
+  "methods": {
+    "M0_random_query": {
+      "support_last_loss": 0.696156132221222,
+      "query_shape": [
+        2,
+        512
+      ]
+    },
+    "M1_best_old_query": {
+      "support_last_loss": 0.6023009061813355,
+      "query_shape": [
+        2,
+        512
+      ]
+    },
+    "M2_old_query_mixture": {
+      "support_last_loss": 0.6982545971870422,
+      "query_shape": [
+        2,
+        512
+      ]
+    },
+    "M3_mixture_random_residual": {
+      "support_last_loss": 0.6885112047195434,
+      "query_shape": [
+        2,
+        512
+      ]
+    },
+    "M4_mixture_gradient_residual": {
+      "support_last_loss": 0.6849680185317993,
+      "query_shape": [
+        2,
+        512
+      ]
+    },
+    "M5_full_finetuning": {
+      "support_last_loss": 0.7360484540462494,
+      "query_shape": [
+        2,
+        512
+      ]
+    }
+  },
+  "checks": {
+    "alpha_plus_sum": 0.9999999403953552,
+    "alpha_minus_sum": 1.0000000298023224,
+    "M3_orthogonality_plus": 8.189849154405238e-08,
+    "M3_orthogonality_minus": 8.214699676045711e-08,
+    "M4_orthogonality_plus": 5.115699082125502e-07,
+    "M4_orthogonality_minus": 2.954561182377802e-07,
+    "M3_rank_max": 4,
+    "M4_rank_max": 4,
+    "base_model_parameter_hash_after_adaptation": "aa1157476f180f1c2b694e4f385418fe9c1ea6ffadf885711db7a6bb958dbb78"
+  },
+  "official_valid_used": false,
+  "official_test_accessed": false
+}

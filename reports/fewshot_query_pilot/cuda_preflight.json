@@ -1,0 +1,55 @@
+{
+  "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "vram_mib": 8150.5625,
+  "torch": "2.10.0+cu130",
+  "cuda": "13.0",
+  "max_len": 8192,
+  "trials": [
+    {
+      "batch_size": 1,
+      "status": "ok",
+      "seconds": 1.5824659000063548,
+      "peak_memory_mib": 300.7509765625,
+      "loss": 0.7485989332199097
+    },
+    {
+      "batch_size": 2,
+      "status": "ok",
+      "seconds": 2.162242200000037,
+      "peak_memory_mib": 528.7724609375,
+      "loss": 0.7490286231040955
+    },
+    {
+      "batch_size": 4,
+      "status": "ok",
+      "seconds": 2.182284000002255,
+      "peak_memory_mib": 992.9482421875,
+      "loss": 0.7485278844833374
+    },
+    {
+      "batch_size": 8,
+      "status": "ok",
+      "seconds": 2.3691131999948993,
+      "peak_memory_mib": 1921.2998046875,
+      "loss": 0.7486194968223572
+    },
+    {
+      "batch_size": 16,
+      "status": "ok",
+      "seconds": 2.10696829999506,
+      "peak_memory_mib": 3778.0029296875,
+      "loss": 0.748725414276123
+    },
+    {
+      "batch_size": 32,
+      "status": "ok",
+      "seconds": 5.6484352999978,
+      "peak_memory_mib": 7491.40966796875,
+      "loss": 0.748639702796936
+    }
+  ],
+  "selected_physical_batch": 16,
+  "effective_batch_target": 64,
+  "gradient_accumulation": 4,
+  "test_checked": false
+}

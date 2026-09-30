@@ -1,0 +1,38 @@
+route_name: Few-shot Novel Vulnerability Query Expansion Pilot-0
+dataset: data/processed/DIVE_8_opcode_random_split
+e3_base_config: configs/spor_phase25/E3_P11_8_A0.yaml
+vocab_path: data/processed/ethereum_public_pretrain_19143_unique_runtime/evm_vocab.json
+cache_dir: data/features/fewshot_query_pilot
+result_root: results/fewshot_query_pilot
+checkpoint_root: checkpoints/fewshot_query_pilot
+report_root: reports/fewshot_query_pilot
+label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Bad Randomness, Front Running, Time manipulation]
+num_labels: 8
+heldout_labels: [Reentrancy, Arithmetic, DoS, Bad Randomness]
+strict_novel: true
+base_seed: 42
+support_seeds: [0, 1, 2, 3, 4]
+support_k: 10
+support_pool_minimum: 100
+base_dev_fraction: 0.10
+base_max_epochs: 10
+base_early_stopping_patience: 3
+base_batch_size: 16
+base_gradient_accumulation_steps: 4
+base_learning_rate: 0.001
+base_weight_decay: 0.0001
+adapt_epochs: 5
+adapt_batch_size: 4
+adapt_learning_rate: 0.001
+adapt_weight_decay: 0.0001
+full_ft_batch_size: 1
+full_ft_epochs: 5
+full_ft_learning_rate: 0.00001
+full_ft_weight_decay: 0.0001
+residual_rank: 4
+auxiliary_weight: 0.08
+pos_weight_power: 0.6
+max_pos_weight: 5.0
+max_len: 8192
+seed: 42
+allow_test: false

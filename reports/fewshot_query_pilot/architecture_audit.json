@@ -1,0 +1,111 @@
+{
+  "route": "Few-shot Novel Vulnerability Query Expansion Pilot-0",
+  "dataset": "data/processed/DIVE_8_opcode_random_split",
+  "model_class": "PolarityQueryNet",
+  "num_labels": 8,
+  "label_names": [
+    "Reentrancy",
+    "Access Control",
+    "Arithmetic",
+    "Unchecked Return Values",
+    "DoS",
+    "Bad Randomness",
+    "Front Running",
+    "Time manipulation"
+  ],
+  "block_transformer_present": false,
+  "transformer_module_names": [],
+  "embedding_dim": 512,
+  "bigru_hidden_per_direction": 512,
+  "bidirectional": true,
+  "bigru_output_dim": 1024,
+  "kv_input_dim": 1024,
+  "kv_projection_dim": 512,
+  "query_plus_dim": 512,
+  "query_minus_dim": 512,
+  "query_shape": [
+    8,
+    2,
+    512
+  ],
+  "attention_heads": 8,
+  "head_dim": 64,
+  "label_scorer_shape": [
+    8,
+    512
+  ],
+  "branch_bias_shape": [
+    8,
+    2
+  ],
+  "scorer_shared_across_polarities": true,
+  "per_label_independent_parameters": {
+    "query_plus": 512,
+    "query_minus": 512,
+    "queries_pair": 1024,
+    "label_scorer": 512,
+    "branch_bias": 2
+  },
+  "shared_parameters": {
+    "embedding.weight": 594432,
+    "encoder.weight_ih_l0": 786432,
+    "encoder.weight_hh_l0": 786432,
+    "encoder.bias_ih_l0": 1536,
+    "encoder.bias_hh_l0": 1536,
+    "encoder.weight_ih_l0_reverse": 786432,
+    "encoder.weight_hh_l0_reverse": 786432,
+    "encoder.bias_ih_l0_reverse": 1536,
+    "encoder.bias_hh_l0_reverse": 1536,
+    "cross_attention.q_proj.weight": 262144,
+    "cross_attention.k_proj.weight": 524288,
+    "cross_attention.v_proj.weight": 524288,
+    "cross_attention.out_proj.weight": 262144
+  },
+  "total_parameters": 5331472,
+  "per_label_output_parameter_count": 1538,
+  "scorer_params_fraction_of_per_label_output": 0.3342002600780234,
+  "fewshot_trainable_parameter_scenarios": {
+    "M0_random_query": {
+      "query": 1024,
+      "scorer": 514,
+      "encoder": 0,
+      "total": 1538
+    },
+    "M2_query_mixture": {
+      "query": 14,
+      "scorer": 514,
+      "encoder": 0,
+      "total": 528
+    },
+    "M3_M4_residual_stage": {
+      "query": 8,
+      "scorer": 0,
+      "encoder": 0,
+      "total": 8
+    },
+    "M5_full_finetune": {
+      "query": 1024,
+      "scorer": 514,
+      "encoder": 5319168,
+      "total": 5320706
+    }
+  },
+  "seven_label_model_has_label_specific_rows": true,
+  "eight_label_config_exists": true,
+  "trained_eight_label_checkpoint_present": false,
+  "loss": {
+    "main": "BCEWithLogits on e_plus-e_minus",
+    "polarity_auxiliary_weight": 0.08,
+    "positive_target": "y",
+    "negative_target": "1-y",
+    "pos_weight_mode": "sqrt_ratio",
+    "pos_weight_power": 0.6,
+    "max_pos_weight": 5.0,
+    "DoS_soft_targets": [
+      0.8,
+      0.1
+    ]
+  },
+  "threshold_protocol": "P11 default grid for official valid reporting only; pilot primary metric is threshold-free AP; no valid threshold tuning",
+  "official_test_accessed": false
+}
