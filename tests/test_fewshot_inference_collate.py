@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import light_label_data
-from fewshot.run_pilot import retention_metrics
+from fewshot.run_pilot import retention_metrics, base_dev_macro_f1_from_audit
 
 
 class InferenceCollateTest(unittest.TestCase):
@@ -52,6 +52,10 @@ class InferenceCollateTest(unittest.TestCase):
         self.assertAlmostEqual(metrics["macro_f1"], 1.0)
         self.assertAlmostEqual(metrics["micro_f1"], 1.0)
         self.assertEqual(metrics["per_label_f1"], [1.0, 1.0])
+
+    def test_base_audit_report_reads_the_written_macro_f1_key(self):
+        audit = {"best_epoch": 5, "base_dev_macro_f1_fixed05": 0.7717}
+        self.assertAlmostEqual(base_dev_macro_f1_from_audit(audit), 0.7717)
 
 
 if __name__ == "__main__":

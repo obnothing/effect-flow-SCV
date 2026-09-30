@@ -409,6 +409,10 @@ def retention_metrics(labels,logits):
             "per_label_f1":[float(v) for v in per]}
 
 
+def base_dev_macro_f1_from_audit(base_audit):
+    return float(base_audit["base_dev_macro_f1_fixed05"])
+
+
 def trainable_parameter_counts(method,head,base_config,base_model=None):
     d=int(base_config["query_dim"]);scorer=d+2
     if method=="M0_random_query":return {"query":2*d,"scorer":scorer,"encoder":0,"attention":0}
@@ -547,7 +551,7 @@ def final_evaluate_label(novel_label,split,base,base_config,base_indices,base_au
             "old_macro_f1_before":old_before["macro_f1"],"old_macro_f1_after":old_after["macro_f1"],
             "old_micro_f1_before":old_before["micro_f1"],"old_micro_f1_after":old_after["micro_f1"],
             "delta_macro":old_after["macro_f1"]-old_before["macro_f1"],"delta_micro":old_after["micro_f1"]-old_before["micro_f1"]})
-    base_report={"novel_label":novel_label,"best_epoch":base_audit["best_epoch"],"base_dev_old_macro_f1_fixed05":base_audit["base_dev_old_macro_f1_fixed05"],
+    base_report={"novel_label":novel_label,"best_epoch":base_audit["best_epoch"],"base_dev_old_macro_f1_fixed05":base_dev_macro_f1_from_audit(base_audit),
         "official_valid_old_macro_f1_before":old_before["macro_f1"],"official_valid_old_micro_f1_before":old_before["micro_f1"],
         "valid_positive_count":valid_pos,"valid_negative_count":valid_neg,"test_checked":False}
     (ROOT/config["result_root"]/novel_label.replace(" ","_")/"final_eval.json").write_text(json.dumps(base_report,indent=2),encoding="utf-8")
