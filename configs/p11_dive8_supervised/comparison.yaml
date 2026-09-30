@@ -1,0 +1,46 @@
+route_name: P11 DIVE-8 full supervised architecture comparison
+data_dir: data/processed/DIVE_8_opcode_random_split
+vocab_path: data/processed/ethereum_public_pretrain_19143_unique_runtime/evm_vocab.json
+train_cache: data/features/fewshot_query_pilot/train_max8192.pt
+valid_input_cache: data/features/fewshot_query_pilot/valid_max8192.pt
+valid_cache: data/features/p11_dive8_supervised/valid_max8192.pt
+provenance_path: data/features/p11_dive8_supervised/provenance.json
+result_root: results/p11_dive8_supervised
+checkpoint_root: checkpoints/p11_dive8_supervised
+label_names: [Reentrancy, Access Control, Arithmetic, Unchecked Return Values, DoS, Bad Randomness, Front Running, Time manipulation]
+num_labels: 8
+train_rows: 17864
+valid_rows: 2233
+gru_layers: 1
+bidirectional: true
+representation_dropout: 0.0
+max_len: 8192
+batch_size: 16
+gradient_accumulation_steps: 8
+effective_batch_size: 128
+learning_rate: 0.001
+scheduler: none
+weight_decay: 0.0001
+auxiliary_weight: 0.1
+pos_weight_power: 0.5
+max_pos_weight: 5.0
+dos_soft_positive: 0.8
+dos_soft_negative: 0.1
+epochs: 30
+early_stopping_patience: 5
+seed: 42
+amp: true
+num_workers: 0
+allow_test: false
+thresholds: [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
+models:
+  original:
+    embedding_dim: 128
+    gru_hidden_size: 384
+    attention_heads: 4
+    query_dim: 768
+  e3:
+    embedding_dim: 512
+    gru_hidden_size: 512
+    attention_heads: 8
+    query_dim: 512
