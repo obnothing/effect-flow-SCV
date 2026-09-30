@@ -28,7 +28,9 @@ python -m py_compile \
   scripts/fewshot/train_lovo_base.py \
   scripts/fewshot/run_pilot.py \
   scripts/fewshot/test_protocol.py
+python -m py_compile tests/test_fewshot_inference_collate.py src/light_label_data.py
 
+python tests/test_fewshot_inference_collate.py
 python - <<'PY'
 import torch
 print(f"torch={torch.__version__} cuda={torch.version.cuda} available={torch.cuda.is_available()}", flush=True)

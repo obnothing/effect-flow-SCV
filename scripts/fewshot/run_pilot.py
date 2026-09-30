@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader, Dataset
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/"src"));sys.path.insert(0,str(ROOT/"scripts"))
 from evm_tokenizer import EVMOpcodeTokenizer
-from light_label_data import LightLabelDataset,collate_light_label
+from light_label_data import LightLabelDataset,collate_light_label,collate_light_label_inference
 from polarity_query_model import build_model
 from fewshot.train_lovo_base import train_one as train_base
 from fewshot.pilot_core import (gradient_residual_basis,initialize_random_query,novel_forward,novel_loss,
@@ -339,7 +339,7 @@ def adapt_episode(base,train_data,id_map,episode,novel_label,novel_index,base_na
 def evaluate_frozen_heads(base,valid_data,heads,base_names,batch_size=4):
     device=torch.device("cuda");base.eval();order=sorted(range(len(valid_data)),key=valid_data.sequence_length)
     loader=DataLoader(torch.utils.data.Subset(valid_data,order),batch_size=batch_size,shuffle=False,num_workers=0,
-        collate_fn=partial(collate_light_label,pad_id=base.embedding.padding_idx),pin_memory=True)
+        collate_fn=partial(collate_light_label_inference,pad_id=base.embedding.padding_idx),pin_memory=True)
     specs=[(label,seed,method,head) for label,seed,method,head in heads]
     all_queries=torch.cat([base.queries.detach().flatten(0,1).cpu()]+[item[3]["queries"].reshape(2,-1).cpu() for item in specs],0).to(device)
     all_scorers=torch.stack([item[3]["scorer"] for item in specs]).to(device)
@@ -376,7 +376,7 @@ def evaluate_m5(base_state,head,valid_data,base_indices,base_names,config,batch_
     base.load_state_dict(base_state,strict=True);base.eval()
     order=sorted(range(len(valid_data)),key=valid_data.sequence_length)
     loader=DataLoader(torch.utils.data.Subset(valid_data,order),batch_size=batch_size,shuffle=False,num_workers=0,
-        collate_fn=partial(collate_light_label,pad_id=base.embedding.padding_idx),pin_memory=True)
+        collate_fn=partial(collate_light_label_inference,pad_id=base.embedding.padding_idx),pin_memory=True)
     q=torch.cat([base.queries.detach().flatten(0,1).cpu(),head["queries"].reshape(2,-1)],0).to(device)
     scorer=head["scorer"].to(device).unsqueeze(0);bias=head["bias"].to(device).unsqueeze(0)
     novel_logits=[];old_logits=[];ids=[]

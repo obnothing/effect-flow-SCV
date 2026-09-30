@@ -76,19 +76,32 @@ class LightLabelDataset(Dataset):
         }
 
 
-def collate_light_label(items, pad_id):
+def _collate_light_label(items, pad_id, include_labels):
     max_length = max(item["length"] for item in items)
     input_ids = torch.full((len(items), max_length), int(pad_id), dtype=torch.long)
     mask = torch.zeros(len(items), max_length, dtype=torch.bool)
     for row, item in enumerate(items):
         input_ids[row, :item["length"]] = item["input_ids"]
         mask[row, :item["length"]] = True
-    return {
+    batch = {
         "ids": [item["id"] for item in items], "input_ids": input_ids, "mask": mask,
         "lengths": torch.tensor([item["length"] for item in items], dtype=torch.long),
         "original_lengths": torch.tensor([item["original_length"] for item in items], dtype=torch.long),
-        "labels": torch.stack([item["labels"] for item in items]),
     }
+    if include_labels:
+        if any("labels" not in item for item in items):
+            raise ValueError("training batches require labels for every item")
+        batch["labels"] = torch.stack([item["labels"] for item in items])
+    return batch
+
+
+def collate_light_label(items, pad_id):
+    return _collate_light_label(items, pad_id, include_labels=True)
+
+
+def collate_light_label_inference(items, pad_id):
+    """Collate token-only inference items without reading or fabricating labels."""
+    return _collate_light_label(items, pad_id, include_labels=False)
 
 
 class LengthBucketBatchSampler:
