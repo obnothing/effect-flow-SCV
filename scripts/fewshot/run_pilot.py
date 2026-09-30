@@ -413,6 +413,13 @@ def base_dev_macro_f1_from_audit(base_audit):
     return float(base_audit["base_dev_macro_f1_fixed05"])
 
 
+def m5_parameter_counts(head):
+    counts=head.get("metadata",{}).get("parameter_counts")
+    if counts is None:
+        raise KeyError("M5 head metadata is missing parameter_counts")
+    return counts
+
+
 def trainable_parameter_counts(method,head,base_config,base_model=None):
     d=int(base_config["query_dim"]);scorer=d+2
     if method=="M0_random_query":return {"query":2*d,"scorer":scorer,"encoder":0,"attention":0}
@@ -537,7 +544,7 @@ def final_evaluate_label(novel_label,split,base,base_config,base_indices,base_au
             raise ValueError("M5 valid ID order differs from shared validation evaluation")
         old_after=base_old_metrics(y5[:,base_indices],old_logits5)
         metric5=metrics_for(y5[:,novel_index],novel_logits5)
-        params=m5.get("parameter_counts",{})
+        params=m5_parameter_counts(m5)
         row={"novel_label":novel_label,"K":config["support_k"],"support_seed":int(seed),"method":"M5_full_finetuning",
             "support_positive_ids":";".join(states["episode"]["positive_ids"]),"support_negative_ids":";".join(states["episode"]["negative_ids"]),
             "novel_valid_positive_count":valid_pos,"novel_valid_negative_count":valid_neg,**metric5,

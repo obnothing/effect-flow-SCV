@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import light_label_data
-from fewshot.run_pilot import retention_metrics, base_dev_macro_f1_from_audit
+from fewshot.run_pilot import m5_parameter_counts, retention_metrics, base_dev_macro_f1_from_audit
 
 
 class InferenceCollateTest(unittest.TestCase):
@@ -56,6 +56,10 @@ class InferenceCollateTest(unittest.TestCase):
     def test_base_audit_report_reads_the_written_macro_f1_key(self):
         audit = {"best_epoch": 5, "base_dev_macro_f1_fixed05": 0.7717}
         self.assertAlmostEqual(base_dev_macro_f1_from_audit(audit), 0.7717)
+
+    def test_m5_parameter_groups_are_read_from_head_metadata(self):
+        counts = {"query": 1024, "scorer": 514, "encoder": 3746304, "attention": 1572864}
+        self.assertEqual(m5_parameter_counts({"metadata": {"parameter_counts": counts}}), counts)
 
 
 if __name__ == "__main__":
