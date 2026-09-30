@@ -15,6 +15,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import yaml
+from sklearn.metrics import f1_score
 from torch.utils.data import DataLoader, Dataset
 
 ROOT=Path(__file__).resolve().parents[2]

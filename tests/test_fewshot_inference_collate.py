@@ -8,8 +8,10 @@ import torch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "scripts"))
 
 import light_label_data
+from fewshot.run_pilot import retention_metrics
 
 
 class InferenceCollateTest(unittest.TestCase):
@@ -44,6 +46,12 @@ class InferenceCollateTest(unittest.TestCase):
         batch = light_label_data.collate_light_label([item], pad_id=0)
 
         self.assertEqual(batch["labels"].tolist(), [[1.0, 0.0]])
+
+    def test_old_label_retention_metrics_are_available_for_final_eval(self):
+        metrics = retention_metrics([[1, 0], [0, 1]], [[2.0, -2.0], [-2.0, 2.0]])
+        self.assertAlmostEqual(metrics["macro_f1"], 1.0)
+        self.assertAlmostEqual(metrics["micro_f1"], 1.0)
+        self.assertEqual(metrics["per_label_f1"], [1.0, 1.0])
 
 
 if __name__ == "__main__":
